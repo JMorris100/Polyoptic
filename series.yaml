@@ -1,0 +1,225 @@
+# ══════════════════════════════════════════════════════════════
+# Polyoptic series catalogue
+#
+# Adding an indicator means adding an entry here. No code changes.
+# That's the whole point of the series-first model: the catalogue is
+# data, the pipeline is generic, and the front end is a view over both.
+#
+# VERIFY BEFORE TRUSTING: the identifiers below (CDIDs, dataset ids,
+# EES data_set_id / indicator hashes) are the right SHAPE but need
+# checking against the live catalogues. Start with:
+#   https://api.beta.ons.gov.uk/v1/datasets
+#   https://explore-education-statistics.service.gov.uk/data-catalogue
+# Run `python ingest/ingest.py --dry-run` and fix what fails.
+# ══════════════════════════════════════════════════════════════
+
+eras:
+  - {from: 1997, to: 2010, party: Labour,       colour: "#E4003B"}
+  - {from: 2010, to: 2015, party: Coalition,    colour: "#7E6FA8"}
+  - {from: 2015, to: 2024, party: Conservative, colour: "#0087DC"}
+  - {from: 2024, to: 2026, party: Labour,       colour: "#E4003B"}
+
+# Institute for Government Ministers Database (CC-BY-4.0) is the source
+# to automate this from once you want Secretary of State markers too.
+pms:
+  - [1997, Blair]
+  - [2007, Brown]
+  - [2010, Cameron]
+  - [2016, May]
+  - [2019, Johnson]
+  - [2022, Truss]
+  - [2023, Sunak]
+  - [2024, Starmer]
+
+# ──────────────────────────────────────────────────────────────
+# Reference series. These power the transforms and must be present
+# for real-terms, per-person and %-of-GDP to work anywhere.
+#
+# Use the GDP DEFLATOR for public spending, not CPI. Deflating
+# departmental budgets with CPI is the single most common error in
+# public data commentary, and getting it right is free rigour.
+# ──────────────────────────────────────────────────────────────
+references:
+  population:
+    source_type: ons_timeseries
+    fetch: {path: peoplepopulationandcommunity/populationandmigration/populationestimates, cdid: EBFA, dataset: pop, granularity: years}
+  deflator:
+    source_type: csv
+    fetch:
+      url: https://www.gov.uk/government/statistics/gdp-deflators-at-market-prices-and-money-gdp-june-2025
+      year_column: year
+      value_column: deflator
+      year_basis: financial
+  gdp:
+    source_type: ons_timeseries
+    fetch: {path: economy/grossdomesticproductgdp, cdid: YBHA, dataset: qna, granularity: years}
+
+# ──────────────────────────────────────────────────────────────
+# Launch set. Deliberately awkward pairs — different geographies,
+# different year bases, different units — so the schema gets
+# exercised properly from day one rather than at series fifty.
+# ──────────────────────────────────────────────────────────────
+series:
+
+  # ── HOUSING ──────────────────────────────────────────────
+  - id: hpe
+    name: House price to earnings ratio
+    topics: [housing]
+    unit: ratio
+    kind: ratio
+    geography: England & Wales
+    year_basis: calendar
+    source: ONS / HM Land Registry
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/housing
+    source_type: ons_timeseries
+    fetch: {path: peoplepopulationandcommunity/housing, cdid: HPER, dataset: hpssa, granularity: years}
+
+  - id: completions
+    name: Net additional dwellings
+    topics: [housing]
+    unit: dwellings
+    kind: count
+    geography: England
+    year_basis: financial
+    source: MHCLG live tables
+    source_url: https://www.gov.uk/government/collections/net-supply-of-housing
+    source_type: csv
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/live-table-120.csv
+      year_column: Year
+      value_column: Net additional dwellings
+      year_basis: financial
+    discontinuities:
+      - {year: 2020, note: "Pandemic disruption to both site activity and to the data collection itself"}
+
+  - id: socialstock
+    name: Social housing stock
+    topics: [housing]
+    unit: thousand dwellings
+    kind: count
+    geography: England
+    year_basis: financial
+    source: MHCLG live tables
+    source_url: https://www.gov.uk/government/collections/dwelling-stock-statistics
+    source_type: csv
+    fetch: {url: https://assets.publishing.service.gov.uk/media/live-table-104.csv, year_column: Year, value_column: Social rented, year_basis: financial}
+
+  - id: tempacc
+    name: Households in temporary accommodation
+    topics: [housing]
+    unit: households
+    kind: count
+    geography: England
+    year_basis: financial
+    source: MHCLG statutory homelessness
+    source_url: https://www.gov.uk/government/collections/homelessness-statistics
+    source_type: csv
+    fetch: {url: https://assets.publishing.service.gov.uk/media/temporary-accommodation.csv, year_column: Quarter, value_column: Total households, year_basis: financial, aggregate: last}
+
+  # ── ECONOMY ──────────────────────────────────────────────
+  - id: cpih
+    name: CPIH
+    topics: [economy]
+    unit: index, 2015=100
+    kind: index
+    geography: UK
+    year_basis: calendar
+    source: ONS
+    source_url: https://www.ons.gov.uk/economy/inflationandpriceindices
+    source_type: ons_beta
+    fetch:
+      dataset: cpih01
+      edition: time-series
+      version: latest
+      dimensions: {geography: K02000001, aggregate: cpih1dim1A0}
+
+  - id: unemp
+    name: Unemployment rate
+    topics: [economy]
+    unit: "% of workforce"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Labour Force Survey
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peoplenotinwork/unemployment, cdid: MGSX, dataset: lms, granularity: months}
+    discontinuities:
+      - {year: 2024, note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
+
+  - id: realpay
+    name: Median weekly pay
+    topics: [economy]
+    unit: "£ per week, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS ASHE
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peopleinwork/earningsandworkinghours, cdid: KAB9, dataset: ashe, granularity: years}
+
+  - id: debtint
+    name: Debt interest spending
+    topics: [economy]
+    unit: "£bn, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: financial
+    source: HM Treasury / OBR
+    source_url: https://obr.uk/data/
+    source_type: csv
+    fetch: {url: https://obr.uk/download/public-finances-databank.csv, year_column: Year, value_column: Debt interest, year_basis: financial}
+
+  # ── EDUCATION ────────────────────────────────────────────
+  # England only, academic years. Both of those differ from most of the
+  # economy series above, which is exactly why these belong in the
+  # launch set — the mismatch warnings need something to fire on.
+  - id: funding
+    name: School funding per pupil
+    topics: [education]
+    unit: "£ per pupil, cash"
+    kind: money_cash
+    geography: England
+    year_basis: academic
+    source: DfE Explore Education Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/
+    source_type: dfe_ees
+    fetch:
+      data_set_id: REPLACE_WITH_EES_DATA_SET_ID
+      indicator: REPLACE_WITH_INDICATOR_ID
+      criteria: {}
+    discontinuities:
+      - {year: 2014, note: "Funding formula reform changes the basis of comparison across this point"}
+
+  - id: absence
+    name: Persistent absence rate
+    topics: [education]
+    unit: "% of pupils"
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: DfE Explore Education Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/
+    source_type: dfe_ees
+    fetch:
+      data_set_id: REPLACE_WITH_EES_DATA_SET_ID
+      indicator: REPLACE_WITH_INDICATOR_ID
+      criteria: {}
+    discontinuities:
+      - {year: 2020, note: "Attendance recording rules and school opening changed; the series is not comparable across this point"}
+
+  - id: gap
+    name: Disadvantage attainment gap index
+    topics: [education]
+    unit: index
+    kind: index
+    geography: England
+    year_basis: academic
+    source: DfE Explore Education Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/
+    source_type: dfe_ees
+    fetch:
+      data_set_id: REPLACE_WITH_EES_DATA_SET_ID
+      indicator: REPLACE_WITH_INDICATOR_ID
+      criteria: {}

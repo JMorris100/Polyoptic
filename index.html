@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Polyoptic — UK statistics, seen from more than one position</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDEFF1;--surface:#FFFFFF;--ink:#0F1419;--muted:#5C6672;--rule:#D3D8DD;
+  --purple:#4633A8;--purple-soft:#F4F2FA;--purple-rule:#D8D2EC;
+  --con:#0087DC;--lab:#E4003B;--coal:#7E6FA8;--warm:#C2410C;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:"Public Sans",system-ui,sans-serif;font-size:16px;line-height:1.55}
+.wrap{max-width:1140px;margin:0 auto;padding:0 24px}
+h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif;margin:0;letter-spacing:-0.032em;line-height:1.03}
+a{color:inherit}
+svg{display:block}
+
+/* ── header ── */
+header{position:sticky;top:0;z-index:40;background:rgba(237,239,241,.93);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule)}
+.hrow{display:flex;align-items:center;justify-content:space-between;height:64px;gap:20px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.wordmark{font-family:"Archivo";font-weight:800;font-size:21px;letter-spacing:-0.05em;color:var(--purple)}
+.wordmark .b{font-weight:500;color:var(--muted)}
+nav{display:flex;gap:22px;font-size:13.5px;color:var(--muted);margin-left:auto}
+nav a{text-decoration:none}
+nav a:hover{color:var(--ink)}
+.search{display:flex;align-items:center;gap:8px;border:1px solid var(--rule);background:var(--surface);padding:7px 13px;border-radius:100px;font-family:"IBM Plex Mono";font-size:11.5px;color:var(--muted);cursor:pointer;white-space:nowrap}
+.search:hover{border-color:var(--purple);color:var(--purple)}
+@media(max-width:860px){nav{display:none}}
+@media(max-width:520px){.search span.full{display:none}}
+
+/* ── hero ── */
+.hero{padding:72px 0 44px}
+.hero h1{font-size:clamp(38px,6.6vw,72px);font-weight:800;max-width:15ch}
+.hero h1 em{font-style:normal;color:var(--purple)}
+.hero .sub{max-width:54ch;color:var(--muted);font-size:17.5px;margin:22px 0 0}
+.eyebrow{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.17em;text-transform:uppercase;color:var(--purple);margin-bottom:22px}
+.cta{display:flex;gap:12px;margin-top:30px;flex-wrap:wrap}
+.btn{font-family:"IBM Plex Mono";font-size:12.5px;letter-spacing:.04em;padding:12px 20px;border:1px solid var(--purple);background:var(--purple);color:#fff;cursor:pointer;text-decoration:none}
+.btn.ghost{background:transparent;color:var(--purple)}
+.btn:hover{opacity:.87}
+
+.note{background:#FFF8E6;border:1px solid #E8D9A8;padding:11px 16px;font-size:13px;margin-bottom:28px}
+
+/* ── chart card ── */
+.card{background:var(--surface);border:1px solid var(--rule)}
+.card-hd{padding:18px 22px 14px;border-bottom:1px solid var(--rule);display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.card-hd h3{font-size:18px;font-weight:700}
+.card-hd .sub{font-size:13px;color:var(--muted);margin-top:5px}
+.pill{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--purple);background:var(--purple-soft);border:1px solid var(--purple-rule);padding:4px 9px;white-space:nowrap}
+.chips{display:flex;flex-wrap:wrap;gap:6px;padding:14px 22px 2px}
+.chip{font-family:"IBM Plex Mono";font-size:11.5px;padding:5px 11px;border:1px solid var(--rule);background:transparent;color:var(--muted);border-radius:100px;cursor:pointer;transition:.14s}
+.chip:hover{border-color:var(--ink);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
+.chip:focus-visible{outline:2px solid var(--purple);outline-offset:2px}
+.card-bd{padding:16px 22px 6px}
+.card-ft{padding:11px 22px 14px;border-top:1px solid var(--rule);font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:5px 18px}
+.gridline{stroke:var(--rule);stroke-width:1}
+.axlabel{font-family:"IBM Plex Mono";font-size:9.5px;fill:var(--muted)}
+.serieslabel{font-family:"IBM Plex Mono";font-size:10px;font-weight:500}
+.line{fill:none;stroke-width:2.3;stroke-linejoin:round;stroke-linecap:round}
+.ribbon-title{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:8px 0 5px}
+.era rect{opacity:.84;transition:opacity .14s}
+.era:hover rect{opacity:1}
+.era text{font-family:"IBM Plex Mono";font-size:9px;fill:#fff;font-weight:500}
+.pmtick{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2;opacity:.32}
+.pmlabel{font-family:"IBM Plex Mono";font-size:8.5px;fill:var(--muted)}
+
+/* ── sections ── */
+section{padding:56px 0;border-top:1px solid var(--rule)}
+.slabel{display:flex;align-items:baseline;gap:13px;margin-bottom:8px;flex-wrap:wrap}
+.snum{font-family:"IBM Plex Mono";font-size:11px;color:var(--purple);letter-spacing:.1em}
+section h2{font-size:clamp(23px,3.3vw,33px);font-weight:700}
+.lede{color:var(--muted);max-width:62ch;margin:12px 0 32px}
+
+/* ── tiles ── */
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
+@media(max-width:840px){.tiles{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:500px){.tiles{grid-template-columns:1fr}}
+.tile{background:var(--surface);padding:20px;min-height:118px;display:flex;flex-direction:column;justify-content:space-between;text-decoration:none;transition:.14s}
+.tile:hover{background:#F8F9FA}
+.tile.live:hover{background:var(--purple-soft)}
+.tile .tn{font-family:"Archivo";font-weight:700;font-size:17.5px;letter-spacing:-0.025em}
+.tile .td{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.4}
+.tile .tm{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);margin-top:12px;letter-spacing:.06em}
+.tile.live .tm{color:var(--purple)}
+.tile.soon{opacity:.62}
+.tile.lens{background:var(--purple-soft)}
+.tile.lens .tn{color:var(--purple)}
+.tile.lens:hover{background:#EDE9F8}
+
+/* ── transforms ── */
+.tf{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
+@media(max-width:900px){.tf{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.tf{grid-template-columns:1fr}}
+.tfc{background:var(--surface);padding:20px}
+.tfc h4{font-size:15.5px;font-weight:700;margin-bottom:7px}
+.tfc p{font-size:13.5px;color:var(--muted);margin:0}
+.tfc .ic{font-family:"IBM Plex Mono";font-size:10px;color:var(--purple);letter-spacing:.12em;margin-bottom:10px}
+
+/* ── pairings ── */
+.pairs{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
+@media(max-width:760px){.pairs{grid-template-columns:1fr}}
+.pair{background:var(--surface);padding:22px;text-decoration:none;transition:.14s}
+.pair:hover{background:var(--purple-soft)}
+.pair .pq{font-family:"Archivo";font-weight:700;font-size:17px;letter-spacing:-0.025em;margin-bottom:8px}
+.pair .pm{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);line-height:1.7}
+.pair .pm b{color:var(--purple);font-weight:500}
+
+/* ── sources ── */
+.srcs{display:flex;flex-wrap:wrap;gap:8px}
+.src{font-family:"IBM Plex Mono";font-size:11.5px;border:1px solid var(--rule);background:var(--surface);padding:7px 13px;color:var(--muted)}
+
+footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px solid var(--rule)}
+.fgrid{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap}
+.fgrid p{max-width:50ch;margin:0}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap hrow">
+    <a class="brand" href="#top">
+      <span id="logo"></span>
+      <span class="wordmark">poly<span class="b">optic</span></span>
+    </a>
+    <nav>
+      <a href="#topics">Topics</a>
+      <a href="explore.html">Explorer</a>
+      <a href="#pairings">Comparisons</a>
+      <a href="#sources">Sources</a>
+    </nav>
+    <div class="search">⌕ <span class="full">Search 340 indicators</span></div>
+  </div>
+</header>
+
+<div class="wrap" id="top">
+  <div class="hero">
+    <div class="eyebrow">UK official statistics</div>
+    <h1>The same numbers, from <em>more than one position</em>.</h1>
+    <p class="sub">Public data from ONS, Land Registry, the Bank of England and DfE — plotted against who was in power at the time, and yours to rebase, deflate and compare however you like.</p>
+    <div class="cta">
+      <a class="btn" href="#topics">Browse the data</a>
+      <a class="btn ghost" href="explore.html">Open the explorer</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="note"><strong>Concept mockup.</strong> Every figure on this page is invented placeholder data to show layout and behaviour. Nothing here is a real statistic.</div>
+</div>
+
+<!-- FEATURED CHART -->
+<div class="wrap" style="padding-bottom:8px">
+  <div class="card">
+    <div class="card-hd">
+      <div>
+        <h3>House price to earnings ratio</h3>
+        <div class="sub">Median house price ÷ median gross annual earnings</div>
+      </div>
+      <span class="pill">Chart of the week</span>
+    </div>
+    <div class="chips" role="group" aria-label="Transform">
+      <button class="chip" aria-pressed="true" data-t="raw">As published</button>
+      <button class="chip" aria-pressed="false" data-t="index">Rebased to 1997 = 100</button>
+      <button class="chip" aria-pressed="false" data-t="smooth">3-year average</button>
+    </div>
+    <div class="card-bd">
+      <div id="chartA"></div>
+      <div class="ribbon-title">Government in power</div>
+      <div id="ribbonA"></div>
+    </div>
+    <div class="card-ft">
+      <span>SOURCE · ONS + HM LAND REGISTRY</span>
+      <span>LICENCE · OGL v3.0</span>
+      <span>GEOGRAPHY · ENGLAND &amp; WALES</span>
+      <span id="ftA">VIEW · AS PUBLISHED</span>
+    </div>
+  </div>
+</div>
+
+<!-- TOPICS -->
+<section id="topics">
+  <div class="wrap">
+    <div class="slabel"><span class="snum">01</span><h2>Topics</h2></div>
+    <p class="lede">Three sections live, properly built. The rest are in the pipeline and we'd rather say so than show you six empty rooms.</p>
+    <div class="tiles">
+      <a class="tile live" href="explore.html"><div><div class="tn">Economy</div><div class="td">Growth, prices, pay, jobs, tax and debt</div></div><div class="tm">42 indicators · live</div></a>
+      <a class="tile live" href="explore.html"><div><div class="tn">Housing</div><div class="td">Prices, rents, supply, tenure and homelessness</div></div><div class="tm">38 indicators · live</div></a>
+      <a class="tile live" href="explore.html"><div><div class="tn">Education</div><div class="td">Schools, teachers, attainment, SEND and post-16</div></div><div class="tm">35 indicators · live</div></a>
+      <a class="tile soon" href="#"><div><div class="tn">Health</div><div class="td">Waiting lists, workforce, outcomes</div></div><div class="tm">next up</div></a>
+      <a class="tile soon" href="#"><div><div class="tn">Transport</div><div class="td">Fares, punctuality, road and rail use</div></div><div class="tm">in progress</div></a>
+      <a class="tile soon" href="#"><div><div class="tn">Crime &amp; Justice</div><div class="td">Offences, charge rates, courts, prisons</div></div><div class="tm">in progress</div></a>
+      <a class="tile soon" href="#"><div><div class="tn">Immigration &amp; Population</div><div class="td">Migration, ageing, births, projections</div></div><div class="tm">in progress</div></a>
+      <a class="tile soon" href="#"><div><div class="tn">Environment &amp; Energy</div><div class="td">Emissions, generation mix, prices</div></div><div class="tm">in progress</div></a>
+      <a class="tile lens" href="#"><div><div class="tn">Public Spending</div><div class="td">A lens, not a topic — cuts across every section above</div></div><div class="tm">lens · live</div></a>
+    </div>
+  </div>
+</section>
+
+<!-- TRANSFORMS -->
+<section id="explore">
+  <div class="wrap">
+    <div class="slabel"><span class="snum">02</span><h2>Every chart is editable</h2></div>
+    <p class="lede">Not buried in a settings panel — on the chart itself. Most sites give you twenty chart types and no way to make a fair comparison. These four are the ones that actually change what a number means.</p>
+    <div class="tf">
+      <div class="tfc"><div class="ic">REBASE</div><h4>Index to 100</h4><p>Pick any year as the baseline and compare things measured in completely different units.</p></div>
+      <div class="tfc"><div class="ic">DEFLATE</div><h4>Real terms</h4><p>Adjusted with the GDP deflator for spending, CPI for household figures. Cash terms is never the default.</p></div>
+      <div class="tfc"><div class="ic">NORMALISE</div><h4>Per person, % of GDP</h4><p>Population and GDP live centrally, so any series can be re-expressed on demand.</p></div>
+      <div class="tfc"><div class="ic">SMOOTH</div><h4>Rolling average</h4><p>Strip seasonality without hiding it — the raw series stays visible underneath.</p></div>
+    </div>
+  </div>
+</section>
+
+<!-- SPEND VS OUTCOME -->
+<div class="wrap" style="padding-bottom:56px">
+  <div class="card">
+    <div class="card-hd">
+      <div>
+        <h3>Spend against outcome</h3>
+        <div class="sub">The Public Spending lens — money in, against the thing it was meant to move</div>
+      </div>
+      <span class="pill">Lens</span>
+    </div>
+    <div class="chips" role="group" aria-label="Normalisation">
+      <button class="chip n" aria-pressed="false" data-n="cash">Cash terms</button>
+      <button class="chip n" aria-pressed="true" data-n="real">Real terms</button>
+      <button class="chip n" aria-pressed="false" data-n="head">Per person</button>
+      <button class="chip n" aria-pressed="false" data-n="gdp">% of GDP</button>
+    </div>
+    <div class="card-bd">
+      <div id="chartB"></div>
+      <div class="ribbon-title">Government in power</div>
+      <div id="ribbonB"></div>
+    </div>
+    <div class="card-ft">
+      <span>SOURCES · HMT PESA · DfE EES</span>
+      <span>DEFLATOR · ONS GDP DEFLATOR</span>
+      <span>GEOGRAPHY · ENGLAND ONLY</span>
+      <span id="ftB">MODE · REAL TERMS</span>
+    </div>
+  </div>
+</div>
+
+<!-- PAIRINGS -->
+<section id="pairings">
+  <div class="wrap">
+    <div class="slabel"><span class="snum">03</span><h2>Arguments worth having</h2></div>
+    <p class="lede">Pre-built comparisons, each one a permalink you can send to someone who disagrees with you.</p>
+    <div class="pairs">
+      <a class="pair" href="explore.html#s=completions,hpe&c=line&t=index&f=1997&to=2026&r=1"><div class="pq">Did building more houses ever move the price?</div><div class="pm"><b>Net additional dwellings</b> × <b>house price to earnings</b><br>1997–2026 · England</div></a>
+      <a class="pair" href="explore.html#s=socialstock,tempacc&c=line&t=index&f=1997&to=2026&r=1"><div class="pq">Where did the Right to Buy stock go?</div><div class="pm"><b>RTB sales</b> × <b>social housing stock</b> × <b>temporary accommodation</b><br>1980–2026 · England</div></a>
+      <a class="pair" href="explore.html#s=realpay,hpe&c=line&t=index&f=1997&to=2026&r=1"><div class="pq">Has pay caught up with house prices?</div><div class="pm"><b>Real weekly earnings</b> × <b>real house prices</b>, both rebased<br>1997–2026 · UK</div></a>
+      <a class="pair" href="explore.html#s=funding,gap&c=line&t=index&f=2011&to=2026&r=1"><div class="pq">Does funding per pupil track the attainment gap?</div><div class="pm"><b>School funding per pupil, real</b> × <b>disadvantage gap index</b><br>2010–2026 · England</div></a>
+    </div>
+  </div>
+</section>
+
+<!-- SOURCES -->
+<section id="sources">
+  <div class="wrap">
+    <div class="slabel"><span class="snum">04</span><h2>Where it comes from</h2></div>
+    <p class="lede">We publish no data of our own. Every series links back to its original release, with the licence and the date it was pulled.</p>
+    <div class="srcs">
+      <span class="src">ONS</span><span class="src">HM Land Registry</span><span class="src">Bank of England</span>
+      <span class="src">MHCLG</span><span class="src">DfE Explore Education Statistics</span><span class="src">HM Treasury PESA</span>
+      <span class="src">HMRC</span><span class="src">DWP Stat-Xplore</span><span class="src">Nomis</span>
+      <span class="src">OBR</span><span class="src">UCAS</span><span class="src">Institute for Government</span>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap fgrid">
+    <p>Contains public sector information licensed under the Open Government Licence v3.0. Ministerial and party data from the Institute for Government Ministers Database, CC-BY-4.0.</p>
+    <p style="font-family:'IBM Plex Mono';font-size:11.5px">polyoptic.com<br>Built in the UK</p>
+  </div>
+</footer>
+
+<script>
+/* ── logo (A2) ── */
+(function(){
+  const shape="M10 50 Q50 -10 90 50 Q50 102 10 50 Z";
+  const fr=[.52,.80,.63,.96],bw=6.5,gap=4.5,cy=48,span=38;
+  const x0=50-(fr.length*bw+(fr.length-1)*gap)/2, base=cy+(Math.max(...fr)*span)/2;
+  const bars=fr.map((f,i)=>`<rect x="${(x0+i*(bw+gap)).toFixed(1)}" y="${(base-f*span).toFixed(1)}" width="${bw}" height="${(f*span).toFixed(1)}"/>`).join("");
+  document.getElementById("logo").innerHTML=
+   `<svg width="30" height="30" viewBox="0 0 100 100" role="img" aria-label="Polyoptic">
+      <defs><clipPath id="lg"><path d="${shape}"/></clipPath></defs>
+      <path d="${shape}" fill="none" stroke="#4633A8" stroke-width="5" stroke-linejoin="round"/>
+      <g clip-path="url(#lg)" fill="#4633A8">${bars}</g>
+    </svg>`;
+})();
+
+/* ── charts ── */
+const W=980,H=250,P={t:14,r:60,b:24,l:44},X0=1997,X1=2026;
+const sx=x=>P.l+((x-X0)/(X1-X0))*(W-P.l-P.r);
+const ERAS=[{f:1997,t:2010,p:"Labour",c:"#E4003B"},{f:2010,t:2015,p:"Coalition",c:"#7E6FA8"},{f:2015,t:2024,p:"Conservative",c:"#0087DC"},{f:2024,t:2026,p:"Labour",c:"#E4003B"}];
+const PMS=[[1997,"Blair"],[2007,"Brown"],[2010,"Cameron"],[2016,"May"],[2019,"Johnson"],[2022,"Truss"],[2023,"Sunak"],[2024,"Starmer"]];
+
+function line(v,mn,mx){return v.map((y,i)=>{const X=sx(X0+i),Y=P.t+(1-(y-mn)/(mx-mn))*(H-P.t-P.b);return (i?"L":"M")+X.toFixed(1)+" "+Y.toFixed(1);}).join(" ");}
+
+function draw(el,series){
+  let g="";
+  for(let i=0;i<=4;i++){const y=P.t+i*(H-P.t-P.b)/4;g+=`<line class="gridline" x1="${P.l}" y1="${y}" x2="${W-P.r}" y2="${y}"/>`;}
+  for(let yr=2000;yr<=2025;yr+=5){g+=`<text class="axlabel" x="${sx(yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`;}
+  series.forEach(s=>{
+    const a=Math.min(...s.v),b=Math.max(...s.v),p=(b-a)*.16||1;
+    const mn=a-p,mx=b+p;
+    g+=`<path class="line" d="${line(s.v,mn,mx)}" stroke="${s.c}"/>`;
+    const ly=P.t+(1-(s.v[s.v.length-1]-mn)/(mx-mn))*(H-P.t-P.b);
+    g+=`<text class="serieslabel" x="${W-P.r+8}" y="${ly+3.5}" fill="${s.c}">${s.t}</text>`;
+  });
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Illustrative chart">${g}</svg>`;
+}
+function ribbon(el){
+  let g="";
+  ERAS.forEach(e=>{const x=sx(e.f),w=sx(e.t)-sx(e.f);
+    g+=`<g class="era"><title>${e.p}</title><rect x="${x}" y="0" width="${w}" height="17" fill="${e.c}"/>`;
+    if(w>82)g+=`<text x="${x+w/2}" y="12" text-anchor="middle">${e.p.toUpperCase()}</text>`;g+=`</g>`;});
+  PMS.forEach(([y,n])=>{g+=`<line class="pmtick" x1="${sx(y)}" y1="17" x2="${sx(y)}" y2="24"/><text class="pmlabel" x="${sx(y)}" y="34" text-anchor="middle">${n}</text>`;});
+  el.innerHTML=`<svg viewBox="0 0 ${W} 38" style="width:100%;height:auto" role="img" aria-label="Governing party by year">${g}</svg>`;
+}
+
+/* placeholder series */
+const HPE=[3.5,3.8,4.2,4.6,5.0,5.6,6.2,6.6,6.8,7.0,7.3,6.8,6.4,6.6,6.5,6.5,6.6,6.9,7.2,7.5,7.7,7.8,7.8,7.7,8.2,8.7,8.9,8.6,8.5,8.4];
+const roll=(a,n)=>a.map((_,i)=>{const s=a.slice(Math.max(0,i-n+1),i+1);return s.reduce((x,y)=>x+y,0)/s.length;});
+const idx=a=>a.map(v=>v/a[0]*100);
+const SPEND={
+ cash:[34,37,41,46,52,58,64,70,76,81,86,90,94,96,99,101,104,107,111,115,119,124,130,148,152,158,165,171,176,181],
+ real:[58,61,65,70,76,82,88,93,98,102,105,107,109,110,111,111,112,113,115,117,118,120,123,138,139,141,143,145,147,149],
+ head:[100,104,110,117,125,134,142,150,157,162,166,168,169,170,170,170,170,171,172,174,175,177,180,201,201,203,204,206,207,209],
+ gdp:[5.1,5.2,5.4,5.6,5.9,6.2,6.5,6.7,6.9,7.0,7.1,7.4,7.9,7.8,7.7,7.6,7.5,7.5,7.5,7.5,7.5,7.5,7.6,9.9,9.1,8.7,8.5,8.4,8.4,8.4]};
+const OUT=[110,104,98,92,86,80,74,70,66,63,60,58,57,58,61,65,70,76,83,91,100,111,124,168,196,214,228,236,241,244];
+
+ribbon(document.getElementById("ribbonA"));
+ribbon(document.getElementById("ribbonB"));
+
+const A={raw:{v:HPE,l:"as published"},index:{v:idx(HPE),l:"rebased 1997 = 100"},smooth:{v:roll(HPE,3),l:"3-year average"}};
+function rA(k){draw(document.getElementById("chartA"),[{v:A[k].v,c:"#4633A8",t:k==="index"?"INDEX":"RATIO"}]);
+  document.getElementById("ftA").textContent="VIEW · "+A[k].l.toUpperCase();}
+rA("raw");
+
+function rB(k){draw(document.getElementById("chartB"),[{v:SPEND[k],c:"#4633A8",t:"SPEND"},{v:OUT,c:"#C2410C",t:"OUTCOME"}]);
+  document.getElementById("ftB").textContent="MODE · "+({cash:"cash terms",real:"real terms",head:"per person",gdp:"% of GDP"})[k].toUpperCase();}
+rB("real");
+
+document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
+  const grp=c.classList.contains("n")?".chip.n":".chip:not(.n)";
+  document.querySelectorAll(grp).forEach(o=>o.setAttribute("aria-pressed","false"));
+  c.setAttribute("aria-pressed","true");
+  c.classList.contains("n")?rB(c.dataset.n):rA(c.dataset.t);
+}));
+</script>
+</body>
+</html>

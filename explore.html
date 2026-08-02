@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Explorer — Polyoptic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EDEFF1;--surface:#fff;--ink:#0F1419;--muted:#5C6672;--rule:#D3D8DD;
+--purple:#4633A8;--soft:#F4F2FA;--prule:#D8D2EC;--warn:#B45309;--warnbg:#FFF8E6;--warnrule:#E8D9A8}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{background:var(--paper);color:var(--ink);font-family:"Public Sans",system-ui,sans-serif;font-size:15px;line-height:1.5}
+h1,h2,h3,h4{font-family:"Archivo";margin:0;letter-spacing:-0.03em;line-height:1.05}
+svg{display:block}
+button{font-family:inherit}
+
+header{position:sticky;top:0;z-index:30;background:rgba(237,239,241,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--rule)}
+.hrow{max-width:1500px;margin:0 auto;padding:0 20px;height:58px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none}
+.wm{font-family:"Archivo";font-weight:800;font-size:19px;letter-spacing:-0.05em;color:var(--purple)}
+.wm .b{font-weight:500;color:var(--muted)}
+.crumb{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-left:6px}
+.hact{margin-left:auto;display:flex;gap:8px}
+.hb{font-family:"IBM Plex Mono";font-size:11.5px;padding:7px 13px;border:1px solid var(--rule);background:var(--surface);color:var(--muted);cursor:pointer}
+.hb:hover{border-color:var(--purple);color:var(--purple)}
+
+.shell{max-width:1500px;margin:0 auto;padding:18px 20px 60px;display:grid;grid-template-columns:296px 1fr;gap:18px;align-items:start}
+@media(max-width:1000px){.shell{grid-template-columns:1fr}}
+
+/* ── catalogue ── */
+.panel{background:var(--surface);border:1px solid var(--rule)}
+.psec{padding:14px 16px;border-bottom:1px solid var(--rule)}
+.psec:last-child{border-bottom:0}
+.plabel{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+#q{width:100%;padding:9px 11px;border:1px solid var(--rule);font-family:inherit;font-size:13.5px;background:var(--paper)}
+#q:focus{outline:2px solid var(--purple);outline-offset:-1px}
+.filters{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.f{font-family:"IBM Plex Mono";font-size:10.5px;padding:4px 9px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:100px}
+.f[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
+.cat{max-height:52vh;overflow-y:auto}
+@media(max-width:1000px){.cat{max-height:280px}}
+.ci{padding:9px 16px;border-bottom:1px solid #EEF0F2;cursor:pointer;display:flex;gap:9px;align-items:flex-start}
+.ci:hover{background:var(--soft)}
+.ci[aria-selected="true"]{background:var(--soft)}
+.ci .sw{width:9px;height:9px;flex-shrink:0;margin-top:5px;border:1px solid var(--rule);background:transparent}
+.ci[aria-selected="true"] .sw{border:0}
+.ci .cn{font-size:13.5px;font-weight:500;line-height:1.3}
+.ci .cm{font-family:"IBM Plex Mono";font-size:9.5px;color:var(--muted);margin-top:3px}
+.empty{padding:18px 16px;font-size:13px;color:var(--muted)}
+
+/* ── main ── */
+.main{display:flex;flex-direction:column;gap:14px}
+.bar{background:var(--surface);border:1px solid var(--rule);padding:12px 16px;display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
+.grp{display:flex;flex-direction:column;gap:7px}
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{font-family:"IBM Plex Mono";font-size:11px;padding:5px 10px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:100px;transition:.13s}
+.chip:hover:not(:disabled){border-color:var(--ink);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
+.chip:disabled{opacity:.34;cursor:not-allowed}
+.rng{display:flex;align-items:center;gap:8px;font-family:"IBM Plex Mono";font-size:11px;color:var(--muted)}
+.rng input{width:74px;padding:4px 7px;border:1px solid var(--rule);font-family:"IBM Plex Mono";font-size:11px;background:var(--paper)}
+.tog{display:flex;align-items:center;gap:7px;font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);cursor:pointer}
+
+.warns{display:flex;flex-direction:column;gap:8px}
+.warn{background:var(--warnbg);border:1px solid var(--warnrule);padding:10px 14px;font-size:13px;color:#6B4A0A}
+.warn b{color:#4A3306}
+.warn button{margin-left:8px;font-family:"IBM Plex Mono";font-size:11px;background:transparent;border:1px solid var(--warnrule);padding:3px 8px;cursor:pointer;color:#6B4A0A}
+
+.chartcard{background:var(--surface);border:1px solid var(--rule)}
+.cc-hd{padding:15px 18px 12px;border-bottom:1px solid var(--rule)}
+.cc-hd h2{font-size:18px;font-weight:700}
+.cc-hd .cs{font-size:13px;color:var(--muted);margin-top:4px}
+.cc-bd{padding:14px 18px 8px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 18px 12px}
+.lg{display:flex;align-items:center;gap:7px;font-size:12.5px}
+.lg .d{width:13px;height:3px;flex-shrink:0}
+.lg .u{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted)}
+.cc-ft{padding:11px 18px 13px;border-top:1px solid var(--rule);font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:5px 18px}
+
+.gridline{stroke:var(--rule);stroke-width:1}
+.axlabel{font-family:"IBM Plex Mono";font-size:10px;fill:var(--muted)}
+.line{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.ribbon-t{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:10px 0 5px}
+.era rect{opacity:.84}.era:hover rect{opacity:1}
+.era text{font-family:"IBM Plex Mono";font-size:9px;fill:#fff;font-weight:500}
+.pmtick{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2;opacity:.3}
+.pmlabel{font-family:"IBM Plex Mono";font-size:8.5px;fill:var(--muted)}
+.disc{stroke:var(--warn);stroke-width:1;stroke-dasharray:3 3;opacity:.6}
+.sm-t{font-family:"IBM Plex Mono";font-size:10px;font-weight:500}
+
+.blank{padding:70px 24px;text-align:center;color:var(--muted)}
+.blank h3{font-size:19px;font-weight:700;color:var(--ink);margin-bottom:9px}
+.blank .sug{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:20px}
+.sg{font-family:"IBM Plex Mono";font-size:11.5px;padding:8px 13px;border:1px solid var(--prule);background:var(--soft);color:var(--purple);cursor:pointer}
+.sg:hover{background:#EAE5F6}
+
+.srcpanel{background:var(--surface);border:1px solid var(--rule);padding:14px 18px}
+.srcrow{font-size:12.5px;color:var(--muted);padding:7px 0;border-bottom:1px solid #EEF0F2;display:flex;gap:14px;flex-wrap:wrap}
+.srcrow:last-child{border-bottom:0}
+.srcrow b{color:var(--ink);font-weight:600}
+.srcrow .mono{font-family:"IBM Plex Mono";font-size:10.5px}
+.ph{display:inline-block;font-family:"IBM Plex Mono";font-size:9.5px;background:var(--warnbg);border:1px solid var(--warnrule);color:var(--warn);padding:1px 6px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <a class="brand" href="index.html"><span id="logo"></span><span class="wm">poly<span class="b">optic</span></span></a>
+    <span class="crumb">Explorer</span>
+    <div class="hact">
+      <button class="hb" id="copyLink">⧉ Copy link</button>
+      <button class="hb" id="dlCsv">↓ CSV</button>
+    </div>
+  </div>
+</header>
+
+<div class="shell">
+
+  <!-- CATALOGUE -->
+  <div class="panel">
+    <div class="psec">
+      <div class="plabel">Indicators</div>
+      <input id="q" placeholder="Search…" autocomplete="off">
+      <div class="filters" id="filters"></div>
+    </div>
+    <div class="cat" id="cat"></div>
+    <div class="psec" style="border-top:1px solid var(--rule)">
+      <div style="font-family:'IBM Plex Mono';font-size:10.5px;color:var(--muted)" id="count"></div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="bar">
+      <div class="grp">
+        <div class="plabel">Chart</div>
+        <div class="chips" id="ctype"></div>
+      </div>
+      <div class="grp">
+        <div class="plabel">Transform</div>
+        <div class="chips" id="ctrans"></div>
+      </div>
+      <div class="grp">
+        <div class="plabel">Range</div>
+        <div class="rng">
+          <input id="from" type="number" min="1980" max="2026"> — <input id="to" type="number" min="1980" max="2026">
+        </div>
+      </div>
+      <div class="grp">
+        <div class="plabel">Options</div>
+        <label class="tog"><input type="checkbox" id="ribbon" checked> Era ribbon</label>
+      </div>
+    </div>
+
+    <div class="warns" id="warns"></div>
+
+    <div class="chartcard">
+      <div id="chartHead"></div>
+      <div id="chartBody"></div>
+      <div id="chartFoot"></div>
+    </div>
+
+    <div class="srcpanel" id="srcs"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   PLACEHOLDER DATA
+   Replaced at build time by ingest/ingest.py, which
+   writes data/bundle.json. Everything below is invented.
+   ══════════════════════════════════════════════ */
+const PLACEHOLDER = {
+  meta:{ provenance:"placeholder", generated:"—" },
+  eras:[
+    {from:1997,to:2010,party:"Labour",colour:"#E4003B"},
+    {from:2010,to:2015,party:"Coalition",colour:"#7E6FA8"},
+    {from:2015,to:2024,party:"Conservative",colour:"#0087DC"},
+    {from:2024,to:2026,party:"Labour",colour:"#E4003B"}
+  ],
+  pms:[[1997,"Blair"],[2007,"Brown"],[2010,"Cameron"],[2016,"May"],[2019,"Johnson"],[2022,"Truss"],[2023,"Sunak"],[2024,"Starmer"]],
+  refs:{
+    population:{start:1997,values:[58.3,58.5,58.7,58.9,59.1,59.4,59.6,60.0,60.4,60.8,61.3,61.8,62.3,62.8,63.3,63.7,64.1,64.6,65.1,65.6,66.0,66.4,66.8,67.0,67.0,67.6,68.3,68.9,69.4,69.8]},
+    deflator:{start:1997,values:[63.9,65.4,66.6,67.3,68.7,70.9,73.0,75.1,76.7,78.6,80.7,83.1,84.5,86.2,87.9,89.4,91.1,92.6,93.1,95.0,96.9,98.8,100.5,105.4,106.6,112.0,119.7,124.8,128.3,131.4]},
+    gdp:{start:1997,values:[880,930,975,1030,1080,1140,1210,1280,1340,1420,1500,1550,1490,1560,1620,1670,1740,1820,1890,1960,2040,2110,2180,2020,2320,2540,2680,2760,2830,2900]}
+  },
+  series:[
+    {id:"hpe",name:"House price to earnings ratio",topics:["housing"],unit:"ratio",unit_short:"×",geography:"England & Wales",year_basis:"calendar",source:"ONS / HM Land Registry",licence:"OGL v3.0",kind:"ratio",start:1997,
+     values:[3.5,3.8,4.2,4.6,5.0,5.6,6.2,6.6,6.8,7.0,7.3,6.8,6.4,6.6,6.5,6.5,6.6,6.9,7.2,7.5,7.7,7.8,7.8,7.7,8.2,8.7,8.9,8.6,8.5,8.4]},
+    {id:"realpay",name:"Real median weekly pay",topics:["economy"],unit:"£/week, 2024 prices",unit_short:"£",geography:"UK",year_basis:"calendar",source:"ONS ASHE",licence:"OGL v3.0",kind:"money_real",start:1997,
+     values:[452,463,472,484,497,507,516,525,533,538,545,542,530,524,514,508,504,506,516,523,527,531,538,545,540,524,519,528,536,542]},
+    {id:"completions",name:"Net additional dwellings",topics:["housing"],unit:"dwellings",unit_short:"",geography:"England",year_basis:"financial",source:"MHCLG live tables",licence:"OGL v3.0",kind:"count",start:1997,
+     values:[150,155,148,142,140,148,163,178,193,203,214,207,145,137,134,125,137,171,190,217,222,241,243,216,217,234,235,221,215,210],
+     discontinuities:[{year:2020,note:"Pandemic disruption to site activity and to data collection"}]},
+    {id:"socialstock",name:"Social housing stock",topics:["housing"],unit:"thousand dwellings",unit_short:"k",geography:"England",year_basis:"financial",source:"MHCLG live tables",licence:"OGL v3.0",kind:"count",start:1997,
+     values:[4380,4340,4300,4260,4210,4160,4110,4060,4020,3990,3960,3940,3930,3940,3950,3940,3930,3920,3910,3900,3890,3900,3910,3920,3930,3940,3950,3960,3970,3980]},
+    {id:"tempacc",name:"Households in temporary accommodation",topics:["housing"],unit:"households",unit_short:"",geography:"England",year_basis:"financial",source:"MHCLG live tables",licence:"OGL v3.0",kind:"count",start:1997,
+     values:[44,52,63,74,85,95,101,98,93,86,79,71,63,50,48,53,57,61,68,73,79,83,86,95,96,99,105,112,120,127]},
+    {id:"funding",name:"School funding per pupil",topics:["education"],unit:"£ per pupil, cash",unit_short:"£",geography:"England",year_basis:"academic",source:"DfE Explore Education Statistics",licence:"OGL v3.0",kind:"money_cash",start:1997,
+     values:[3100,3230,3400,3620,3880,4150,4400,4620,4830,5020,5220,5400,5560,5680,5720,5700,5680,5670,5690,5700,5720,5760,5860,6120,6280,6420,6680,6960,7180,7340],
+     discontinuities:[{year:2014,note:"Funding formula reform changes the basis of comparison"}]},
+    {id:"gap",name:"Disadvantage attainment gap index",topics:["education"],unit:"index",unit_short:"",geography:"England",year_basis:"academic",source:"DfE Explore Education Statistics",licence:"OGL v3.0",kind:"index",start:2011,
+     values:[4.07,4.02,3.94,3.87,3.78,3.71,3.68,3.66,3.70,3.79,3.84,3.90,3.94,3.96,3.95]},
+    {id:"absence",name:"Persistent absence rate",topics:["education"],unit:"% of pupils",unit_short:"%",geography:"England",year_basis:"academic",source:"DfE Explore Education Statistics",licence:"OGL v3.0",kind:"rate",start:2006,
+     values:[13.1,12.6,11.9,11.3,10.8,9.9,8.5,8.7,9.1,9.4,10.1,10.8,10.9,12.1,22.5,22.3,21.2,20.1,19.4,18.9],
+     discontinuities:[{year:2020,note:"Attendance recording and school opening rules changed; series is not comparable across this point"}]},
+    {id:"teachers",name:"Teacher vacancies",topics:["education"],unit:"vacancies per 1,000 teachers",unit_short:"",geography:"England",year_basis:"academic",source:"DfE Explore Education Statistics",licence:"OGL v3.0",kind:"rate",start:2010,
+     values:[0.7,0.8,0.9,1.0,1.2,1.3,1.4,1.4,1.5,1.4,1.6,2.1,2.4,2.3,2.2,2.1]},
+    {id:"cpih",name:"CPIH",topics:["economy"],unit:"index, 2015=100",unit_short:"",geography:"UK",year_basis:"calendar",source:"ONS",licence:"OGL v3.0",kind:"index",start:1997,
+     values:[69.2,70.5,71.5,72.3,73.2,74.3,75.6,77.0,78.5,80.3,82.2,84.6,85.9,88.0,91.2,93.4,95.5,97.2,97.5,98.5,100.9,103.1,104.9,105.9,108.6,117.6,126.0,130.2,133.5,136.4]},
+    {id:"unemp",name:"Unemployment rate",topics:["economy"],unit:"% of workforce",unit_short:"%",geography:"UK",year_basis:"calendar",source:"ONS",licence:"OGL v3.0",kind:"rate",start:1997,
+     values:[7.0,6.3,6.0,5.5,5.1,5.2,5.0,4.8,4.8,5.4,5.3,5.7,7.6,7.9,8.1,7.9,7.6,6.2,5.4,4.9,4.4,4.1,3.8,4.6,4.5,3.7,4.0,4.3,4.4,4.5]},
+    {id:"debtint",name:"Debt interest spending",topics:["economy"],unit:"£bn, cash",unit_short:"£bn",geography:"UK",year_basis:"financial",source:"HM Treasury / OBR",licence:"OGL v3.0",kind:"money_cash",start:1997,
+     values:[29,29,25,26,22,21,23,24,26,28,30,31,31,44,49,48,49,49,45,48,54,50,48,39,71,111,94,105,110,112]}
+  ]
+};
+
+/* ══════════════════════════════════════════════
+   STATE
+   ══════════════════════════════════════════════ */
+let DB = PLACEHOLDER;
+const PALETTE = ["#4633A8","#C2410C","#0F766E","#A21CAF"];
+const CHART_TYPES = [["line","Line"],["bar","Bars"],["area","Area"],["scatter","Scatter"],["small","Small multiples"]];
+const TRANSFORMS = [
+  ["none","As published"],
+  ["index","Rebase to 100"],
+  ["yoy","Year-on-year %"],
+  ["roll3","3-year average"],
+  ["real","Real terms"],
+  ["percap","Per person"],
+  ["pctgdp","% of GDP"]
+];
+
+const state = { sel:["hpe","realpay"], chart:"line", trans:"index", from:1997, to:2026, ribbon:true, q:"", topic:"all", dismissed:[] };
+
+const S = id => DB.series.find(s=>s.id===id);
+const yearsOf = s => s.values.map((_,i)=>s.start+i);
+const refAt = (ref,y) => { const r=DB.refs[ref]; const i=y-r.start; return (i>=0&&i<r.values.length)?r.values[i]:null; };
+
+/* ── transform pipeline ── */
+function applies(t,s){
+  if(t==="real"||t==="percap"||t==="pctgdp") return s.kind==="money_cash"||s.kind==="count";
+  return true;
+}
+function transform(s,t,from){
+  let pts = yearsOf(s).map((y,i)=>[y,s.values[i]]);
+  if(t==="real"&&applies(t,s)){
+    const base=refAt("deflator",2024);
+    pts=pts.map(([y,v])=>{const d=refAt("deflator",y);return [y, d?v*base/d:null];});
+  }
+  if(t==="percap"&&applies(t,s)) pts=pts.map(([y,v])=>{const p=refAt("population",y);return [y,p?v/p:null];});
+  if(t==="pctgdp"&&applies(t,s)) pts=pts.map(([y,v])=>{const g=refAt("gdp",y);return [y,g?v/g*100:null];});
+  if(t==="yoy") pts=pts.map(([y,v],i)=>i===0?[y,null]:[y, pts[i-1][1]?(v/pts[i-1][1]-1)*100:null]);
+  if(t==="roll3") pts=pts.map(([y,_],i)=>{const w=pts.slice(Math.max(0,i-2),i+1).map(p=>p[1]).filter(v=>v!=null);return [y,w.length?w.reduce((a,b)=>a+b,0)/w.length:null];});
+  if(t==="index"){
+    const b=pts.find(p=>p[0]>=from&&p[1]!=null);
+    if(b) pts=pts.map(([y,v])=>[y, v!=null?v/b[1]*100:null]);
+  }
+  return pts.filter(p=>p[0]>=state.from&&p[0]<=state.to);
+}
+function unitLabel(s,t){
+  if(t==="index") return `index, ${state.from}=100`;
+  if(t==="yoy") return "% change on year";
+  if(t==="real"&&applies(t,s)) return s.unit.replace(/,?\s*cash/,"")+", 2024 prices";
+  if(t==="percap"&&applies(t,s)) return s.unit+" per person";
+  if(t==="pctgdp"&&applies(t,s)) return "% of GDP";
+  return s.unit;
+}
+
+/* ══════════════════════════════════════════════
+   CHART ENGINE
+   ══════════════════════════════════════════════ */
+const W=940,H=300,M={t:16,r:66,b:26,l:58};
+const px=(y)=>M.l+((y-state.from)/Math.max(1,state.to-state.from))*(W-M.l-M.r);
+function scale(vals){
+  const v=vals.filter(x=>x!=null);
+  if(!v.length) return [0,1];
+  let a=Math.min(...v),b=Math.max(...v);
+  if(a===b){a-=1;b+=1;}
+  const p=(b-a)*0.12; return [a-p,b+p];
+}
+const fmt=n=>n==null?"–":Math.abs(n)>=1000?n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,","):Math.abs(n)>=100?n.toFixed(0):Math.abs(n)>=10?n.toFixed(1):n.toFixed(2);
+
+function frame(g,mn,mx,label){
+  for(let i=0;i<=4;i++){
+    const y=M.t+i*(H-M.t-M.b)/4, val=mx-(mx-mn)*i/4;
+    g.push(`<line class="gridline" x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}"/>`);
+    g.push(`<text class="axlabel" x="${M.l-8}" y="${y+3.5}" text-anchor="end">${fmt(val)}</text>`);
+  }
+  const span=state.to-state.from, step=span>24?5:span>12?2:1;
+  for(let yr=Math.ceil(state.from/step)*step;yr<=state.to;yr+=step)
+    g.push(`<text class="axlabel" x="${px(yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
+  if(label) g.push(`<text class="axlabel" x="${M.l-8}" y="${M.t-5}" text-anchor="end" style="font-size:9px">${label}</text>`);
+}
+function discLines(g,list){
+  list.forEach(d=>{ if(d.year>=state.from&&d.year<=state.to)
+    g.push(`<line class="disc" x1="${px(d.year)}" y1="${M.t}" x2="${px(d.year)}" y2="${H-M.b}"><title>${d.note}</title></line>`);});
+}
+
+function renderLine(sets,mode){
+  const g=[];
+  const shared = sets.every(s=>s.unit===sets[0].unit);
+  const all=sets.flatMap(s=>s.pts.map(p=>p[1]));
+  let [mn,mx]=scale(all);
+  frame(g,mn,mx,shared?sets[0].unit:"");
+  discLines(g,sets.flatMap(s=>(s.meta.discontinuities||[])));
+  sets.forEach((s,i)=>{
+    let a=mn,b=mx;
+    if(!shared){ [a,b]=scale(s.pts.map(p=>p[1])); }
+    const Y=v=>M.t+(1-(v-a)/(b-a))*(H-M.t-M.b);
+    if(mode==="area"){
+      const seg=s.pts.filter(p=>p[1]!=null);
+      if(seg.length) g.push(`<path d="M${px(seg[0][0])} ${H-M.b} ${seg.map(p=>`L${px(p[0])} ${Y(p[1])}`).join("")} L${px(seg[seg.length-1][0])} ${H-M.b} Z" fill="${s.colour}" opacity="0.13"/>`);
+    }
+    let d="",pen=false;
+    s.pts.forEach(p=>{ if(p[1]==null){pen=false;return;} d+=(pen?"L":"M")+px(p[0]).toFixed(1)+" "+Y(p[1]).toFixed(1)+" "; pen=true; });
+    g.push(`<path class="line" d="${d}" stroke="${s.colour}"/>`);
+    const last=[...s.pts].reverse().find(p=>p[1]!=null);
+    if(last) g.push(`<text class="sm-t" x="${W-M.r+7}" y="${Y(last[1])+3.5}" fill="${s.colour}">${fmt(last[1])}</text>`);
+  });
+  return svg(g);
+}
+
+function renderBar(sets){
+  const g=[];
+  const all=sets.flatMap(s=>s.pts.map(p=>p[1]));
+  const [mn0,mx]=scale(all), mn=Math.min(0,mn0);
+  frame(g,mn,mx,sets[0].unit);
+  const Y=v=>M.t+(1-(v-mn)/(mx-mn))*(H-M.t-M.b);
+  const years=sets[0].pts.map(p=>p[0]);
+  const slot=(W-M.l-M.r)/Math.max(1,years.length), bw=Math.max(1.5,(slot*0.72)/sets.length);
+  years.forEach((yr,yi)=>{
+    sets.forEach((s,si)=>{
+      const v=s.pts[yi]&&s.pts[yi][1]; if(v==null)return;
+      const x=M.l+yi*slot+slot*0.14+si*bw;
+      const y0=Y(Math.max(0,v)), y1=Y(Math.min(0,v));
+      g.push(`<rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.5,y1-y0).toFixed(1)}" fill="${s.colour}" opacity="0.88"><title>${yr}: ${fmt(v)}</title></rect>`);
+    });
+  });
+  return svg(g);
+}
+
+function renderScatter(sets){
+  const g=[], [X,Yv]=sets;
+  const pairs=[];
+  X.pts.forEach((p,i)=>{ const q=Yv.pts[i]; if(p[1]!=null&&q&&q[1]!=null) pairs.push([p[0],p[1],q[1]]); });
+  const [ax,bx]=scale(pairs.map(p=>p[1])), [ay,by]=scale(pairs.map(p=>p[2]));
+  const PX=v=>M.l+((v-ax)/(bx-ax))*(W-M.l-M.r), PY=v=>M.t+(1-(v-ay)/(by-ay))*(H-M.t-M.b);
+  for(let i=0;i<=4;i++){
+    const y=M.t+i*(H-M.t-M.b)/4;
+    g.push(`<line class="gridline" x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}"/>`);
+    g.push(`<text class="axlabel" x="${M.l-8}" y="${y+3.5}" text-anchor="end">${fmt(by-(by-ay)*i/4)}</text>`);
+  }
+  for(let i=0;i<=4;i++){
+    const x=M.l+i*(W-M.l-M.r)/4;
+    g.push(`<text class="axlabel" x="${x}" y="${H-6}" text-anchor="middle">${fmt(ax+(bx-ax)*i/4)}</text>`);
+  }
+  pairs.forEach(([yr,vx,vy])=>{
+    const era=DB.eras.find(e=>yr>=e.from&&yr<e.to);
+    g.push(`<circle cx="${PX(vx).toFixed(1)}" cy="${PY(vy).toFixed(1)}" r="4.5" fill="${era?era.colour:"#5C6672"}" opacity="0.82"><title>${yr}\n${X.name}: ${fmt(vx)}\n${Yv.name}: ${fmt(vy)}</title></circle>`);
+  });
+  g.push(`<text class="axlabel" x="${M.l-8}" y="${M.t-5}" text-anchor="end" style="font-size:9px">${Yv.name}</text>`);
+  g.push(`<text class="axlabel" x="${W-M.r}" y="${H-6}" text-anchor="end" style="font-size:9px">${X.name} →</text>`);
+  return svg(g);
+}
+
+function renderSmall(sets){
+  const cols=Math.min(2,sets.length), rows=Math.ceil(sets.length/cols);
+  const pw=W/cols, ph=170, g=[];
+  sets.forEach((s,i)=>{
+    const cx=(i%cols)*pw, cy=Math.floor(i/cols)*ph;
+    const [a,b]=scale(s.pts.map(p=>p[1]));
+    const m={t:26,r:14,b:20,l:46};
+    const PX=y=>cx+m.l+((y-state.from)/Math.max(1,state.to-state.from))*(pw-m.l-m.r);
+    const PY=v=>cy+m.t+(1-(v-a)/(b-a))*(ph-m.t-m.b);
+    g.push(`<text class="sm-t" x="${cx+m.l}" y="${cy+14}" fill="${s.colour}">${s.name}</text>`);
+    [0,1,2].forEach(k=>{const y=cy+m.t+k*(ph-m.t-m.b)/2;
+      g.push(`<line class="gridline" x1="${cx+m.l}" y1="${y}" x2="${cx+pw-m.r}" y2="${y}"/>`);
+      g.push(`<text class="axlabel" x="${cx+m.l-6}" y="${y+3}" text-anchor="end" style="font-size:9px">${fmt(b-(b-a)*k/2)}</text>`);});
+    let d="",pen=false;
+    s.pts.forEach(p=>{ if(p[1]==null){pen=false;return;} d+=(pen?"L":"M")+PX(p[0]).toFixed(1)+" "+PY(p[1]).toFixed(1)+" "; pen=true;});
+    g.push(`<path class="line" d="${d}" stroke="${s.colour}" stroke-width="2"/>`);
+    g.push(`<text class="axlabel" x="${cx+m.l}" y="${cy+ph-6}" style="font-size:9px">${state.from}</text>`);
+    g.push(`<text class="axlabel" x="${cx+pw-m.r}" y="${cy+ph-6}" text-anchor="end" style="font-size:9px">${state.to}</text>`);
+  });
+  return `<svg viewBox="0 0 ${W} ${rows*ph}" style="width:100%;height:auto" role="img" aria-label="Small multiples">${g.join("")}</svg>`;
+}
+
+const svg=g=>`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Chart">${g.join("")}</svg>`;
+
+function renderRibbon(){
+  if(!state.ribbon) return "";
+  const g=[];
+  DB.eras.forEach(e=>{
+    const f=Math.max(e.from,state.from), t=Math.min(e.to,state.to);
+    if(t<=f) return;
+    const x=px(f), w=px(t)-px(f);
+    g.push(`<g class="era"><title>${e.party} ${e.from}–${e.to}</title><rect x="${x}" y="0" width="${w}" height="16" fill="${e.colour}"/>`);
+    if(w>78) g.push(`<text x="${x+w/2}" y="11.5" text-anchor="middle">${e.party.toUpperCase()}</text>`);
+    g.push(`</g>`);
+  });
+  DB.pms.forEach(([y,n])=>{ if(y>=state.from&&y<=state.to){
+    g.push(`<line class="pmtick" x1="${px(y)}" y1="16" x2="${px(y)}" y2="23"/><text class="pmlabel" x="${px(y)}" y="33" text-anchor="middle">${n}</text>`);}});
+  return `<div class="ribbon-t">Government in power</div><svg viewBox="0 0 ${W} 37" style="width:100%;height:auto" role="img" aria-label="Governing party by year">${g.join("")}</svg>`;
+}
+
+/* ══════════════════════════════════════════════
+   RENDER
+   ══════════════════════════════════════════════ */
+function buildSets(){
+  return state.sel.map((id,i)=>{
+    const s=S(id);
+    return { id, name:s.name, meta:s, colour:PALETTE[i%PALETTE.length],
+             unit:unitLabel(s,state.trans), pts:transform(s,state.trans,state.from) };
+  });
+}
+
+function render(){
+  renderCatalogue();
+  renderControls();
+  const sets=buildSets();
+  const head=document.getElementById("chartHead"), body=document.getElementById("chartBody"), foot=document.getElementById("chartFoot");
+
+  if(!sets.length){
+    head.innerHTML=""; foot.innerHTML="";
+    body.innerHTML=`<div class="blank"><h3>Nothing selected</h3>
+      <div>Pick two indicators that don't obviously belong together — that's where the interesting arguments are.</div>
+      <div class="sug">
+        <button class="sg" data-pair="completions,hpe">Housing supply × affordability</button>
+        <button class="sg" data-pair="funding,gap">School funding × attainment gap</button>
+        <button class="sg" data-pair="socialstock,tempacc">Social stock × temporary accommodation</button>
+        <button class="sg" data-pair="realpay,hpe">Real pay × house prices</button>
+      </div></div>`;
+    body.querySelectorAll(".sg").forEach(b=>b.onclick=()=>{state.sel=b.dataset.pair.split(",");sync();});
+    renderWarnings([]); renderSources([]); return;
+  }
+
+  head.innerHTML=`<div class="cc-hd"><h2>${sets.map(s=>s.name).join(" × ")}</h2>
+    <div class="cs">${state.from}–${state.to} · ${TRANSFORMS.find(t=>t[0]===state.trans)[1]}</div></div>`;
+
+  let chart;
+  if(state.chart==="scatter"){
+    chart = sets.length===2 ? renderScatter(sets)
+      : `<div class="blank" style="padding:44px 20px"><h3>Scatter needs exactly two</h3><div>Pick two indicators to plot one against the other. Points are coloured by the government of the day.</div></div>`;
+  }
+  else if(state.chart==="small") chart=renderSmall(sets);
+  else if(state.chart==="bar") chart=renderBar(sets);
+  else chart=renderLine(sets,state.chart);
+
+  const showRibbon = state.chart!=="scatter" && state.chart!=="small";
+  body.innerHTML=`<div class="cc-bd">${chart}${showRibbon?renderRibbon():""}</div>
+    <div class="legend">${sets.map(s=>`<span class="lg"><span class="d" style="background:${s.colour}"></span>${s.name} <span class="u">${s.unit}</span></span>`).join("")}</div>`;
+
+  foot.innerHTML=`<div class="cc-ft">
+    <span>SOURCES · ${[...new Set(sets.map(s=>s.meta.source))].join(" · ").toUpperCase()}</span>
+    <span>LICENCE · OGL v3.0</span>
+    <span>DATA · ${DB.meta.provenance.toUpperCase()}</span></div>`;
+
+  renderWarnings(sets); renderSources(sets); writeHash();
+}
+
+/* ── warnings: the honesty layer ── */
+function renderWarnings(sets){
+  const w=[];
+  const geos=[...new Set(sets.map(s=>s.meta.geography))];
+  if(geos.length>1) w.push({id:"geo",html:`<b>Different geographies.</b> You're comparing ${geos.join(" with ")}. These cover different populations and are not like for like.`});
+  const bases=[...new Set(sets.map(s=>s.meta.year_basis))];
+  if(bases.length>1) w.push({id:"basis",html:`<b>Different year bases.</b> Mixing ${bases.join(", ")} years. Academic and financial years are plotted at their starting calendar year, so a point can be up to twelve months out against a calendar series.`});
+  const units=[...new Set(sets.map(s=>s.unit))];
+  if(units.length>1&&state.trans!=="index"&&state.trans!=="yoy")
+    w.push({id:"unit",html:`<b>Different units.</b> Each series is scaled to its own axis, which can make any two lines appear to move together. Rebasing to 100 is the fairer comparison.`,action:{label:"Rebase",fn:()=>{state.trans="index";sync();}}});
+  const skipped=sets.filter(s=>["real","percap","pctgdp"].includes(state.trans)&&!applies(state.trans,s.meta));
+  if(skipped.length) w.push({id:"skip",html:`<b>Transform not applied to ${skipped.map(s=>s.name).join(", ")}.</b> ${skipped.length>1?"These are":"This is"} already a rate, ratio or index, so deflating or dividing by population would be meaningless.`});
+  const discs=sets.flatMap(s=>(s.meta.discontinuities||[]).filter(d=>d.year>=state.from&&d.year<=state.to).map(d=>({s:s.name,...d})));
+  discs.forEach((d,i)=>w.push({id:"disc"+i,html:`<b>Break in ${d.s} at ${d.year}.</b> ${d.note}`}));
+  if(DB.meta.provenance==="placeholder") w.push({id:"ph",html:`<b>Placeholder data.</b> Every number here is invented to exercise the layout. Run <span style="font-family:'IBM Plex Mono'">python ingest/ingest.py</span> to replace it with the real thing.`});
+
+  const el=document.getElementById("warns");
+  el.innerHTML=w.filter(x=>!state.dismissed.includes(x.id)).map(x=>
+    `<div class="warn">${x.html}${x.action?`<button data-w="${x.id}">${x.action.label}</button>`:""}</div>`).join("");
+  w.forEach(x=>{ if(x.action){ const b=el.querySelector(`[data-w="${x.id}"]`); if(b) b.onclick=x.action.fn; }});
+}
+
+function renderSources(sets){
+  const el=document.getElementById("srcs");
+  if(!sets.length){el.innerHTML="";return;}
+  el.innerHTML=`<div class="plabel">Provenance</div>`+sets.map(s=>`
+    <div class="srcrow"><b>${s.name}</b>
+      <span class="mono">${s.meta.source}</span>
+      <span class="mono">${s.meta.geography}</span>
+      <span class="mono">${s.meta.year_basis} years</span>
+      <span class="mono">${s.meta.unit}</span>
+      <span class="mono">${s.meta.licence}</span>
+      ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}
+    </div>`).join("");
+}
+
+/* ── catalogue ── */
+function renderCatalogue(){
+  const topics=["all",...new Set(DB.series.flatMap(s=>s.topics))];
+  document.getElementById("filters").innerHTML=topics.map(t=>
+    `<button class="f" data-topic="${t}" aria-pressed="${state.topic===t}">${t}</button>`).join("");
+  document.querySelectorAll("[data-topic]").forEach(b=>b.onclick=()=>{state.topic=b.dataset.topic;render();});
+
+  const q=state.q.toLowerCase();
+  const list=DB.series.filter(s=>
+    (state.topic==="all"||s.topics.includes(state.topic)) &&
+    (!q||s.name.toLowerCase().includes(q)||s.source.toLowerCase().includes(q)));
+  const cat=document.getElementById("cat");
+  cat.innerHTML=list.length?list.map(s=>{
+    const i=state.sel.indexOf(s.id), on=i>=0;
+    return `<div class="ci" data-id="${s.id}" aria-selected="${on}">
+      <span class="sw" style="${on?`background:${PALETTE[i%PALETTE.length]}`:""}"></span>
+      <span><span class="cn">${s.name}</span><span class="cm">${s.geography} · ${s.unit} · ${s.start}–${s.start+s.values.length-1}</span></span></div>`;
+  }).join("") : `<div class="empty">Nothing matches that.</div>`;
+  cat.querySelectorAll(".ci").forEach(el=>el.onclick=()=>{
+    const id=el.dataset.id, i=state.sel.indexOf(id);
+    if(i>=0) state.sel.splice(i,1);
+    else if(state.sel.length<4) state.sel.push(id);
+    else { state.sel.shift(); state.sel.push(id); }
+    render();
+  });
+  document.getElementById("count").textContent=`${state.sel.length} of 4 selected · ${DB.series.length} indicators available`;
+}
+
+function renderControls(){
+  document.getElementById("ctype").innerHTML=CHART_TYPES.map(([k,l])=>
+    `<button class="chip" data-c="${k}" aria-pressed="${state.chart===k}" ${k==="scatter"&&state.sel.length!==2?"disabled":""}>${l}</button>`).join("");
+  document.querySelectorAll("[data-c]").forEach(b=>b.onclick=()=>{state.chart=b.dataset.c;render();});
+
+  const anyApplies=t=>state.sel.some(id=>applies(t,S(id)));
+  document.getElementById("ctrans").innerHTML=TRANSFORMS.map(([k,l])=>
+    `<button class="chip" data-t="${k}" aria-pressed="${state.trans===k}" ${state.sel.length&&!anyApplies(k)?"disabled":""}>${l}</button>`).join("");
+  document.querySelectorAll("[data-t]").forEach(b=>b.onclick=()=>{state.trans=b.dataset.t;render();});
+
+  document.getElementById("from").value=state.from;
+  document.getElementById("to").value=state.to;
+  document.getElementById("ribbon").checked=state.ribbon;
+}
+
+/* ── permalink + export ── */
+function writeHash(){
+  const h=new URLSearchParams({s:state.sel.join(","),c:state.chart,t:state.trans,f:state.from,to:state.to,r:state.ribbon?1:0});
+  history.replaceState(null,"","#"+h.toString());
+}
+function readHash(){
+  if(!location.hash) return;
+  const p=new URLSearchParams(location.hash.slice(1));
+  if(p.get("s")) state.sel=p.get("s").split(",").filter(id=>S(id));
+  if(p.get("c")) state.chart=p.get("c");
+  if(p.get("t")) state.trans=p.get("t");
+  if(p.get("f")) state.from=+p.get("f");
+  if(p.get("to")) state.to=+p.get("to");
+  if(p.get("r")) state.ribbon=p.get("r")==="1";
+}
+function toCsv(){
+  const sets=buildSets(); if(!sets.length) return "";
+  const years=[...new Set(sets.flatMap(s=>s.pts.map(p=>p[0])))].sort();
+  const head=["year",...sets.map(s=>`"${s.name} (${s.unit})"`)].join(",");
+  const rows=years.map(y=>[y,...sets.map(s=>{const p=s.pts.find(p=>p[0]===y);return p&&p[1]!=null?p[1].toFixed(4):"";})].join(","));
+  const prov=DB.meta.provenance==="placeholder"?"# WARNING: placeholder data, not real statistics\n":"";
+  return prov+`# Polyoptic export\n# Sources: ${[...new Set(sets.map(s=>s.meta.source))].join("; ")}\n# Licence: OGL v3.0\n`+head+"\n"+rows.join("\n");
+}
+
+document.getElementById("copyLink").onclick=()=>{
+  navigator.clipboard?.writeText(location.href);
+  const b=document.getElementById("copyLink"); const o=b.textContent; b.textContent="✓ Copied"; setTimeout(()=>b.textContent=o,1400);
+};
+document.getElementById("dlCsv").onclick=()=>{
+  const blob=new Blob([toCsv()],{type:"text/csv"}), a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download="polyoptic-export.csv"; a.click();
+};
+document.getElementById("q").oninput=e=>{state.q=e.target.value;renderCatalogue();};
+document.getElementById("from").onchange=e=>{state.from=+e.target.value;render();};
+document.getElementById("to").onchange=e=>{state.to=+e.target.value;render();};
+document.getElementById("ribbon").onchange=e=>{state.ribbon=e.target.checked;render();};
+const sync=()=>render();
+
+/* ── logo ── */
+(function(){
+  const shape="M10 50 Q50 -10 90 50 Q50 102 10 50 Z", fr=[.52,.80,.63,.96],bw=6.5,gap=4.5,cy=48,span=38;
+  const x0=50-(fr.length*bw+(fr.length-1)*gap)/2, base=cy+(Math.max(...fr)*span)/2;
+  const bars=fr.map((f,i)=>`<rect x="${(x0+i*(bw+gap)).toFixed(1)}" y="${(base-f*span).toFixed(1)}" width="${bw}" height="${(f*span).toFixed(1)}"/>`).join("");
+  document.getElementById("logo").innerHTML=`<svg width="27" height="27" viewBox="0 0 100 100"><defs><clipPath id="lg"><path d="${shape}"/></clipPath></defs><path d="${shape}" fill="none" stroke="#4633A8" stroke-width="5" stroke-linejoin="round"/><g clip-path="url(#lg)" fill="#4633A8">${bars}</g></svg>`;
+})();
+
+/* ── boot: prefer real data if the ingest has run ── */
+fetch("data/bundle.json")
+  .then(r=>r.ok?r.json():Promise.reject())
+  .then(d=>{DB=d;})
+  .catch(()=>{})
+  .finally(()=>{ readHash(); render(); });
+</script>
+</body>
+</html>
