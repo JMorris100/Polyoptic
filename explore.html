@@ -85,18 +85,20 @@ header{position:sticky;top:0;z-index:40;background:var(--purple);color:#fff}
 .foot{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted)}
 
 /* ── panels ── */
-.stack{display:flex;flex-direction:column;gap:16px}
-.pcard{background:var(--surface);border:1px solid var(--rule);position:relative;transition:border-color .15s,box-shadow .15s}
-.pcard.is-active{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
+.stack{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;align-items:start}
+.pcard{grid-column:span var(--span,12)}
+@media(max-width:1040px){.pcard{grid-column:span 12}}
+.pcard{background:var(--surface);border:1px solid var(--rule);position:relative;transition:border-color .15s,box-shadow .15s;min-width:0}
+.pcard.is-focus{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
 .pcard.drag-src{opacity:.42}
 .pcard.drop-hint{border-top:3px solid var(--purple)}
 
 .pbar{display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:1px solid var(--rule)}
 .grip{cursor:grab;color:var(--rule);font-size:15px;line-height:1;letter-spacing:-2px;padding:2px 3px;flex-shrink:0;touch-action:none}
 .grip:hover{color:var(--muted)}
-.pcard.is-active .grip{color:var(--prule)}
+.pcard.is-focus .grip{color:var(--prule)}
 .pnum{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
-.pcard.is-active .pnum{color:var(--purple)}
+.pcard.is-focus .pnum{color:var(--purple)}
 .ptitle{font-size:16px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pacts{display:flex;gap:5px;flex-shrink:0}
 .pa{font-family:"IBM Plex Mono";font-size:11px;padding:5px 9px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px}
@@ -130,6 +132,14 @@ header{position:sticky;top:0;z-index:40;background:var(--purple);color:#fff}
 .rgrip:hover{background:var(--soft)}
 .rgrip::after{content:"";width:34px;height:3px;border-radius:2px;background:var(--rule)}
 .rgrip:hover::after{background:var(--purple)}
+.cgrip{position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:nwse-resize;touch-action:none;
+  background:linear-gradient(135deg,transparent 46%,var(--rule) 46%,var(--rule) 56%,transparent 56%,
+             transparent 68%,var(--rule) 68%,var(--rule) 78%,transparent 78%)}
+.cgrip:hover{background:linear-gradient(135deg,transparent 46%,var(--purple) 46%,var(--purple) 56%,transparent 56%,
+             transparent 68%,var(--purple) 68%,var(--purple) 78%,transparent 78%)}
+.stackempty{grid-column:span 12;background:var(--surface);border:1px dashed var(--prule);
+  padding:52px 24px;text-align:center;color:var(--muted)}
+.stackempty h3{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
 .hpill{position:absolute;right:12px;bottom:18px;font-family:"IBM Plex Mono";font-size:10px;
   background:var(--ink);color:#fff;padding:3px 7px;border-radius:2px;opacity:0;transition:opacity .15s;pointer-events:none}
 .pcard.is-resizing .hpill{opacity:.9}
@@ -172,8 +182,6 @@ header{position:sticky;top:0;z-index:40;background:var(--purple);color:#fff}
     <span class="crumb">Explorer</span>
     <div class="hact">
       <button class="hb" id="copyLink">⧉ Copy link</button>
-      <button class="hb" id="dlCsv">↓ CSV</button>
-      <button class="hb solid" id="addTop">+ Chart</button>
     </div>
   </div>
 </header>
@@ -271,10 +279,10 @@ const H_MIN=210, H_MAX=640, H_DEF=300;
 
 let uid=0;
 const mkPanel = (sel=[], over={}) =>
-  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, ribbon:true, h:H_DEF, ...over});
+  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, ribbon:true, h:H_DEF, w:12, ...over});
 
-const state = { panels:[ mkPanel(["hpe","realpay"]) ], active:0, q:"", topic:"all" };
-const P0 = () => state.panels[state.active];
+const state = { panels:[ mkPanel(["hpe","realpay"]) ], active:0, focus:null, q:"", topic:"all" };
+const P0 = () => state.panels[state.active] || null;
 const S  = id => DB.series.find(s=>s.id===id);
 const yearsOf = s => s.values.map((_,i)=>s.start+i);
 const refAt = (ref,y) => { const r=DB.refs[ref]; if(!r) return null; const i=y-r.start; return (i>=0&&i<r.values.length)?r.values[i]:null; };
@@ -462,7 +470,6 @@ function warningsFor(p,sets){
 
 function panelHtml(p,i){
   const sets=buildSets(p);
-  const active=i===state.active;
   const anyApplies=t=>p.sel.some(id=>applies(t,S(id)));
 
   const ctrl=`<div class="pctrl">
@@ -505,48 +512,56 @@ function panelHtml(p,i){
   const warns=warningsFor(p,sets).map(w=>
     `<div class="warn">${w.html}${w.act==="rebase"?`<button data-act="rebase">Rebase</button>`:""}</div>`).join("");
 
-  return `<div class="pcard ${active?"is-active":""}" data-i="${i}" data-key="${p.key}">
+  return `<div class="pcard ${state.focus===i?"is-focus":""}" style="--span:${p.w}" data-i="${i}" data-key="${p.key}">
     <div class="pbar">
       <span class="grip" data-act="grip" title="Drag to reorder">⠿</span>
       <span class="pnum">Chart ${i+1}</span>
       <h2 class="ptitle">${sets.length?esc(sets.map(s=>s.name).join(" × ")):"Empty chart"}</h2>
       <div class="pacts">
+        <button class="pa" data-act="csv" title="Download this chart as CSV">↓ CSV</button>
+        <button class="pa" data-act="png" title="Download this chart as an image">↓ PNG</button>
         <button class="pa" data-act="dup" title="Duplicate">⧉</button>
-        <button class="pa danger" data-act="del" title="Remove" ${state.panels.length===1?"disabled":""}>✕</button>
+        <button class="pa danger" data-act="del" title="Remove">✕</button>
       </div>
     </div>
     ${ctrl}${warns}${body}${legend}${foot}
-    <div class="rgrip" data-act="rgrip" title="Drag to resize"></div>
-    <span class="hpill">${p.h}px</span>
+    <div class="rgrip" data-act="rgrip" title="Drag to change height"></div>
+    <div class="cgrip" data-act="cgrip" title="Drag to resize"></div>
+    <span class="hpill">${p.w===12?"full":"half"} · ${p.h}px</span>
   </div>`;
 }
 
 function renderPanels(){
-  document.getElementById("stack").innerHTML = state.panels.map(panelHtml).join("");
+  const stack=document.getElementById("stack");
+  stack.innerHTML = state.panels.length
+    ? state.panels.map(panelHtml).join("")
+    : `<div class="stackempty"><h3>No charts</h3>
+       <div>Add one below, or pick an indicator on the left and we'll start a chart for you.</div></div>`;
 }
 
 function renderSidebar(){
   /* which chart am I editing */
   document.getElementById("pswitch").innerHTML =
-    state.panels.map((p,i)=>`<button class="ps" data-sw="${i}" aria-pressed="${i===state.active}">Chart ${i+1}</button>`).join("")
-    + `<button class="ps add" data-sw="new">+</button>`;
+    state.panels.length
+      ? state.panels.map((p,i)=>`<button class="ps" data-sw="${i}" aria-pressed="${i===state.active}">Chart ${i+1}</button>`).join("")
+      : `<span class="trayempty">No charts yet.</span>`;
   document.querySelectorAll("[data-sw]").forEach(b=>b.onclick=()=>{
-    if(b.dataset.sw==="new"){ addPanel(); return; }
-    state.active=+b.dataset.sw; render();
+    state.active=+b.dataset.sw; state.focus=state.active; render();
     document.querySelector(`.pcard[data-i="${state.active}"]`)?.scrollIntoView({behavior:"smooth",block:"nearest"});
   });
 
   /* selected tray — independent of the topic filter */
   const p=P0();
   const tray=document.getElementById("tray");
-  tray.innerHTML = p.sel.length
+  tray.innerHTML = !p ? `<div class="trayempty">No chart yet — pick an indicator and one appears.</div>`
+    : p.sel.length
     ? p.sel.map((id,i)=>{const s=S(id); if(!s) return "";
         return `<div class="trayitem"><span class="sw" style="background:${PALETTE[i%PALETTE.length]}"></span>
           <span class="nm" title="${esc(s.name)}">${esc(s.name)}</span>
           <button class="x" data-drop="${id}" aria-label="Remove ${esc(s.name)}">×</button></div>`;}).join("")
     : `<div class="trayempty">Nothing selected yet.</div>`;
   tray.querySelectorAll("[data-drop]").forEach(b=>b.onclick=()=>{
-    const p=P0(); p.sel=p.sel.filter(x=>x!==b.dataset.drop); render();
+    const q=P0(); if(!q) return; q.sel=q.sel.filter(x=>x!==b.dataset.drop); render();
   });
 
   /* filters */
@@ -561,25 +576,29 @@ function renderSidebar(){
     (!q||s.name.toLowerCase().includes(q)||s.source.toLowerCase().includes(q)));
   const cat=document.getElementById("cat");
   cat.innerHTML=list.length?list.map(s=>{
-    const i=p.sel.indexOf(s.id), on=i>=0, end=s.start+s.values.length-1;
+    const i=p?p.sel.indexOf(s.id):-1, on=i>=0, end=s.start+s.values.length-1;
     return `<div class="ci" data-id="${s.id}" aria-selected="${on}">
       <span class="sw" style="${on?`background:${PALETTE[i%PALETTE.length]};border-color:${PALETTE[i%PALETTE.length]}`:""}"></span>
       <span class="body"><span class="cn">${esc(s.name)}</span>
       <span class="cm"><span class="tag">${esc(s.geography)}</span><span class="tag">${esc(s.unit)}</span><span class="yr">${s.start}–${end}</span></span>
       </span></div>`;}).join("") : `<div class="empty">Nothing matches that.</div>`;
   cat.querySelectorAll(".ci").forEach(el=>el.onclick=()=>{
-    const p=P0(), id=el.dataset.id, i=p.sel.indexOf(id);
-    if(i>=0) p.sel.splice(i,1);
-    else if(p.sel.length<4) p.sel.push(id);
-    else { p.sel.shift(); p.sel.push(id); }
+    const id=el.dataset.id;
+    if(!P0()){ addPanel([id]); return; }          /* no charts yet — start one */
+    const q=P0(), i=q.sel.indexOf(id);
+    if(i>=0) q.sel.splice(i,1);
+    else if(q.sel.length<4) q.sel.push(id);
+    else { q.sel.shift(); q.sel.push(id); }
     render();
   });
-  document.getElementById("count").textContent=
-    `${p.sel.length} of 4 on Chart ${state.active+1} · ${DB.series.length} indicators available`;
+  document.getElementById("count").textContent = p
+    ? `${p.sel.length} of 4 on Chart ${state.active+1} · ${DB.series.length} indicators available`
+    : `${DB.series.length} indicators available`;
 }
 
 function renderSources(){
-  const p=P0(), sets=buildSets(p), el=document.getElementById("srcs");
+  const p=P0(), el=document.getElementById("srcs");
+  const sets=p?buildSets(p):[];
   if(!sets.length){el.innerHTML=`<div class="plabel">Provenance</div><div class="trayempty">Select something to see where it came from.</div>`;return;}
   el.innerHTML=`<div class="plabel">Provenance · Chart ${state.active+1}</div>`+sets.map(s=>`
     <div class="srcrow"><b>${esc(s.name)}</b>
@@ -598,10 +617,10 @@ function render(){ renderPanels(); renderSidebar(); renderSources(); writeHash()
 function addPanel(sel=[]){
   state.panels.push(mkPanel(sel));
   state.active=state.panels.length-1;
+  state.focus=state.active;
   render();
   document.querySelector(`.pcard[data-i="${state.active}"]`)?.scrollIntoView({behavior:"smooth",block:"center"});
 }
-document.getElementById("addTop").onclick=()=>addPanel();
 document.getElementById("addBottom").onclick=()=>addPanel();
 
 document.getElementById("stack").addEventListener("click",e=>{
@@ -609,16 +628,17 @@ document.getElementById("stack").addEventListener("click",e=>{
   const i=+card.dataset.i, p=state.panels[i];
   const act=e.target.dataset.act;
 
-  if(state.active!==i && !act){ state.active=i; render(); return; }
-  if(!act) return;
-  state.active=i;
+  if(!act){ state.active=i; state.focus=i; render(); return; }
+  state.active=i; state.focus=i;
 
   if(act==="chart") p.chart=e.target.dataset.v;
   else if(act==="trans") p.trans=e.target.dataset.v;
   else if(act==="rebase") p.trans="index";
   else if(act==="pair") p.sel=e.target.dataset.v.split(",");
   else if(act==="dup"){ state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,ribbon:p.ribbon,h:p.h})); state.active=i+1; }
-  else if(act==="del"){ if(state.panels.length>1){ state.panels.splice(i,1); state.active=Math.max(0,Math.min(state.active,state.panels.length-1)); } }
+  else if(act==="del"){ state.panels.splice(i,1); state.active=Math.max(0,Math.min(state.active,state.panels.length-1)); state.focus=null; }
+  else if(act==="csv"){ exportCsv(i); return; }
+  else if(act==="png"){ exportPng(i); return; }
   render();
 });
 document.getElementById("stack").addEventListener("change",e=>{
@@ -629,6 +649,12 @@ document.getElementById("stack").addEventListener("change",e=>{
   else if(act==="ribbon") p.ribbon=e.target.checked;
   else return;
   render();
+});
+
+/* click outside any panel clears the selection outline */
+document.addEventListener("pointerdown",e=>{
+  if(e.target.closest(".pcard")||e.target.closest(".side")) return;
+  if(state.focus!==null){ state.focus=null; renderPanels(); }
 });
 
 /* ── drag to reorder ── */
@@ -668,9 +694,10 @@ document.addEventListener("pointerup",e=>{
 /* ── drag to resize ── */
 let rz=null;
 document.getElementById("stack").addEventListener("pointerdown",e=>{
-  if(e.target.dataset.act!=="rgrip") return;
+  const mode=e.target.dataset.act;
+  if(mode!=="rgrip"&&mode!=="cgrip") return;
   const card=e.target.closest(".pcard"), i=+card.dataset.i;
-  rz={i,y0:e.clientY,h0:state.panels[i].h,card};
+  rz={i,mode,y0:e.clientY,x0:e.clientX,h0:state.panels[i].h,w0:state.panels[i].w,card};
   card.classList.add("is-resizing");
   document.body.classList.add("resizing");
   e.target.setPointerCapture(e.pointerId);
@@ -680,8 +707,17 @@ document.addEventListener("pointermove",e=>{
   if(!rz) return;
   const p=state.panels[rz.i];
   p.h=Math.max(H_MIN,Math.min(H_MAX,Math.round((rz.h0+(e.clientY-rz.y0))/10)*10));
+
   const card=document.querySelector(`.pcard[data-i="${rz.i}"]`);
   if(!card) return;
+
+  /* corner drag also sets width — snaps to half or full so the grid always tiles */
+  if(rz.mode==="cgrip"){
+    const stackW=document.getElementById("stack").getBoundingClientRect().width;
+    const want=(rz.w0/12*stackW + (e.clientX-rz.x0)) / stackW;
+    const w = want < 0.72 ? 6 : 12;
+    if(w!==p.w){ p.w=w; card.style.setProperty("--span",w); }
+  }
   const sets=buildSets(p);
   if(sets.length){
     const holder=card.querySelector(".pbody");
@@ -692,20 +728,108 @@ document.addEventListener("pointermove",e=>{
     else if(p.chart!=="scatter") chart=renderLine(p,sets,p.chart);
     if(chart&&holder) holder.innerHTML=chart+((p.chart!=="scatter"&&p.chart!=="small")?renderRibbon(p):"");
   }
-  const pill=card.querySelector(".hpill"); if(pill) pill.textContent=p.h+"px";
+  const pill=card.querySelector(".hpill"); if(pill) pill.textContent=(p.w===12?"full":"half")+" · "+p.h+"px";
 });
 document.addEventListener("pointerup",()=>{
   if(!rz) return;
+  const wasWidth = rz.mode==="cgrip" && state.panels[rz.i] && state.panels[rz.i].w!==rz.w0;
   document.querySelector(`.pcard[data-i="${rz.i}"]`)?.classList.remove("is-resizing");
   document.body.classList.remove("resizing");
-  rz=null; writeHash();
+  rz=null;
+  if(wasWidth) render(); else writeHash();   /* width change needs a redraw at the new size */
 });
 
 /* ══════════════════════════════════════════════
-   PERMALINK + EXPORT
+   EXPORT — per chart, CSV and PNG
+   ══════════════════════════════════════════════ */
+const dl=(blob,name)=>{const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);};
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)||"chart";
+
+function exportCsv(i){
+  const p=state.panels[i], sets=buildSets(p);
+  if(!sets.length) return;
+  const years=[...new Set(sets.flatMap(s=>s.pts.map(q=>q[0])))].sort();
+  const head=["year",...sets.map(s=>`"${s.name} (${s.unit})"`)].join(",");
+  const rows=years.map(y=>[y,...sets.map(s=>{const q=s.pts.find(q=>q[0]===y);return q&&q[1]!=null?q[1].toFixed(4):"";})].join(","));
+  const warn=DB.meta.provenance==="placeholder"?"# WARNING: placeholder data, not real statistics\n":"";
+  const csv=warn+`# Polyoptic — ${sets.map(s=>s.name).join(" x ")}\n`+
+    `# Sources: ${[...new Set(sets.map(s=>s.meta.source))].join("; ")}\n`+
+    `# Geography: ${[...new Set(sets.map(s=>s.meta.geography))].join("; ")}\n`+
+    `# Licence: OGL v3.0 — contains public sector information\n`+head+"\n"+rows.join("\n");
+  dl(new Blob([csv],{type:"text/csv"}), slug(sets.map(s=>s.name).join("-"))+".csv");
+}
+
+/* Styles have to travel with the SVG — a serialised node gets no page CSS,
+   and web fonts don't load in a detached image, so fall back to system stacks. */
+const EXPORT_CSS=`
+  text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .gridline{stroke:#D3D8DD;stroke-width:1}
+  .axlabel{font-size:10px;fill:#5C6672}
+  .line{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+  .disc{stroke:#B45309;stroke-width:1;stroke-dasharray:3 3;opacity:.6}
+  .sm-t{font-size:10px;font-weight:500}
+  .era text{font-size:9px;fill:#fff;font-weight:500}
+  .pmtick{stroke:#0F1419;stroke-width:1;stroke-dasharray:2 2;opacity:.3}
+  .pmlabel{font-size:8.5px;fill:#5C6672}
+  .ttl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:19px;fill:#0F1419}
+  .sub{font-size:11px;fill:#5C6672}
+  .cred{font-size:10px;fill:#5C6672}`;
+
+function exportPng(i){
+  const p=state.panels[i], sets=buildSets(p);
+  const card=document.querySelector(`.pcard[data-i="${i}"]`);
+  if(!sets.length||!card) return;
+  const svgs=[...card.querySelectorAll(".pbody svg")];
+  if(!svgs.length) return;
+
+  const PAD=26, TOP=74, LEGEND=26, FOOT=30, SCALE=2;
+  const inner=svgs.map(s=>{
+    const vb=s.getAttribute("viewBox").split(/\s+/).map(Number);
+    return {markup:s.innerHTML, w:vb[2], h:vb[3]};
+  });
+  const bodyH=inner.reduce((a,s)=>a+s.h+8,0);
+  const totalW=W+PAD*2, totalH=TOP+bodyH+LEGEND+FOOT+PAD;
+
+  let y=TOP, parts="";
+  inner.forEach(s=>{
+    parts+=`<svg x="${PAD}" y="${y}" width="${W}" height="${s.h}" viewBox="0 0 ${s.w} ${s.h}">${s.markup}</svg>`;
+    y+=s.h+8;
+  });
+  const legend=sets.map((s,k)=>{
+    const x=PAD+k*Math.min(300,(W)/sets.length);
+    return `<rect x="${x}" y="${y+6}" width="13" height="3" fill="${s.colour}"/>`+
+           `<text class="cred" x="${x+18}" y="${y+11}">${esc(s.name)} — ${esc(s.unit)}</text>`;
+  }).join("");
+
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}">
+    <style>${EXPORT_CSS}</style>
+    <rect width="100%" height="100%" fill="#ffffff"/>
+    <text class="ttl" x="${PAD}" y="${PAD+14}">${esc(sets.map(s=>s.name).join(" × "))}</text>
+    <text class="sub" x="${PAD}" y="${PAD+34}">${p.from}–${p.to} · ${esc(TRANSFORMS.find(x=>x[0]===p.trans)[1])} · ${esc([...new Set(sets.map(s=>s.meta.geography))].join(", "))}</text>
+    ${parts}${legend}
+    <text class="cred" x="${PAD}" y="${totalH-PAD+4}">${DB.meta.provenance==="placeholder"?"PLACEHOLDER DATA — NOT REAL STATISTICS · ":""}Source: ${esc([...new Set(sets.map(s=>s.meta.source))].join("; "))} · OGL v3.0 · polyoptic.co</text>
+  </svg>`;
+
+  const img=new Image();
+  img.onload=()=>{
+    const c=document.createElement("canvas");
+    c.width=totalW*SCALE; c.height=totalH*SCALE;
+    const ctx=c.getContext("2d");
+    ctx.fillStyle="#fff"; ctx.fillRect(0,0,c.width,c.height);
+    ctx.setTransform(SCALE,0,0,SCALE,0,0);
+    ctx.drawImage(img,0,0);
+    c.toBlob(b=>{ if(b) dl(b, slug(sets.map(s=>s.name).join("-"))+".png"); },"image/png");
+  };
+  img.onerror=()=>alert("Couldn't render the image in this browser.");
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+}
+
+/* ══════════════════════════════════════════════
+   PERMALINK
    ══════════════════════════════════════════════ */
 function writeHash(){
-  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.ribbon?1:0,p.h].join("~")).join(";");
+  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.ribbon?1:0,p.h,p.w].join("~")).join(";");
   history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active);
 }
 function readHash(){
@@ -713,10 +837,10 @@ function readHash(){
   const q=new URLSearchParams(location.hash.slice(1));
   if(q.get("p")){
     const panels=decodeURIComponent(q.get("p")).split(";").map(chunk=>{
-      const [sel,chart,trans,from,to,rib,h]=chunk.split("~");
+      const [sel,chart,trans,from,to,rib,h,w]=chunk.split("~");
       return mkPanel((sel||"").split(",").filter(id=>S(id)),
         {chart:chart||"line",trans:trans||"index",from:+from||1997,to:+to||2026,
-         ribbon:rib!=="0",h:Math.max(H_MIN,Math.min(H_MAX,+h||H_DEF))});
+         ribbon:rib!=="0",h:Math.max(H_MIN,Math.min(H_MAX,+h||H_DEF)),w:(+w===6?6:12)});
     });
     if(panels.length) state.panels=panels;
   } else if(q.get("t")){                       /* topic deep-link from the homepage tiles */
@@ -730,18 +854,6 @@ document.getElementById("copyLink").onclick=()=>{
   navigator.clipboard?.writeText(location.href);
   const b=document.getElementById("copyLink"), o=b.textContent;
   b.textContent="✓ Copied"; setTimeout(()=>b.textContent=o,1400);
-};
-document.getElementById("dlCsv").onclick=()=>{
-  const p=P0(), sets=buildSets(p);
-  if(!sets.length) return;
-  const years=[...new Set(sets.flatMap(s=>s.pts.map(q=>q[0])))].sort();
-  const head=["year",...sets.map(s=>`"${s.name} (${s.unit})"`)].join(",");
-  const rows=years.map(y=>[y,...sets.map(s=>{const q=s.pts.find(q=>q[0]===y);return q&&q[1]!=null?q[1].toFixed(4):"";})].join(","));
-  const prov=DB.meta.provenance==="placeholder"?"# WARNING: placeholder data, not real statistics\n":"";
-  const csv=prov+`# Polyoptic export — chart ${state.active+1}\n# Sources: ${[...new Set(sets.map(s=>s.meta.source))].join("; ")}\n# Licence: OGL v3.0\n`+head+"\n"+rows.join("\n");
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
-  a.download=`polyoptic-chart-${state.active+1}.csv`; a.click();
 };
 document.getElementById("q").oninput=e=>{state.q=e.target.value;renderSidebar();};
 
