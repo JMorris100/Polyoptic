@@ -1,6 +1,5 @@
-# The site is serving placeholder data. Keep it out of search indexes until
-# ingest.py has run successfully and data/bundle.json holds real figures.
-# Delete this file — and the noindex meta tags in index.html and
-# explore.html — on the day the real data lands.
+# Placeholder data is live on this site. Keep it out of the index until the
+# ingest has run for real, then delete this file and the noindex meta tags
+# in index.html and explore.html.
 User-agent: *
 Disallow: /
