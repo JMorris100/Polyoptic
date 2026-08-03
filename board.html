@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="en-GB" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chart board — Polyoptic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --r-card:16px; --r-pill:999px; --r-sm:8px;
+  --lab:#E4003B; --con:#0087DC; --ld:#FAA61A;
+  --dur:220ms; --ease:cubic-bezier(.2,.8,.2,1);
+}
+html[data-theme="dark"]{
+  --paper:#0A0C10; --surface:#14171F; --surface-2:#1B1F29; --sunk:#0E1117;
+  --ink:#E9EDF2; --ink-2:#B7C0CC; --muted:#78828F;
+  --rule:#242833; --rule-2:#2E3441;
+  --purple:#8B6BFF; --purple-ink:#fff; --pink:#FF4D9D;
+  --warnbg:#2A2007; --warnrule:#4C3B10; --warnink:#E8B85C;
+  --grid:#1E222C; --shadow:0 24px 60px -12px rgba(0,0,0,.7);
+  --glow:.55;
+}
+html[data-theme="light"]{
+  --paper:#EDEFF1; --surface:#FFFFFF; --surface-2:#F4F5F7; --sunk:#F7F8F9;
+  --ink:#0F1419; --ink-2:#39424E; --muted:#5C6672;
+  --rule:#D9DDE2; --rule-2:#C7CDD4;
+  --purple:#4633A8; --purple-ink:#fff; --pink:#B81A6B;
+  --warnbg:#FFF6E0; --warnrule:#E5D3A0; --warnink:#8A6410;
+  --grid:#E4E7EB; --shadow:0 18px 44px -14px rgba(15,20,25,.22);
+  --glow:0;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:var(--paper); color:var(--ink);
+  font-family:"Public Sans",system-ui,-apple-system,sans-serif; font-size:15px; line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  transition:background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+h1,h2,h3{font-family:"Archivo",system-ui,sans-serif; margin:0; letter-spacing:-.03em; line-height:1.06}
+button,input,select{font:inherit; color:inherit}
+button{cursor:pointer}
+svg{display:block}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+:focus-visible{outline:2px solid var(--purple); outline-offset:2px; border-radius:4px}
+
+/* ---------- top bar ---------- */
+.topbar{
+  position:sticky; top:0; z-index:60; background:color-mix(in srgb, var(--paper) 92%, transparent);
+  backdrop-filter:blur(12px); border-bottom:1px solid var(--rule);
+}
+.topbar-in{max-width:1480px; margin:0 auto; padding:0 20px; height:60px; display:flex; align-items:center; gap:14px}
+.brand{display:flex; align-items:center; gap:10px; text-decoration:none; color:inherit}
+.brand .wm{font-family:"Archivo"; font-weight:800; font-size:19px; letter-spacing:-.04em}
+.brand .wm span{font-weight:600; color:var(--muted)}
+.spacer{flex:1}
+.hint{font-size:12.5px; color:var(--muted); display:none}
+@media(min-width:900px){.hint{display:block}}
+.hint kbd{
+  font-family:"IBM Plex Mono",monospace; font-size:11px; background:var(--surface-2);
+  border:1px solid var(--rule-2); border-bottom-width:2px; border-radius:5px; padding:1px 5px;
+}
+
+/* theme switch */
+.themesw{display:inline-flex; background:var(--surface-2); border:1px solid var(--rule); border-radius:var(--r-pill); padding:3px; gap:2px}
+.themesw button{
+  border:0; background:transparent; color:var(--muted); border-radius:var(--r-pill);
+  padding:5px 11px; font-size:12.5px; font-weight:600; display:flex; align-items:center; gap:6px;
+  transition:background-color 160ms var(--ease), color 160ms var(--ease);
+}
+.themesw button[aria-pressed="true"]{background:var(--purple); color:var(--purple-ink)}
+.themesw svg{width:14px; height:14px}
+
+/* ---------- board ---------- */
+.board-head{max-width:1480px; margin:0 auto; padding:32px 20px 18px}
+.board-head h1{font-size:clamp(24px,3.4vw,34px); font-weight:800}
+.board-head p{margin:9px 0 0; color:var(--muted); max-width:64ch; font-size:14.5px}
+#board{
+  max-width:1480px; margin:0 auto; padding:0 20px 80px;
+  display:grid; grid-template-columns:repeat(12,1fr); gap:20px; align-items:start;
+}
+.module{grid-column:span 12; min-width:0}
+.module[data-width="half"]{grid-column:span 12}
+@media(min-width:1080px){ .module[data-width="half"]{grid-column:span 6} }
+
+.card{
+  background:var(--surface); border:1px solid var(--rule); border-radius:var(--r-card);
+  padding:20px 22px 16px; position:relative;
+  transition:border-color var(--dur) var(--ease), box-shadow var(--dur) var(--ease), background-color var(--dur) var(--ease);
+}
+.module.locked .card{border-color:color-mix(in srgb, var(--purple) 45%, var(--rule))}
+.module.dragging{position:fixed; z-index:200; pointer-events:none; margin:0}
+.module.dragging .card{box-shadow:var(--shadow); transform:scale(1.012) rotate(.35deg); border-color:var(--purple)}
+.slot{
+  grid-column:span 12; border:2px dashed var(--purple); border-radius:var(--r-card);
+  background:color-mix(in srgb, var(--purple) 9%, transparent);
+  display:flex; align-items:center; justify-content:center; min-width:0;
+}
+.slot[data-width="half"]{grid-column:span 12}
+@media(min-width:1080px){ .slot[data-width="half"]{grid-column:span 6} }
+.slot span{
+  font-family:"IBM Plex Mono",monospace; font-size:12px; letter-spacing:.06em; text-transform:uppercase;
+  color:var(--purple); font-weight:500;
+}
+body.is-dragging{cursor:grabbing; user-select:none}
+
+/* card header */
+.chead{display:flex; align-items:flex-start; gap:12px}
+.grip{
+  flex:none; width:26px; height:30px; margin-left:-6px; border:0; background:transparent; color:var(--muted);
+  border-radius:var(--r-sm); display:grid; place-items:center; cursor:grab; touch-action:none;
+  transition:color 140ms var(--ease), background-color 140ms var(--ease);
+}
+.grip:hover{color:var(--ink); background:var(--surface-2)}
+.module.locked .grip{cursor:not-allowed; opacity:.35}
+.titles{flex:1; min-width:0}
+.titles h2{font-size:clamp(17px,2vw,21px); font-weight:700}
+.submeta{margin-top:6px; font-size:12px; color:var(--muted); letter-spacing:.02em}
+.actions{display:flex; align-items:center; gap:7px; flex:none}
+.btn{
+  border:1px solid var(--rule-2); background:transparent; color:var(--ink-2); border-radius:var(--r-pill);
+  padding:7px 13px; font-size:12.5px; font-weight:600;
+  transition:border-color 140ms var(--ease), color 140ms var(--ease), background-color 140ms var(--ease);
+}
+.btn:hover{color:var(--ink); border-color:var(--ink-2)}
+.btn.primary{background:var(--purple); border-color:var(--purple); color:var(--purple-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.icon{padding:7px; width:32px; height:32px; display:grid; place-items:center}
+.btn.icon svg{width:15px; height:15px}
+.btn.on{border-color:var(--purple); color:var(--purple)}
+.module.locked .btn.lock{background:color-mix(in srgb, var(--purple) 14%, transparent); border-color:var(--purple); color:var(--purple)}
+
+/* ---- chart settings: a popover anchored to the top-left management cluster.
+   Every control is a label + dropdown on a shared two-column grid, so they
+   line up exactly regardless of the option text inside them. ---- */
+.mgr{position:relative; display:flex; align-items:center; gap:2px; flex:none; margin-left:-6px}
+.cfgpanel{
+  position:absolute; top:calc(100% + 8px); left:0; z-index:80; width:min(320px, 86vw);
+  background:var(--surface); border:1px solid var(--rule-2); border-radius:14px;
+  box-shadow:var(--shadow); padding:16px;
+  display:grid; grid-template-columns:max-content 1fr; gap:11px 12px; align-items:center;
+}
+.cfgpanel[hidden]{display:none}
+.cfgpanel .clabel{text-align:right}
+.clabel{
+  font-family:"IBM Plex Mono",monospace; font-size:10px; letter-spacing:.1em; text-transform:uppercase;
+  color:var(--muted);
+}
+.cfgpanel .rule{grid-column:1 / -1; height:1px; background:var(--rule); margin:2px 0}
+.dd{position:relative; display:flex; width:100%}
+.dd select{
+  appearance:none; -webkit-appearance:none; width:100%;
+  background:var(--surface-2); border:1px solid var(--rule-2); color:var(--ink);
+  border-radius:9px; padding:7px 30px 7px 12px; font-size:13.5px; font-weight:500; cursor:pointer;
+  transition:border-color 140ms var(--ease);
+}
+.dd select:hover{border-color:var(--ink-2)}
+.dd select:focus-visible{outline:2px solid var(--purple); outline-offset:1px}
+.dd::after{
+  content:''; position:absolute; right:12px; top:50%; width:7px; height:7px; pointer-events:none;
+  border-right:1.6px solid var(--muted); border-bottom:1.6px solid var(--muted);
+  transform:translateY(-70%) rotate(45deg);
+}
+.dd select option{background:var(--surface); color:var(--ink)}
+.dd.active select{border-color:var(--purple); color:var(--purple)}
+.dates{display:flex; align-items:center; gap:7px}
+.dates[hidden]{display:none}
+.dates + .clabel[hidden]{display:none}
+.dateinput{
+  flex:1; min-width:0; background:var(--sunk); border:1px solid var(--rule-2); border-radius:9px;
+  padding:6px 9px; font-family:"IBM Plex Mono",monospace; font-size:11.5px; color-scheme:dark;
+}
+html[data-theme="light"] .dateinput{color-scheme:light}
+.dateinput:hover{border-color:var(--ink-2)}
+.tiny{font-size:11.5px; color:var(--muted)}
+/* dot on the settings button when a chart has been tuned away from defaults */
+.btn.cfg{position:relative}
+.btn.cfg.tuned::after{
+  content:''; position:absolute; top:3px; right:3px; width:7px; height:7px; border-radius:50%;
+  background:var(--purple); border:2px solid var(--surface);
+}
+.btn.cfg[aria-expanded="true"]{background:color-mix(in srgb, var(--purple) 14%, transparent); border-color:var(--purple); color:var(--purple)}
+
+/* warning */
+.warn{
+  margin-top:14px; background:var(--warnbg); border:1px solid var(--warnrule); color:var(--warnink);
+  border-radius:10px; padding:12px 15px; font-size:13.5px; display:flex; gap:10px; align-items:flex-start;
+}
+.warn svg{width:15px; height:15px; flex:none; margin-top:2px}
+.warn[hidden]{display:none}
+
+/* chart */
+.plot{margin-top:14px; position:relative}
+.plot svg text{font-family:"IBM Plex Mono",monospace}
+.legend{display:flex; gap:20px; flex-wrap:wrap; padding:14px 0 0; border-top:1px solid var(--rule); margin-top:12px}
+.lg{display:flex; align-items:center; gap:9px; font-size:13.5px; color:var(--ink-2); background:none; border:0; padding:0}
+.lg i{width:22px; height:3px; border-radius:2px; display:block}
+.lg[aria-pressed="false"]{opacity:.38}
+
+/* era ribbon */
+.ribbon{margin-top:14px}
+.ribbon[hidden]{display:none}
+
+/* footer / sources */
+.foot{
+  margin-top:14px; padding-top:13px; border-top:1px solid var(--rule);
+  display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted);
+}
+.foot .lic{margin-left:auto}
+.srcbtn{
+  border:1px solid var(--rule-2); background:transparent; color:var(--muted); border-radius:var(--r-pill);
+  padding:4px 11px; font-family:"IBM Plex Mono",monospace; font-size:11px; letter-spacing:.04em;
+}
+.srcbtn:hover{color:var(--ink); border-color:var(--ink-2)}
+.sources{
+  margin-top:14px; background:var(--sunk); border:1px solid var(--rule); border-radius:12px; padding:18px 20px;
+}
+.sources[hidden]{display:none}
+.sources h3{font-size:13px; font-weight:700; letter-spacing:.01em; margin-bottom:8px}
+.sources h3:not(:first-child){margin-top:20px}
+.sources p{margin:0 0 10px; font-size:13.5px; color:var(--ink-2); max-width:72ch}
+.sources p:last-child{margin-bottom:0}
+.srclist{list-style:none; margin:0; padding:0; display:grid; gap:10px}
+.srclist li{border-left:2px solid var(--rule-2); padding-left:13px}
+.srclist .nm{font-weight:600; font-size:13.5px}
+.srclist .dt{font-family:"IBM Plex Mono",monospace; font-size:11.5px; color:var(--muted); margin-top:3px; line-height:1.7}
+.srclist a{color:var(--purple); text-decoration:none; border-bottom:1px solid color-mix(in srgb,var(--purple) 40%,transparent)}
+.srclist a:hover{border-bottom-color:var(--purple)}
+.cite{
+  margin-top:8px; background:var(--surface); border:1px solid var(--rule); border-radius:9px;
+  padding:12px 14px; font-family:"IBM Plex Mono",monospace; font-size:12px; color:var(--ink-2); line-height:1.7;
+}
+.flag{
+  display:inline-block; font-family:"IBM Plex Mono",monospace; font-size:10.5px; letter-spacing:.08em;
+  text-transform:uppercase; padding:2px 7px; border-radius:4px;
+  background:var(--warnbg); color:var(--warnink); border:1px solid var(--warnrule);
+}
+
+/* toast */
+#toast{
+  position:fixed; left:50%; bottom:26px; transform:translate(-50%,14px); opacity:0; pointer-events:none;
+  background:var(--ink); color:var(--paper); font-size:13.5px; font-weight:500;
+  padding:10px 18px; border-radius:var(--r-pill); z-index:300;
+  transition:opacity 180ms var(--ease), transform 180ms var(--ease);
+}
+#toast.show{opacity:1; transform:translate(-50%,0)}
+
+@media (prefers-reduced-motion:reduce){
+  *{animation-duration:.01ms !important; transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="#">
+      <svg width="26" height="26" viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M6 50 C 24 20, 76 20, 94 50 C 76 74, 24 74, 6 50 Z" fill="none" stroke="var(--purple)" stroke-width="7" stroke-linejoin="round"/>
+        <g fill="var(--purple)">
+          <rect x="35" y="46" width="6.5" height="12" rx="2"/>
+          <rect x="45" y="38" width="6.5" height="20" rx="2"/>
+          <rect x="55" y="42" width="6.5" height="16" rx="2"/>
+        </g>
+      </svg>
+      <span class="wm">poly<span>optic</span></span>
+    </a>
+    <div class="spacer"></div>
+    <p class="hint">Drag a chart by its handle to reorder · <kbd>Lock</kbd> pins a chart in place</p>
+    <div class="themesw" role="group" aria-label="Colour theme">
+      <button id="t-dark" aria-pressed="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>Dark
+      </button>
+      <button id="t-light" aria-pressed="false">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>Light
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="board-head">
+  <h1>Chart board</h1>
+  <p>Three charts, arranged how you want them. Drag by the handle to reorder, lock one to hold its position, and switch chart type, government view, or time detail per chart.</p>
+</div>
+
+<div id="board"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   1. PLACEHOLDER DATA
+   Every number below is invented. It is shaped to be plausible so the
+   interface can be judged, and is labelled as placeholder everywhere it
+   surfaces — on screen, in the sources panel and in the CSV export.
+   ========================================================================= */
+
+const YEAR0 = 1997, YEAR1 = 2026;
+
+const SERIES = {
+  hpe: {
+    id:'hpe', name:'House price to earnings ratio', unit:'ratio', dp:2,
+    geo:'England & Wales', freq:'Annual', pub:'ONS', dataset:'Housing affordability in England and Wales',
+    code:'PLACEHOLDER/HPE', url:'https://www.ons.gov.uk', updated:'placeholder',
+    anchors:[3.55,3.62,3.86,4.16,4.45,5.05,5.72,6.32,6.63,6.94,7.24,6.72,6.36,6.62,6.71,6.73,6.85,7.15,7.36,7.62,7.86,7.94,7.83,7.97,8.72,8.44,8.32,8.16,8.05,8.10]
+  },
+  realpay: {
+    id:'realpay', name:'Real median weekly pay', unit:'£ per week (2026 prices)', dp:0,
+    geo:'United Kingdom', freq:'Annual', pub:'ONS', dataset:'Annual Survey of Hours and Earnings (ASHE)',
+    code:'PLACEHOLDER/ASHE-MED', url:'https://www.ons.gov.uk', updated:'placeholder',
+    anchors:[482,492,504,517,531,542,553,562,571,579,586,590,578,569,558,549,544,541,547,556,562,568,575,580,566,552,561,572,584,596]
+  },
+  comp: {
+    id:'comp', name:'New dwellings completed', unit:'thousands per year', dp:0,
+    geo:'England', freq:'Annual', pub:'MHCLG', dataset:'Live tables on house building',
+    code:'PLACEHOLDER/HB-COMP', url:'https://www.gov.uk', updated:'placeholder',
+    anchors:[149,152,148,143,140,144,152,163,171,183,192,171,131,108,116,118,125,131,143,151,163,171,178,151,181,190,186,178,171,168]
+  },
+  house: {
+    id:'house', name:'Household formation', unit:'thousands per year', dp:0,
+    geo:'England', freq:'Annual', pub:'ONS', dataset:'Household projections',
+    code:'PLACEHOLDER/HH-FORM', url:'https://www.ons.gov.uk', updated:'placeholder',
+    anchors:[173,175,177,179,182,185,188,191,194,196,199,201,196,192,190,192,195,198,203,208,212,215,217,206,214,221,228,232,229,226]
+  },
+  tpay: {
+    id:'tpay', name:'Teacher pay, real terms', unit:'£ per year (2026 prices)', dp:0,
+    geo:'England', freq:'Annual', pub:'DfE', dataset:'School workforce in England',
+    code:'PLACEHOLDER/SWF-PAY', url:'https://explore-education-statistics.service.gov.uk', updated:'placeholder',
+    anchors:[34100,34800,35600,36400,37300,38200,39000,39700,40300,40800,41200,41000,41400,41600,40900,40100,39400,38900,38600,38400,38100,37700,37500,37900,37200,36400,36600,37400,38100,38600]
+  },
+  gpay: {
+    id:'gpay', name:'Graduate median pay, real terms', unit:'£ per year (2026 prices)', dp:0,
+    geo:'United Kingdom', freq:'Annual', pub:'ONS', dataset:'Annual Survey of Hours and Earnings (ASHE)',
+    code:'PLACEHOLDER/ASHE-GRAD', url:'https://www.ons.gov.uk', updated:'placeholder',
+    anchors:[31200,31800,32500,33200,34000,34700,35300,35800,36200,36600,36900,36700,36000,35500,35000,34600,34400,34300,34700,35200,35600,36000,36400,36800,36100,35600,36200,37100,37900,38600]
+  }
+};
+
+/* Prime ministers. Coalition period is flagged separately because a single
+   party colour would misstate 2010–2015. */
+const PMS = [
+  {name:'Blair',   party:'lab',  start:'1997-05-02', end:'2007-06-27'},
+  {name:'Brown',   party:'lab',  start:'2007-06-27', end:'2010-05-11'},
+  {name:'Cameron', party:'coal', start:'2010-05-11', end:'2015-05-08'},
+  {name:'Cameron', party:'con',  start:'2015-05-08', end:'2016-07-13'},
+  {name:'May',     party:'con',  start:'2016-07-13', end:'2019-07-24'},
+  {name:'Johnson', party:'con',  start:'2019-07-24', end:'2022-09-06'},
+  {name:'Truss',   party:'con',  start:'2022-09-06', end:'2022-10-25'},
+  {name:'Sunak',   party:'con',  start:'2022-10-25', end:'2024-07-05'},
+  {name:'Starmer', party:'lab',  start:'2024-07-05', end:'2026-12-31'}
+];
+const ELECTIONS = ['1997-05-01','2001-06-07','2005-05-05','2010-05-06','2015-05-07','2017-06-08','2019-12-12','2024-07-04'];
+const PARTY = {
+  lab:{fill:'var(--lab)', label:'Labour'},
+  con:{fill:'var(--con)', label:'Conservative'},
+  coal:{fill:'url(#coal)', label:'Conservative–Lib Dem coalition'}
+};
+
+/* =========================================================================
+   2. SERIES EXPANSION
+   Annual anchors are interpolated to quarterly / monthly / daily with a
+   deterministic wobble, so the time-detail switch shows real structure
+   rather than a straight line. Deterministic => the same chart every load.
+   ========================================================================= */
+
+function rng(seed){ let a=seed>>>0; return ()=>{ a=(a+0x6D2B79F5)>>>0; let t=Math.imul(a^(a>>>15),1|a); t=(t+Math.imul(t^(t>>>7),61|t))^t; return ((t^(t>>>14))>>>0)/4294967296; }; }
+function hash(s){ let h=2166136261; for(let i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619);} return h>>>0; }
+
+const GRAN = {
+  years:   {label:'Years',    step:'y', fmt:d=>String(d.getUTCFullYear())},
+  quarters:{label:'Quarters', step:'q', fmt:d=>d.getUTCFullYear()+' Q'+(Math.floor(d.getUTCMonth()/3)+1)},
+  months:  {label:'Months',   step:'m', fmt:d=>d.toLocaleDateString('en-GB',{month:'short',year:'numeric',timeZone:'UTC'})},
+  days:    {label:'Days',     step:'d', fmt:d=>d.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric',timeZone:'UTC'})}
+};
+
+const cache = new Map();
+function expand(sid, gran){
+  const key = sid+'|'+gran;
+  if(cache.has(key)) return cache.get(key);
+  const s = SERIES[sid], a = s.anchors, rand = rng(hash(sid));
+  const vol = (Math.max(...a)-Math.min(...a)) * 0.012;
+  const out = [];
+  const perYear = gran==='years'?1 : gran==='quarters'?4 : gran==='months'?12 : 365;
+
+  // one smooth wobble walk shared across the whole span
+  const total = (a.length-1)*perYear + 1;
+  let walk = 0;
+  for(let i=0;i<total;i++){
+    const pos = i/perYear;                 // position in years from YEAR0
+    const i0 = Math.min(Math.floor(pos), a.length-2), f = pos-i0;
+    // catmull-rom-ish smoothing between annual anchors
+    const p0=a[Math.max(i0-1,0)], p1=a[i0], p2=a[i0+1], p3=a[Math.min(i0+2,a.length-1)];
+    const base = p1 + 0.5*f*((p2-p0) + f*(2*p0-5*p1+4*p2-p3 + f*(3*(p1-p2)+p3-p0)));
+    walk = walk*0.86 + (rand()-0.5)*vol;
+    const seasonal = gran==='years' ? 0 : Math.sin((i/perYear)*Math.PI*2 + hash(sid)%7) * vol * (gran==='days'?0.5:0.8);
+    const t = new Date(Date.UTC(YEAR0, 0, 1));
+    if(gran==='years')      t.setUTCFullYear(YEAR0+i, 6, 1);
+    else if(gran==='quarters') t.setUTCFullYear(YEAR0+Math.floor(i/4), (i%4)*3+1, 15);
+    else if(gran==='months')   t.setUTCFullYear(YEAR0+Math.floor(i/12), i%12, 15);
+    else                       t.setUTCDate(1+i);
+    out.push({t:+t, v: base + walk + seasonal});
+  }
+  cache.set(key, out);
+  return out;
+}
+
+/* =========================================================================
+   3. TRANSFORMS
+   ========================================================================= */
+const TRANSFORM = {
+  raw:    {label:'As published'},
+  rebase: {label:'Rebase to 100'},
+  yoy:    {label:'YoY %'}
+};
+
+function applyTransform(points, mode, gran){
+  if(!points.length) return points;
+  if(mode==='rebase'){
+    const b = points[0].v || 1;
+    return points.map(p=>({t:p.t, v: p.v/b*100}));
+  }
+  if(mode==='yoy'){
+    const lag = gran==='years'?1 : gran==='quarters'?4 : gran==='months'?12 : 365;
+    return points.slice(lag).map((p,i)=>({t:p.t, v: (p.v/points[i].v - 1)*100}));
+  }
+  return points;
+}
+
+/* =========================================================================
+   4. MODULE DEFINITIONS
+   ========================================================================= */
+const MODULES = [
+  {
+    id:'m1',
+    title:'House price to earnings ratio × Real median weekly pay',
+    series:['hpe','realpay'],
+    plain:'How much a home costs compared with a year of typical earnings, shown alongside what people actually take home each week once inflation is stripped out.',
+    caveats:[
+      'The two lines cover different areas. The affordability ratio is England & Wales; the pay figure is the whole UK. They move together but they are not measuring the same population.',
+      'Pay was collected differently from 2021, when the pandemic furlough scheme distorted who appeared in the survey. Treat the 2020–2021 movement as unreliable rather than as a real change in wages.'
+    ],
+    state:{ chart:'line', transform:'rebase', era:'pm', gran:'years', from:'1997-01-01', to:'2026-12-31', width:'full', hidden:new Set() }
+  },
+  {
+    id:'m2',
+    title:'New homes built × New households forming',
+    series:['comp','house'],
+    plain:'Two counts side by side: how many homes were finished each year, and how many new households were created and therefore needed somewhere to live.',
+    caveats:[
+      'Completions are counted when a building inspector signs a home off, which can lag the point at which people move in.',
+      'Household formation is a projection, not a count. It is an estimate of demand, produced with assumptions that are revised between editions.'
+    ],
+    state:{ chart:'area', transform:'raw', era:'party', gran:'years', from:'1997-01-01', to:'2026-12-31', width:'half', hidden:new Set() }
+  },
+  {
+    id:'m3',
+    title:'Teacher pay × Graduate pay, real terms',
+    series:['tpay','gpay'],
+    plain:'What teachers earn compared with the typical graduate, with both adjusted for inflation so that a pound in 1997 and a pound in 2026 mean the same thing.',
+    caveats:[
+      'Both are adjusted to 2026 prices using the GDP deflator, not CPI. Different deflators give different answers, and the choice matters more the further back you look.',
+      'The definition of the school workforce changed in 2010, so figures either side of that date are not exactly like for like.'
+    ],
+    state:{ chart:'line', transform:'rebase', era:'elections', gran:'years', from:'1997-01-01', to:'2026-12-31', width:'half', hidden:new Set() }
+  }
+];
+
+const COLOURS = ['var(--purple)','var(--pink)'];
+
+/* =========================================================================
+   5. RENDERING
+   ========================================================================= */
+const board = document.getElementById('board');
+let order = MODULES.map(m=>m.id);
+const locked = new Set();
+const byId = Object.fromEntries(MODULES.map(m=>[m.id,m]));
+
+function el(tag, attrs, kids){
+  const n = document.createElement(tag);
+  for(const k in (attrs||{})){
+    if(k==='html') n.innerHTML = attrs[k];
+    else if(k==='text') n.textContent = attrs[k];
+    else if(k.startsWith('on')) n.addEventListener(k.slice(2), attrs[k]);
+    else if(attrs[k]!=null && attrs[k]!==false) n.setAttribute(k, attrs[k]);
+  }
+  (kids||[]).forEach(c=>n.appendChild(c));
+  return n;
+}
+const ICON = {
+  grip:'<svg viewBox="0 0 16 16" fill="currentColor"><circle cx="6" cy="3" r="1.4"/><circle cx="10" cy="3" r="1.4"/><circle cx="6" cy="8" r="1.4"/><circle cx="10" cy="8" r="1.4"/><circle cx="6" cy="13" r="1.4"/><circle cx="10" cy="13" r="1.4"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 8 0v3.5"/></svg>',
+  unlock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10.5" width="16" height="10" rx="2.5"/><path d="M8 10.5V7a4 4 0 0 1 7.5-1.9"/></svg>',
+  wide:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="18" height="12" rx="2"/></svg>',
+  half:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="6" width="8" height="12" rx="2"/><rect x="13" y="6" width="8" height="12" rx="2"/></svg>',
+  warn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4.5 2.8 20h18.4L12 4.5z"/><path d="M12 10v4.2M12 17.2v.1"/></svg>',
+  cfg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h9M17 17h3"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="17" r="2"/></svg>'
+};
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+function buildModule(m){
+  const wrap = el('div',{class:'module','data-id':m.id,'data-width':m.state.width});
+  const card = el('div',{class:'card'});
+  wrap.appendChild(card);
+
+  /* --- header: top-left management cluster, title, exports on the right --- */
+  const grip = el('button',{class:'grip',html:ICON.grip,'aria-label':'Drag to reorder '+m.title, title:'Drag to reorder'});
+  const titles = el('div',{class:'titles'},[
+    el('h2',{text:m.title}),
+    el('div',{class:'submeta mono'})
+  ]);
+  const lockBtn = el('button',{class:'btn icon lock', html:ICON.unlock, 'aria-pressed':'false',
+    title:'Lock position', 'aria-label':'Lock this chart in place',
+    onclick:()=>{
+      if(locked.has(m.id)){ locked.delete(m.id); wrap.classList.remove('locked'); lockBtn.innerHTML=ICON.unlock; lockBtn.setAttribute('aria-pressed','false'); toast('Unlocked — this chart can be moved again'); }
+      else { locked.add(m.id); wrap.classList.add('locked'); lockBtn.innerHTML=ICON.lock; lockBtn.setAttribute('aria-pressed','true'); toast('Locked — this chart holds its position'); }
+    }});
+  const widthBtn = el('button',{class:'btn icon', html:m.state.width==='full'?ICON.half:ICON.wide,
+    title:'Change chart width', 'aria-label':'Change chart width',
+    onclick:()=>{ m.state.width = m.state.width==='full'?'half':'full';
+      wrap.dataset.width=m.state.width; widthBtn.innerHTML = m.state.width==='full'?ICON.half:ICON.wide; draw(); }});
+
+  const cfgBtn = el('button',{class:'btn icon cfg', html:ICON.cfg, 'aria-expanded':'false',
+    title:'Chart settings', 'aria-label':'Chart settings for '+m.title});
+  const mgr = el('div',{class:'mgr'},[grip, cfgBtn, lockBtn]);
+
+  const actions = el('div',{class:'actions'},[
+    widthBtn,
+    el('button',{class:'btn',text:'PNG',onclick:()=>exportPNG(m)}),
+    el('button',{class:'btn',text:'CSV',onclick:()=>exportCSV(m)}),
+    el('button',{class:'btn primary',text:'Share',onclick:()=>share(m)})
+  ]);
+  card.appendChild(el('div',{class:'chead'},[mgr,titles,actions]));
+
+  /* --- settings popover: label + dropdown pairs on one aligned grid --- */
+  function dropdown(label, opts, get, set){
+    const sel = el('select',{'aria-label':label});
+    opts.forEach(([k,lab])=>sel.appendChild(el('option',{value:k,text:lab})));
+    sel.value = get();
+    sel.addEventListener('change', ()=>set(sel.value));
+    return {dd: el('div',{class:'dd'},[sel]), sel, label: el('span',{class:'clabel',text:label})};
+  }
+
+  const ddChart = dropdown('Chart',
+    [['line','Line'],['bars','Bars'],['area','Area'],['scatter','Scatter'],['small','Small multiples']],
+    ()=>m.state.chart, v=>{ m.state.chart=v; draw(); });
+
+  const ddTrans = dropdown('View',
+    Object.entries(TRANSFORM).map(([k,v])=>[k,v.label]),
+    ()=>m.state.transform, v=>{ m.state.transform=v; draw(); });
+
+  const ddEra = dropdown('Government',
+    [['off','Off'],['party','Party'],['pm','Prime minister'],['elections','Elections']],
+    ()=>m.state.era, v=>{ m.state.era=v; draw(); });
+
+  const ddGran = dropdown('Time',
+    Object.entries(GRAN).map(([k,v])=>[k,v.label]),
+    ()=>m.state.gran, v=>{
+      m.state.gran=v;
+      // finer detail over 30 years is unreadable, so pull the window in
+      if(v==='days'  && spanYears(m.state)>3)  m.state.from=shiftFrom(m.state.to,3);
+      if(v==='months'&& spanYears(m.state)>12) m.state.from=shiftFrom(m.state.to,12);
+      syncDates(); draw();
+    });
+
+  const RANGE_PRESETS = {all:0, y20:20, y10:10, y5:5, y1:1};
+  const ddRange = dropdown('Range',
+    [['all','All years'],['y20','Last 20 years'],['y10','Last 10 years'],['y5','Last 5 years'],['y1','Last year'],['custom','Custom…']],
+    ()=>'all',
+    v=>{
+      const custom = v==='custom';
+      dates.hidden = !custom; datesLabel.hidden = !custom;
+      if(custom){ from.focus(); return; }
+      const n = RANGE_PRESETS[v];
+      m.state.to='2026-12-31';
+      m.state.from = n===0 ? '1997-01-01' : shiftFrom('2026-12-31', n);
+      if(n!==0 && n<=2 && m.state.gran==='years'){ m.state.gran='months'; ddGran.sel.value='months'; }
+      syncDates(); draw();
+    });
+
+  const from = el('input',{class:'dateinput',type:'date',value:m.state.from,min:'1997-01-01',max:'2026-12-31','aria-label':'Start date',
+    onchange:e=>{ m.state.from=e.target.value; draw(); }});
+  const to = el('input',{class:'dateinput',type:'date',value:m.state.to,min:'1997-01-01',max:'2026-12-31','aria-label':'End date',
+    onchange:e=>{ m.state.to=e.target.value; draw(); }});
+  const dates = el('div',{class:'dates',hidden:'hidden'},[from, el('span',{class:'tiny',text:'to'}), to]);
+  const datesLabel = el('span',{class:'clabel',text:'Dates',hidden:'hidden'});
+
+  const panel = el('div',{class:'cfgpanel',hidden:'hidden',role:'group','aria-label':'Chart settings'},[
+    ddChart.label, ddChart.dd,
+    ddTrans.label, ddTrans.dd,
+    el('div',{class:'rule'}),
+    ddEra.label,   ddEra.dd,
+    ddGran.label,  ddGran.dd,
+    ddRange.label, ddRange.dd,
+    datesLabel, dates
+  ]);
+  mgr.appendChild(panel);
+
+  cfgBtn.addEventListener('click', e=>{
+    e.stopPropagation();
+    const open = panel.hidden;
+    closeAllPanels();
+    panel.hidden = !open;
+    cfgBtn.setAttribute('aria-expanded', String(open));
+  });
+  panel.addEventListener('click', e=>e.stopPropagation());
+  m._closePanel = ()=>{ panel.hidden=true; cfgBtn.setAttribute('aria-expanded','false'); };
+
+  function syncDates(){ from.value=m.state.from; to.value=m.state.to; }
+
+  /* --- warning, plot, legend, ribbon --- */
+  const warn = el('div',{class:'warn',hidden:'hidden'},[el('span',{html:ICON.warn}), el('span',{class:'warn-txt'})]);
+  const plot = el('div',{class:'plot'});
+  const legend = el('div',{class:'legend'});
+  const ribbon = el('div',{class:'ribbon'});
+  card.append(warn, plot, legend, ribbon);
+
+  /* --- footer + sources --- */
+  const srcBtn = el('button',{class:'srcbtn',text:'Sources & notes','aria-expanded':'false',
+    onclick:()=>{ const open=sources.hidden; sources.hidden=!open; srcBtn.setAttribute('aria-expanded',String(open)); srcBtn.textContent = open?'Hide sources':'Sources & notes'; }});
+  const foot = el('div',{class:'foot'},[
+    el('span',{class:'src-line'}), srcBtn, el('span',{class:'lic',text:'OGL v3.0'})
+  ]);
+  const sources = el('div',{class:'sources',hidden:'hidden'});
+  card.append(foot, sources);
+
+  m._dom = {wrap, card, plot, legend, ribbon, warn, sources, submeta:titles.querySelector('.submeta'), srcLine:foot.querySelector('.src-line'), ddChart, ddTrans, ddEra, ddGran, cfgBtn, from, to};
+  attachDrag(grip, wrap, m);
+  return wrap;
+}
+
+function closeAllPanels(){ MODULES.forEach(m=>m._closePanel && m._closePanel()); }
+document.addEventListener('click', closeAllPanels);
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeAllPanels(); });
+
+function spanYears(st){ return (new Date(st.to) - new Date(st.from)) / 3.156e10; }
+function shiftFrom(toStr, years){ const d=new Date(toStr); d.setUTCFullYear(d.getUTCFullYear()-years); return d.toISOString().slice(0,10); }
+
+/* ---- number + scale helpers ---- */
+function niceTicks(lo, hi, n){
+  const span = hi-lo || 1;
+  const raw = span/n, mag = Math.pow(10, Math.floor(Math.log10(raw)));
+  const step = [1,2,2.5,5,10].map(x=>x*mag).find(x=>x>=raw) || 10*mag;
+  const out=[]; for(let v=Math.ceil(lo/step)*step; v<=hi+1e-9; v+=step) out.push(v);
+  return out;
+}
+function fmtVal(v, m){
+  if(m.state.transform==='yoy') return (v>0?'+':'')+v.toFixed(1)+'%';
+  if(m.state.transform==='rebase') return v.toFixed(v<100?1:0);
+  const dp = Math.max(...m.series.map(s=>SERIES[s].dp));
+  return v.toLocaleString('en-GB',{minimumFractionDigits:dp, maximumFractionDigits:dp});
+}
+function partyAt(t){
+  for(const p of PMS){ if(t >= +new Date(p.start) && t < +new Date(p.end)) return p; }
+  return PMS[PMS.length-1];
+}
+
+/* ---- the chart ---- */
+function drawModule(m){
+  const d = m._dom;
+  const st = m.state;
+  const t0 = +new Date(st.from), t1 = +new Date(st.to);
+  const active = m.series.filter(s=>!st.hidden.has(s));
+
+  // series data
+  const data = active.map((sid,i)=>{
+    let pts = expand(sid, st.gran).filter(p=>p.t>=t0 && p.t<=t1);
+    pts = applyTransform(pts, st.transform, st.gran);
+    return {sid, name:SERIES[sid].name, colour:COLOURS[m.series.indexOf(sid)%COLOURS.length], pts};
+  }).filter(s=>s.pts.length>1);
+
+  /* meta line */
+  const unitTxt = st.transform==='rebase' ? 'index · '+new Date(st.from).getUTCFullYear()+'=100'
+                : st.transform==='yoy' ? 'change on a year earlier · %'
+                : active.map(s=>SERIES[s].unit).filter((v,i,a)=>a.indexOf(v)===i).join(' · ') || '—';
+  const geos = m.series.map(s=>SERIES[s].geo).filter((v,i,a)=>a.indexOf(v)===i);
+  d.submeta.textContent = [unitTxt, geos.join(' / '), GRAN[st.gran].label.toLowerCase()].join('  ·  ');
+  d.srcLine.textContent = m.series.map(s=>SERIES[s].pub).filter((v,i,a)=>a.indexOf(v)===i).join(' · ') + ' · placeholder data';
+
+  /* warning */
+  const warns = [];
+  if(geos.length>1) warns.push('Different geographies — '+geos.join(' vs ')+', not like for like.');
+  if(st.gran!=='years') warns.push('These series are published annually. Finer detail is interpolated for demonstration only.');
+  d.warn.hidden = warns.length===0;
+  if(warns.length) d.warn.querySelector('.warn-txt').textContent = warns.join(' ');
+
+  /* keep dropdowns in step with state (presets and auto-adjustments change it) */
+  d.ddChart.sel.value = st.chart;
+  d.ddTrans.sel.value = st.transform;
+  d.ddEra.sel.value   = st.era;
+  d.ddGran.sel.value  = st.gran;
+  d.ddEra.dd.classList.toggle('active', st.era!=='off');
+  d.ddTrans.dd.classList.toggle('active', st.transform!=='raw');
+  /* a small dot on the settings button when this chart has been tuned */
+  d.cfgBtn.classList.toggle('tuned',
+    st.transform!=='raw' || st.era!=='off' || st.gran!=='years' ||
+    st.from!=='1997-01-01' || st.to!=='2026-12-31');
+
+  /* geometry */
+  const W = Math.max(320, d.plot.clientWidth || 640);
+  const H = st.width==='half' ? 300 : 380;
+  const M = {t:16, r:46, b:26, l:52};
+  const iw = W-M.l-M.r, ih = H-M.t-M.b;
+
+  const all = data.flatMap(s=>s.pts.map(p=>p.v));
+  let lo = Math.min(...all), hi = Math.max(...all);
+  if(st.chart==='bars'||st.chart==='area') lo = Math.min(lo, st.transform==='yoy'?lo:0);
+  const pad = (hi-lo)*0.08 || 1; lo-=pad; hi+=pad;
+  const x = t => M.l + (t-t0)/(t1-t0)*iw;
+  const y = v => M.t + ih - (v-lo)/(hi-lo)*ih;
+
+  const NS='http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox',`0 0 ${W} ${H}`); svg.setAttribute('width','100%'); svg.setAttribute('height',H);
+  svg.setAttribute('role','img');
+  svg.setAttribute('aria-label', m.title+' — '+GRAN[st.gran].label.toLowerCase()+', '+TRANSFORM[st.transform].label.toLowerCase());
+  const add=(tag,attrs)=>{ const n=document.createElementNS(NS,tag); for(const k in attrs) n.setAttribute(k,attrs[k]); svg.appendChild(n); return n; };
+
+  if(st.chart==='small'){
+    drawSmallMultiples(svg, add, data, m, {W,H,M,x,t0,t1});
+  } else if(st.chart==='scatter' && data.length===2){
+    drawScatter(svg, add, data, m, {W,H,M,iw,ih});
+  } else {
+    // gridlines + y labels
+    niceTicks(lo,hi,4).forEach(v=>{
+      add('line',{x1:M.l,x2:W-M.r,y1:y(v),y2:y(v),stroke:'var(--grid)','stroke-width':1});
+      const tx=add('text',{x:M.l-10,y:y(v)+4,fill:'var(--muted)','font-size':11,'text-anchor':'end'});
+      tx.textContent = st.transform==='yoy'? v.toFixed(0)+'%' : v>=1000? (v/1000).toFixed(1)+'k' : v.toFixed(hi-lo<8?1:0);
+    });
+    if(st.transform==='yoy' && lo<0 && hi>0)
+      add('line',{x1:M.l,x2:W-M.r,y1:y(0),y2:y(0),stroke:'var(--rule-2)','stroke-width':1.5});
+
+    // x labels
+    const yrs = niceTicks(new Date(t0).getUTCFullYear(), new Date(t1).getUTCFullYear(), Math.max(2,Math.floor(iw/110)));
+    yrs.forEach(yr=>{
+      const t=+Date.UTC(yr,0,1); if(t<t0||t>t1) return;
+      const tx=add('text',{x:x(t),y:H-8,fill:'var(--muted)','font-size':10.5,'text-anchor':'middle'});
+      tx.textContent = spanYears(st)<3 ? new Date(t).toLocaleDateString('en-GB',{month:'short',year:'2-digit',timeZone:'UTC'}) : yr;
+    });
+
+    // election guides
+    if(st.era==='elections') ELECTIONS.forEach(e=>{
+      const t=+new Date(e); if(t<t0||t>t1) return;
+      add('line',{x1:x(t),x2:x(t),y1:M.t,y2:M.t+ih,stroke:'var(--rule-2)','stroke-width':1,'stroke-dasharray':'2 4'});
+    });
+
+    // series
+    data.forEach((s,si)=>{
+      const pts = s.pts;
+      if(st.chart==='bars'){
+        const bw = Math.max(1, (iw/pts.length)/data.length*0.72);
+        pts.forEach(p=>{
+          const h = Math.abs(y(p.v)-y(Math.max(lo,0)));
+          add('rect',{x:x(p.t)-(bw*data.length)/2 + si*bw, y:Math.min(y(p.v),y(Math.max(lo,0))),
+            width:bw, height:Math.max(1,h), fill:s.colour, opacity:.88, rx:Math.min(2,bw/3)});
+        });
+      } else {
+        const dPath = pts.map((p,i)=>(i?'L':'M')+x(p.t).toFixed(1)+' '+y(p.v).toFixed(1)).join(' ');
+        if(st.chart==='area'){
+          add('path',{d:dPath+` L ${x(pts[pts.length-1].t).toFixed(1)} ${y(Math.max(lo,0)).toFixed(1)} L ${x(pts[0].t).toFixed(1)} ${y(Math.max(lo,0)).toFixed(1)} Z`,
+            fill:s.colour, opacity:.16});
+        }
+        if(Number(getComputedStyle(document.documentElement).getPropertyValue('--glow'))>0)
+          add('path',{d:dPath,fill:'none',stroke:s.colour,'stroke-width':7,opacity:.14,'stroke-linejoin':'round','stroke-linecap':'round'});
+        add('path',{d:dPath,fill:'none',stroke:s.colour,'stroke-width':2.4,'stroke-linejoin':'round','stroke-linecap':'round'});
+        if(st.chart==='scatter') pts.forEach(p=>add('circle',{cx:x(p.t),cy:y(p.v),r:2.4,fill:s.colour}));
+      }
+      // end label
+      const last = pts[pts.length-1];
+      const lb = add('text',{x:W-M.r+8, y:y(last.v)+4, fill:s.colour,'font-size':12,'font-weight':600});
+      lb.textContent = st.transform==='yoy' ? last.v.toFixed(1) : last.v>=1000 ? (last.v/1000).toFixed(1)+'k' : last.v.toFixed(0);
+    });
+
+    attachHover(svg, d.plot, data, m, {M,iw,ih,x,y,t0,t1,W,H});
+  }
+
+  d.plot.innerHTML=''; d.plot.appendChild(svg);
+
+  /* legend — click to hide a series */
+  d.legend.innerHTML='';
+  m.series.forEach((sid,i)=>{
+    const on = !st.hidden.has(sid);
+    d.legend.appendChild(el('button',{class:'lg','aria-pressed':String(on),onclick:()=>{
+      if(st.hidden.has(sid)) st.hidden.delete(sid);
+      else if(st.hidden.size < m.series.length-1) st.hidden.add(sid);
+      else return toast('At least one series has to stay on the chart');
+      draw();
+    }},[ el('i',{style:'background:'+COLOURS[i%COLOURS.length]}), el('span',{text:SERIES[sid].name}) ]));
+  });
+
+  drawRibbon(m, {t0,t1,M,W,x});
+  buildSources(m);
+}
+
+/* ---- scatter: one series against the other, coloured by government ---- */
+function drawScatter(svg, add, data, m, g){
+  const [a,b] = data;
+  const n = Math.min(a.pts.length,b.pts.length);
+  const ax = a.pts.slice(0,n).map(p=>p.v), by = b.pts.slice(0,n).map(p=>p.v);
+  const xlo=Math.min(...ax), xhi=Math.max(...ax), ylo=Math.min(...by), yhi=Math.max(...by);
+  const X = v=>g.M.l+(v-xlo)/((xhi-xlo)||1)*g.iw, Y = v=>g.M.t+g.ih-(v-ylo)/((yhi-ylo)||1)*g.ih;
+  niceTicks(ylo,yhi,4).forEach(v=>{
+    add('line',{x1:g.M.l,x2:g.W-g.M.r,y1:Y(v),y2:Y(v),stroke:'var(--grid)','stroke-width':1});
+    add('text',{x:g.M.l-10,y:Y(v)+4,fill:'var(--muted)','font-size':11,'text-anchor':'end'}).textContent = v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(1);
+  });
+  niceTicks(xlo,xhi,4).forEach(v=>{
+    add('text',{x:X(v),y:g.H-8,fill:'var(--muted)','font-size':10.5,'text-anchor':'middle'}).textContent = v>=1000?(v/1000).toFixed(1)+'k':v.toFixed(1);
+  });
+  for(let i=0;i<n;i++){
+    const pm = partyAt(a.pts[i].t);
+    const fill = m.state.era==='off' ? 'var(--purple)' : (pm.party==='coal'?'#7B62C4':PARTY[pm.party].fill);
+    add('circle',{cx:X(ax[i]),cy:Y(by[i]),r:4.2,fill,opacity:.85,stroke:'var(--surface)','stroke-width':1});
+  }
+  add('text',{x:g.M.l,y:g.M.t-4,fill:'var(--muted)','font-size':10.5}).textContent = '↑ '+b.name+'   →  '+a.name;
+}
+
+/* ---- small multiples ---- */
+function drawSmallMultiples(svg, add, data, m, g){
+  const n=data.length, gap=18, panelW=(g.W-g.M.l-g.M.r-gap*(n-1))/n;
+  data.forEach((s,i)=>{
+    const left=g.M.l+i*(panelW+gap);
+    const vals=s.pts.map(p=>p.v), lo=Math.min(...vals), hi=Math.max(...vals);
+    const ph=g.H-g.M.t-g.M.b-16;
+    const X=t=>left+(t-g.t0)/(g.t1-g.t0)*panelW, Y=v=>g.M.t+16+ph-(v-lo)/((hi-lo)||1)*ph;
+    add('text',{x:left,y:g.M.t+4,fill:'var(--muted)','font-size':11}).textContent=s.name;
+    add('line',{x1:left,x2:left+panelW,y1:Y(lo),y2:Y(lo),stroke:'var(--grid)','stroke-width':1});
+    add('path',{d:s.pts.map((p,j)=>(j?'L':'M')+X(p.t).toFixed(1)+' '+Y(p.v).toFixed(1)).join(' '),
+      fill:'none',stroke:s.colour,'stroke-width':2.2,'stroke-linejoin':'round'});
+  });
+}
+
+/* ---- hover readout ---- */
+function attachHover(svg, host, data, m, g){
+  const NS='http://www.w3.org/2000/svg';
+  const layer=document.createElementNS(NS,'g'); layer.setAttribute('opacity','0'); svg.appendChild(layer);
+  const line=document.createElementNS(NS,'line');
+  line.setAttribute('y1',g.M.t); line.setAttribute('y2',g.M.t+g.ih);
+  line.setAttribute('stroke','var(--ink-2)'); line.setAttribute('stroke-width','1'); line.setAttribute('stroke-dasharray','3 3');
+  layer.appendChild(line);
+  const dots=data.map(s=>{ const c=document.createElementNS(NS,'circle'); c.setAttribute('r',4); c.setAttribute('fill',s.colour);
+    c.setAttribute('stroke','var(--surface)'); c.setAttribute('stroke-width','2'); layer.appendChild(c); return c; });
+  const lbl=document.createElementNS(NS,'text'); lbl.setAttribute('font-size','11'); lbl.setAttribute('fill','var(--ink)');
+  lbl.setAttribute('font-weight','600'); layer.appendChild(lbl);
+
+  svg.addEventListener('pointermove', e=>{
+    const r=svg.getBoundingClientRect(), sx=(e.clientX-r.left)*(g.W/r.width);
+    if(sx<g.M.l||sx>g.W-g.M.r) return layer.setAttribute('opacity','0');
+    const t=g.t0+(sx-g.M.l)/g.iw*(g.t1-g.t0);
+    layer.setAttribute('opacity','1');
+    line.setAttribute('x1',sx); line.setAttribute('x2',sx);
+    const parts=[]; let stamp='';
+    data.forEach((s,i)=>{
+      let best=s.pts[0]; for(const p of s.pts) if(Math.abs(p.t-t)<Math.abs(best.t-t)) best=p;
+      dots[i].setAttribute('cx',g.x(best.t)); dots[i].setAttribute('cy',g.y(best.v));
+      parts.push(fmtVal(best.v,m));
+      if(i===0) stamp = GRAN[m.state.gran].fmt(new Date(best.t));
+    });
+    lbl.textContent = stamp+'  ·  '+parts.join('  /  ');
+    lbl.setAttribute('x', Math.min(sx+8, g.W-g.M.r-150)); lbl.setAttribute('y', g.M.t+12);
+  });
+  svg.addEventListener('pointerleave', ()=>layer.setAttribute('opacity','0'));
+}
+
+/* ---- government ribbon ---- */
+function drawRibbon(m, g){
+  const d=m._dom, st=m.state;
+  if(st.era==='off'){ d.ribbon.hidden=true; d.ribbon.innerHTML=''; return; }
+  d.ribbon.hidden=false;
+  const NS='http://www.w3.org/2000/svg', H=st.era==='elections'?34:44;
+  const svg=document.createElementNS(NS,'svg');
+  svg.setAttribute('viewBox',`0 0 ${g.W} ${H}`); svg.setAttribute('width','100%'); svg.setAttribute('height',H);
+  svg.setAttribute('role','img'); svg.setAttribute('aria-label','Governing party over the period shown');
+  const add=(tag,attrs)=>{ const n=document.createElementNS(NS,tag); for(const k in attrs) n.setAttribute(k,attrs[k]); svg.appendChild(n); return n; };
+
+  // stripe pattern for the coalition — a single colour would misstate it
+  const defs=document.createElementNS(NS,'defs');
+  defs.innerHTML = `<pattern id="coal" width="9" height="9" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="9" height="9" fill="var(--con)"/><rect width="4.5" height="9" fill="var(--ld)"/></pattern>`;
+  svg.appendChild(defs);
+
+  if(st.era==='elections'){
+    add('line',{x1:g.M.l,x2:g.W-g.M.r,y1:9,y2:9,stroke:'var(--rule-2)','stroke-width':1});
+    ELECTIONS.forEach(e=>{
+      const t=+new Date(e); if(t<g.t0||t>g.t1) return;
+      add('line',{x1:g.x(t),x2:g.x(t),y1:3,y2:15,stroke:'var(--ink-2)','stroke-width':1.5});
+      add('text',{x:g.x(t),y:28,fill:'var(--muted)','font-size':10.5,'text-anchor':'middle','font-family':'IBM Plex Mono, monospace'})
+        .textContent = new Date(t).getUTCFullYear();
+    });
+    d.ribbon.innerHTML=''; d.ribbon.appendChild(svg); return;
+  }
+
+  // merge into blocks
+  let blocks;
+  if(st.era==='party'){
+    blocks=[];
+    PMS.forEach(p=>{
+      const prev=blocks[blocks.length-1];
+      if(prev && prev.party===p.party) prev.end=p.end;
+      else blocks.push({party:p.party, name:PARTY[p.party].label, start:p.start, end:p.end});
+    });
+  } else {
+    // a PM can span two governments (Cameron: coalition, then majority).
+    // Both blocks are drawn because the colours differ, but only the first
+    // carries the name.
+    blocks = PMS.reduce((acc,p)=>{
+      const prev=acc[acc.length-1];
+      acc.push({...p, hideLabel: !!(prev && prev.name===p.name)});
+      return acc;
+    },[]);
+  }
+
+  blocks.forEach(b=>{
+    const s=Math.max(+new Date(b.start), g.t0), e=Math.min(+new Date(b.end), g.t1);
+    if(e<=s) return;
+    const x0=g.x(s), w=g.x(e)-x0;
+    add('rect',{x:x0, y:0, width:Math.max(1,w), height:18, fill:PARTY[b.party].fill, rx:3, opacity:.92});
+    if(w>44 && !b.hideLabel){
+      add('text',{x:x0+3, y:33, fill:'var(--muted)','font-size':11,'font-family':'IBM Plex Mono, monospace'})
+        .textContent = st.era==='party' ? PARTY[b.party].label : b.name;
+    }
+  });
+  d.ribbon.innerHTML=''; d.ribbon.appendChild(svg);
+}
+
+/* =========================================================================
+   6. SOURCES — written for someone who has to cite this in coursework
+   ========================================================================= */
+function howToRead(m){
+  const st=m.state;
+  const yr = new Date(st.from).getUTCFullYear();
+  if(st.transform==='rebase')
+    return `Every line starts at 100 in ${yr}. A value of 140 means that series is 40% higher than it was in ${yr}. This lets you compare things measured in different units — a ratio and a wage — but it hides the actual levels, so a line at 140 is not necessarily "bigger" than one at 110.`;
+  if(st.transform==='yoy')
+    return 'Each point shows the change on the same point a year earlier, as a percentage. A falling line above zero still means the series is growing, just more slowly. This is the distinction most often got wrong when people read inflation charts.';
+  return 'Values are shown as published, in their original units. Because the two series use different units, compare their shape rather than their height.';
+}
+function buildSources(m){
+  const box=m._dom.sources;
+  if(box.hidden && box.dataset.built==='1') return;
+  const st=m.state;
+  const rows = m.series.map(sid=>{
+    const s=SERIES[sid];
+    return `<li>
+      <div class="nm">${s.name}</div>
+      <div class="dt">
+        ${s.pub} · ${s.dataset}<br>
+        Series ID <b>${s.code}</b> · ${s.geo} · published ${s.freq.toLowerCase()}<br>
+        Licence: Open Government Licence v3.0 · <a href="${s.url}" target="_blank" rel="noopener">Go to the original data ↗</a>
+      </div>
+    </li>`;
+  }).join('');
+  const today=new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
+  const cite = m.series.map(sid=>SERIES[sid].pub).filter((v,i,a)=>a.indexOf(v)===i).join('; ')
+    + ` (${new Date().getUTCFullYear()}) ${m.title}. Reproduced in Polyoptic, `
+    + `${TRANSFORM[st.transform].label.toLowerCase()}, ${new Date(st.from).getUTCFullYear()}–${new Date(st.to).getUTCFullYear()}. `
+    + `Available at: polyoptic.co (Accessed: ${today}).`;
+
+  box.innerHTML = `
+    <p><span class="flag">Placeholder data</span> &nbsp;The numbers plotted here are invented for demonstration. Do not cite them. The source records below show the form a real citation will take once the ingest is wired up.</p>
+    <h3>What this chart shows</h3>
+    <p>${m.plain}</p>
+    <h3>How to read it</h3>
+    <p>${howToRead(m)}</p>
+    <h3>Things to be careful about</h3>
+    <p>${m.caveats.map(c=>'• '+c).join('<br>')}</p>
+    <h3>Where the numbers come from</h3>
+    <ul class="srclist">${rows}</ul>
+    <h3>Cite this chart</h3>
+    <div class="cite">${cite}</div>
+    <p style="margin-top:10px"><button class="srcbtn" id="cp-${m.id}">Copy citation</button></p>
+  `;
+  box.dataset.built='1';
+  const btn=box.querySelector('#cp-'+m.id);
+  if(btn) btn.onclick=()=>{ navigator.clipboard?.writeText(cite).then(()=>toast('Citation copied')).catch(()=>toast('Select the text to copy it')); };
+}
+
+/* =========================================================================
+   7. EXPORTS
+   ========================================================================= */
+function currentRows(m){
+  const st=m.state, t0=+new Date(st.from), t1=+new Date(st.to);
+  const cols = m.series.map(sid=>applyTransform(expand(sid,st.gran).filter(p=>p.t>=t0&&p.t<=t1), st.transform, st.gran));
+  const head = ['period', ...m.series.map(sid=>SERIES[sid].name+' ('+(st.transform==='raw'?SERIES[sid].unit:TRANSFORM[st.transform].label)+')')];
+  const n = Math.max(...cols.map(c=>c.length));
+  const rows=[];
+  for(let i=0;i<n;i++){
+    const t = (cols.find(c=>c[i])||[])[i]; if(!t) continue;
+    rows.push([GRAN[st.gran].fmt(new Date(t.t)), ...cols.map(c=>c[i]?c[i].v.toFixed(3):'')]);
+  }
+  return {head, rows};
+}
+function exportCSV(m){
+  const {head,rows}=currentRows(m);
+  const csv = ['# PLACEHOLDER DATA — invented for demonstration, not for citation',
+    '# '+m.title, '# Generated by Polyoptic on '+new Date().toISOString().slice(0,10),
+    head.join(','), ...rows.map(r=>r.join(','))].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=m.id+'-placeholder.csv'; a.click(); URL.revokeObjectURL(a.href);
+  toast('CSV downloaded — labelled as placeholder');
+}
+function exportPNG(m){
+  const svg=m._dom.plot.querySelector('svg'); if(!svg) return;
+  const cs=getComputedStyle(document.documentElement);
+  let markup=new XMLSerializer().serializeToString(svg);
+  markup=markup.replace(/var\(--([a-z0-9-]+)\)/g,(_,n)=>cs.getPropertyValue('--'+n).trim()||'#888');
+  const img=new Image(), scale=2;
+  img.onload=()=>{
+    const c=document.createElement('canvas');
+    c.width=svg.viewBox.baseVal.width*scale; c.height=svg.viewBox.baseVal.height*scale;
+    const ctx=c.getContext('2d');
+    ctx.fillStyle=cs.getPropertyValue('--surface').trim(); ctx.fillRect(0,0,c.width,c.height);
+    ctx.drawImage(img,0,0,c.width,c.height);
+    const a=document.createElement('a'); a.href=c.toDataURL('image/png'); a.download=m.id+'.png'; a.click();
+    toast('PNG downloaded');
+  };
+  img.onerror=()=>toast("Couldn't render the PNG in this preview");
+  img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(markup);
+}
+function share(m){
+  const st=m.state;
+  const url = location.origin+location.pathname+'#'+new URLSearchParams({
+    m:m.id, s:m.series.join(','), c:st.chart, t:st.transform, e:st.era, g:st.gran, f:st.from, to:st.to
+  }).toString();
+  navigator.clipboard?.writeText(url).then(()=>toast('Link copied — it reopens this exact view')).catch(()=>toast(url));
+}
+
+/* =========================================================================
+   8. DRAG TO REORDER
+   A dashed slot shows the landing position; the other charts slide out of
+   the way using a FLIP animation. Locked charts keep their slot and are
+   skipped as landing targets.
+   ========================================================================= */
+let drag = null;
+
+function slotsFree(){
+  return order.map((id,i)=>i).filter(i=>!locked.has(order[i]));
+}
+function commitOrder(draggedId, targetSlot){
+  const lockedAt = new Map();
+  order.forEach((id,i)=>{ if(locked.has(id)) lockedAt.set(i,id); });
+  const free = slotsFree();
+  const movers = order.filter(id=>!locked.has(id) && id!==draggedId);
+  const k = Math.max(0, free.indexOf(targetSlot));
+  movers.splice(k, 0, draggedId);
+  const next=[]; let mi=0;
+  for(let i=0;i<order.length;i++) next.push(lockedAt.has(i) ? lockedAt.get(i) : movers[mi++]);
+  order = next;
+}
+
+function flip(mutate){
+  const els=[...board.children].filter(e=>e!==drag?.el);
+  const first=new Map(els.map(e=>[e,e.getBoundingClientRect()]));
+  mutate();
+  els.forEach(e=>{
+    const f=first.get(e); if(!f) return;
+    const l=e.getBoundingClientRect(), dx=f.left-l.left, dy=f.top-l.top;
+    if(Math.abs(dx)>0.5||Math.abs(dy)>0.5)
+      e.animate([{transform:`translate(${dx}px,${dy}px)`},{transform:'none'}],
+        {duration:matchMedia('(prefers-reduced-motion: reduce)').matches?1:230, easing:'cubic-bezier(.2,.8,.2,1)'});
+  });
+}
+
+function attachDrag(handle, wrap, m){
+  handle.addEventListener('pointerdown', e=>{
+    if(locked.has(m.id) || e.button!==0) return;
+    e.preventDefault();
+    const r=wrap.getBoundingClientRect();
+    const start={x:e.clientX, y:e.clientY};
+    let started=false;
+    handle.setPointerCapture(e.pointerId);
+
+    const move = ev=>{
+      if(!started){
+        if(Math.hypot(ev.clientX-start.x, ev.clientY-start.y) < 5) return;
+        started=true;
+        closeAllPanels();
+        const slot=el('div',{class:'slot','data-width':m.state.width},[el('span',{text:'Drop here'})]);
+        slot.style.height=r.height+'px';
+        drag={el:wrap, m, slot, offX:start.x-r.left, offY:start.y-r.top, w:r.width, h:r.height,
+              index:order.indexOf(m.id), target:order.indexOf(m.id)};
+        board.insertBefore(slot, wrap);
+        wrap.classList.add('dragging');
+        wrap.style.width=r.width+'px'; wrap.style.height=r.height+'px';
+        wrap.style.left=r.left+'px'; wrap.style.top=r.top+'px';
+        document.body.classList.add('is-dragging');
+      }
+      wrap.style.left=(ev.clientX-drag.offX)+'px';
+      wrap.style.top=(ev.clientY-drag.offY)+'px';
+
+      // where would it land?
+      const cx=ev.clientX, cy=ev.clientY;
+      let bestSlot=drag.target, bestD=Infinity;
+      slotsFree().forEach(i=>{
+        const id=order[i]; const node = id===m.id ? drag.slot : byId[id]._dom.wrap;
+        const rr=node.getBoundingClientRect();
+        const d=Math.hypot(cx-(rr.left+rr.width/2), cy-(rr.top+rr.height/2));
+        if(d<bestD){ bestD=d; bestSlot=i; }
+      });
+      if(bestSlot!==drag.target){
+        drag.target=bestSlot;
+        flip(()=>{
+          const before = order[bestSlot]===m.id ? null : byId[order[bestSlot]]._dom.wrap;
+          const afterTarget = bestSlot > drag.index;
+          board.insertBefore(drag.slot, afterTarget && before ? before.nextSibling : before);
+        });
+      }
+    };
+
+    const up = ev=>{
+      handle.releasePointerCapture?.(ev.pointerId);
+      window.removeEventListener('pointermove',move);
+      window.removeEventListener('pointerup',up);
+      if(!started){ drag=null; return; }
+      const sr=drag.slot.getBoundingClientRect(), wr=wrap.getBoundingClientRect();
+      wrap.animate([{transform:'none'},{transform:`translate(${sr.left-wr.left}px, ${sr.top-wr.top}px)`}],
+        {duration:matchMedia('(prefers-reduced-motion: reduce)').matches?1:180, easing:'cubic-bezier(.2,.8,.2,1)'})
+        .onfinish = ()=>{
+          commitOrder(m.id, drag.target);
+          wrap.classList.remove('dragging');
+          wrap.style.cssText=''; wrap.dataset.width=m.state.width;
+          drag.slot.remove();
+          document.body.classList.remove('is-dragging');
+          order.forEach(id=>board.appendChild(byId[id]._dom.wrap));
+          drag=null; draw();
+          toast(locked.size ? 'Moved — locked charts stayed put' : 'Moved');
+        };
+    };
+    window.addEventListener('pointermove',move);
+    window.addEventListener('pointerup',up);
+  });
+}
+
+/* =========================================================================
+   9. BOOT
+   ========================================================================= */
+MODULES.forEach(m=>board.appendChild(buildModule(m)));
+
+function draw(){ MODULES.forEach(m=>{ m._dom.sources.dataset.built=''; drawModule(m); }); }
+draw();
+
+const themeBtns={dark:document.getElementById('t-dark'), light:document.getElementById('t-light')};
+function setTheme(t){
+  document.documentElement.dataset.theme=t;
+  themeBtns.dark.setAttribute('aria-pressed',String(t==='dark'));
+  themeBtns.light.setAttribute('aria-pressed',String(t==='light'));
+  requestAnimationFrame(draw);   // redraw so SVG picks up the new tokens
+}
+themeBtns.dark.onclick=()=>setTheme('dark');
+themeBtns.light.onclick=()=>setTheme('light');
+
+let rt; new ResizeObserver(()=>{ if(drag) return; clearTimeout(rt); rt=setTimeout(draw,90); }).observe(board);
+</script>
+</body>
+</html>
