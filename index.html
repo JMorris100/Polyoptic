@@ -31,12 +31,12 @@ svg{display:block}
 .topnav{margin-left:auto;display:flex;align-items:center;gap:26px}
 .topnav a{color:rgba(255,255,255,.74);text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px solid transparent;transition:.15s}
 .topnav a:hover{color:#fff;border-bottom-color:rgba(255,255,255,.5)}
-.btn-invert{background:#fff;color:var(--purple);font-weight:600;font-size:14px;padding:11px 22px;border-radius:100px;border:0;text-decoration:none;white-space:nowrap;transition:.15s}
-.btn-invert:hover{background:rgba(255,255,255,.9);border-bottom-color:transparent!important}
+.topnav a.btn-invert{background:#fff;color:var(--purple);font-weight:700;font-size:14px;padding:11px 24px;border-radius:100px;border:0;border-bottom:0;text-decoration:none;white-space:nowrap;transition:.15s}
+.topnav a.btn-invert:hover{background:#F1EEFA;color:var(--purple-dk);border-bottom-color:transparent}
 @media(max-width:820px){.topnav a:not(.btn-invert){display:none}.topbar .wrap{height:68px}}
 
 /* hero */
-.hero{padding:78px 0 66px}
+.hero{padding:52px 0 62px}
 .eyebrow{font-family:"IBM Plex Mono";font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--purple);margin-bottom:24px}
 .hero h1{font-size:clamp(40px,6.4vw,68px);font-weight:800;max-width:17ch}
 .hero h1 em{font-style:normal;color:var(--purple)}
@@ -77,6 +77,25 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .era text{font-family:"IBM Plex Mono";font-size:9px;fill:#fff;font-weight:500}
 .pmtick{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2;opacity:.32}
 .pmlabel{font-family:"IBM Plex Mono";font-size:8.5px;fill:var(--muted)}
+
+/* showreel */
+.showreel{position:relative;overflow:hidden}
+.reel-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:14px 22px 4px;flex-wrap:wrap}
+.reel-label{font-family:"Archivo";font-weight:700;font-size:15px;letter-spacing:-0.02em;color:var(--purple);min-height:22px}
+.reel-label span{display:inline-block;transition:opacity .32s ease, transform .32s ease}
+.reel-label.swap span{opacity:0;transform:translateY(-6px)}
+.reel-steps{display:flex;gap:7px;align-items:center}
+.dot{width:26px;height:4px;border:0;padding:0;border-radius:100px;background:var(--rule);cursor:pointer;
+  position:relative;overflow:hidden;transition:background .25s}
+.dot:hover{background:var(--prule)}
+.dot[aria-pressed="true"]{background:var(--prule)}
+.dot i{position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);
+  background:var(--purple);display:block}
+.dot[aria-pressed="true"] i{transform:scaleX(var(--p,0))}
+.reel-paused .dot i{background:var(--muted)}
+.zeroline{stroke:var(--muted);stroke-width:1;opacity:.5}
+@media (prefers-reduced-motion: reduce){.reel-label span{transition:none}}
 
 /* tiles */
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
@@ -144,12 +163,11 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
 
 <div class="wrap">
   <div class="hero">
-    <div class="eyebrow">UK official statistics</div>
     <h1>Every UK statistic, <em>made comparable</em>.</h1>
     <p>Government publishes thousands of figures across dozens of departments, in different units, on different calendars, for different parts of the country. Polyoptic brings them together and lets you rebase, adjust for inflation, compare and map them — and tells you when two numbers aren't measuring the same thing.</p>
     <div class="cta">
-      <a class="pill solid" href="explore.html#s=realpay,hpe&amp;c=line&amp;t=index&amp;f=1997&amp;to=2026&amp;r=1">Compare pay and house prices</a>
-      <a class="pill ghost" href="#topics">Browse the topics</a>
+      <a class="pill solid" href="#topics">Browse the topics</a>
+      <a class="pill ghost" href="explore.html">To the Explorer</a>
     </div>
   </div>
 </div>
@@ -159,24 +177,29 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
 </div>
 
 <div class="wrap">
-  <div class="card">
+  <div class="card showreel" id="reel">
     <div class="card-hd">
-      <div><h3>House price to earnings ratio</h3><div class="sub">Median house price ÷ median gross annual earnings</div></div>
+      <div>
+        <h3>House price to earnings ratio</h3>
+        <div class="sub">Median house price &divide; median gross annual earnings</div>
+      </div>
       <span class="tagpill">Chart of the week</span>
     </div>
-    <div class="chips" role="group" aria-label="Transform">
-      <button class="chip" aria-pressed="true" data-t="raw">As published</button>
-      <button class="chip" aria-pressed="false" data-t="index">Rebase to 1997 = 100</button>
-      <button class="chip" aria-pressed="false" data-t="smooth">3-year average</button>
+
+    <div class="reel-bar">
+      <div class="reel-label"><span id="reelLabel">As published</span></div>
+      <div class="reel-steps" id="reelSteps" role="group" aria-label="Choose a view"></div>
     </div>
+
     <div class="card-bd">
       <div id="chartA"></div>
       <div class="ribbon-title">Government in power</div>
       <div id="ribbonA"></div>
     </div>
+
     <div class="card-ft">
-      <span>SOURCE · ONS + HM LAND REGISTRY</span><span>LICENCE · OGL v3.0</span>
-      <span>GEOGRAPHY · ENGLAND &amp; WALES</span><span id="ftA">VIEW · AS PUBLISHED</span>
+      <span>SOURCE &middot; ONS + HM LAND REGISTRY</span><span>LICENCE &middot; OGL v3.0</span>
+      <span>GEOGRAPHY &middot; ENGLAND &amp; WALES</span><span id="ftA">VIEW &middot; AS PUBLISHED</span>
     </div>
   </div>
 </div>
@@ -268,50 +291,206 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
 </footer>
 
 <script>
-const W=980,H=250,P={t:14,r:60,b:24,l:44},X0=1997,X1=2026;
+/* ══════════════════════════════════════════════════════════════
+   Shared chart plumbing
+   ══════════════════════════════════════════════════════════════ */
+const W=980,H=250,P={t:16,r:62,b:26,l:52},X0=1997,X1=2026;
 const sx=x=>P.l+((x-X0)/(X1-X0))*(W-P.l-P.r);
-const ERAS=[{f:1997,t:2010,p:"Labour",c:"#E4003B"},{f:2010,t:2015,p:"Coalition",c:"#7E6FA8"},{f:2015,t:2024,p:"Conservative",c:"#0087DC"},{f:2024,t:2026,p:"Labour",c:"#E4003B"}];
-const PMS=[[1997,"Blair"],[2007,"Brown"],[2010,"Cameron"],[2016,"May"],[2019,"Johnson"],[2022,"Truss"],[2023,"Sunak"],[2024,"Starmer"]];
-function line(v,mn,mx){return v.map((y,i)=>{const X=sx(X0+i),Y=P.t+(1-(y-mn)/(mx-mn))*(H-P.t-P.b);return (i?"L":"M")+X.toFixed(1)+" "+Y.toFixed(1);}).join(" ");}
-function draw(el,series){
-  let g="";
-  for(let i=0;i<=4;i++){const y=P.t+i*(H-P.t-P.b)/4;g+=`<line class="gridline" x1="${P.l}" y1="${y}" x2="${W-P.r}" y2="${y}"/>`;}
-  for(let yr=2000;yr<=2025;yr+=5){g+=`<text class="axlabel" x="${sx(yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`;}
-  series.forEach(s=>{
-    const a=Math.min(...s.v),b=Math.max(...s.v),p=(b-a)*.16||1,mn=a-p,mx=b+p;
-    g+=`<path class="line" d="${line(s.v,mn,mx)}" stroke="${s.c}"/>`;
-    const ly=P.t+(1-(s.v[s.v.length-1]-mn)/(mx-mn))*(H-P.t-P.b);
-    g+=`<text class="serieslabel" x="${W-P.r+8}" y="${ly+3.5}" fill="${s.c}">${s.t}</text>`;
-  });
-  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Illustrative chart">${g}</svg>`;
-}
+const ERAS=[{f:1997,t:2010,p:"Labour",c:"#E4003B"},{f:2010,t:2015,p:"Coalition",c:"#7E6FA8"},
+            {f:2015,t:2024,p:"Conservative",c:"#0087DC"},{f:2024,t:2026,p:"Labour",c:"#E4003B"}];
+const PMS=[[1997,"Blair"],[2007,"Brown"],[2010,"Cameron"],[2016,"May"],[2019,"Johnson"],
+           [2022,"Truss"],[2023,"Sunak"],[2024,"Starmer"]];
+
 function ribbon(el){
   let g="";
   ERAS.forEach(e=>{const x=sx(e.f),w=sx(e.t)-sx(e.f);
     g+=`<g class="era"><title>${e.p}</title><rect x="${x}" y="0" width="${w}" height="17" fill="${e.c}"/>`;
-    if(w>82)g+=`<text x="${x+w/2}" y="12" text-anchor="middle">${e.p.toUpperCase()}</text>`;g+=`</g>`;});
-  PMS.forEach(([y,n])=>{g+=`<line class="pmtick" x1="${sx(y)}" y1="17" x2="${sx(y)}" y2="24"/><text class="pmlabel" x="${sx(y)}" y="34" text-anchor="middle">${n}</text>`;});
+    if(w>82)g+=`<text x="${x+w/2}" y="12" text-anchor="middle">${e.p.toUpperCase()}</text>`;g+="</g>";});
+  PMS.forEach(([y,n])=>{g+=`<line class="pmtick" x1="${sx(y)}" y1="17" x2="${sx(y)}" y2="24"/>`+
+    `<text class="pmlabel" x="${sx(y)}" y="34" text-anchor="middle">${n}</text>`;});
   el.innerHTML=`<svg viewBox="0 0 ${W} 38" style="width:100%;height:auto" role="img" aria-label="Governing party by year">${g}</svg>`;
 }
-const HPE=[3.5,3.8,4.2,4.6,5.0,5.6,6.2,6.6,6.8,7.0,7.3,6.8,6.4,6.6,6.5,6.5,6.6,6.9,7.2,7.5,7.7,7.8,7.8,7.7,8.2,8.7,8.9,8.6,8.5,8.4];
+ribbon(document.getElementById("ribbonA"));
+ribbon(document.getElementById("ribbonB"));
+
+const fmt=n=>Math.abs(n)>=100?n.toFixed(0):Math.abs(n)>=10?n.toFixed(1):n.toFixed(2);
+
+/* ══════════════════════════════════════════════════════════════
+   HERO SHOWREEL
+   One dataset, four ways of looking at it, cycling automatically.
+   Values, axis bounds and shape weights all tween together, so the
+   line appears to reshape itself rather than being redrawn.
+   ══════════════════════════════════════════════════════════════ */
+const HPE=[3.5,3.8,4.2,4.6,5.0,5.6,6.2,6.6,6.8,7.0,7.3,6.8,6.4,6.6,6.5,6.5,6.6,6.9,7.2,
+           7.5,7.7,7.8,7.8,7.7,8.2,8.7,8.9,8.6,8.5,8.4];
 const roll=(a,n)=>a.map((_,i)=>{const s=a.slice(Math.max(0,i-n+1),i+1);return s.reduce((x,y)=>x+y,0)/s.length;});
-const idx=a=>a.map(v=>v/a[0]*100);
-const SPEND={cash:[34,37,41,46,52,58,64,70,76,81,86,90,94,96,99,101,104,107,111,115,119,124,130,148,152,158,165,171,176,181],
+const idx =a=>a.map(v=>v/a[0]*100);
+const yoy =a=>a.map((v,i)=>i?(v/a[i-1]-1)*100:0);
+
+const STEPS=[
+  {label:"As published",            foot:"AS PUBLISHED",           vals:HPE,          type:"line"},
+  {label:"Three-year average",      foot:"3-YEAR AVERAGE",         vals:roll(HPE,3),  type:"area"},
+  {label:"Rebased to 1997 = 100",   foot:"REBASED 1997 = 100",     vals:idx(HPE),     type:"line"},
+  {label:"Year-on-year change",     foot:"YEAR-ON-YEAR %",         vals:yoy(HPE),     type:"bar"}
+];
+
+const WEIGHTS={line:{l:1,a:0,b:0},area:{l:1,a:1,b:0},bar:{l:0,a:0,b:1}};
+const bounds=v=>{const a=Math.min(...v),b=Math.max(...v),p=(b-a)*0.16||1;
+                 return [Math.min(a-p,v.some(x=>x<0)?a-p:a-p), b+p];};
+
+const HOLD=3400, TWEEN=1150;
+const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+const reel={i:0, from:null, to:null, t:1, last:0, paused:false, manual:false, clock:0};
+
+function snapshot(step){
+  const [mn,mx]=bounds(step.vals);
+  return {vals:step.vals.slice(), mn, mx, w:WEIGHTS[step.type]};
+}
+reel.from=reel.to=snapshot(STEPS[0]);
+
+function paint(s){
+  const g=[];
+  const Y=v=>P.t+(1-(v-s.mn)/(s.mx-s.mn))*(H-P.t-P.b);
+
+  for(let i=0;i<=4;i++){
+    const y=P.t+i*(H-P.t-P.b)/4, val=s.mx-(s.mx-s.mn)*i/4;
+    g.push(`<line class="gridline" x1="${P.l}" y1="${y}" x2="${W-P.r}" y2="${y}"/>`);
+    g.push(`<text class="axlabel" x="${P.l-9}" y="${y+3.5}" text-anchor="end">${fmt(val)}</text>`);
+  }
+  for(let yr=2000;yr<=2025;yr+=5)
+    g.push(`<text class="axlabel" x="${sx(yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
+
+  if(s.mn<0&&s.mx>0)
+    g.push(`<line class="zeroline" x1="${P.l}" y1="${Y(0)}" x2="${W-P.r}" y2="${Y(0)}"/>`);
+
+  const pts=s.vals.map((v,i)=>[sx(X0+i),Y(v)]);
+
+  if(s.w.b>0.01){
+    const slot=(W-P.l-P.r)/s.vals.length, bw=slot*0.56, base=Y(Math.max(s.mn,Math.min(0,s.mx)));
+    s.vals.forEach((v,i)=>{
+      const y=Y(v), top=Math.min(y,base), h=Math.max(1,Math.abs(y-base));
+      g.push(`<rect x="${(P.l+i*slot+(slot-bw)/2).toFixed(1)}" y="${top.toFixed(1)}" `+
+             `width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="#4633A8" opacity="${(s.w.b*0.86).toFixed(3)}"/>`);
+    });
+  }
+  if(s.w.a>0.01){
+    const d=`M${pts[0][0]} ${H-P.b} `+pts.map(p=>`L${p[0].toFixed(1)} ${p[1].toFixed(1)}`).join("")+
+            ` L${pts[pts.length-1][0]} ${H-P.b} Z`;
+    g.push(`<path d="${d}" fill="#4633A8" opacity="${(s.w.a*0.15).toFixed(3)}"/>`);
+  }
+  if(s.w.l>0.01){
+    const d=pts.map((p,i)=>(i?"L":"M")+p[0].toFixed(1)+" "+p[1].toFixed(1)).join(" ");
+    g.push(`<path class="line" d="${d}" stroke="#4633A8" opacity="${s.w.l.toFixed(3)}"/>`);
+    const last=pts[pts.length-1];
+    g.push(`<circle cx="${last[0]}" cy="${last[1].toFixed(1)}" r="4" fill="#4633A8" opacity="${s.w.l.toFixed(3)}"/>`);
+  }
+
+  document.getElementById("chartA").innerHTML=
+    `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="House price to earnings ratio">${g.join("")}</svg>`;
+}
+
+function blend(a,b,t){
+  return {
+    vals: a.vals.map((v,i)=>lerp(v,b.vals[i],t)),
+    mn: lerp(a.mn,b.mn,t), mx: lerp(a.mx,b.mx,t),
+    w: {l:lerp(a.w.l,b.w.l,t), a:lerp(a.w.a,b.w.a,t), b:lerp(a.w.b,b.w.b,t)}
+  };
+}
+
+function goTo(n,{instant=false}={}){
+  reel.from = reel.t>=1 ? reel.to : blend(reel.from,reel.to,ease(reel.t));
+  reel.i = (n+STEPS.length)%STEPS.length;
+  reel.to = snapshot(STEPS[reel.i]);
+  reel.t = instant?1:0;
+  reel.clock = 0;
+
+  const lab=document.querySelector(".reel-label");
+  lab.classList.add("swap");
+  setTimeout(()=>{
+    document.getElementById("reelLabel").textContent=STEPS[reel.i].label;
+    document.getElementById("ftA").textContent="VIEW · "+STEPS[reel.i].foot;
+    lab.classList.remove("swap");
+  },300);
+  document.querySelectorAll(".dot").forEach((d,k)=>d.setAttribute("aria-pressed", k===reel.i));
+}
+
+/* progress dots double as manual controls */
+document.getElementById("reelSteps").innerHTML =
+  STEPS.map((s,i)=>`<button class="dot" data-i="${i}" aria-pressed="${i===0}" aria-label="${s.label}"><i></i></button>`).join("");
+document.querySelectorAll(".dot").forEach(d=>d.addEventListener("click",()=>{
+  reel.manual=true;
+  document.getElementById("reel").classList.add("reel-paused");
+  goTo(+d.dataset.i);
+}));
+
+const reelEl=document.getElementById("reel");
+reelEl.addEventListener("mouseenter",()=>reel.paused=true);
+reelEl.addEventListener("mouseleave",()=>reel.paused=false);
+
+const still = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+function frame(now){
+  const dt = reel.last ? now-reel.last : 0;
+  reel.last = now;
+
+  if(reel.t<1){
+    reel.t = Math.min(1, reel.t + dt/TWEEN);
+  } else if(!reel.paused && !reel.manual){
+    reel.clock += dt;
+    const p = Math.min(1, reel.clock/HOLD);
+    const dot = document.querySelector('.dot[aria-pressed="true"]');
+    if(dot) dot.style.setProperty("--p", p);
+    if(reel.clock >= HOLD) goTo(reel.i+1);
+  }
+
+  paint(reel.t>=1 ? reel.to : blend(reel.from,reel.to,ease(reel.t)));
+  requestAnimationFrame(frame);
+}
+
+if(still){
+  paint(reel.to);
+  document.querySelectorAll(".dot").forEach((d,k)=>d.setAttribute("aria-pressed",k===0));
+} else {
+  requestAnimationFrame(frame);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   Lens chart — manual, unchanged
+   ══════════════════════════════════════════════════════════════ */
+const SPEND={
+ cash:[34,37,41,46,52,58,64,70,76,81,86,90,94,96,99,101,104,107,111,115,119,124,130,148,152,158,165,171,176,181],
  real:[58,61,65,70,76,82,88,93,98,102,105,107,109,110,111,111,112,113,115,117,118,120,123,138,139,141,143,145,147,149],
  head:[100,104,110,117,125,134,142,150,157,162,166,168,169,170,170,170,170,171,172,174,175,177,180,201,201,203,204,206,207,209],
  gdp:[5.1,5.2,5.4,5.6,5.9,6.2,6.5,6.7,6.9,7.0,7.1,7.4,7.9,7.8,7.7,7.6,7.5,7.5,7.5,7.5,7.5,7.5,7.6,9.9,9.1,8.7,8.5,8.4,8.4,8.4]};
 const OUT=[110,104,98,92,86,80,74,70,66,63,60,58,57,58,61,65,70,76,83,91,100,111,124,168,196,214,228,236,241,244];
-ribbon(document.getElementById("ribbonA"));ribbon(document.getElementById("ribbonB"));
-const A={raw:{v:HPE,l:"as published"},index:{v:idx(HPE),l:"rebased 1997 = 100"},smooth:{v:roll(HPE,3),l:"3-year average"}};
-function rA(k){draw(document.getElementById("chartA"),[{v:A[k].v,c:"#4633A8",t:k==="index"?"INDEX":"RATIO"}]);document.getElementById("ftA").textContent="VIEW · "+A[k].l.toUpperCase();}
-function rB(k){draw(document.getElementById("chartB"),[{v:SPEND[k],c:"#4633A8",t:"SPEND"},{v:OUT,c:"#C2410C",t:"OUTCOME"}]);
-  document.getElementById("ftB").textContent="MODE · "+({cash:"cash terms",real:"real terms",head:"per person",gdp:"% of GDP"})[k].toUpperCase();}
-rA("raw");rB("real");
-document.querySelectorAll(".chip").forEach(c=>c.addEventListener("click",()=>{
-  const grp=c.classList.contains("n")?".chip.n":".chip:not(.n)";
-  document.querySelectorAll(grp).forEach(o=>o.setAttribute("aria-pressed","false"));
+
+function drawB(series){
+  let g="";
+  for(let i=0;i<=4;i++){const y=P.t+i*(H-P.t-P.b)/4;
+    g+=`<line class="gridline" x1="${P.l}" y1="${y}" x2="${W-P.r}" y2="${y}"/>`;}
+  for(let yr=2000;yr<=2025;yr+=5)
+    g+=`<text class="axlabel" x="${sx(yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`;
+  series.forEach(s=>{
+    const a=Math.min(...s.v),b=Math.max(...s.v),p=(b-a)*.16||1,mn=a-p,mx=b+p;
+    const Y=v=>P.t+(1-(v-mn)/(mx-mn))*(H-P.t-P.b);
+    g+=`<path class="line" d="${s.v.map((v,i)=>(i?"L":"M")+sx(X0+i).toFixed(1)+" "+Y(v).toFixed(1)).join(" ")}" stroke="${s.c}"/>`;
+    g+=`<text class="serieslabel" x="${W-P.r+8}" y="${Y(s.v[s.v.length-1])+3.5}" fill="${s.c}">${s.t}</text>`;
+  });
+  document.getElementById("chartB").innerHTML=
+    `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Spend against outcome">${g}</svg>`;
+}
+function rB(k){
+  drawB([{v:SPEND[k],c:"#4633A8",t:"SPEND"},{v:OUT,c:"#C2410C",t:"OUTCOME"}]);
+  document.getElementById("ftB").textContent="MODE · "+
+    ({cash:"cash terms",real:"real terms",head:"per person",gdp:"% of GDP"})[k].toUpperCase();
+}
+rB("real");
+document.querySelectorAll(".chip.n").forEach(c=>c.addEventListener("click",()=>{
+  document.querySelectorAll(".chip.n").forEach(o=>o.setAttribute("aria-pressed","false"));
   c.setAttribute("aria-pressed","true");
-  c.classList.contains("n")?rB(c.dataset.n):rA(c.dataset.t);
+  rB(c.dataset.n);
 }));
 </script>
 </body>
