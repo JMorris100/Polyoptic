@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<title>Polyoptic — UK official statistics, plotted against who was in power</title>
-<meta name="description" content="Polyoptic aggregates UK official statistics and lets you rebase, deflate and compare them, with the governing party of the day shown behind every chart.">
+<title>Polyoptic — UK official statistics, made comparable</title>
+<meta name="description" content="Polyoptic brings together the statistics UK government already publishes and lets you rebase, deflate, compare and map them — with a warning whenever a comparison isn't like for like.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -15,7 +15,6 @@
   --ink:#14121C; --muted:#6E6A80; --faint:#9A96AC;
   --rule:#E3E1EB; --rule-2:#F0EFF5; --bg:#FFFFFF; --panel:#FBFBFD;
   --con:#0B6FB4; --lab:#C8102E; --coa:#5E9FD0;
-  --warn:#8A5A00; --warn-bg:#FFF8E8; --warn-rule:#E9D5A3;
 }
 *{box-sizing:border-box}
 html,body{margin:0;padding:0}
@@ -23,59 +22,57 @@ body{font-family:'IBM Plex Sans',system-ui,sans-serif;color:var(--ink);backgroun
   font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
 a{color:var(--purple);text-decoration:none}
 a:hover{text-decoration:underline}
-.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
 
+/* ── header: brand left · nav dead centre · action right ── */
 header{border-bottom:1px solid var(--rule);position:sticky;top:0;background:var(--bg);z-index:30}
-.hrow{display:flex;align-items:center;gap:22px;padding:11px 0}
-.brand{display:flex;align-items:center;gap:9px;color:var(--ink)}
+.hrow{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:11px 0}
+.brand{display:flex;align-items:center;gap:9px;color:var(--ink);justify-self:start}
 .brand:hover{text-decoration:none}
-#logo{width:27px;height:27px;display:block}
-.wm{font-weight:600;letter-spacing:-.02em;font-size:17px}
+.brand svg{width:28px;height:28px;display:block;flex:none}
+.wm{font-weight:600;letter-spacing:-.02em;font-size:17px;white-space:nowrap}
 .wm .b{color:var(--purple)}
-nav{margin-left:auto;display:flex;gap:20px;font-size:13.5px}
-nav a{color:var(--muted)}
-nav a:hover{color:var(--ink);text-decoration:none}
+nav{justify-self:center;display:flex;gap:7px}
+.navlink{
+  border:1px solid var(--rule);background:var(--bg);color:var(--purple);
+  padding:6px 13px;font-size:13.5px;line-height:1.2;white-space:nowrap;
+  transition:border-color .12s,background .12s;
+}
+.navlink:hover{border-color:var(--purple);background:var(--purple-xl);text-decoration:none}
+.headact{justify-self:end}
 .cta{
   border:1px solid var(--purple);background:var(--purple);color:#fff!important;
-  padding:6px 13px;font-size:13px;border-radius:0;
+  padding:7px 15px;font-size:13.5px;line-height:1.2;white-space:nowrap;display:inline-block;
 }
 .cta:hover{background:var(--purple-d);border-color:var(--purple-d);text-decoration:none}
+@media(max-width:820px){
+  .hrow{grid-template-columns:1fr auto;row-gap:10px}
+  nav{grid-column:1/-1;justify-self:center;flex-wrap:wrap;justify-content:center}
+}
 
 /* ── hero ── */
-.hero{padding:64px 0 30px;border-bottom:1px solid var(--rule)}
+.hero{padding:60px 0 46px;border-bottom:1px solid var(--rule)}
 .eyebrow{
   font-family:'IBM Plex Mono';font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
   color:var(--purple);margin-bottom:16px;
 }
 h1{
-  font-size:clamp(30px,5.2vw,52px);line-height:1.08;letter-spacing:-.028em;
-  font-weight:600;margin:0 0 18px;max-width:16ch;
+  font-size:clamp(30px,5vw,50px);line-height:1.08;letter-spacing:-.028em;
+  font-weight:600;margin:0 0 18px;max-width:18ch;
 }
 h1 em{font-style:normal;color:var(--purple)}
-.lede{font-size:17px;color:var(--muted);max-width:56ch;margin:0 0 26px;line-height:1.55}
+.lede{font-size:17px;color:var(--muted);max-width:58ch;margin:0 0 26px;line-height:1.55}
 .herobtns{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
 .btn{
   border:1px solid var(--rule);background:var(--bg);color:var(--ink);
-  padding:9px 15px;font-size:14px;border-radius:0;display:inline-block;
+  padding:10px 16px;font-size:14px;display:inline-block;
 }
 .btn:hover{border-color:var(--purple);background:var(--purple-xl);text-decoration:none}
 .btn.pri{background:var(--purple);border-color:var(--purple);color:#fff}
 .btn.pri:hover{background:var(--purple-d);border-color:var(--purple-d)}
 
-/* ── signature: the era ribbon chart ── */
-.demo{border:1px solid var(--rule);margin:36px 0 0;background:var(--bg)}
-.demohead{padding:13px 16px 10px;border-bottom:1px solid var(--rule-2);display:flex;
-  align-items:baseline;gap:12px;flex-wrap:wrap}
-.demotitle{font-size:15px;font-weight:600}
-.demosub{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--muted)}
-.demofoot{padding:9px 16px;border-top:1px solid var(--rule-2);display:flex;gap:16px;
-  flex-wrap:wrap;font-family:'IBM Plex Mono';font-size:10px;color:var(--muted)}
-.swatch{display:inline-flex;align-items:center;gap:6px}
-.swatch i{width:14px;height:4px;display:block}
-svg{display:block;width:100%;height:auto}
-
 /* ── sections ── */
-section{padding:52px 0;border-bottom:1px solid var(--rule)}
+section{padding:50px 0;border-bottom:1px solid var(--rule)}
 h2{font-size:23px;letter-spacing:-.018em;font-weight:600;margin:0 0 6px}
 .sublede{color:var(--muted);margin:0 0 26px;max-width:62ch}
 
@@ -88,12 +85,9 @@ h2{font-size:23px;letter-spacing:-.018em;font-weight:600;margin:0 0 6px}
 .tile .tname{font-weight:600;font-size:15px;margin-bottom:3px}
 .tile .tcount{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--muted)}
 .tile .tdesc{font-size:13px;color:var(--muted);margin-top:7px;line-height:1.45}
-.tile.soon{opacity:.55}
-.tile.soon:hover{border-color:var(--rule);background:var(--bg)}
 .badge{
   font-family:'IBM Plex Mono';font-size:9px;letter-spacing:.09em;text-transform:uppercase;
-  border:1px solid var(--rule);padding:1px 5px;color:var(--muted);margin-left:7px;
-  vertical-align:2px;
+  border:1px solid var(--rule);padding:1px 5px;color:var(--muted);margin-left:7px;vertical-align:2px;
 }
 .badge.live{border-color:var(--purple);color:var(--purple)}
 
@@ -106,21 +100,29 @@ h2{font-size:23px;letter-spacing:-.018em;font-weight:600;margin:0 0 6px}
 .pair .q{font-size:15px;font-weight:500;line-height:1.35;margin-bottom:6px}
 .pair .m{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--muted)}
 
-.honest{display:grid;grid-template-columns:1fr 1fr;gap:0;border:1px solid var(--rule)}
+/* ── chart showcase ── */
+.demo{border:1px solid var(--rule);background:var(--bg);max-width:840px}
+.demohead{padding:13px 16px 10px;border-bottom:1px solid var(--rule-2);display:flex;
+  align-items:baseline;gap:12px;flex-wrap:wrap}
+.demotitle{font-size:15px;font-weight:600}
+.demosub{font-family:'IBM Plex Mono';font-size:10.5px;color:var(--muted)}
+.demofoot{padding:9px 16px;border-top:1px solid var(--rule-2);display:flex;gap:16px;
+  flex-wrap:wrap;font-family:'IBM Plex Mono';font-size:10px;color:var(--muted)}
+.swatch{display:inline-flex;align-items:center;gap:6px}
+.swatch i{width:14px;height:4px;display:block}
+svg{display:block;width:100%;height:auto}
+
+.honest{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--rule)}
 @media(max-width:760px){.honest{grid-template-columns:1fr}}
 .hcell{padding:16px 18px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
 .hcell:nth-child(2n){border-right:none}
 .hcell:nth-last-child(-n+2){border-bottom:none}
-@media(max-width:760px){.hcell{border-right:none}.hcell:nth-last-child(-n+2){border-bottom:1px solid var(--rule)}
-  .hcell:last-child{border-bottom:none}}
+@media(max-width:760px){
+  .hcell{border-right:none;border-bottom:1px solid var(--rule)}
+  .hcell:last-child{border-bottom:none}
+}
 .hcell b{display:block;font-size:14px;margin-bottom:4px}
 .hcell span{font-size:13.5px;color:var(--muted);line-height:1.5}
-
-.warnbox{
-  border:1px solid var(--warn-rule);background:var(--warn-bg);padding:11px 14px;
-  font-size:13.5px;color:#5C3D00;margin-bottom:26px;
-}
-.warnbox b{font-weight:600}
 
 footer{padding:34px 0 52px;color:var(--muted);font-size:13px}
 .frow{display:flex;gap:26px;flex-wrap:wrap;align-items:baseline}
@@ -133,22 +135,22 @@ footer{padding:34px 0 52px;color:var(--muted);font-size:13px}
 <header>
   <div class="wrap hrow">
     <a class="brand" href="index.html">
-      <svg id="logo" viewBox="0 0 32 32" aria-hidden="true">
-        <path d="M1.5 17.5C5 8 11 3.5 17.5 3.5c7 0 11.5 5 13 11.5-3 9-9.5 13.5-16 13.5C8 28.5 3.5 24 1.5 17.5Z"
-              fill="none" stroke="#4633A8" stroke-width="2.1" stroke-linejoin="round"/>
-        <rect x="10.2" y="15.5" width="2.4" height="5.4" fill="#4633A8"/>
-        <rect x="14"   y="12.2" width="2.4" height="8.7" fill="#4633A8"/>
-        <rect x="17.8" y="14"   width="2.4" height="6.9" fill="#4633A8"/>
-        <rect x="21.6" y="10.4" width="2.4" height="10.5" fill="#4633A8"/>
+      <svg viewBox="0 0 32 32" aria-hidden="true">
+        <path d="M2 16 Q16 4.5 30 16 Q16 27.5 2 16 Z"
+              fill="none" stroke="#4633A8" stroke-width="2" stroke-linejoin="round"/>
+        <rect x="10.6" y="16.2" width="2.2" height="3.4" fill="#4633A8"/>
+        <rect x="13.2" y="12.9" width="2.2" height="6.7" fill="#4633A8"/>
+        <rect x="15.8" y="14.6" width="2.2" height="5"   fill="#4633A8"/>
+        <rect x="18.4" y="12.4" width="2.2" height="7.2" fill="#4633A8"/>
       </svg>
       <span class="wm">poly<span class="b">optic</span></span>
     </a>
     <nav>
-      <a href="#topics">Topics</a>
-      <a href="#questions">Questions</a>
-      <a href="#method">Method</a>
-      <a class="cta" href="explore.html">Explorer</a>
+      <a class="navlink" href="#topics">Topics</a>
+      <a class="navlink" href="#questions">Questions</a>
+      <a class="navlink" href="#method">Method</a>
     </nav>
+    <div class="headact"><a class="cta" href="explore.html">Open the explorer</a></div>
   </div>
 </header>
 
@@ -156,34 +158,16 @@ footer{padding:34px 0 52px;color:var(--muted);font-size:13px}
 
   <div class="hero">
     <div class="eyebrow">UK official statistics</div>
-    <h1>Every number, against <em>who was in power</em> at the time.</h1>
+    <h1>Every UK statistic, <em>made comparable</em>.</h1>
     <p class="lede">
-      Polyoptic collects statistics that government already publishes and lets you do the
-      things a chart in a press release never does — rebase to a common year, adjust to
-      real terms, put two series side by side, and see which administration held office
-      across every stretch of the line.
+      Government publishes thousands of figures across dozens of departments, in different
+      units, on different calendars, for different parts of the country. Polyoptic brings
+      them together and lets you rebase, adjust for inflation, compare and map them — and
+      tells you when two numbers aren't measuring the same thing.
     </p>
     <div class="herobtns">
       <a class="btn pri" href="explore.html">Open the explorer</a>
-      <a class="btn" href="#method">How it works</a>
-    </div>
-
-    <div class="demo">
-      <div class="demohead">
-        <span class="demotitle">House prices and average earnings</span>
-        <span class="demosub">Rebased 1997 = 100 · United Kingdom</span>
-      </div>
-      <div style="padding:10px 12px 2px"><svg id="demo" viewBox="0 0 900 300" role="img"
-        aria-label="Two rebased index lines from 1997 to 2025 above a ribbon showing the governing party"></svg></div>
-      <div class="demofoot">
-        <span class="swatch"><i style="background:#4633A8"></i>House prices</span>
-        <span class="swatch"><i style="background:#C8102E"></i>Average earnings</span>
-        <span class="swatch" style="margin-left:auto">
-          <i style="background:var(--con)"></i>Con
-          <i style="background:var(--coa)"></i>Coalition
-          <i style="background:var(--lab)"></i>Lab
-        </span>
-      </div>
+      <a class="btn" href="#topics">Browse the topics</a>
     </div>
   </div>
 
@@ -275,6 +259,32 @@ footer{padding:34px 0 52px;color:var(--muted);font-size:13px}
     </div>
   </section>
 
+  <section id="showcase">
+    <h2>What a chart looks like</h2>
+    <p class="sublede">
+      Two series, rebased to a common year so they can be read against each other, with the
+      governing party of the day along the bottom. Every chart in the explorer works this
+      way, and every one carries its sources and a CSV download.
+    </p>
+    <div class="demo">
+      <div class="demohead">
+        <span class="demotitle">House prices and average earnings</span>
+        <span class="demosub">Rebased 1997 = 100 · United Kingdom</span>
+      </div>
+      <div style="padding:10px 12px 2px"><svg id="demo" viewBox="0 0 900 250" role="img"
+        aria-label="Two rebased index lines from 1997 to 2025 above a ribbon showing the governing party"></svg></div>
+      <div class="demofoot">
+        <span class="swatch"><i style="background:#4633A8"></i>House prices</span>
+        <span class="swatch"><i style="background:#C8102E"></i>Average earnings</span>
+        <span class="swatch" style="margin-left:auto">
+          <i style="background:var(--con)"></i>Con
+          <i style="background:var(--coa)"></i>Coalition
+          <i style="background:var(--lab)"></i>Lab
+        </span>
+      </div>
+    </div>
+  </section>
+
   <section id="method">
     <h2>The warnings are the product</h2>
     <p class="sublede">
@@ -319,12 +329,11 @@ footer{padding:34px 0 52px;color:var(--muted);font-size:13px}
 </footer>
 
 <script>
-/* ── hero chart ────────────────────────────────────────────────
-   PLACEHOLDER SHAPES. Replaced when the ingest runs; until then
-   these are illustrative curves, not statistics.
+/* ── showcase chart ────────────────────────────────────────────
+   PLACEHOLDER SHAPES. Illustrative curves, not statistics.
    ───────────────────────────────────────────────────────────── */
 (function(){
-  const FROM = 1997, TO = 2025, W = 900, H = 300, M = {t:14,r:20,b:30,l:44};
+  const FROM = 1997, TO = 2025, W = 900, H = 250, M = {t:14,r:20,b:28,l:44};
   const ERAS = [
     {from:1997.35,to:2010.35,c:"var(--lab)",p:"Labour"},
     {from:2010.35,to:2015.35,c:"var(--coa)",p:"Conservative–Lib Dem coalition"},
@@ -332,14 +341,13 @@ footer{padding:34px 0 52px;color:var(--muted);font-size:13px}
     {from:2024.5, to:2026,   c:"var(--lab)",p:"Labour"},
   ];
   const n = TO - FROM + 1;
-  const shape = (f) => Array.from({length:n}, (_,i) => f(i/(n-1)));
-  const houses  = shape(t => 100 + 245*t + 60*Math.sin(t*3.1) - 34*Math.exp(-((t-0.42)**2)/0.006));
-  const earnings= shape(t => 100 + 108*t + 12*Math.sin(t*4.4));
+  const shape = f => Array.from({length:n}, (_,i) => f(i/(n-1)));
+  const houses   = shape(t => 100 + 245*t + 60*Math.sin(t*3.1) - 34*Math.exp(-((t-0.42)**2)/0.006));
+  const earnings = shape(t => 100 + 108*t + 12*Math.sin(t*4.4));
 
   const x = y => M.l + (y-FROM)/(TO-FROM)*(W-M.l-M.r);
-  const all = [...houses, ...earnings];
-  const lo = 80, hi = Math.max(...all)*1.04;
-  const yv = v => H-M.b-12 - (v-lo)/(hi-lo)*(H-M.t-M.b-12);
+  const lo = 80, hi = Math.max(...houses, ...earnings)*1.04;
+  const yv = v => H-M.b-10 - (v-lo)/(hi-lo)*(H-M.t-M.b-10);
 
   let g = "";
   for (let t = 100; t <= hi; t += 100){
@@ -350,11 +358,11 @@ footer{padding:34px 0 52px;color:var(--muted);font-size:13px}
   for (let yr = 2000; yr <= TO; yr += 5)
     g += `<text x="${x(yr)}" y="${H-M.b+15}" text-anchor="middle"
             style="font-family:'IBM Plex Mono';font-size:10px;fill:var(--muted)">${yr}</text>`;
-  g += `<line x1="${M.l}" x2="${W-M.r}" y1="${H-M.b-12}" y2="${H-M.b-12}" stroke="var(--rule)"/>`;
+  g += `<line x1="${M.l}" x2="${W-M.r}" y1="${H-M.b-10}" y2="${H-M.b-10}" stroke="var(--rule)"/>`;
 
   for (const e of ERAS){
     const a = Math.max(x(Math.max(e.from,FROM)), M.l), b = Math.min(x(Math.min(e.to,TO+1)), W-M.r);
-    if (b > a) g += `<rect x="${a.toFixed(1)}" y="${H-M.b-6}" width="${(b-a).toFixed(1)}" height="7"
+    if (b > a) g += `<rect x="${a.toFixed(1)}" y="${H-M.b-5}" width="${(b-a).toFixed(1)}" height="6"
       fill="${e.c}" opacity=".72"><title>${e.p}</title></rect>`;
   }
 
