@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Polyoptic — header patch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EDEFF1;--surface:#fff;--ink:#0F1419;--muted:#5C6672;--rule:#D3D8DD;
+  --purple:#4633A8;--purple-dk:#3A2A8C;--soft:#F4F2FA;--prule:#D8D2EC;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--surface);color:var(--ink);
+     font-family:"Public Sans",system-ui,sans-serif;font-size:16px;line-height:1.55}
+h1,h2,h3{font-family:"Archivo";margin:0;letter-spacing:-0.034em;line-height:1.03}
+svg{display:block}
+.wrap{max-width:1140px;margin:0 auto;padding:0 32px}
+
+/* ══════════════════════════════════════════════════════
+   1 · PURPLE TOP BAR — full width, taller, logo enlarged
+   ══════════════════════════════════════════════════════ */
+.topbar{background:var(--purple);color:#fff}
+.topbar .wrap{
+  height:78px;                    /* was 64 — pushed down as asked */
+  display:flex;align-items:center;gap:26px;
+}
+.brand{display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0}
+.brand svg{width:42px;height:31px}   /* tight viewBox means it fills this properly */
+.wordmark{font-family:"Archivo";font-weight:800;font-size:25px;letter-spacing:-0.05em;color:#fff}
+.wordmark .b{font-weight:500;color:rgba(255,255,255,.66)}
+
+/* nav pushed right, sitting immediately beside the CTA, deliberately quiet */
+.topnav{margin-left:auto;display:flex;align-items:center;gap:26px}
+.topnav a{
+  color:rgba(255,255,255,.74);text-decoration:none;font-size:14px;
+  padding:4px 0;border-bottom:1px solid transparent;transition:.15s;
+}
+.topnav a:hover{color:#fff;border-bottom-color:rgba(255,255,255,.5)}
+
+/* inverted pill, so the bar has one clear action */
+.btn-invert{
+  background:#fff;color:var(--purple);
+  font-family:"Public Sans";font-weight:600;font-size:14px;
+  padding:11px 22px;border-radius:100px;border:0;text-decoration:none;
+  white-space:nowrap;transition:.15s;cursor:pointer;
+}
+.btn-invert:hover{background:rgba(255,255,255,.9)}
+
+@media(max-width:820px){
+  .topnav a{display:none}
+  .topbar .wrap{height:68px}
+}
+
+/* ══════════════════════════════════════════════════════
+   2 · HERO — pill buttons
+   ══════════════════════════════════════════════════════ */
+.hero{padding:78px 0 66px}
+.eyebrow{font-family:"IBM Plex Mono";font-size:11.5px;letter-spacing:.18em;
+         text-transform:uppercase;color:var(--purple);margin-bottom:24px}
+.hero h1{font-size:clamp(40px,6.4vw,68px);font-weight:800;max-width:17ch}
+.hero h1 em{font-style:normal;color:var(--purple)}
+.hero p{max-width:62ch;color:var(--muted);font-size:17.5px;margin:24px 0 0}
+
+.cta{display:flex;gap:12px;margin-top:38px;flex-wrap:wrap}
+.pill{
+  font-family:"Public Sans";font-weight:600;font-size:15px;
+  padding:14px 30px;border-radius:100px;      /* ← pills, not squares */
+  text-decoration:none;cursor:pointer;transition:.15s;border:1.5px solid transparent;
+}
+.pill.solid{background:var(--purple);color:#fff}
+.pill.solid:hover{background:var(--purple-dk)}
+.pill.ghost{background:transparent;color:var(--purple);border-color:var(--prule)}
+.pill.ghost:hover{background:var(--soft);border-color:var(--purple)}
+
+/* ══════════════════════════════════════════════════════
+   3 · TOPICS — heading only, explanatory line removed
+   ══════════════════════════════════════════════════════ */
+.topics{padding:0 0 90px}
+.topics h2{font-size:clamp(26px,3.4vw,34px);font-weight:700;margin-bottom:26px}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
+@media(max-width:1000px){.tiles{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.tiles{grid-template-columns:1fr}}
+.tile{background:var(--surface);padding:20px;min-height:140px;text-decoration:none;
+      display:flex;flex-direction:column;transition:.14s}
+.tile:hover{background:#FAFAFB}
+.tile.live:hover{background:var(--soft)}
+.trow{display:flex;align-items:center;gap:9px}
+.tn{font-family:"Archivo";font-weight:700;font-size:17.5px;letter-spacing:-0.025em}
+.badge{font-family:"IBM Plex Mono";font-size:9px;letter-spacing:.1em;color:var(--purple);
+       border:1px solid var(--prule);background:var(--soft);padding:2px 6px}
+.tc{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);margin-top:6px}
+.td{font-size:13.5px;color:var(--muted);margin-top:12px;line-height:1.45}
+.tile.soon{opacity:.66}
+
+.callout{background:var(--soft);border:1px solid var(--prule);padding:16px 20px;margin:0 0 26px;
+         font-size:14px;color:#3D3560}
+.callout code{font-family:"IBM Plex Mono";font-size:12.5px}
+</style>
+</head>
+<body>
+
+<!-- ══ TOP BAR ══ -->
+<div class="topbar">
+  <div class="wrap">
+    <a class="brand" href="/">
+      <!-- LOGO: tight viewBox is the fix. The old one used viewBox="0 0 100 100"
+           while the mark only occupies x10–90, y20–76 — so roughly 40% of the box
+           was empty padding and the mark rendered small and squashed. -->
+      <svg viewBox="6.5 16.5 87 63" role="img" aria-label="Polyoptic">
+        <defs><clipPath id="lgw"><path d="M10 50 Q50 -10 90 50 Q50 102 10 50 Z"/></clipPath></defs>
+        <path d="M10 50 Q50 -10 90 50 Q50 102 10 50 Z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
+        <g clip-path="url(#lgw)" fill="#fff">
+          <rect x="29.75" y="46.56" width="6" height="18.72"/>
+          <rect x="41.25" y="36.48" width="6" height="28.80"/>
+          <rect x="52.75" y="42.60" width="6" height="22.68"/>
+          <rect x="64.25" y="30.72" width="6" height="34.56"/>
+        </g>
+      </svg>
+      <span class="wordmark">poly<span class="b">optic</span></span>
+    </a>
+
+    <nav class="topnav">
+      <a href="#topics">Topics</a>
+      <a href="#questions">Questions</a>
+      <a href="#method">Method</a>
+      <a class="btn-invert" href="explore.html">Open the explorer</a>
+    </nav>
+  </div>
+</div>
+
+<!-- ══ HERO ══ -->
+<div class="wrap">
+  <div class="hero">
+    <div class="eyebrow">UK official statistics</div>
+    <h1>Every UK statistic, <em>made comparable</em>.</h1>
+    <p>Government publishes thousands of figures across dozens of departments, in different units, on different calendars, for different parts of the country. Polyoptic brings them together and lets you rebase, adjust for inflation, compare and map them — and tells you when two numbers aren't measuring the same thing.</p>
+    <div class="cta">
+      <a class="pill solid" href="explore.html">Open the explorer</a>
+      <a class="pill ghost" href="#topics">Browse the topics</a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOPICS ══ -->
+<div class="wrap" id="topics">
+  <div class="topics">
+    <h2>Topics</h2>
+    <div class="tiles">
+      <a class="tile live" href="explore.html#t=economy"><div class="trow"><span class="tn">Economy</span><span class="badge">LIVE</span></div><div class="tc">32 indicators</div><div class="td">Output, prices, pay, employment, rates and the public finances.</div></a>
+      <a class="tile live" href="explore.html#t=housing"><div class="trow"><span class="tn">Housing</span><span class="badge">LIVE</span></div><div class="tc">21 indicators</div><div class="td">Prices, rents, supply, social stock, homelessness and tenure.</div></a>
+      <a class="tile live" href="explore.html#t=education"><div class="trow"><span class="tn">Education</span><span class="badge">LIVE</span></div><div class="tc">20 indicators</div><div class="td">Attainment, funding, absence, exclusions, teachers and entry to HE.</div></a>
+      <a class="tile soon" href="#"><div class="trow"><span class="tn">Health</span></div><div class="tc">17 indicators</div><div class="td">Waiting lists, urgent care, workforce, life expectancy and mortality.</div></a>
+      <a class="tile soon" href="#"><div class="trow"><span class="tn">Crime &amp; Justice</span></div><div class="tc">10 indicators</div><div class="td">Survey and recorded crime, charge rates, courts and prisons.</div></a>
+      <a class="tile soon" href="#"><div class="trow"><span class="tn">Transport</span></div><div class="tc">9 indicators</div><div class="td">Rail, bus, road traffic, casualties and the switch to electric.</div></a>
+      <a class="tile soon" href="#"><div class="trow"><span class="tn">Environment &amp; Energy</span></div><div class="tc">11 indicators</div><div class="td">Emissions, generation mix, energy prices, air and water quality.</div></a>
+      <a class="tile soon" href="#"><div class="trow"><span class="tn">Population &amp; Migration</span></div><div class="tc">10 indicators</div><div class="td">Population, migration, births and deaths, visas and asylum.</div></a>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EXPLORER MARGIN FIX ══ -->
+<div class="wrap" style="padding-bottom:80px">
+  <h2 style="font-size:26px;font-weight:700;margin-bottom:18px">Explorer margin</h2>
+  <div class="callout">
+    The explorer shell is running edge to edge. Give it the same gutter as the rest of the
+    site and it stops looking like a different application:
+  </div>
+<pre style="background:#0F1419;color:#E8EAED;padding:20px 22px;overflow-x:auto;font-family:'IBM Plex Mono';font-size:12.5px;line-height:1.7;margin:0">.shell{
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 24px 32px 80px;   /* was flush to the viewport edge */
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: 22px;                 /* breathing room between sidebar and chart */
+  align-items: start;
+}
+
+/* the sidebar needs to stop touching the header too */
+.panel{ border: 1px solid var(--rule); border-radius: 2px; }
+
+@media (max-width: 1000px){
+  .shell{ grid-template-columns: 1fr; padding: 20px 20px 60px; }
+}</pre>
+</div>
+
+</body>
+</html>
