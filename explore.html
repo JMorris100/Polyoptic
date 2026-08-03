@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
 <title>Explorer — Polyoptic</title>
-<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%226.5%204.5%2087%2087%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22c%22%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%20fill%3D%22none%22%20stroke%3D%22%234633A8%22%20stroke-width%3D%225%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cg%20clip-path%3D%22url%28%23c%29%22%20fill%3D%22%234633A8%22%3E%3Crect%20x%3D%2229.75%22%20y%3D%2246.56%22%20width%3D%226%22%20height%3D%2218.72%22%2F%3E%3Crect%20x%3D%2241.25%22%20y%3D%2236.48%22%20width%3D%226%22%20height%3D%2228.8%22%2F%3E%3Crect%20x%3D%2252.75%22%20y%3D%2242.6%22%20width%3D%226%22%20height%3D%2222.68%22%2F%3E%3Crect%20x%3D%2264.25%22%20y%3D%2230.72%22%20width%3D%226%22%20height%3D%2234.56%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -27,7 +27,7 @@ header{position:sticky;top:0;z-index:30;background:var(--purple);color:#fff}
 .wm .b{font-weight:500;color:rgba(255,255,255,.66)}
 .crumb{font-family:"IBM Plex Mono";font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;margin-left:6px}
 .hact{margin-left:auto;display:flex;gap:8px}
-.hb{font-family:"IBM Plex Mono";font-size:11.5px;padding:8px 16px;border:1px solid rgba(255,255,255,.34);border-radius:100px;background:transparent;color:#fff;cursor:pointer;transition:.15s}
+.hb{font-family:"IBM Plex Mono";font-size:11.5px;padding:8px 16px;border:1px solid rgba(255,255,255,.34);border-radius:2px;background:transparent;color:#fff;cursor:pointer;transition:.15s}
 .hb:hover{background:#fff;color:var(--purple);border-color:#fff}
 
 .shell{max-width:1600px;margin:0 auto;padding:26px 32px 80px;display:grid;grid-template-columns:300px 1fr;gap:22px;align-items:start}
@@ -41,17 +41,21 @@ header{position:sticky;top:0;z-index:30;background:var(--purple);color:#fff}
 #q{width:100%;padding:9px 11px;border:1px solid var(--rule);font-family:inherit;font-size:13.5px;background:var(--paper)}
 #q:focus{outline:2px solid var(--purple);outline-offset:-1px}
 .filters{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
-.f{font-family:"IBM Plex Mono";font-size:10.5px;padding:4px 9px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:100px}
+.f{font-family:"IBM Plex Mono";font-size:10.5px;padding:5px 10px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px}
 .f[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
 .cat{max-height:52vh;overflow-y:auto}
 @media(max-width:1000px){.cat{max-height:280px}}
-.ci{padding:9px 16px;border-bottom:1px solid #EEF0F2;cursor:pointer;display:flex;gap:9px;align-items:flex-start}
+.ci{padding:12px 16px;border-bottom:1px solid #EEF0F2;cursor:pointer;display:flex;gap:10px;align-items:flex-start}
 .ci:hover{background:var(--soft)}
 .ci[aria-selected="true"]{background:var(--soft)}
-.ci .sw{width:9px;height:9px;flex-shrink:0;margin-top:5px;border:1px solid var(--rule);background:transparent}
+.ci .sw{width:11px;height:11px;flex-shrink:0;margin-top:3px;border:1.5px solid var(--rule);background:transparent;border-radius:2px}
 .ci[aria-selected="true"] .sw{border:0}
-.ci .cn{font-size:13.5px;font-weight:500;line-height:1.3}
-.ci .cm{font-family:"IBM Plex Mono";font-size:9.5px;color:var(--muted);margin-top:3px}
+.ci .body{flex:1;min-width:0}
+.ci .cn{display:block;font-size:13.5px;font-weight:600;line-height:1.35;color:var(--ink)}
+.ci .cm{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;align-items:center}
+.ci .tag{font-family:"IBM Plex Mono";font-size:9.5px;color:var(--muted);background:var(--paper);border:1px solid var(--rule);padding:1px 6px;white-space:nowrap}
+.ci .yr{font-family:"IBM Plex Mono";font-size:9.5px;color:var(--muted);padding:1px 2px}
+.ci[aria-selected="true"] .tag{background:#fff;border-color:var(--prule)}
 .empty{padding:18px 16px;font-size:13px;color:var(--muted)}
 
 /* ── main ── */
@@ -59,7 +63,7 @@ header{position:sticky;top:0;z-index:30;background:var(--purple);color:#fff}
 .bar{background:var(--surface);border:1px solid var(--rule);padding:12px 16px;display:flex;gap:22px;flex-wrap:wrap;align-items:flex-start}
 .grp{display:flex;flex-direction:column;gap:7px}
 .chips{display:flex;gap:5px;flex-wrap:wrap}
-.chip{font-family:"IBM Plex Mono";font-size:11px;padding:5px 10px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:100px;transition:.13s}
+.chip{font-family:"IBM Plex Mono";font-size:11px;padding:6px 12px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px;transition:.13s}
 .chip:hover:not(:disabled){border-color:var(--ink);color:var(--ink)}
 .chip[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
 .chip:disabled{opacity:.34;cursor:not-allowed}
@@ -297,7 +301,7 @@ function frame(g,mn,mx,label){
   const span=state.to-state.from, step=span>24?5:span>12?2:1;
   for(let yr=Math.ceil(state.from/step)*step;yr<=state.to;yr+=step)
     g.push(`<text class="axlabel" x="${px(yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
-  if(label) g.push(`<text class="axlabel" x="${M.l-8}" y="${M.t-5}" text-anchor="end" style="font-size:9px">${label}</text>`);
+  if(label) g.push(`<text class="axlabel" transform="translate(13 ${(M.t+(H-M.b))/2}) rotate(-90)" text-anchor="middle" style="font-size:10px">${label}</text>`);
 }
 function discLines(g,list){
   list.forEach(d=>{ if(d.year>=state.from&&d.year<=state.to)
@@ -366,7 +370,7 @@ function renderScatter(sets){
     const era=DB.eras.find(e=>yr>=e.from&&yr<e.to);
     g.push(`<circle cx="${PX(vx).toFixed(1)}" cy="${PY(vy).toFixed(1)}" r="4.5" fill="${era?era.colour:"#5C6672"}" opacity="0.82"><title>${yr}\n${X.name}: ${fmt(vx)}\n${Yv.name}: ${fmt(vy)}</title></circle>`);
   });
-  g.push(`<text class="axlabel" x="${M.l-8}" y="${M.t-5}" text-anchor="end" style="font-size:9px">${Yv.name}</text>`);
+  g.push(`<text class="axlabel" transform="translate(13 ${(M.t+(H-M.b))/2}) rotate(-90)" text-anchor="middle" style="font-size:10px">${Yv.name}</text>`);
   g.push(`<text class="axlabel" x="${W-M.r}" y="${H-6}" text-anchor="end" style="font-size:9px">${X.name} →</text>`);
   return svg(g);
 }
@@ -506,7 +510,7 @@ function renderSources(sets){
 function renderCatalogue(){
   const topics=["all",...new Set(DB.series.flatMap(s=>s.topics))];
   document.getElementById("filters").innerHTML=topics.map(t=>
-    `<button class="f" data-topic="${t}" aria-pressed="${state.topic===t}">${t}</button>`).join("");
+    `<button class="f" data-topic="${t}" aria-pressed="${state.topic===t}">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join("");
   document.querySelectorAll("[data-topic]").forEach(b=>b.onclick=()=>{state.topic=b.dataset.topic;render();});
 
   const q=state.q.toLowerCase();
@@ -516,9 +520,17 @@ function renderCatalogue(){
   const cat=document.getElementById("cat");
   cat.innerHTML=list.length?list.map(s=>{
     const i=state.sel.indexOf(s.id), on=i>=0;
+    const end = s.start + s.values.length - 1;
     return `<div class="ci" data-id="${s.id}" aria-selected="${on}">
-      <span class="sw" style="${on?`background:${PALETTE[i%PALETTE.length]}`:""}"></span>
-      <span><span class="cn">${s.name}</span><span class="cm">${s.geography} · ${s.unit} · ${s.start}–${s.start+s.values.length-1}</span></span></div>`;
+      <span class="sw" style="${on?`background:${PALETTE[i%PALETTE.length]};border-color:${PALETTE[i%PALETTE.length]}`:""}"></span>
+      <span class="body">
+        <span class="cn">${s.name}</span>
+        <span class="cm">
+          <span class="tag">${s.geography}</span>
+          <span class="tag">${s.unit}</span>
+          <span class="yr">${s.start}–${end}</span>
+        </span>
+      </span></div>`;
   }).join("") : `<div class="empty">Nothing matches that.</div>`;
   cat.querySelectorAll(".ci").forEach(el=>el.onclick=()=>{
     const id=el.dataset.id, i=state.sel.indexOf(id);
