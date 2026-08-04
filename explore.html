@@ -46,7 +46,23 @@ header{position:sticky;top:0;z-index:40;background:#4633A8;color:#fff}
 .hb.eye{display:inline-flex;align-items:center;justify-content:center;padding:7px 12px}
 .hb.eye svg{width:24px;height:16px;display:block}
 
-.shell{max-width:1600px;margin:0 auto;padding:26px 32px 90px;display:grid;grid-template-columns:308px 1fr;gap:22px;align-items:start}
+.shell{max-width:1600px;margin:0 auto;padding:26px 32px 90px;display:grid;grid-template-columns:308px 1fr;gap:22px;align-items:start;transition:grid-template-columns .18s ease}
+body.side-collapsed .shell{grid-template-columns:0 1fr;gap:0}
+body.side-collapsed .side{visibility:hidden;pointer-events:none}
+.siderail{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:45;display:none}
+body.side-collapsed .siderail{display:block}
+.siderail button{width:26px;height:74px;border:1px solid var(--rule);border-left:0;background:var(--surface);
+  color:var(--muted);cursor:pointer;border-radius:0 4px 4px 0;font-size:13px}
+.siderail button:hover{color:var(--purple);border-color:var(--purple)}
+.sidehide{width:100%;padding:10px 0;border:0;border-top:1px solid var(--rule);background:var(--soft);color:var(--purple);
+  cursor:pointer;font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.sidehide:hover{background:var(--purple);color:#fff}
+.sidehide svg{width:13px;height:13px}
+.sidecollapse{width:24px;height:24px;border:1px solid var(--rule);background:var(--surface-2);color:var(--muted);
+  cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;float:right;margin-top:-3px}
+.sidecollapse:hover{color:var(--purple);border-color:var(--purple)}
+.sidecollapse svg{width:12px;height:12px}
 @media(max-width:1040px){.shell{grid-template-columns:1fr;padding:20px 20px 60px}}
 
 /* ── sidebar ── */
@@ -197,7 +213,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .stackempty h3{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
 .hpill{position:absolute;right:12px;bottom:18px;font-family:"IBM Plex Mono";font-size:10px;
   background:var(--ink);color:var(--paper);padding:3px 7px;border-radius:2px;opacity:0;transition:opacity .15s;pointer-events:none}
-.pcard.is-resizing .hpill{opacity:.9}
+.pcard.is-resizing .hpill{opacity:1;background:var(--purple);color:#fff;font-size:12px;padding:5px 11px;bottom:22px;right:16px}
 
 .gridline{stroke:var(--rule);stroke-width:1}
 .axlabel{font-family:"IBM Plex Mono";font-size:10px;fill:var(--muted)}
@@ -208,6 +224,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .pmtick{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2;opacity:.3}
 .etick{stroke:var(--ink);stroke-width:1.5}
 .pmlabel{font-family:"IBM Plex Mono";font-size:8.5px;fill:var(--muted)}
+.eralabel{font-family:"IBM Plex Mono";font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:var(--muted)}
 .disc{stroke:var(--warn);stroke-width:1;stroke-dasharray:3 3;opacity:.6}
 .sm-t{font-family:"IBM Plex Mono";font-size:10px;font-weight:500}
 
@@ -243,10 +260,12 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   </div>
 </header>
 
+<div class="siderail"><button id="sideOpen" title="Show the indicator panel" aria-label="Show the indicator panel">❯</button></div>
 <div class="shell">
   <div class="side">
     <div class="panelbox">
       <div class="psec">
+        <button class="sidecollapse" id="sideHideTop" title="Collapse the panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></button>
         <div class="plabel">Editing</div>
         <div class="pswitch" id="pswitch"></div>
       </div>
@@ -263,6 +282,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
       <div class="psec" style="border-top:1px solid var(--rule)">
         <div class="foot" id="count"></div>
       </div>
+      <button class="sidehide" id="sideHide" title="Collapse the panel to give charts the full width"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg> Hide panel — full-width charts</button>
     </div>
   </div>
 
@@ -343,6 +363,9 @@ const GRANS = [["years","Years"],["quarters","Quarters"],["months","Months"],["d
 const GRAN_PER = {years:1, quarters:4, months:12, days:365};
 const ELECTIONS = [1997,2001,2005,2010,2015,2017,2019,2024];
 const H_MIN=210, H_MAX=640, H_DEF=300;
+const WIDTHS=[[12,"Full width"],[9,"Three quarters"],[8,"Two thirds"],[6,"Half"],[4,"One third"]];
+const W_SNAPS=[4,6,8,9,12];
+const wLabel=w=>({12:"full",9:"3/4",8:"2/3",6:"1/2",4:"1/3"}[w]||w+"/12");
 
 let uid=0;
 const mkPanel = (sel=[], over={}) =>
@@ -562,25 +585,46 @@ function renderRibbon(p){
   if(p.era==="off") return "";
   const g=[];
   if(p.era==="elections"){
-    g.push(`<line class="gridline" x1="${M.l}" y1="9" x2="${W-M.r}" y2="9"/>`);
+    g.push(`<line class="gridline" x1="${M.l}" y1="7" x2="${W-M.r}" y2="7"/>`);
     ELECTIONS.forEach(y=>{ if(y>=p.from&&y<=p.to){
-      g.push(`<line class="etick" x1="${px(p,y)}" y1="3" x2="${px(p,y)}" y2="15"/>`);
-      g.push(`<text class="pmlabel" x="${px(p,y)}" y="29" text-anchor="middle">${y}</text>`);
+      g.push(`<circle cx="${px(p,y)}" cy="7" r="3.4" fill="var(--purple)"/>`);
+      g.push(`<text class="pmlabel" x="${px(p,y)}" y="24" text-anchor="middle">${y}</text>`);
     }});
-    return `<div class="ribbon-t">General elections</div><svg viewBox="0 0 ${W} 34" style="width:100%;height:auto" role="img" aria-label="General election years">${g.join("")}</svg>`;
+    return `<div class="ribbon-t">General elections</div><svg viewBox="0 0 ${W} 29" style="width:100%;height:auto" role="img" aria-label="General election years">${g.join("")}</svg>`;
   }
+  /* a slim rounded band; party names sit beneath it rather than shouting
+     from inside coloured blocks, and PM names stagger onto a second row when
+     short premierships would otherwise collide */
+  const BAR_Y=3, BAR_H=8;
   DB.eras.forEach(e=>{
-    const f=Math.max(e.from,p.from), t=Math.min(e.to,p.to);
-    if(t<=f) return;
-    const x=px(p,f), w=px(p,t)-px(p,f);
-    g.push(`<g class="era"><title>${e.party} ${e.from}–${e.to}</title><rect x="${x}" y="0" width="${w}" height="16" fill="${e.colour}"/>`);
-    if(w>78) g.push(`<text x="${x+w/2}" y="11.5" text-anchor="middle">${e.party.toUpperCase()}</text>`);
+    const f=Math.max(e.from,p.from), tt=Math.min(e.to,p.to);
+    if(tt<=f) return;
+    const x=px(p,f), w=px(p,tt)-px(p,f);
+    g.push(`<g class="era"><title>${e.party} ${e.from}–${e.to}</title>`);
+    g.push(`<rect x="${x}" y="${BAR_Y}" width="${Math.max(1,w-1.5)}" height="${BAR_H}" rx="${BAR_H/2}" fill="${e.colour}"/>`);
     g.push("</g>");
   });
-  if(p.era==="pm")
-    DB.pms.forEach(([y,n])=>{ if(y>=p.from&&y<=p.to)
-      g.push(`<line class="pmtick" x1="${px(p,y)}" y1="16" x2="${px(p,y)}" y2="23"/><text class="pmlabel" x="${px(p,y)}" y="33" text-anchor="middle">${n}</text>`);});
-  return `<div class="ribbon-t">Government in power</div><svg viewBox="0 0 ${W} ${p.era==="pm"?37:20}" style="width:100%;height:auto" role="img" aria-label="Governing party by year">${g.join("")}</svg>`;
+  if(p.era==="party"){
+    DB.eras.forEach(e=>{
+      const f=Math.max(e.from,p.from), tt=Math.min(e.to,p.to);
+      if(tt<=f) return;
+      const x=px(p,f), w=px(p,tt)-px(p,f);
+      if(w>64) g.push(`<text class="eralabel" x="${x+w/2}" y="${BAR_Y+BAR_H+14}" text-anchor="middle">${e.party}</text>`);
+    });
+    return `<div class="ribbon-t">Government in power</div><svg viewBox="0 0 ${W} 30" style="width:100%;height:auto" role="img" aria-label="Governing party by year">${g.join("")}</svg>`;
+  }
+  const pms=DB.pms.filter(([y])=>y>=p.from&&y<=p.to);
+  const R1=BAR_Y+BAR_H+16, R2=R1+11;
+  let lastX=-1e9, lastRow=2;
+  pms.forEach(([y,n])=>{
+    const x=px(p,y);
+    const row = (x-lastX<58 && lastRow===1) ? 2 : 1;
+    lastX=x; lastRow=row;
+    const ty = row===1?R1:R2;
+    g.push(`<line class="pmtick" x1="${x}" y1="${BAR_Y+BAR_H}" x2="${x}" y2="${ty-8}"/>`);
+    g.push(`<text class="pmlabel" x="${x}" y="${ty}" text-anchor="${x>W-M.r-30?"end":"middle"}">${n}</text>`);
+  });
+  return `<div class="ribbon-t">Government in power</div><svg viewBox="0 0 ${W} ${R2+5}" style="width:100%;height:auto" role="img" aria-label="Governing party and prime ministers by year">${g.join("")}</svg>`;
 }
 
 /* icons — stroke follows currentColor so they theme themselves */
@@ -658,6 +702,7 @@ function panelHtml(p,i){
     <div class="cfgrule"></div>
     <span class="plabel">Government</span>${sel("era",ERA_MODES,p.era)}
     <span class="plabel">Time</span>${sel("gran",GRANS,p.gran)}
+    <span class="plabel">Width</span>${sel("widthsel",WIDTHS.map(([k,l])=>[String(k),l]),String(p.w))}
     <span class="plabel">Range</span><div class="rng">
       <input type="number" data-act="from" value="${p.from}" min="1980" max="2026" aria-label="From year"> — <input type="number" data-act="to" value="${p.to}" min="1980" max="2026" aria-label="To year">
     </div>
@@ -703,14 +748,13 @@ function panelHtml(p,i){
       <button class="mi" data-act="csv">${IC.csv} Download CSV</button>
       <button class="mi" data-act="png">${IC.png} Download PNG</button>
       <div class="msep"></div>
-      <button class="mi" data-act="width">${p.w===12?IC.half:IC.wide} ${p.w===12?"Make half width":"Make full width"}</button>
       <button class="mi" data-act="dup">${IC.dup} Duplicate chart</button>
       <button class="mi danger" data-act="del">${IC.del} Remove chart</button>
     </div>
     ${ctrl}${warns}${body}${legend}${foot}
     <div class="rgrip" data-act="rgrip" title="Drag to change height"></div>
     <div class="cgrip" data-act="cgrip" title="Drag to resize"></div>
-    <span class="hpill">${p.w===12?"full":"half"} · ${p.h}px</span>
+    <span class="hpill">${wLabel(p.w)} · ${p.h}px</span>
   </div>`;
 }
 
@@ -820,7 +864,7 @@ document.getElementById("stack").addEventListener("click",e=>{
   state.active=i; state.focus=i;
 
   /* selects and inputs inside the settings popover are handled on change */
-  if(["chart","trans","era","gran","from","to","title"].includes(act)) return;
+  if(["chart","trans","era","gran","from","to","title","widthsel"].includes(act)) return;
 
   if(act==="cfg"){ state.openCfg = state.openCfg===p.key ? null : p.key; state.openMenu=null; }
   else if(act==="menu"){ state.openMenu = state.openMenu===p.key ? null : p.key; state.openCfg=null; }
@@ -835,7 +879,6 @@ document.getElementById("stack").addEventListener("click",e=>{
     const inp=document.querySelector('.ptitle-in'); if(inp){ inp.focus(); inp.select(); }
     return;
   }
-  else if(act==="width"){ state.openMenu=null; p.w = p.w===12?6:12; }
   else if(act==="rebase") p.trans="index";
   else if(act==="pair") p.sel=actEl.dataset.v.split(",");
   else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,gran:p.gran,h:p.h,w:p.w,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
@@ -867,6 +910,7 @@ document.getElementById("stack").addEventListener("change",e=>{
   else if(act==="chart") p.chart=e.target.value;
   else if(act==="trans") p.trans=e.target.value;
   else if(act==="era"){ p.era=e.target.value; if(p.era!=="off") p.eraPrev=p.era; }
+  else if(act==="widthsel"){ p.w=+e.target.value; }
   else if(act==="gran"){
     p.gran=e.target.value;
     /* fine detail over a long window is unreadable and slow — pull the window in */
@@ -915,7 +959,7 @@ document.getElementById("stack").addEventListener("pointerdown",e=>{
   const r=card.getBoundingClientRect();
   drag={key, el:card, started:false, x0:e.clientX, y0:e.clientY,
         offX:e.clientX-r.left, offY:e.clientY-r.top, w:r.width, h:r.height,
-        index:+card.dataset.i, target:+card.dataset.i, slot:null};
+        index:+card.dataset.i, target:{kind:"pos", i:+card.dataset.i}, slot:null};
 });
 
 document.addEventListener("pointermove",e=>{
@@ -938,33 +982,87 @@ document.addEventListener("pointermove",e=>{
   drag.el.style.left=(e.clientX-drag.offX)+"px";
   drag.el.style.top =(e.clientY-drag.offY)+"px";
 
-  /* nearest free slot to the pointer becomes the landing position */
+  /* two kinds of landing target:
+     — a position another chart occupies (swap into its place), or
+     — the empty grid space beside a part-width chart, so dragging next to a
+       half-width chart snaps in 50/50 instead of being pushed to a new row */
   const keys=state.panels.map(p=>p.key);
   const free=keys.map((_,i)=>i).filter(i=>!lockedKeys.has(keys[i]));
-  let best=drag.target, bestD=Infinity;
+  const stackR=document.getElementById("stack").getBoundingClientRect();
+  let best=null, bestD=Infinity;
+
   free.forEach(i=>{
     const node = i===drag.index ? drag.slot : document.querySelector(`.pcard[data-i="${i}"]`);
     if(!node) return;
     const rr=node.getBoundingClientRect();
     const d=Math.hypot(e.clientX-(rr.left+rr.width/2), e.clientY-(rr.top+rr.height/2));
-    if(d<bestD){ bestD=d; best=i; }
+    if(d<bestD){ bestD=d; best={kind:"pos", i}; }
   });
-  if(best!==drag.target){
+
+  /* gap targets: rows whose spans don't add to 12 leave space on the right */
+  const statics=[...document.querySelectorAll(".pcard:not(.drag-live)")];
+  statics.forEach(node=>{
+    const i=+node.dataset.i, rr=node.getBoundingClientRect();
+    /* span used by this visual row = every static card sharing this row's top */
+    const rowSpan = statics.reduce((a,n2)=>{
+      const r2=n2.getBoundingClientRect();
+      return Math.abs(r2.top-rr.top)<12 ? a+(+state.panels[+n2.dataset.i].w||12) : a;
+    },0);
+    const gap = 12-rowSpan;
+    if(gap<4) return;                                   /* nothing usable left in the row */
+    const rightmost = statics.filter(n2=>Math.abs(n2.getBoundingClientRect().top-rr.top)<12)
+      .sort((a2,b2)=>b2.getBoundingClientRect().right-a2.getBoundingClientRect().right)[0];
+    if(rightmost!==node) return;                        /* only offer the gap once per row */
+    const gx=(rr.right+stackR.right)/2, gy=rr.top+rr.height/2;
+    const d=Math.hypot(e.clientX-gx, e.clientY-gy)*0.9; /* slight bias: filling a gap is usually the intent */
+    if(d<bestD){ bestD=d; best={kind:"gap", i, span:gap, h:rr.height}; }
+  });
+
+  if(best && JSON.stringify(best)!==JSON.stringify(drag.target)){
     drag.target=best;
-    const ref = best===drag.index ? null : document.querySelector(`.pcard[data-i="${best}"]`);
-    if(ref) ref.parentNode.insertBefore(drag.slot, best>drag.index ? ref.nextSibling : ref);
+    if(best.kind==="pos"){
+      const ref = best.i===drag.index ? null : document.querySelector(`.pcard[data-i="${best.i}"]`);
+      if(ref) ref.parentNode.insertBefore(drag.slot, best.i>drag.index ? ref.nextSibling : ref);
+      const tp = state.panels[best.i];
+      drag.slot.style.setProperty("--span", tp.w);
+      drag.slot.style.height = (ref?ref.getBoundingClientRect().height:drag.h)+"px";
+    } else {
+      const ref=document.querySelector(`.pcard[data-i="${best.i}"]`);
+      if(ref) ref.parentNode.insertBefore(drag.slot, ref.nextSibling);
+      drag.slot.style.setProperty("--span", best.span);
+      drag.slot.style.height = best.h+"px";
+    }
   }
 });
 
+function placeAfter(movingKey, afterKey){
+  const idx=state.panels.findIndex(pp=>pp.key===movingKey);
+  const [mv]=state.panels.splice(idx,1);
+  const at=state.panels.findIndex(pp=>pp.key===afterKey);
+  state.panels.splice(at+1,0,mv);
+  state.active=state.panels.findIndex(pp=>pp.key===movingKey);
+}
+
 document.addEventListener("pointerup",()=>{
   if(!drag) return;
-  const wasDrag=drag.started, key=drag.key, target=drag.target;
+  const wasDrag=drag.started, key=drag.key, target=drag.target, from=drag.index;
   if(wasDrag){
     drag.el.classList.remove("drag-live");
     drag.el.style.cssText="";
     drag.slot?.remove();
     document.body.classList.remove("dragging");
-    orderAfterDrop(key, target);
+    if(target && target.kind==="gap"){
+      /* slot into the empty space beside that chart, at the gap's width,
+         matching its height so the pair tiles as one row */
+      const beside=state.panels[target.i];
+      placeAfter(key, beside.key);
+      const mv=state.panels.find(pp=>pp.key===key);
+      if(mv){ mv.w=target.span; mv.h=beside.h; }
+    } else if(target && target.kind==="pos"){
+      const adoptW = target.i!==from && state.panels[target.i] ? state.panels[target.i].w : null;
+      orderAfterDrop(key, target.i);
+      if(adoptW!==null){ const mv=state.panels.find(pp=>pp.key===key); if(mv) mv.w=adoptW; }
+    }
   }
   drag=null;
   if(wasDrag) render();
@@ -996,8 +1094,9 @@ document.addEventListener("pointermove",e=>{
   /* corner drag also sets width — snaps to half or full so the grid always tiles */
   if(rz.mode==="cgrip"){
     const stackW=document.getElementById("stack").getBoundingClientRect().width;
-    const want=(rz.w0/12*stackW + (e.clientX-rz.x0)) / stackW;
-    const w = want < 0.72 ? 6 : 12;
+    const want=Math.max(3,Math.min(12,(rz.w0/12*stackW + (e.clientX-rz.x0)) / stackW * 12));
+    let w=W_SNAPS[0];
+    W_SNAPS.forEach(s=>{ if(Math.abs(s-want)<Math.abs(w-want)) w=s; });
     if(w!==p.w){ p.w=w; card.style.setProperty("--span",w); }
   }
   const sets=buildSets(p);
@@ -1006,7 +1105,7 @@ document.addEventListener("pointermove",e=>{
     const chart=chartFor(p,sets);
     if(chart&&holder) holder.innerHTML=chart+((p.era!=="off"&&p.chart!=="scatter"&&p.chart!=="small")?renderRibbon(p):"");
   }
-  const pill=card.querySelector(".hpill"); if(pill) pill.textContent=(p.w===12?"full":"half")+" · "+p.h+"px";
+  const pill=card.querySelector(".hpill"); if(pill) pill.textContent=wLabel(p.w)+" · "+p.h+"px";
 });
 document.addEventListener("pointerup",()=>{
   if(!rz) return;
@@ -1057,6 +1156,7 @@ const exportCss=th=>`
   .pmtick{stroke:${th.ink};stroke-width:1;stroke-dasharray:2 2;opacity:.3}
   .etick{stroke:${th.ink};stroke-width:1.5}
   .pmlabel{font-size:8.5px;fill:${th.muted}}
+  .eralabel{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:${th.muted}}
   .ttl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:19px;fill:${th.ink}}
   .sub{font-size:11px;fill:${th.muted}}
   .cred{font-size:10px;fill:${th.muted}}`;
@@ -1130,7 +1230,7 @@ function readHash(){
         {chart:chart||"line",trans:trans||"index",from:+from||1997,to:+to||2026,
          era:eraMode,eraPrev:eraMode==="off"?"pm":eraMode,gran:(GRANS.some(g=>g[0]===gran)?gran:"years"),
          title:ttl?decodeURIComponent(ttl):null,
-         h:Math.max(H_MIN,Math.min(H_MAX,+h||H_DEF)),w:(+w===6?6:12)});
+         h:Math.max(H_MIN,Math.min(H_MAX,+h||H_DEF)),w:(W_SNAPS.includes(+w)?+w:12)});
     });
     if(panels.length) state.panels=panels;
   } else if(q.get("t")){                       /* topic deep-link from the homepage tiles */
@@ -1139,6 +1239,16 @@ function readHash(){
   }
   state.active=Math.max(0,Math.min(+q.get("a")||0,state.panels.length-1));
 }
+
+/* sidebar collapse — persisted like the theme */
+(function(){
+  try{ if(localStorage.getItem("polyoptic-side")==="collapsed") document.body.classList.add("side-collapsed"); }catch(e){}
+  const set=c=>{ document.body.classList.toggle("side-collapsed",c);
+    try{ localStorage.setItem("polyoptic-side", c?"collapsed":"open"); }catch(e){} };
+  document.getElementById("sideHide").onclick=()=>set(true);
+  document.getElementById("sideHideTop").onclick=()=>set(true);
+  document.getElementById("sideOpen").onclick=()=>set(false);
+})();
 
 const themeBtn=document.getElementById("themeBtn");
 function syncThemeBtn(){
