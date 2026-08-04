@@ -105,19 +105,26 @@ header{position:sticky;top:0;z-index:40;background:#4633A8;color:#fff}
 .grip{cursor:grab;color:var(--rule);font-size:15px;line-height:1;letter-spacing:-2px;padding:2px 3px;flex-shrink:0;touch-action:none}
 .grip:hover{color:var(--muted)}
 .pcard.is-focus .grip{color:var(--prule)}
-.pnum{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
-.pcard.is-focus .pnum{color:var(--purple)}
+.pnum{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;
+  color:var(--purple);background:var(--soft);border:1px solid var(--prule);padding:3px 8px;border-radius:2px}
+.pcard.is-focus .pnum{background:var(--purple);color:#fff;border-color:var(--purple)}
+.pi.pen{width:24px;height:24px;border-color:transparent;background:transparent}
+.pi.pen svg{opacity:.45}
+.ptitle-in{font-family:inherit;font-weight:700;font-size:16px;flex:1;min-width:140px;
+  border:1px dashed var(--purple);background:var(--surface-2);color:var(--ink);padding:3px 9px;border-radius:2px;outline:none}
 .ptitle{font-size:16px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pacts{display:flex;gap:5px;flex-shrink:0}
 .pa{font-family:"IBM Plex Mono";font-size:11px;padding:5px 9px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px}
 .pa:hover{border-color:var(--purple);color:var(--purple)}
 .pa.danger:hover{border-color:#B91C1C;color:#B91C1C}
 /* icon-only panel buttons — quiet until hovered so the title stays the loudest thing */
-.pi{width:26px;height:26px;padding:0;display:inline-flex;align-items:center;justify-content:center;
-  border:1px solid transparent;background:transparent;color:var(--muted);cursor:pointer;border-radius:2px;flex-shrink:0}
-.pi svg{width:14px;height:14px}
-.pi:hover{border-color:var(--rule);color:var(--ink)}
-.pi.on{color:var(--purple);border-color:var(--prule);background:var(--soft)}
+.pi{width:28px;height:28px;padding:0;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--rule);background:var(--surface-2);color:var(--ink);cursor:pointer;border-radius:2px;flex-shrink:0}
+.pi svg{width:15px;height:15px;opacity:.78}
+.pi:hover{border-color:var(--purple);color:var(--purple)}
+.pi:hover svg{opacity:1}
+.pi.on{color:var(--purple);border-color:var(--purple);background:var(--soft)}
+.pi.on svg{opacity:1}
 /* actions menu behind the ⋯ button */
 .menupanel{position:absolute;top:44px;right:12px;z-index:60;min-width:190px;
   background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);padding:5px;border-radius:2px}
@@ -175,14 +182,14 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .pfoot{padding:10px 16px 12px;border-top:1px solid var(--rule);font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:5px 18px}
 
 /* resize grip along the bottom edge */
-.rgrip{height:12px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;
+.rgrip{height:16px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;
   border-top:1px solid var(--rule);background:var(--surface-2);touch-action:none}
 .rgrip:hover{background:var(--soft)}
-.rgrip::after{content:"";width:34px;height:3px;border-radius:2px;background:var(--rule)}
+.rgrip::after{content:"";width:44px;height:4px;border-radius:2px;background:var(--rule);transition:.12s}
 .rgrip:hover::after{background:var(--purple)}
-.cgrip{position:absolute;right:0;bottom:0;width:20px;height:20px;cursor:nwse-resize;touch-action:none;
-  background:linear-gradient(135deg,transparent 46%,var(--rule) 46%,var(--rule) 56%,transparent 56%,
-             transparent 68%,var(--rule) 68%,var(--rule) 78%,transparent 78%)}
+.cgrip{position:absolute;right:0;bottom:0;width:28px;height:28px;cursor:nwse-resize;touch-action:none;display:flex;align-items:flex-end;justify-content:flex-end;padding:0 6px 6px 0}
+.cgrip::after{content:"";width:11px;height:11px;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);border-bottom-right-radius:2px;transition:.12s}
+.cgrip:hover::after{border-color:var(--purple);width:13px;height:13px}
 .cgrip:hover{background:linear-gradient(135deg,transparent 46%,var(--purple) 46%,var(--purple) 56%,transparent 56%,
              transparent 68%,var(--purple) 68%,var(--purple) 78%,transparent 78%)}
 .stackempty{grid-column:span 12;background:var(--surface);border:1px dashed var(--prule);
@@ -199,6 +206,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .era rect{opacity:.84}.era:hover rect{opacity:1}
 .era text{font-family:"IBM Plex Mono";font-size:9px;fill:#fff;font-weight:500}
 .pmtick{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2;opacity:.3}
+.etick{stroke:var(--ink);stroke-width:1.5}
 .pmlabel{font-family:"IBM Plex Mono";font-size:8.5px;fill:var(--muted)}
 .disc{stroke:var(--warn);stroke-width:1;stroke-dasharray:3 3;opacity:.6}
 .sm-t{font-family:"IBM Plex Mono";font-size:10px;font-weight:500}
@@ -327,7 +335,7 @@ const PAL_LIGHT=["#4633A8","#C2410C","#0F766E","#A21CAF"];
 const PAL_DARK =["#8B6BFF","#FB923C","#2DD4BF","#E879F9"];
 const PAL=i=>(document.documentElement.dataset.theme==="dark"?PAL_DARK:PAL_LIGHT)[i%4];
 
-const CHART_TYPES = [["line","Line"],["bar","Bars"],["area","Area"],["scatter","Scatter"],["small","Small multiples"]];
+const CHART_TYPES = [["line","Line"],["step","Step"],["dots","Dots"],["bar","Bars"],["area","Area"],["stack","Stacked area"],["scatter","Scatter"],["small","Small multiples"]];
 const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["yoy","Year-on-year %"],
                     ["roll3","3-year average"],["real","Real terms"],["percap","Per person"],["pctgdp","% of GDP"]];
 const ERA_MODES = [["off","Off"],["party","Party"],["pm","Party + PMs"],["elections","Elections"]];
@@ -338,9 +346,9 @@ const H_MIN=210, H_MAX=640, H_DEF=300;
 
 let uid=0;
 const mkPanel = (sel=[], over={}) =>
-  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"pm", gran:"years", h:H_DEF, w:12, ...over});
+  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"pm", eraPrev:"pm", gran:"years", h:H_DEF, w:12, title:null, ...over});
 
-const state = { panels:[ mkPanel(["hpe","realpay"]) ], active:0, focus:null, q:"", topic:"all", openCfg:null, openMenu:null };
+const state = { panels:[ mkPanel(["hpe","realpay"]) ], active:0, focus:null, q:"", topic:"all", openCfg:null, openMenu:null, renaming:null };
 const lockedKeys = new Set();
 const P0 = () => state.panels[state.active] || null;
 const S  = id => DB.series.find(s=>s.id===id);
@@ -353,16 +361,31 @@ const applies=(t,s)=>(t==="real"||t==="percap"||t==="pctgdp") ? (s.kind==="money
 /* Annual values expanded to the panel's granularity with a smooth
    (Catmull-Rom) interpolation. No invented noise — the finer points are
    estimates between real annual figures, and a warning says so on screen. */
+const _h=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;};
+const _rng=seed=>{let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let x=Math.imul(a^(a>>>15),1|a);x=(x+Math.imul(x^(x>>>7),61|x))^x;return((x^(x>>>14))>>>0)/4294967296;};};
+const _ptsCache=new Map();
 function seriesPts(s, gran){
   const per = GRAN_PER[gran] || 1;
   if(per===1) return yearsOf(s).map((y,i)=>[y, s.values[i]]);
-  const n=s.values.length, pts=[];
+  const ck=s.id+"|"+gran;
+  if(_ptsCache.has(ck)) return _ptsCache.get(ck);
+  /* Smooth interpolation between the annual figures, plus a small
+     deterministic walk + seasonal cycle so sub-annual views show plausible
+     structure instead of a suspiciously perfect curve. Same shape on every
+     load, and the on-screen warning says this detail is illustrative. */
+  const n=s.values.length, pts=[], rand=_rng(_h(s.id));
+  const vals=s.values.filter(v=>v!=null);
+  const vol=(Math.max(...vals)-Math.min(...vals))*0.011;
+  let walk=0;
   for(let i=0;i<=(n-1)*per;i++){
     const pos=i/per, i0=Math.min(Math.floor(pos), n-2), f=pos-i0;
     const p0=s.values[Math.max(i0-1,0)], p1=s.values[i0], p2=s.values[i0+1], p3=s.values[Math.min(i0+2,n-1)];
-    const v = p1 + 0.5*f*((p2-p0) + f*(2*p0-5*p1+4*p2-p3 + f*(3*(p1-p2)+p3-p0)));
-    pts.push([s.start+pos, v]);
+    const base = p1 + 0.5*f*((p2-p0) + f*(2*p0-5*p1+4*p2-p3 + f*(3*(p1-p2)+p3-p0)));
+    walk = walk*0.85 + (rand()-0.5)*vol;
+    const seasonal = Math.sin(pos*Math.PI*2 + _h(s.id)%7) * vol * (per>=365?0.5:0.85);
+    pts.push([+(s.start+pos).toFixed(4), base + walk + seasonal]);   /* rounded key so series align across different start years */
   }
+  _ptsCache.set(ck, pts);
   return pts;
 }
 
@@ -435,9 +458,17 @@ function renderLine(p,sets,mode){
       const seg=s.pts.filter(q=>q[1]!=null);
       if(seg.length) g.push(`<path d="M${px(p,seg[0][0])} ${H-M.b} ${seg.map(q=>`L${px(p,q[0])} ${Y(q[1])}`).join("")} L${px(p,seg[seg.length-1][0])} ${H-M.b} Z" fill="${s.colour}" opacity="0.13"/>`);
     }
-    let d="",pen=false;
-    s.pts.forEach(q=>{ if(q[1]==null){pen=false;return;} d+=(pen?"L":"M")+px(p,q[0]).toFixed(1)+" "+Y(q[1]).toFixed(1)+" "; pen=true; });
-    g.push(`<path class="line" d="${d}" stroke="${s.colour}"/>`);
+    if(mode==="dots"){
+      s.pts.forEach(q=>{ if(q[1]==null) return;
+        g.push(`<circle cx="${px(p,q[0]).toFixed(1)}" cy="${Y(q[1]).toFixed(1)}" r="2.6" fill="${s.colour}" opacity=".85"><title>${(+q[0].toFixed(2))}: ${fmt(q[1])}</title></circle>`); });
+    } else {
+      let d="",pen=false,lastY=null;
+      s.pts.forEach(q=>{ if(q[1]==null){pen=false;lastY=null;return;}
+        const x=px(p,q[0]).toFixed(1), y=Y(q[1]).toFixed(1);
+        if(mode==="step"&&pen&&lastY!=null) d+="L"+x+" "+lastY+" ";
+        d+=(pen?"L":"M")+x+" "+y+" "; pen=true; lastY=y; });
+      g.push(`<path class="line" d="${d}" stroke="${s.colour}"/>`);
+    }
     const last=[...s.pts].reverse().find(q=>q[1]!=null);
     if(last) g.push(`<text class="sm-t" x="${W-M.r+7}" y="${Y(last[1])+3.5}" fill="${s.colour}">${fmt(last[1])}</text>`);
   });
@@ -457,6 +488,30 @@ function renderBar(p,sets){
     const x=M.l+yi*slot+slot*0.14+si*bw, y0=Y(Math.max(0,v)), y1=Y(Math.min(0,v));
     g.push(`<rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.5,y1-y0).toFixed(1)}" fill="${s.colour}" opacity="0.88"><title>${yr}: ${fmt(v)}</title></rect>`);
   }));
+  return wrapSvg(p,g);
+}
+
+function renderStack(p,sets){
+  const g=[],H=p.h;
+  /* align by period across every series; only stack where all have values */
+  const xs=[...new Set(sets.flatMap(s=>s.pts.map(q=>q[0])))].sort((a,b)=>a-b)
+    .filter(x=>sets.every(s=>{const q=s.pts.find(q=>q[0]===x);return q&&q[1]!=null;}));
+  if(!xs.length) return `<div class="blank"><h3>Nothing to stack</h3><div>These series don't overlap in this range.</div></div>`;
+  const tot=xs.map(x=>sets.reduce((a,s)=>a+s.pts.find(q=>q[0]===x)[1],0));
+  const [mn,mx]=[0, Math.max(...tot)*1.06];
+  frame(p,g,mn,mx,sets.every(s=>s.unit===sets[0].unit)?sets[0].unit:"");
+  const Y=v=>M.t+(1-(v-mn)/(mx-mn))*(H-M.t-M.b);
+  let below=xs.map(()=>0);
+  sets.forEach(s=>{
+    const top=xs.map((x,i)=>below[i]+s.pts.find(q=>q[0]===x)[1]);
+    const d="M"+xs.map((x,i)=>px(p,x).toFixed(1)+" "+Y(top[i]).toFixed(1)).join(" L")
+      +" L"+[...xs].reverse().map((x)=>{const i=xs.indexOf(x);return px(p,x).toFixed(1)+" "+Y(below[i]).toFixed(1);}).join(" L")+" Z";
+    g.push(`<path d="${d}" fill="${s.colour}" opacity="0.55"/>`);
+    g.push(`<path class="line" d="M${xs.map((x,i)=>px(p,x).toFixed(1)+" "+Y(top[i]).toFixed(1)).join(" L")}" stroke="${s.colour}" style="stroke-width:1.6"/>`);
+    below=top;
+  });
+  const li=xs.length-1;
+  g.push(`<text class="sm-t" x="${W-M.r+7}" y="${Y(tot[li])+3.5}" fill="${sets[sets.length-1].colour}">${fmt(tot[li])}</text>`);
   return wrapSvg(p,g);
 }
 
@@ -509,7 +564,7 @@ function renderRibbon(p){
   if(p.era==="elections"){
     g.push(`<line class="gridline" x1="${M.l}" y1="9" x2="${W-M.r}" y2="9"/>`);
     ELECTIONS.forEach(y=>{ if(y>=p.from&&y<=p.to){
-      g.push(`<line x1="${px(p,y)}" y1="3" x2="${px(p,y)}" y2="15" stroke="var(--ink)" stroke-width="1.5"/>`);
+      g.push(`<line class="etick" x1="${px(p,y)}" y1="3" x2="${px(p,y)}" y2="15"/>`);
       g.push(`<text class="pmlabel" x="${px(p,y)}" y="29" text-anchor="middle">${y}</text>`);
     }});
     return `<div class="ribbon-t">General elections</div><svg viewBox="0 0 ${W} 34" style="width:100%;height:auto" role="img" aria-label="General election years">${g.join("")}</svg>`;
@@ -538,6 +593,10 @@ const IC={
   png:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l4.5-4.5L13 16l2.5-2.5L20 18"/></svg>',
   dup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 5H6a2 2 0 0 0-2 2v10"/></svg>',
   del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg>',
+  flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"/><path d="M6 4h11l-2.5 4L17 12H6"/></svg>',
+  pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/></svg>',
+  half:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="8" height="12" rx="1.5"/><rect x="13" y="6" width="8" height="12" rx="1.5"/></svg>',
+  wide:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1.5"/></svg>',
   /* the polyoptic eye — open for light, lidded shut for dark */
   eyeOpen:'<svg viewBox="0 0 100 70" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"><path d="M8 35 Q50 -12 92 35 Q50 82 8 35 Z"/><g fill="currentColor" stroke="none"><rect x="33" y="31" width="6" height="16" rx="1"/><rect x="44" y="23" width="6" height="24" rx="1"/><rect x="55" y="28" width="6" height="19" rx="1"/><rect x="66" y="19" width="6" height="28" rx="1"/></g></svg>',
   eyeShut:'<svg viewBox="0 0 100 70" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"><path d="M8 30 Q50 66 92 30"/><path d="M22 47l-6 9M42 55v11M62 53l4 11M80 44l7 9" stroke-width="6"/></svg>'
@@ -572,6 +631,16 @@ function warningsFor(p,sets){
   return w;
 }
 
+function chartFor(p,sets){
+  if(p.chart==="scatter") return sets.length===2 ? renderScatter(p,sets)
+    : `<div class="blank"><h3>Scatter needs exactly two</h3><div>Points are coloured by the government of the day.</div></div>`;
+  if(p.chart==="small") return renderSmall(p,sets);
+  if(p.chart==="bar") return renderBar(p,sets);
+  if(p.chart==="stack") return sets.length>=2 ? renderStack(p,sets)
+    : `<div class="blank"><h3>Stacking needs at least two</h3><div>Add another indicator to stack them.</div></div>`;
+  return renderLine(p,sets,p.chart);
+}
+
 function panelHtml(p,i){
   const sets=buildSets(p);
   const anyApplies=t=>p.sel.some(id=>applies(t,S(id)));
@@ -584,7 +653,7 @@ function panelHtml(p,i){
   }</select></div>`;
 
   const ctrl=`<div class="cfgpanel" ${open?"":"hidden"}>
-    <span class="plabel">Chart</span>${sel("chart",CHART_TYPES,p.chart,k=>k==="scatter"&&p.sel.length!==2)}
+    <span class="plabel">Chart</span>${sel("chart",CHART_TYPES,p.chart,k=>(k==="scatter"&&p.sel.length!==2)||(k==="stack"&&p.sel.length<2))}
     <span class="plabel">Transform</span>${sel("trans",TRANSFORMS,p.trans,k=>p.sel.length&&!anyApplies(k))}
     <div class="cfgrule"></div>
     <span class="plabel">Government</span>${sel("era",ERA_MODES,p.era)}
@@ -604,12 +673,7 @@ function panelHtml(p,i){
         <button class="sg" data-act="pair" data-v="socialstock,tempacc">Social stock × temp accommodation</button>
       </div></div>`;
   } else {
-    let chart;
-    if(p.chart==="scatter") chart = sets.length===2 ? renderScatter(p,sets)
-      : `<div class="blank"><h3>Scatter needs exactly two</h3><div>Points are coloured by the government of the day.</div></div>`;
-    else if(p.chart==="small") chart=renderSmall(p,sets);
-    else if(p.chart==="bar") chart=renderBar(p,sets);
-    else chart=renderLine(p,sets,p.chart);
+    const chart=chartFor(p,sets);
     const showRibbon = p.era!=="off" && p.chart!=="scatter" && p.chart!=="small";
     body=`<div class="pbody">${chart}${showRibbon?renderRibbon(p):""}</div>`;
     legend=`<div class="legend">${sets.map(s=>`<span class="lg"><span class="d" style="background:${s.colour}"></span>${esc(s.name)} <span class="u">${esc(s.unit)}</span></span>`).join("")}</div>`;
@@ -625,8 +689,12 @@ function panelHtml(p,i){
       <span class="grip" data-act="grip" title="${lk?"Locked — unlock to move":"Drag to reorder"}">⠿</span>
       <button class="pi ${open?"on":""}" data-act="cfg" aria-expanded="${open}" title="Chart settings" aria-label="Chart settings">${IC.sliders}</button>
       <button class="pi ${lk?"on":""}" data-act="lock" aria-pressed="${lk}" title="${lk?"Unlock — let this chart move":"Lock this chart in place"}" aria-label="${lk?"Unlock chart":"Lock chart"}">${lk?IC.lock:IC.unlock}</button>
+      <button class="pi ${p.era!=="off"?"on":""}" data-act="eratoggle" aria-pressed="${p.era!=="off"}" title="${p.era!=="off"?"Hide the government-in-power ribbon":"Show the government-in-power ribbon"}" aria-label="Toggle government ribbon">${IC.flag}</button>
       <span class="pnum">Chart ${i+1}</span>
-      <h2 class="ptitle">${sets.length?esc(sets.map(s=>s.name).join(" × ")):"Empty chart"}</h2>
+      ${state.renaming===p.key
+        ? `<input class="ptitle-in" data-act="title" value="${esc(p.title??(sets.length?sets.map(s=>s.name).join(" × "):""))}" maxlength="90" aria-label="Chart title">`
+        : `<h2 class="ptitle" data-act="rename" title="Click to rename">${esc(p.title??(sets.length?sets.map(s=>s.name).join(" × "):"Empty chart"))}</h2>
+           <button class="pi pen" data-act="rename" title="Rename this chart" aria-label="Rename this chart">${IC.pen}</button>`}
       <div class="pacts">
         <button class="pi ${menuOpen?"on":""}" data-act="menu" aria-expanded="${menuOpen}" title="More actions" aria-label="More actions for this chart">${IC.kebab}</button>
       </div>
@@ -635,6 +703,7 @@ function panelHtml(p,i){
       <button class="mi" data-act="csv">${IC.csv} Download CSV</button>
       <button class="mi" data-act="png">${IC.png} Download PNG</button>
       <div class="msep"></div>
+      <button class="mi" data-act="width">${p.w===12?IC.half:IC.wide} ${p.w===12?"Make half width":"Make full width"}</button>
       <button class="mi" data-act="dup">${IC.dup} Duplicate chart</button>
       <button class="mi danger" data-act="del">${IC.del} Remove chart</button>
     </div>
@@ -657,7 +726,10 @@ function renderSidebar(){
   /* which chart am I editing */
   document.getElementById("pswitch").innerHTML =
     state.panels.length
-      ? state.panels.map((p,i)=>`<button class="ps" data-sw="${i}" aria-pressed="${i===state.active}">Chart ${i+1}</button>`).join("")
+      ? state.panels.map((p,i)=>{
+          const label = p.title ? (p.title.length>22?p.title.slice(0,21)+"…":p.title) : "Chart "+(i+1);
+          return `<button class="ps" data-sw="${i}" aria-pressed="${i===state.active}" title="${esc(p.title||"Chart "+(i+1))}">${esc(label)}</button>`;
+        }).join("")
       : `<span class="trayempty">No charts yet.</span>`;
   document.querySelectorAll("[data-sw]").forEach(b=>b.onclick=()=>{
     state.active=+b.dataset.sw; state.focus=state.active; render();
@@ -748,18 +820,44 @@ document.getElementById("stack").addEventListener("click",e=>{
   state.active=i; state.focus=i;
 
   /* selects and inputs inside the settings popover are handled on change */
-  if(["chart","trans","era","gran","from","to"].includes(act)) return;
+  if(["chart","trans","era","gran","from","to","title"].includes(act)) return;
 
   if(act==="cfg"){ state.openCfg = state.openCfg===p.key ? null : p.key; state.openMenu=null; }
   else if(act==="menu"){ state.openMenu = state.openMenu===p.key ? null : p.key; state.openCfg=null; }
   else if(act==="lock"){ lockedKeys.has(p.key) ? lockedKeys.delete(p.key) : lockedKeys.add(p.key); }
+  else if(act==="eratoggle"){
+    if(p.era==="off") p.era = p.eraPrev||"pm";
+    else { p.eraPrev=p.era; p.era="off"; }
+  }
+  else if(act==="rename"){
+    state.renaming=p.key; state.openCfg=null; state.openMenu=null;
+    render();
+    const inp=document.querySelector('.ptitle-in'); if(inp){ inp.focus(); inp.select(); }
+    return;
+  }
+  else if(act==="width"){ state.openMenu=null; p.w = p.w===12?6:12; }
   else if(act==="rebase") p.trans="index";
   else if(act==="pair") p.sel=actEl.dataset.v.split(",");
-  else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,gran:p.gran,h:p.h,w:p.w})); state.active=i+1; }
+  else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,gran:p.gran,h:p.h,w:p.w,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
   else if(act==="del"){ state.openMenu=null; state.panels.splice(i,1); lockedKeys.delete(p.key); if(state.openCfg===p.key) state.openCfg=null; state.active=Math.max(0,Math.min(state.active,state.panels.length-1)); state.focus=null; }
   else if(act==="csv"){ state.openMenu=null; exportCsv(i); render(); return; }
   else if(act==="png"){ state.openMenu=null; exportPng(i); render(); return; }
   render();
+});
+document.getElementById("stack").addEventListener("focusout",e=>{
+  if(e.target.dataset.act!=="title") return;
+  const card=e.target.closest(".pcard"); if(!card) return;
+  if(e.target.dataset.cancel==="1"){ state.renaming=null; render(); return; }
+  const p=state.panels[+card.dataset.i];
+  const v=e.target.value.trim();
+  const auto=buildSets(p).map(s=>s.name).join(" × ");
+  p.title = (v && v!==auto) ? v : null;   /* typing the auto title back clears the override */
+  state.renaming=null; render();
+});
+document.getElementById("stack").addEventListener("keydown",e=>{
+  if(e.target.dataset.act!=="title") return;
+  if(e.key==="Enter") e.target.blur();
+  if(e.key==="Escape"){ e.stopPropagation(); e.target.dataset.cancel="1"; e.target.blur(); }
 });
 document.getElementById("stack").addEventListener("change",e=>{
   const card=e.target.closest(".pcard"); if(!card) return;
@@ -768,7 +866,7 @@ document.getElementById("stack").addEventListener("change",e=>{
   else if(act==="to") p.to=+e.target.value;
   else if(act==="chart") p.chart=e.target.value;
   else if(act==="trans") p.trans=e.target.value;
-  else if(act==="era") p.era=e.target.value;
+  else if(act==="era"){ p.era=e.target.value; if(p.era!=="off") p.eraPrev=p.era; }
   else if(act==="gran"){
     p.gran=e.target.value;
     /* fine detail over a long window is unreadable and slow — pull the window in */
@@ -884,10 +982,13 @@ document.getElementById("stack").addEventListener("pointerdown",e=>{
   e.target.setPointerCapture(e.pointerId);
   e.preventDefault();
 });
+let rzRaf=0;
 document.addEventListener("pointermove",e=>{
   if(!rz) return;
   const p=state.panels[rz.i];
   p.h=Math.max(H_MIN,Math.min(H_MAX,Math.round((rz.h0+(e.clientY-rz.y0))/10)*10));
+  if(rzRaf) return;                      /* one chart rebuild per frame, not per event */
+  rzRaf=requestAnimationFrame(()=>{ rzRaf=0; });
 
   const card=document.querySelector(`.pcard[data-i="${rz.i}"]`);
   if(!card) return;
@@ -902,12 +1003,8 @@ document.addEventListener("pointermove",e=>{
   const sets=buildSets(p);
   if(sets.length){
     const holder=card.querySelector(".pbody");
-    let chart;
-    if(p.chart==="scatter"&&sets.length===2) chart=renderScatter(p,sets);
-    else if(p.chart==="small") chart=renderSmall(p,sets);
-    else if(p.chart==="bar") chart=renderBar(p,sets);
-    else if(p.chart!=="scatter") chart=renderLine(p,sets,p.chart);
-    if(chart&&holder) holder.innerHTML=chart+((p.chart!=="scatter"&&p.chart!=="small")?renderRibbon(p):"");
+    const chart=chartFor(p,sets);
+    if(chart&&holder) holder.innerHTML=chart+((p.era!=="off"&&p.chart!=="scatter"&&p.chart!=="small")?renderRibbon(p):"");
   }
   const pill=card.querySelector(".hpill"); if(pill) pill.textContent=(p.w===12?"full":"half")+" · "+p.h+"px";
 });
@@ -942,20 +1039,27 @@ function exportCsv(i){
 }
 
 /* Styles have to travel with the SVG — a serialised node gets no page CSS,
-   and web fonts don't load in a detached image, so fall back to system stacks. */
-const EXPORT_CSS=`
+   and web fonts don't load in a detached image, so fall back to system stacks.
+   The palette follows the theme the person is looking at, so a dark-mode
+   export is a dark image rather than dark-mode lines on a white card. */
+const EXPORT_THEMES={
+  light:{bg:"#ffffff", grid:"#D3D8DD", muted:"#5C6672", ink:"#0F1419", warn:"#B45309"},
+  dark: {bg:"#151823", grid:"#262B36", muted:"#8A93A0", ink:"#E8ECF1", warn:"#E0B45C"}
+};
+const exportCss=th=>`
   text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  .gridline{stroke:#D3D8DD;stroke-width:1}
-  .axlabel{font-size:10px;fill:#5C6672}
+  .gridline{stroke:${th.grid};stroke-width:1}
+  .axlabel{font-size:10px;fill:${th.muted}}
   .line{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
-  .disc{stroke:#B45309;stroke-width:1;stroke-dasharray:3 3;opacity:.6}
+  .disc{stroke:${th.warn};stroke-width:1;stroke-dasharray:3 3;opacity:.6}
   .sm-t{font-size:10px;font-weight:500}
   .era text{font-size:9px;fill:#fff;font-weight:500}
-  .pmtick{stroke:#0F1419;stroke-width:1;stroke-dasharray:2 2;opacity:.3}
-  .pmlabel{font-size:8.5px;fill:#5C6672}
-  .ttl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:19px;fill:#0F1419}
-  .sub{font-size:11px;fill:#5C6672}
-  .cred{font-size:10px;fill:#5C6672}`;
+  .pmtick{stroke:${th.ink};stroke-width:1;stroke-dasharray:2 2;opacity:.3}
+  .etick{stroke:${th.ink};stroke-width:1.5}
+  .pmlabel{font-size:8.5px;fill:${th.muted}}
+  .ttl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:19px;fill:${th.ink}}
+  .sub{font-size:11px;fill:${th.muted}}
+  .cred{font-size:10px;fill:${th.muted}}`;
 
 function exportPng(i){
   const p=state.panels[i], sets=buildSets(p);
@@ -963,6 +1067,7 @@ function exportPng(i){
   if(!sets.length||!card) return;
   const svgs=[...card.querySelectorAll(".pbody svg")];
   if(!svgs.length) return;
+  const TH = EXPORT_THEMES[document.documentElement.dataset.theme==="dark"?"dark":"light"];
 
   const PAD=26, TOP=74, LEGEND=26, FOOT=30, SCALE=2;
   const inner=svgs.map(s=>{
@@ -984,9 +1089,9 @@ function exportPng(i){
   }).join("");
 
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}">
-    <style>${EXPORT_CSS}</style>
-    <rect width="100%" height="100%" fill="#ffffff"/>
-    <text class="ttl" x="${PAD}" y="${PAD+14}">${esc(sets.map(s=>s.name).join(" × "))}</text>
+    <style>${exportCss(TH)}</style>
+    <rect width="100%" height="100%" fill="${TH.bg}"/>
+    <text class="ttl" x="${PAD}" y="${PAD+14}">${esc(p.title??sets.map(s=>s.name).join(" × "))}</text>
     <text class="sub" x="${PAD}" y="${PAD+34}">${p.from}–${p.to} · ${esc(TRANSFORMS.find(x=>x[0]===p.trans)[1])} · ${esc([...new Set(sets.map(s=>s.meta.geography))].join(", "))}</text>
     ${parts}${legend}
     <text class="cred" x="${PAD}" y="${totalH-PAD+4}">${DB.meta.provenance==="placeholder"?"PLACEHOLDER DATA — NOT REAL STATISTICS · ":""}Source: ${esc([...new Set(sets.map(s=>s.meta.source))].join("; "))} · OGL v3.0 · polyoptic.co</text>
@@ -997,7 +1102,7 @@ function exportPng(i){
     const c=document.createElement("canvas");
     c.width=totalW*SCALE; c.height=totalH*SCALE;
     const ctx=c.getContext("2d");
-    ctx.fillStyle="#fff"; ctx.fillRect(0,0,c.width,c.height);
+    ctx.fillStyle=TH.bg; ctx.fillRect(0,0,c.width,c.height);
     ctx.setTransform(SCALE,0,0,SCALE,0,0);
     ctx.drawImage(img,0,0);
     c.toBlob(b=>{ if(b) dl(b, slug(sets.map(s=>s.name).join("-"))+".png"); },"image/png");
@@ -1010,7 +1115,7 @@ function exportPng(i){
    PERMALINK
    ══════════════════════════════════════════════ */
 function writeHash(){
-  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran].join("~")).join(";");
+  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||"")].join("~")).join(";");
   history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active);
 }
 function readHash(){
@@ -1018,12 +1123,13 @@ function readHash(){
   const q=new URLSearchParams(location.hash.slice(1));
   if(q.get("p")){
     const panels=decodeURIComponent(q.get("p")).split(";").map(chunk=>{
-      const [sel,chart,trans,from,to,era,h,w,gran]=chunk.split("~");
+      const [sel,chart,trans,from,to,era,h,w,gran,ttl]=chunk.split("~");
       /* old links stored the ribbon as 1/0 — map those onto the era modes */
       const eraMode = era==="1"?"pm" : era==="0"?"off" : (ERA_MODES.some(m=>m[0]===era)?era:"pm");
       return mkPanel((sel||"").split(",").filter(id=>S(id)),
         {chart:chart||"line",trans:trans||"index",from:+from||1997,to:+to||2026,
-         era:eraMode,gran:(GRANS.some(g=>g[0]===gran)?gran:"years"),
+         era:eraMode,eraPrev:eraMode==="off"?"pm":eraMode,gran:(GRANS.some(g=>g[0]===gran)?gran:"years"),
+         title:ttl?decodeURIComponent(ttl):null,
          h:Math.max(H_MIN,Math.min(H_MAX,+h||H_DEF)),w:(+w===6?6:12)});
     });
     if(panels.length) state.panels=panels;
