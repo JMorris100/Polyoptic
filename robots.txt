@@ -1,0 +1,5 @@
+# Placeholder data is live on this site. Keep it out of the index until the
+# ingest has run for real, then delete this file and the noindex meta tags
+# in index.html and explore.html.
+User-agent: *
+Disallow: /

@@ -1,0 +1,213 @@
+# ══════════════════════════════════════════════════════════════
+# Polyoptic series catalogue
+#
+# Adding an indicator means adding an entry here. No code changes.
+# That's the whole point of the series-first model: the catalogue is
+# data, the pipeline is generic, and the front end is a view over both.
+#
+# Every identifier below was verified against the live catalogues on
+# 2026-08-05 (ONS website timeseries, ONS CMD/beta API, DfE EES API).
+# Sources only published as ODS/XLSX spreadsheets (MHCLG live tables,
+# HMT GDP deflator, OBR databank) are NOT here yet — they need a
+# spreadsheet adapter, which is the next piece of pipeline work.
+# ══════════════════════════════════════════════════════════════
+
+eras:
+  - {from: 1997, to: 2010, party: Labour,       colour: "#E4003B"}
+  - {from: 2010, to: 2015, party: Coalition,    colour: "#7E6FA8"}
+  - {from: 2015, to: 2024, party: Conservative, colour: "#0087DC"}
+  - {from: 2024, to: 2026, party: Labour,       colour: "#E4003B"}
+
+# Institute for Government Ministers Database (CC-BY-4.0) is the source
+# to automate this from once you want Secretary of State markers too.
+pms:
+  - [1997, Blair]
+  - [2007, Brown]
+  - [2010, Cameron]
+  - [2016, May]
+  - [2019, Johnson]
+  - [2022, Truss]
+  - [2023, Sunak]
+  - [2024, Starmer]
+
+# ──────────────────────────────────────────────────────────────
+# Reference series. These power the transforms and must be present
+# for real-terms, per-person and %-of-GDP to work anywhere.
+#
+# The deflator is the ONS *implied* GDP deflator (L8GG, quarterly,
+# calendar years) rather than the HMT financial-year deflator, which
+# is only published as a spreadsheet. The difference is small but
+# real; swap it once a spreadsheet adapter exists.
+# ──────────────────────────────────────────────────────────────
+references:
+  population:
+    source_type: ons_timeseries
+    fetch: {path: peoplepopulationandcommunity/populationandmigration/populationestimates, cdid: UKPOP, dataset: pop, granularity: years}
+  deflator:
+    source_type: ons_timeseries
+    fetch: {path: economy/grossdomesticproductgdp, cdid: L8GG, dataset: qna, granularity: quarters, aggregate: mean}
+  gdp:
+    source_type: ons_timeseries
+    fetch: {path: economy/grossdomesticproductgdp, cdid: YBHA, dataset: qna, granularity: years}
+
+# ──────────────────────────────────────────────────────────────
+# Launch set. Deliberately awkward pairs — different geographies,
+# different year bases, different units — so the schema gets
+# exercised properly from day one rather than at series fifty.
+# ──────────────────────────────────────────────────────────────
+series:
+
+  # ── HOUSING ──────────────────────────────────────────────
+  - id: rents
+    name: Private rents index (IPHRP)
+    topics: [housing, economy]
+    unit: index, Jan 2015=100
+    kind: index
+    geography: UK
+    year_basis: calendar
+    source: ONS Index of Private Housing Rental Prices
+    source_url: https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/indexofprivatehousingrentalprices/previousReleases
+    licence: OGL v3.0
+    source_type: ons_beta
+    fetch:
+      dataset: index-private-housing-rental-prices
+      edition: time-series
+      version: latest
+      dimensions:
+        administrative-geography: K02000001
+        index-and-year-change: index
+    discontinuities:
+      - {year: 2025, note: "IPHRP was discontinued in March 2025 and replaced by the Price Index of Private Rents (PIPR); the final year is a partial one"}
+
+  # ── ECONOMY ──────────────────────────────────────────────
+  - id: cpih
+    name: CPIH
+    topics: [economy]
+    unit: index, 2015=100
+    kind: index
+    geography: UK
+    year_basis: calendar
+    source: ONS
+    source_url: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/l522/mm23
+    source_type: ons_timeseries
+    fetch: {path: economy/inflationandpriceindices, cdid: L522, dataset: mm23, granularity: years}
+
+  - id: unemp
+    name: Unemployment rate
+    topics: [economy]
+    unit: "% of workforce"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Labour Force Survey
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgsx/lms
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peoplenotinwork/unemployment, cdid: MGSX, dataset: lms, granularity: months}
+    discontinuities:
+      - {year: 2024, note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
+
+  - id: pay
+    name: Average weekly earnings (total pay)
+    topics: [economy]
+    unit: "£ per week, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Average Weekly Earnings
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/kab9/emp
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peopleinwork/earningsandworkinghours, cdid: KAB9, dataset: emp, granularity: months, aggregate: mean}
+    notes:
+      - "Whole-economy seasonally adjusted total pay, mean not median; the series starts in 2000"
+
+  - id: debtint
+    name: Public sector debt interest
+    topics: [economy]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Public Sector Finances
+    source_url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/jw2p/pusf
+    source_type: ons_timeseries
+    fetch: {path: economy/governmentpublicsectorandtaxes/publicsectorfinance, cdid: JW2P, dataset: pusf, granularity: years}
+    notes:
+      - "Interest and dividends paid to the private sector and rest of world, excluding public sector banks"
+
+  - id: psnd
+    name: Public sector net debt
+    topics: [economy]
+    unit: "% of GDP"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Public Sector Finances
+    source_url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/hf6x/pusf
+    source_type: ons_timeseries
+    fetch: {path: economy/governmentpublicsectorandtaxes/publicsectorfinance, cdid: HF6X, dataset: pusf, granularity: years}
+    notes:
+      - "Excluding public sector banks"
+
+  # ── EDUCATION ────────────────────────────────────────────
+  # England only, academic years. Both of those differ from most of the
+  # economy series above, which is exactly why these belong in the
+  # launch set — the mismatch warnings need something to fire on.
+  - id: absence
+    name: Persistent absence rate
+    topics: [education]
+    unit: "% of pupil enrolments"
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: DfE Explore Education Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/pupil-absence-in-schools-in-england
+    source_type: dfe_ees
+    fetch:
+      data_set_id: 019d209c-08dc-74b6-9edb-52d521406fcf
+      indicator: TuAuP
+      criteria:
+        and:
+          - {filters: {eq: qYfzj}}       # absence type: persistent absence
+          - {filters: {eq: X5Vmf}}       # school type: total
+          - {geographicLevels: {eq: NAT}}
+    discontinuities:
+      - {year: 2020, note: "Attendance recording rules and school opening changed; the series is not comparable across this point"}
+
+  - id: gap
+    name: Disadvantage attainment gap index (KS2)
+    topics: [education]
+    unit: index
+    kind: index
+    geography: England
+    year_basis: academic
+    source: DfE Explore Education Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/key-stage-2-attainment
+    source_type: dfe_ees
+    fetch:
+      data_set_id: 102f9901-7628-f374-bc64-906d075ee072
+      indicator: CJeId
+      criteria:
+        and:
+          - {geographicLevels: {eq: NAT}}
+    discontinuities:
+      - {year: 2020, note: "No KS2 assessments in 2019/20 and 2020/21; the gap on either side is not measured on identical cohorts"}
+
+  - id: pupils
+    name: Pupils in schools
+    topics: [education]
+    unit: pupils
+    kind: count
+    geography: England
+    year_basis: academic
+    source: DfE Explore Education Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/school-pupils-and-their-characteristics
+    source_type: dfe_ees
+    fetch:
+      data_set_id: 019e7404-df19-71ce-90a8-f2e3db7dd7fa
+      indicator: Dbx4Q
+      criteria:
+        and:
+          - {filters: {eq: f0yKY}}       # FSM breakdown: all pupils
+          - {filters: {eq: AFuxG}}       # FSM eligibility: total
+          - {filters: {eq: UZb0R}}       # school type: total
+          - {geographicLevels: {eq: NAT}}

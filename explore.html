@@ -1,0 +1,1293 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Explorer — Polyoptic</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%226.5%204.5%2087%2087%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22c%22%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%20fill%3D%22none%22%20stroke%3D%22%234633A8%22%20stroke-width%3D%225%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cg%20clip-path%3D%22url%28%23c%29%22%20fill%3D%22%234633A8%22%3E%3Crect%20x%3D%2229.75%22%20y%3D%2246.56%22%20width%3D%226%22%20height%3D%2218.72%22%2F%3E%3Crect%20x%3D%2241.25%22%20y%3D%2236.48%22%20width%3D%226%22%20height%3D%2228.8%22%2F%3E%3Crect%20x%3D%2252.75%22%20y%3D%2242.6%22%20width%3D%226%22%20height%3D%2222.68%22%2F%3E%3Crect%20x%3D%2264.25%22%20y%3D%2230.72%22%20width%3D%226%22%20height%3D%2234.56%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#EDEFF1;--surface:#fff;--surface-2:#FCFCFD;--hover:#F8F8FA;--ink:#0F1419;--muted:#5C6672;
+--rule:#D3D8DD;--rule-soft:#EEF0F2;
+--purple:#4633A8;--purple-dk:#3A2A8C;--soft:#F4F2FA;--soft-hover:#EAE5F6;--prule:#D8D2EC;
+--warn:#B45309;--warnbg:#FFF8E6;--warnrule:#E8D9A8;--warn-ink:#6B4A0A;--warn-ink-b:#4A3306;
+--shadow:0 18px 40px -10px rgba(15,20,25,.3)}
+html[data-theme="dark"]{--paper:#0B0D12;--surface:#151823;--surface-2:#1A1E2A;--hover:#1C2130;--ink:#E8ECF1;--muted:#8A93A0;
+--rule:#262B36;--rule-soft:#20242E;
+--purple:#8B6BFF;--purple-dk:#7355E8;--soft:#241E3E;--soft-hover:#2C2450;--prule:#3A3260;
+--warn:#E0B45C;--warnbg:#2A2107;--warnrule:#4C3B10;--warn-ink:#E3B65E;--warn-ink-b:#F0CC80;
+--shadow:0 18px 44px -10px rgba(0,0,0,.65)}
+html[data-theme="dark"] input{color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--paper);color:var(--ink);font-family:"Public Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;transition:background-color .2s}
+h1,h2,h3,h4{font-family:"Archivo";margin:0;letter-spacing:-0.03em;line-height:1.05}
+svg{display:block}
+button{font-family:inherit}
+body.dragging{user-select:none;cursor:grabbing}
+body.resizing{user-select:none;cursor:ns-resize}
+
+/* ── header ── */
+header{position:sticky;top:0;z-index:40;background:#4633A8;color:#fff}
+.hrow{max-width:1600px;margin:0 auto;padding:0 32px;height:70px;display:flex;align-items:center;gap:14px}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none}
+.brand svg{width:36px;height:26px}
+.wm{font-family:"Archivo";font-weight:800;font-size:21px;letter-spacing:-0.05em;color:#fff}
+.wm .b{font-weight:500;color:rgba(255,255,255,.66)}
+.crumb{font-family:"IBM Plex Mono";font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;margin-left:6px}
+.hact{margin-left:auto;display:flex;gap:8px}
+.hb{font-family:"IBM Plex Mono";font-size:11.5px;padding:8px 16px;border:1px solid rgba(255,255,255,.34);border-radius:2px;background:transparent;color:#fff;cursor:pointer;transition:.15s}
+.hb:hover{background:#fff;color:var(--purple);border-color:#fff}
+.hb.solid{background:#fff;color:var(--purple);border-color:#fff;font-weight:500}
+.hb.solid:hover{background:#F1EEFA}
+.hb.eye{display:inline-flex;align-items:center;justify-content:center;padding:7px 12px}
+.hb.eye svg{width:24px;height:16px;display:block}
+
+.shell{max-width:1600px;margin:0 auto;padding:26px 32px 90px;display:grid;grid-template-columns:308px 1fr;gap:22px;align-items:start;transition:grid-template-columns .18s ease}
+body.side-collapsed .shell{grid-template-columns:0 1fr;gap:0}
+body.side-collapsed .side{visibility:hidden;pointer-events:none}
+.siderail{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:45;display:none}
+body.side-collapsed .siderail{display:block}
+.siderail button{width:26px;height:74px;border:1px solid var(--rule);border-left:0;background:var(--surface);
+  color:var(--muted);cursor:pointer;border-radius:0 4px 4px 0;font-size:13px}
+.siderail button:hover{color:var(--purple);border-color:var(--purple)}
+.sidehide{width:100%;padding:10px 0;border:0;border-top:1px solid var(--rule);background:var(--soft);color:var(--purple);
+  cursor:pointer;font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;
+  display:flex;align-items:center;justify-content:center;gap:8px}
+.sidehide:hover{background:var(--purple);color:#fff}
+.sidehide svg{width:13px;height:13px}
+.sidecollapse{width:24px;height:24px;border:1px solid var(--rule);background:var(--surface-2);color:var(--muted);
+  cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;float:right;margin-top:-3px}
+.sidecollapse:hover{color:var(--purple);border-color:var(--purple)}
+.sidecollapse svg{width:12px;height:12px}
+@media(max-width:1040px){.shell{grid-template-columns:1fr;padding:20px 20px 60px}}
+
+/* ── sidebar ── */
+.side{position:sticky;top:96px}
+@media(max-width:1040px){.side{position:static}}
+.panelbox{background:var(--surface);border:1px solid var(--rule)}
+.psec{padding:14px 16px;border-bottom:1px solid var(--rule)}
+.psec:last-child{border-bottom:0}
+.plabel{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+
+/* which chart am I editing */
+.pswitch{display:flex;gap:5px;flex-wrap:wrap}
+.ps{font-family:"IBM Plex Mono";font-size:11px;padding:6px 11px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px;transition:.13s}
+.ps:hover{border-color:var(--ink);color:var(--ink)}
+.ps[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
+.ps.add{color:var(--purple);border-color:var(--prule);background:var(--soft);font-weight:500}
+.ps.add:hover{background:var(--soft-hover)}
+
+/* selected tray — survives topic filtering */
+.tray{display:flex;flex-direction:column;gap:6px}
+.trayitem{display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--soft);border:1px solid var(--prule);border-radius:2px}
+.trayitem .sw{width:11px;height:11px;flex-shrink:0;border-radius:2px}
+.trayitem .nm{flex:1;min-width:0;font-size:12.5px;font-weight:500;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trayitem .x{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;padding:0 2px}
+.trayitem .x:hover{color:var(--purple)}
+.trayempty{font-size:12.5px;color:var(--muted);padding:4px 0}
+
+#q{width:100%;padding:9px 11px;border:1px solid var(--rule);font-family:inherit;font-size:13.5px;background:var(--paper);border-radius:2px}
+#q:focus{outline:2px solid var(--purple);outline-offset:-1px}
+.filters{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.f{font-family:"IBM Plex Mono";font-size:10.5px;padding:5px 10px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px}
+.f[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
+.cat{max-height:46vh;overflow-y:auto}
+@media(max-width:1040px){.cat{max-height:300px}}
+.ci{padding:12px 16px;border-bottom:1px solid var(--rule-soft);cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.ci:hover{background:var(--hover)}
+.ci[aria-selected="true"]{background:var(--soft)}
+.ci .sw{width:11px;height:11px;flex-shrink:0;margin-top:3px;border:1.5px solid var(--rule);background:transparent;border-radius:2px}
+.ci .body{flex:1;min-width:0}
+.ci .cn{display:block;font-size:13.5px;font-weight:600;line-height:1.35;color:var(--ink)}
+.ci .cm{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;align-items:center}
+.ci .tag{font-family:"IBM Plex Mono";font-size:9.5px;color:var(--muted);background:var(--paper);border:1px solid var(--rule);padding:1px 6px;white-space:nowrap}
+.ci .yr{font-family:"IBM Plex Mono";font-size:9.5px;color:var(--muted);padding:1px 2px}
+.ci[aria-selected="true"] .tag{background:#fff;border-color:var(--prule)}
+.empty{padding:18px 16px;font-size:13px;color:var(--muted)}
+.foot{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted)}
+
+/* ── panels ── */
+.stack{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;align-items:start}
+.pcard{grid-column:span var(--span,12)}
+@media(max-width:1040px){.pcard{grid-column:span 12}}
+.pcard{background:var(--surface);border:1px solid var(--rule);position:relative;transition:border-color .15s,box-shadow .15s;min-width:0}
+.pcard.is-focus{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
+
+.pbar{display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:1px solid var(--rule)}
+.grip{cursor:grab;color:var(--rule);font-size:15px;line-height:1;letter-spacing:-2px;padding:2px 3px;flex-shrink:0;touch-action:none}
+.grip:hover{color:var(--muted)}
+.pcard.is-focus .grip{color:var(--prule)}
+.pnum{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;
+  color:var(--purple);background:var(--soft);border:1px solid var(--prule);padding:3px 8px;border-radius:2px}
+.pcard.is-focus .pnum{background:var(--purple);color:#fff;border-color:var(--purple)}
+.pi.pen{width:24px;height:24px;border-color:transparent;background:transparent}
+.pi.pen svg{opacity:.45}
+.ptitle-in{font-family:inherit;font-weight:700;font-size:16px;flex:1;min-width:140px;
+  border:1px dashed var(--purple);background:var(--surface-2);color:var(--ink);padding:3px 9px;border-radius:2px;outline:none}
+.ptitle{font-size:16px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pacts{display:flex;gap:5px;flex-shrink:0}
+.pa{font-family:"IBM Plex Mono";font-size:11px;padding:5px 9px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px}
+.pa:hover{border-color:var(--purple);color:var(--purple)}
+.pa.danger:hover{border-color:#B91C1C;color:#B91C1C}
+/* icon-only panel buttons — quiet until hovered so the title stays the loudest thing */
+.pi{width:28px;height:28px;padding:0;display:inline-flex;align-items:center;justify-content:center;
+  border:1px solid var(--rule);background:var(--surface-2);color:var(--ink);cursor:pointer;border-radius:2px;flex-shrink:0}
+.pi svg{width:15px;height:15px;opacity:.78}
+.pi:hover{border-color:var(--purple);color:var(--purple)}
+.pi:hover svg{opacity:1}
+.pi.on{color:var(--purple);border-color:var(--purple);background:var(--soft)}
+.pi.on svg{opacity:1}
+/* actions menu behind the ⋯ button */
+.menupanel{position:absolute;top:44px;right:12px;z-index:60;min-width:190px;
+  background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);padding:5px;border-radius:2px}
+.menupanel[hidden]{display:none}
+.mi{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:8px 10px;border:0;background:transparent;
+  color:var(--ink);cursor:pointer;font-family:"IBM Plex Mono";font-size:11.5px;border-radius:2px}
+.mi:hover{background:var(--soft);color:var(--purple)}
+.mi.danger:hover{background:#FEF2F2;color:#B91C1C}
+html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
+.mi svg{width:13px;height:13px;flex-shrink:0}
+.msep{height:1px;background:var(--rule-soft);margin:4px 6px}
+
+/* settings popover — label + control pairs on one aligned grid, anchored to
+   the management cluster at the top-left of the card */
+.cfgpanel{position:absolute;top:44px;left:12px;z-index:60;width:min(300px,86vw);
+  background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);
+  padding:14px 16px;display:grid;grid-template-columns:max-content 1fr;gap:10px 12px;align-items:center;border-radius:2px}
+.cfgpanel[hidden]{display:none}
+.cfgpanel .plabel{margin:0;text-align:right}
+.cfgrule{grid-column:1/-1;height:1px;background:var(--rule-soft)}
+.dd{position:relative;display:flex;width:100%}
+.dd select{appearance:none;-webkit-appearance:none;width:100%;
+  font-family:"IBM Plex Mono";font-size:11.5px;padding:7px 26px 7px 10px;
+  border:1px solid var(--rule);background:var(--surface-2);color:var(--ink);cursor:pointer;border-radius:2px}
+.dd select:hover{border-color:var(--ink)}
+.dd select:focus{outline:2px solid var(--purple);outline-offset:-1px}
+.dd::after{content:'';position:absolute;right:10px;top:50%;width:6px;height:6px;pointer-events:none;
+  border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:translateY(-70%) rotate(45deg)}
+.dd select option{background:var(--surface);color:var(--ink)}
+.dd select option:disabled{color:var(--muted)}
+.rng{display:flex;align-items:center;gap:8px;font-family:"IBM Plex Mono";font-size:11px;color:var(--muted)}
+.rng input{width:64px;padding:6px 7px;border:1px solid var(--rule);font-family:"IBM Plex Mono";font-size:11px;background:var(--surface-2);color:var(--ink);border-radius:2px}
+.pa.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.pa.on:hover{border-color:var(--purple);color:#fff}
+
+/* locking */
+.pcard.locked{border-color:var(--purple)}
+.pcard.locked .grip{opacity:.3;cursor:not-allowed}
+
+/* drag: the card follows the pointer, a dashed slot marks where it lands */
+.pcard.drag-live{position:fixed;z-index:120;pointer-events:none;margin:0;
+  box-shadow:var(--shadow);transform:rotate(.4deg) scale(1.01);border-color:var(--purple)}
+.dropslot{grid-column:span var(--span,12);border:2px dashed var(--purple);background:var(--soft);
+  display:flex;align-items:center;justify-content:center;color:var(--purple);
+  font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+
+.warn{background:var(--warnbg);border-bottom:1px solid var(--warnrule);padding:9px 16px;font-size:12.5px;color:var(--warn-ink)}
+.warn b{color:var(--warn-ink-b)}
+.warn button{margin-left:8px;font-family:"IBM Plex Mono";font-size:10.5px;background:transparent;border:1px solid var(--warnrule);padding:3px 8px;cursor:pointer;color:var(--warn-ink);border-radius:2px}
+.pbody{padding:14px 16px 6px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 12px}
+.lg{display:flex;align-items:center;gap:7px;font-size:12.5px}
+.lg .d{width:13px;height:3px;flex-shrink:0}
+.lg .u{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted)}
+.pfoot{padding:10px 16px 12px;border-top:1px solid var(--rule);font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:5px 18px}
+
+/* resize grip along the bottom edge */
+.rgrip{height:16px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;
+  border-top:1px solid var(--rule);background:var(--surface-2);touch-action:none}
+.rgrip:hover{background:var(--soft)}
+.rgrip::after{content:"";width:44px;height:4px;border-radius:2px;background:var(--rule);transition:.12s}
+.rgrip:hover::after{background:var(--purple)}
+.cgrip{position:absolute;right:0;bottom:0;width:28px;height:28px;cursor:nwse-resize;touch-action:none;display:flex;align-items:flex-end;justify-content:flex-end;padding:0 6px 6px 0}
+.cgrip::after{content:"";width:11px;height:11px;border-right:2.5px solid var(--muted);border-bottom:2.5px solid var(--muted);border-bottom-right-radius:2px;transition:.12s}
+.cgrip:hover::after{border-color:var(--purple);width:13px;height:13px}
+.cgrip:hover{background:linear-gradient(135deg,transparent 46%,var(--purple) 46%,var(--purple) 56%,transparent 56%,
+             transparent 68%,var(--purple) 68%,var(--purple) 78%,transparent 78%)}
+.stackempty{grid-column:span 12;background:var(--surface);border:1px dashed var(--prule);
+  padding:52px 24px;text-align:center;color:var(--muted)}
+.stackempty h3{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.hpill{position:absolute;right:12px;bottom:18px;font-family:"IBM Plex Mono";font-size:10px;
+  background:var(--ink);color:var(--paper);padding:3px 7px;border-radius:2px;opacity:0;transition:opacity .15s;pointer-events:none}
+.pcard.is-resizing .hpill{opacity:1;background:var(--purple);color:#fff;font-size:12px;padding:5px 11px;bottom:22px;right:16px}
+
+.gridline{stroke:var(--rule);stroke-width:1}
+.axlabel{font-family:"IBM Plex Mono";font-size:10px;fill:var(--muted)}
+.line{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.ribbon-t{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:10px 0 5px}
+.era rect{opacity:.84}.era:hover rect{opacity:1}
+.era text{font-family:"IBM Plex Mono";font-size:9px;fill:#fff;font-weight:500}
+.pmtick{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2;opacity:.3}
+.etick{stroke:var(--ink);stroke-width:1.5}
+.pmlabel{font-family:"IBM Plex Mono";font-size:8.5px;fill:var(--muted)}
+.eralabel{font-family:"IBM Plex Mono";font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:var(--muted)}
+.disc{stroke:var(--warn);stroke-width:1;stroke-dasharray:3 3;opacity:.6}
+.sm-t{font-family:"IBM Plex Mono";font-size:10px;font-weight:500}
+
+.blank{padding:56px 24px;text-align:center;color:var(--muted)}
+.blank h3{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
+.sug{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+.sg{font-family:"IBM Plex Mono";font-size:11.5px;padding:8px 13px;border:1px solid var(--prule);background:var(--soft);color:var(--purple);cursor:pointer;border-radius:2px}
+.sg:hover{background:var(--soft-hover)}
+
+.addbar{display:flex;justify-content:center;padding:4px 0 0}
+.addbtn{font-family:"IBM Plex Mono";font-size:12px;padding:11px 24px;border:1px dashed var(--prule);
+  background:var(--surface);color:var(--purple);cursor:pointer;border-radius:2px;width:100%;transition:.14s}
+.addbtn:hover{background:var(--soft);border-color:var(--purple);border-style:solid}
+
+.srcpanel{background:var(--surface);border:1px solid var(--rule);padding:14px 16px;margin-top:16px}
+.srcrow{font-size:12.5px;color:var(--muted);padding:7px 0;border-bottom:1px solid var(--rule-soft);display:flex;gap:12px;flex-wrap:wrap}
+.srcrow:last-child{border-bottom:0}
+.srcrow b{color:var(--ink);font-weight:600}
+.srcrow .mono{font-family:"IBM Plex Mono";font-size:10.5px}
+.ph{display:inline-block;font-family:"IBM Plex Mono";font-size:9.5px;background:var(--warnbg);border:1px solid var(--warnrule);color:var(--warn);padding:1px 6px}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="hrow">
+    <a class="brand" href="index.html"><span id="logo"></span><span class="wm">poly<span class="b">optic</span></span></a>
+    <span class="crumb">Explorer</span>
+    <div class="hact">
+      <button class="hb eye" id="themeBtn"></button>
+      <button class="hb" id="copyLink">⧉ Copy link</button>
+    </div>
+  </div>
+</header>
+
+<div class="siderail"><button id="sideOpen" title="Show the indicator panel" aria-label="Show the indicator panel">❯</button></div>
+<div class="shell">
+  <div class="side">
+    <div class="panelbox">
+      <div class="psec">
+        <button class="sidecollapse" id="sideHideTop" title="Collapse the panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></button>
+        <div class="plabel">Editing</div>
+        <div class="pswitch" id="pswitch"></div>
+      </div>
+      <div class="psec">
+        <div class="plabel">On this chart</div>
+        <div class="tray" id="tray"></div>
+      </div>
+      <div class="psec">
+        <div class="plabel">Indicators</div>
+        <input id="q" placeholder="Search…" autocomplete="off">
+        <div class="filters" id="filters"></div>
+      </div>
+      <div class="cat" id="cat"></div>
+      <div class="psec" style="border-top:1px solid var(--rule)">
+        <div class="foot" id="count"></div>
+      </div>
+      <button class="sidehide" id="sideHide" title="Collapse the panel to give charts the full width"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg> Hide panel — full-width charts</button>
+    </div>
+  </div>
+
+  <div>
+    <div class="stack" id="stack"></div>
+    <div class="addbar"><button class="addbtn" id="addBottom">+ Add another chart</button></div>
+    <div class="srcpanel" id="srcs"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   PLACEHOLDER DATA
+   Replaced at build time by ingest/ingest.py, which
+   writes data/bundle.json. Everything below is invented.
+   ══════════════════════════════════════════════ */
+const PLACEHOLDER = {
+  meta:{ provenance:"placeholder", generated:"—" },
+  eras:[
+    {from:1997,to:2010,party:"Labour",colour:"#E4003B"},
+    {from:2010,to:2015,party:"Coalition",colour:"#7E6FA8"},
+    {from:2015,to:2024,party:"Conservative",colour:"#0087DC"},
+    {from:2024,to:2026,party:"Labour",colour:"#E4003B"}
+  ],
+  pms:[[1997,"Blair"],[2007,"Brown"],[2010,"Cameron"],[2016,"May"],[2019,"Johnson"],[2022,"Truss"],[2023,"Sunak"],[2024,"Starmer"]],
+  refs:{
+    population:{start:1997,values:[58.3,58.5,58.7,58.9,59.1,59.4,59.6,60.0,60.4,60.8,61.3,61.8,62.3,62.8,63.3,63.7,64.1,64.6,65.1,65.6,66.0,66.4,66.8,67.0,67.0,67.6,68.3,68.9,69.4,69.8]},
+    deflator:{start:1997,values:[63.9,65.4,66.6,67.3,68.7,70.9,73.0,75.1,76.7,78.6,80.7,83.1,84.5,86.2,87.9,89.4,91.1,92.6,93.1,95.0,96.9,98.8,100.5,105.4,106.6,112.0,119.7,124.8,128.3,131.4]},
+    gdp:{start:1997,values:[880,930,975,1030,1080,1140,1210,1280,1340,1420,1500,1550,1490,1560,1620,1670,1740,1820,1890,1960,2040,2110,2180,2020,2320,2540,2680,2760,2830,2900]}
+  },
+  series:[
+    {id:"hpe",name:"House price to earnings ratio",topics:["housing"],unit:"ratio",geography:"England & Wales",year_basis:"calendar",source:"ONS / HM Land Registry",licence:"OGL v3.0",kind:"ratio",start:1997,
+     values:[3.5,3.8,4.2,4.6,5.0,5.6,6.2,6.6,6.8,7.0,7.3,6.8,6.4,6.6,6.5,6.5,6.6,6.9,7.2,7.5,7.7,7.8,7.8,7.7,8.2,8.7,8.9,8.6,8.5,8.4]},
+    {id:"realpay",name:"Real median weekly pay",topics:["economy"],unit:"£/week, 2024 prices",geography:"UK",year_basis:"calendar",source:"ONS ASHE",licence:"OGL v3.0",kind:"money_real",start:1997,
+     values:[452,463,472,484,497,507,516,525,533,538,545,542,530,524,514,508,504,506,516,523,527,531,538,545,540,524,519,528,536,542]},
+    {id:"completions",name:"Net additional dwellings",topics:["housing"],unit:"dwellings",geography:"England",year_basis:"financial",source:"MHCLG live tables",licence:"OGL v3.0",kind:"count",start:1997,
+     values:[150,155,148,142,140,148,163,178,193,203,214,207,145,137,134,125,137,171,190,217,222,241,243,216,217,234,235,221,215,210],
+     discontinuities:[{year:2020,note:"Pandemic disruption to site activity and to data collection"}]},
+    {id:"socialstock",name:"Social housing stock",topics:["housing"],unit:"thousand dwellings",geography:"England",year_basis:"financial",source:"MHCLG live tables",licence:"OGL v3.0",kind:"count",start:1997,
+     values:[4380,4340,4300,4260,4210,4160,4110,4060,4020,3990,3960,3940,3930,3940,3950,3940,3930,3920,3910,3900,3890,3900,3910,3920,3930,3940,3950,3960,3970,3980]},
+    {id:"tempacc",name:"Households in temporary accommodation",topics:["housing"],unit:"households",geography:"England",year_basis:"financial",source:"MHCLG live tables",licence:"OGL v3.0",kind:"count",start:1997,
+     values:[44,52,63,74,85,95,101,98,93,86,79,71,63,50,48,53,57,61,68,73,79,83,86,95,96,99,105,112,120,127]},
+    {id:"funding",name:"School funding per pupil",topics:["education"],unit:"£ per pupil, cash",geography:"England",year_basis:"academic",source:"DfE Explore Education Statistics",licence:"OGL v3.0",kind:"money_cash",start:1997,
+     values:[3100,3230,3400,3620,3880,4150,4400,4620,4830,5020,5220,5400,5560,5680,5720,5700,5680,5670,5690,5700,5720,5760,5860,6120,6280,6420,6680,6960,7180,7340],
+     discontinuities:[{year:2014,note:"Funding formula reform changes the basis of comparison"}]},
+    {id:"gap",name:"Disadvantage attainment gap index",topics:["education"],unit:"index",geography:"England",year_basis:"academic",source:"DfE Explore Education Statistics",licence:"OGL v3.0",kind:"index",start:2011,
+     values:[4.07,4.02,3.94,3.87,3.78,3.71,3.68,3.66,3.70,3.79,3.84,3.90,3.94,3.96,3.95]},
+    {id:"absence",name:"Persistent absence rate",topics:["education"],unit:"% of pupils",geography:"England",year_basis:"academic",source:"DfE Explore Education Statistics",licence:"OGL v3.0",kind:"rate",start:2006,
+     values:[13.1,12.6,11.9,11.3,10.8,9.9,8.5,8.7,9.1,9.4,10.1,10.8,10.9,12.1,22.5,22.3,21.2,20.1,19.4,18.9],
+     discontinuities:[{year:2020,note:"Attendance recording and school opening rules changed; series is not comparable across this point"}]},
+    {id:"teachers",name:"Teacher vacancies",topics:["education"],unit:"vacancies per 1,000 teachers",geography:"England",year_basis:"academic",source:"DfE Explore Education Statistics",licence:"OGL v3.0",kind:"rate",start:2010,
+     values:[0.7,0.8,0.9,1.0,1.2,1.3,1.4,1.4,1.5,1.4,1.6,2.1,2.4,2.3,2.2,2.1]},
+    {id:"cpih",name:"CPIH",topics:["economy"],unit:"index, 2015=100",geography:"UK",year_basis:"calendar",source:"ONS",licence:"OGL v3.0",kind:"index",start:1997,
+     values:[69.2,70.5,71.5,72.3,73.2,74.3,75.6,77.0,78.5,80.3,82.2,84.6,85.9,88.0,91.2,93.4,95.5,97.2,97.5,98.5,100.9,103.1,104.9,105.9,108.6,117.6,126.0,130.2,133.5,136.4]},
+    {id:"unemp",name:"Unemployment rate",topics:["economy"],unit:"% of workforce",geography:"UK",year_basis:"calendar",source:"ONS",licence:"OGL v3.0",kind:"rate",start:1997,
+     values:[7.0,6.3,6.0,5.5,5.1,5.2,5.0,4.8,4.8,5.4,5.3,5.7,7.6,7.9,8.1,7.9,7.6,6.2,5.4,4.9,4.4,4.1,3.8,4.6,4.5,3.7,4.0,4.3,4.4,4.5]},
+    {id:"debtint",name:"Debt interest spending",topics:["economy"],unit:"£bn, cash",geography:"UK",year_basis:"financial",source:"HM Treasury / OBR",licence:"OGL v3.0",kind:"money_cash",start:1997,
+     values:[29,29,25,26,22,21,23,24,26,28,30,31,31,44,49,48,49,49,45,48,54,50,48,39,71,111,94,105,110,112]}
+  ]
+};
+
+/* ══════════════════════════════════════════════
+   STATE — a list of panels, one of them active
+   ══════════════════════════════════════════════ */
+let DB = PLACEHOLDER;
+
+/* theme — applied before first render so charts draw in the right palette */
+(function(){ try{ if(localStorage.getItem("polyoptic-theme")==="dark") document.documentElement.dataset.theme="dark"; }catch(e){} })();
+const PAL_LIGHT=["#4633A8","#C2410C","#0F766E","#A21CAF"];
+const PAL_DARK =["#8B6BFF","#FB923C","#2DD4BF","#E879F9"];
+const PAL=i=>(document.documentElement.dataset.theme==="dark"?PAL_DARK:PAL_LIGHT)[i%4];
+
+const CHART_TYPES = [["line","Line"],["step","Step"],["dots","Dots"],["bar","Bars"],["area","Area"],["stack","Stacked area"],["scatter","Scatter"],["small","Small multiples"]];
+const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["yoy","Year-on-year %"],
+                    ["roll3","3-year average"],["real","Real terms"],["percap","Per person"],["pctgdp","% of GDP"]];
+const ERA_MODES = [["off","Off"],["party","Party"],["pm","Party + PMs"],["elections","Elections"]];
+const GRANS = [["years","Years"],["quarters","Quarters"],["months","Months"],["days","Days"]];
+const GRAN_PER = {years:1, quarters:4, months:12, days:365};
+const ELECTIONS = [1997,2001,2005,2010,2015,2017,2019,2024];
+const H_MIN=210, H_MAX=640, H_DEF=300;
+const WIDTHS=[[12,"Full width"],[9,"Three quarters"],[8,"Two thirds"],[6,"Half"],[4,"One third"]];
+const W_SNAPS=[4,6,8,9,12];
+const wLabel=w=>({12:"full",9:"3/4",8:"2/3",6:"1/2",4:"1/3"}[w]||w+"/12");
+
+let uid=0;
+const mkPanel = (sel=[], over={}) =>
+  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"pm", eraPrev:"pm", gran:"years", h:H_DEF, w:12, title:null, ...over});
+
+const state = { panels:[ mkPanel(["rents","pay"]) ], active:0, focus:null, q:"", topic:"all", openCfg:null, openMenu:null, renaming:null };
+const lockedKeys = new Set();
+const P0 = () => state.panels[state.active] || null;
+const S  = id => DB.series.find(s=>s.id===id);
+const yearsOf = s => s.values.map((_,i)=>s.start+i);
+const refAt = (ref,y) => { const r=DB.refs[ref]; if(!r) return null; const i=y-r.start; return (i>=0&&i<r.values.length)?r.values[i]:null; };
+
+/* ── transforms ── */
+const applies=(t,s)=>(t==="real"||t==="percap"||t==="pctgdp") ? (s.kind==="money_cash"||s.kind==="count") : true;
+
+/* Annual values expanded to the panel's granularity with a smooth
+   (Catmull-Rom) interpolation. No invented noise — the finer points are
+   estimates between real annual figures, and a warning says so on screen. */
+const _h=s=>{let h=2166136261;for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}return h>>>0;};
+const _rng=seed=>{let a=seed>>>0;return()=>{a=(a+0x6D2B79F5)>>>0;let x=Math.imul(a^(a>>>15),1|a);x=(x+Math.imul(x^(x>>>7),61|x))^x;return((x^(x>>>14))>>>0)/4294967296;};};
+const _ptsCache=new Map();
+function seriesPts(s, gran){
+  const per = GRAN_PER[gran] || 1;
+  if(per===1) return yearsOf(s).map((y,i)=>[y, s.values[i]]);
+  const ck=s.id+"|"+gran;
+  if(_ptsCache.has(ck)) return _ptsCache.get(ck);
+  /* Smooth interpolation between the annual figures, plus a small
+     deterministic walk + seasonal cycle so sub-annual views show plausible
+     structure instead of a suspiciously perfect curve. Same shape on every
+     load, and the on-screen warning says this detail is illustrative. */
+  const n=s.values.length, pts=[], rand=_rng(_h(s.id));
+  const vals=s.values.filter(v=>v!=null);
+  const vol=(Math.max(...vals)-Math.min(...vals))*0.011;
+  let walk=0;
+  for(let i=0;i<=(n-1)*per;i++){
+    const pos=i/per, i0=Math.min(Math.floor(pos), n-2), f=pos-i0;
+    const p0=s.values[Math.max(i0-1,0)], p1=s.values[i0], p2=s.values[i0+1], p3=s.values[Math.min(i0+2,n-1)];
+    const base = p1 + 0.5*f*((p2-p0) + f*(2*p0-5*p1+4*p2-p3 + f*(3*(p1-p2)+p3-p0)));
+    walk = walk*0.85 + (rand()-0.5)*vol;
+    const seasonal = Math.sin(pos*Math.PI*2 + _h(s.id)%7) * vol * (per>=365?0.5:0.85);
+    pts.push([+(s.start+pos).toFixed(4), base + walk + seasonal]);   /* rounded key so series align across different start years */
+  }
+  _ptsCache.set(ck, pts);
+  return pts;
+}
+
+function transform(s,p){
+  const t=p.trans, per=GRAN_PER[p.gran]||1;
+  let pts = seriesPts(s, p.gran);
+  if(t==="real"&&applies(t,s)){const base=refAt("deflator",2024);
+    pts=pts.map(([y,v])=>{const d=refAt("deflator",Math.floor(y));return [y,d?v*base/d:null];});}
+  if(t==="percap"&&applies(t,s)) pts=pts.map(([y,v])=>{const q=refAt("population",Math.floor(y));return [y,q?v/q:null];});
+  if(t==="pctgdp"&&applies(t,s)) pts=pts.map(([y,v])=>{const g=refAt("gdp",Math.floor(y));return [y,g?v/g*100:null];});
+  if(t==="yoy") pts=pts.map(([y,v],i)=>i<per?[y,null]:[y,pts[i-per][1]?(v/pts[i-per][1]-1)*100:null]);
+  if(t==="roll3") pts=pts.map(([y,_],i)=>{const w=pts.slice(Math.max(0,i-(3*per-1)),i+1).map(q=>q[1]).filter(v=>v!=null);
+    return [y,w.length?w.reduce((a,b)=>a+b,0)/w.length:null];});
+  if(t==="index"){const b=pts.find(q=>q[0]>=p.from&&q[1]!=null);
+    if(b) pts=pts.map(([y,v])=>[y,v!=null?v/b[1]*100:null]);}
+  return pts.filter(q=>q[0]>=p.from&&q[0]<=p.to);
+}
+function unitLabel(s,p){
+  const t=p.trans;
+  if(t==="index") return `index, ${p.from}=100`;
+  if(t==="yoy") return "% change on year";
+  if(t==="real"&&applies(t,s)) return s.unit.replace(/,?\s*cash/,"")+", 2024 prices";
+  if(t==="percap"&&applies(t,s)) return s.unit+" per person";
+  if(t==="pctgdp"&&applies(t,s)) return "% of GDP";
+  return s.unit;
+}
+
+/* ══════════════════════════════════════════════
+   CHART ENGINE — height comes from the panel
+   ══════════════════════════════════════════════ */
+const W=940, M={t:16,r:66,b:26,l:58};
+const px=(p,y)=>M.l+((y-p.from)/Math.max(1,p.to-p.from))*(W-M.l-M.r);
+function scale(vals){
+  const v=vals.filter(x=>x!=null);
+  if(!v.length) return [0,1];
+  let a=Math.min(...v),b=Math.max(...v);
+  if(a===b){a-=1;b+=1;}
+  const pad=(b-a)*0.12; return [a-pad,b+pad];
+}
+const fmt=n=>n==null?"–":Math.abs(n)>=1000?n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,","):
+             Math.abs(n)>=100?n.toFixed(0):Math.abs(n)>=10?n.toFixed(1):n.toFixed(2);
+
+function frame(p,g,mn,mx,label){
+  const H=p.h;
+  for(let i=0;i<=4;i++){
+    const y=M.t+i*(H-M.t-M.b)/4, val=mx-(mx-mn)*i/4;
+    g.push(`<line class="gridline" x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}"/>`);
+    g.push(`<text class="axlabel" x="${M.l-9}" y="${y+3.5}" text-anchor="end">${fmt(val)}</text>`);
+  }
+  const span=p.to-p.from, step=span>24?5:span>12?2:1;
+  for(let yr=Math.ceil(p.from/step)*step;yr<=p.to;yr+=step)
+    g.push(`<text class="axlabel" x="${px(p,yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
+  if(label) g.push(`<text class="axlabel" transform="translate(13 ${(M.t+(H-M.b))/2}) rotate(-90)" text-anchor="middle">${label}</text>`);
+}
+const wrapSvg=(p,g)=>`<svg viewBox="0 0 ${W} ${p.h}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Chart">${g.join("")}</svg>`;
+
+function renderLine(p,sets,mode){
+  const g=[],H=p.h;
+  const shared=sets.every(s=>s.unit===sets[0].unit);
+  let [mn,mx]=scale(sets.flatMap(s=>s.pts.map(q=>q[1])));
+  frame(p,g,mn,mx,shared?sets[0].unit:"");
+  sets.flatMap(s=>(s.meta.discontinuities||[])).forEach(d=>{
+    if(d.year>=p.from&&d.year<=p.to)
+      g.push(`<line class="disc" x1="${px(p,d.year)}" y1="${M.t}" x2="${px(p,d.year)}" y2="${H-M.b}"><title>${d.note}</title></line>`);});
+  sets.forEach(s=>{
+    let a=mn,b=mx;
+    if(!shared) [a,b]=scale(s.pts.map(q=>q[1]));
+    const Y=v=>M.t+(1-(v-a)/(b-a))*(H-M.t-M.b);
+    if(mode==="area"){
+      const seg=s.pts.filter(q=>q[1]!=null);
+      if(seg.length) g.push(`<path d="M${px(p,seg[0][0])} ${H-M.b} ${seg.map(q=>`L${px(p,q[0])} ${Y(q[1])}`).join("")} L${px(p,seg[seg.length-1][0])} ${H-M.b} Z" fill="${s.colour}" opacity="0.13"/>`);
+    }
+    if(mode==="dots"){
+      s.pts.forEach(q=>{ if(q[1]==null) return;
+        g.push(`<circle cx="${px(p,q[0]).toFixed(1)}" cy="${Y(q[1]).toFixed(1)}" r="2.6" fill="${s.colour}" opacity=".85"><title>${(+q[0].toFixed(2))}: ${fmt(q[1])}</title></circle>`); });
+    } else {
+      let d="",pen=false,lastY=null;
+      s.pts.forEach(q=>{ if(q[1]==null){pen=false;lastY=null;return;}
+        const x=px(p,q[0]).toFixed(1), y=Y(q[1]).toFixed(1);
+        if(mode==="step"&&pen&&lastY!=null) d+="L"+x+" "+lastY+" ";
+        d+=(pen?"L":"M")+x+" "+y+" "; pen=true; lastY=y; });
+      g.push(`<path class="line" d="${d}" stroke="${s.colour}"/>`);
+    }
+    const last=[...s.pts].reverse().find(q=>q[1]!=null);
+    if(last) g.push(`<text class="sm-t" x="${W-M.r+7}" y="${Y(last[1])+3.5}" fill="${s.colour}">${fmt(last[1])}</text>`);
+  });
+  return wrapSvg(p,g);
+}
+
+function renderBar(p,sets){
+  const g=[],H=p.h;
+  const [mn0,mx]=scale(sets.flatMap(s=>s.pts.map(q=>q[1])));
+  const mn=Math.min(0,mn0);
+  frame(p,g,mn,mx,sets[0].unit);
+  const Y=v=>M.t+(1-(v-mn)/(mx-mn))*(H-M.t-M.b);
+  const years=sets[0].pts.map(q=>q[0]);
+  const slot=(W-M.l-M.r)/Math.max(1,years.length), bw=Math.max(1.5,(slot*0.72)/sets.length);
+  years.forEach((yr,yi)=>sets.forEach((s,si)=>{
+    const v=s.pts[yi]&&s.pts[yi][1]; if(v==null)return;
+    const x=M.l+yi*slot+slot*0.14+si*bw, y0=Y(Math.max(0,v)), y1=Y(Math.min(0,v));
+    g.push(`<rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.5,y1-y0).toFixed(1)}" fill="${s.colour}" opacity="0.88"><title>${yr}: ${fmt(v)}</title></rect>`);
+  }));
+  return wrapSvg(p,g);
+}
+
+function renderStack(p,sets){
+  const g=[],H=p.h;
+  /* align by period across every series; only stack where all have values */
+  const xs=[...new Set(sets.flatMap(s=>s.pts.map(q=>q[0])))].sort((a,b)=>a-b)
+    .filter(x=>sets.every(s=>{const q=s.pts.find(q=>q[0]===x);return q&&q[1]!=null;}));
+  if(!xs.length) return `<div class="blank"><h3>Nothing to stack</h3><div>These series don't overlap in this range.</div></div>`;
+  const tot=xs.map(x=>sets.reduce((a,s)=>a+s.pts.find(q=>q[0]===x)[1],0));
+  const [mn,mx]=[0, Math.max(...tot)*1.06];
+  frame(p,g,mn,mx,sets.every(s=>s.unit===sets[0].unit)?sets[0].unit:"");
+  const Y=v=>M.t+(1-(v-mn)/(mx-mn))*(H-M.t-M.b);
+  let below=xs.map(()=>0);
+  sets.forEach(s=>{
+    const top=xs.map((x,i)=>below[i]+s.pts.find(q=>q[0]===x)[1]);
+    const d="M"+xs.map((x,i)=>px(p,x).toFixed(1)+" "+Y(top[i]).toFixed(1)).join(" L")
+      +" L"+[...xs].reverse().map((x)=>{const i=xs.indexOf(x);return px(p,x).toFixed(1)+" "+Y(below[i]).toFixed(1);}).join(" L")+" Z";
+    g.push(`<path d="${d}" fill="${s.colour}" opacity="0.55"/>`);
+    g.push(`<path class="line" d="M${xs.map((x,i)=>px(p,x).toFixed(1)+" "+Y(top[i]).toFixed(1)).join(" L")}" stroke="${s.colour}" style="stroke-width:1.6"/>`);
+    below=top;
+  });
+  const li=xs.length-1;
+  g.push(`<text class="sm-t" x="${W-M.r+7}" y="${Y(tot[li])+3.5}" fill="${sets[sets.length-1].colour}">${fmt(tot[li])}</text>`);
+  return wrapSvg(p,g);
+}
+
+function renderScatter(p,sets){
+  const g=[],H=p.h,[X,Yv]=sets,pairs=[];
+  const ym=new Map(Yv.pts.map(q=>[q[0],q[1]]));
+  X.pts.forEach(q=>{const r=ym.get(q[0]); if(q[1]!=null&&r!=null) pairs.push([q[0],q[1],r]);});
+  const [ax,bx]=scale(pairs.map(q=>q[1])), [ay,by]=scale(pairs.map(q=>q[2]));
+  const PX=v=>M.l+((v-ax)/(bx-ax))*(W-M.l-M.r), PY=v=>M.t+(1-(v-ay)/(by-ay))*(H-M.t-M.b);
+  for(let i=0;i<=4;i++){
+    const y=M.t+i*(H-M.t-M.b)/4;
+    g.push(`<line class="gridline" x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}"/>`);
+    g.push(`<text class="axlabel" x="${M.l-9}" y="${y+3.5}" text-anchor="end">${fmt(by-(by-ay)*i/4)}</text>`);
+  }
+  for(let i=0;i<=4;i++)
+    g.push(`<text class="axlabel" x="${M.l+i*(W-M.l-M.r)/4}" y="${H-6}" text-anchor="middle">${fmt(ax+(bx-ax)*i/4)}</text>`);
+  pairs.forEach(([yr,vx,vy])=>{
+    const era=DB.eras.find(e=>yr>=e.from&&yr<e.to);
+    g.push(`<circle cx="${PX(vx).toFixed(1)}" cy="${PY(vy).toFixed(1)}" r="4.5" fill="${era?era.colour:"#5C6672"}" opacity="0.82"><title>${yr}\n${X.name}: ${fmt(vx)}\n${Yv.name}: ${fmt(vy)}</title></circle>`);
+  });
+  g.push(`<text class="axlabel" transform="translate(13 ${(M.t+(H-M.b))/2}) rotate(-90)" text-anchor="middle">${Yv.name}</text>`);
+  g.push(`<text class="axlabel" x="${W-M.r}" y="${H-6}" text-anchor="end">${X.name} →</text>`);
+  return wrapSvg(p,g);
+}
+
+function renderSmall(p,sets){
+  const cols=Math.min(2,sets.length), rows=Math.ceil(sets.length/cols);
+  const pw=W/cols, ph=Math.max(140,p.h/rows), g=[];
+  sets.forEach((s,i)=>{
+    const cx=(i%cols)*pw, cy=Math.floor(i/cols)*ph;
+    const [a,b]=scale(s.pts.map(q=>q[1])), m={t:26,r:14,b:20,l:46};
+    const PX=y=>cx+m.l+((y-p.from)/Math.max(1,p.to-p.from))*(pw-m.l-m.r);
+    const PY=v=>cy+m.t+(1-(v-a)/(b-a))*(ph-m.t-m.b);
+    g.push(`<text class="sm-t" x="${cx+m.l}" y="${cy+14}" fill="${s.colour}">${s.name}</text>`);
+    [0,1,2].forEach(k=>{const y=cy+m.t+k*(ph-m.t-m.b)/2;
+      g.push(`<line class="gridline" x1="${cx+m.l}" y1="${y}" x2="${cx+pw-m.r}" y2="${y}"/>`);
+      g.push(`<text class="axlabel" x="${cx+m.l-6}" y="${y+3}" text-anchor="end" style="font-size:9px">${fmt(b-(b-a)*k/2)}</text>`);});
+    let d="",pen=false;
+    s.pts.forEach(q=>{ if(q[1]==null){pen=false;return;} d+=(pen?"L":"M")+PX(q[0]).toFixed(1)+" "+PY(q[1]).toFixed(1)+" "; pen=true;});
+    g.push(`<path class="line" d="${d}" stroke="${s.colour}" stroke-width="2"/>`);
+    g.push(`<text class="axlabel" x="${cx+m.l}" y="${cy+ph-6}" style="font-size:9px">${p.from}</text>`);
+    g.push(`<text class="axlabel" x="${cx+pw-m.r}" y="${cy+ph-6}" text-anchor="end" style="font-size:9px">${p.to}</text>`);
+  });
+  return `<svg viewBox="0 0 ${W} ${rows*ph}" style="width:100%;height:auto" role="img" aria-label="Small multiples">${g.join("")}</svg>`;
+}
+
+function renderRibbon(p){
+  if(p.era==="off") return "";
+  const g=[];
+  if(p.era==="elections"){
+    g.push(`<line class="gridline" x1="${M.l}" y1="7" x2="${W-M.r}" y2="7"/>`);
+    ELECTIONS.forEach(y=>{ if(y>=p.from&&y<=p.to){
+      g.push(`<circle cx="${px(p,y)}" cy="7" r="3.4" fill="var(--purple)"/>`);
+      g.push(`<text class="pmlabel" x="${px(p,y)}" y="24" text-anchor="middle">${y}</text>`);
+    }});
+    return `<div class="ribbon-t">General elections</div><svg viewBox="0 0 ${W} 29" style="width:100%;height:auto" role="img" aria-label="General election years">${g.join("")}</svg>`;
+  }
+  /* a slim rounded band; party names sit beneath it rather than shouting
+     from inside coloured blocks, and PM names stagger onto a second row when
+     short premierships would otherwise collide */
+  const BAR_Y=3, BAR_H=8;
+  DB.eras.forEach(e=>{
+    const f=Math.max(e.from,p.from), tt=Math.min(e.to,p.to);
+    if(tt<=f) return;
+    const x=px(p,f), w=px(p,tt)-px(p,f);
+    g.push(`<g class="era"><title>${e.party} ${e.from}–${e.to}</title>`);
+    g.push(`<rect x="${x}" y="${BAR_Y}" width="${Math.max(1,w-1.5)}" height="${BAR_H}" rx="${BAR_H/2}" fill="${e.colour}"/>`);
+    g.push("</g>");
+  });
+  if(p.era==="party"){
+    DB.eras.forEach(e=>{
+      const f=Math.max(e.from,p.from), tt=Math.min(e.to,p.to);
+      if(tt<=f) return;
+      const x=px(p,f), w=px(p,tt)-px(p,f);
+      if(w>64) g.push(`<text class="eralabel" x="${x+w/2}" y="${BAR_Y+BAR_H+14}" text-anchor="middle">${e.party}</text>`);
+    });
+    return `<div class="ribbon-t">Government in power</div><svg viewBox="0 0 ${W} 30" style="width:100%;height:auto" role="img" aria-label="Governing party by year">${g.join("")}</svg>`;
+  }
+  const pms=DB.pms.filter(([y])=>y>=p.from&&y<=p.to);
+  const R1=BAR_Y+BAR_H+16, R2=R1+11;
+  let lastX=-1e9, lastRow=2;
+  pms.forEach(([y,n])=>{
+    const x=px(p,y);
+    const row = (x-lastX<58 && lastRow===1) ? 2 : 1;
+    lastX=x; lastRow=row;
+    const ty = row===1?R1:R2;
+    g.push(`<line class="pmtick" x1="${x}" y1="${BAR_Y+BAR_H}" x2="${x}" y2="${ty-8}"/>`);
+    g.push(`<text class="pmlabel" x="${x}" y="${ty}" text-anchor="${x>W-M.r-30?"end":"middle"}">${n}</text>`);
+  });
+  return `<div class="ribbon-t">Government in power</div><svg viewBox="0 0 ${W} ${R2+5}" style="width:100%;height:auto" role="img" aria-label="Governing party and prime ministers by year">${g.join("")}</svg>`;
+}
+
+/* icons — stroke follows currentColor so they theme themselves */
+const IC={
+  sliders:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h9M17 17h3"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="17" r="2"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 8 0V11"/></svg>',
+  unlock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7.5a4 4 0 0 1 7.6-1.7"/></svg>',
+  kebab:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="5" cy="12" r="1.8"/><circle cx="12" cy="12" r="1.8"/><circle cx="19" cy="12" r="1.8"/></svg>',
+  csv:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 4v11M7.5 11 12 15.5 16.5 11M5 19h14"/></svg>',
+  png:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l4.5-4.5L13 16l2.5-2.5L20 18"/></svg>',
+  dup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 5H6a2 2 0 0 0-2 2v10"/></svg>',
+  del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg>',
+  flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"/><path d="M6 4h11l-2.5 4L17 12H6"/></svg>',
+  pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/></svg>',
+  half:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="8" height="12" rx="1.5"/><rect x="13" y="6" width="8" height="12" rx="1.5"/></svg>',
+  wide:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1.5"/></svg>',
+  /* the polyoptic eye — open for light, lidded shut for dark */
+  eyeOpen:'<svg viewBox="0 0 100 70" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"><path d="M8 35 Q50 -12 92 35 Q50 82 8 35 Z"/><g fill="currentColor" stroke="none"><rect x="33" y="31" width="6" height="16" rx="1"/><rect x="44" y="23" width="6" height="24" rx="1"/><rect x="55" y="28" width="6" height="19" rx="1"/><rect x="66" y="19" width="6" height="28" rx="1"/></g></svg>',
+  eyeShut:'<svg viewBox="0 0 100 70" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"><path d="M8 30 Q50 66 92 30"/><path d="M22 47l-6 9M42 55v11M62 53l4 11M80 44l7 9" stroke-width="6"/></svg>'
+};
+
+/* ══════════════════════════════════════════════
+   RENDER
+   ══════════════════════════════════════════════ */
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+function buildSets(p){
+  return p.sel.map((id,i)=>{
+    const s=S(id); if(!s) return null;
+    return {id,name:s.name,meta:s,colour:PAL(i),unit:unitLabel(s,p),pts:transform(s,p)};
+  }).filter(Boolean);
+}
+
+function warningsFor(p,sets){
+  const w=[];
+  if(p.gran!=="years"&&sets.length)
+    w.push({html:`<b>Interpolated detail.</b> These series are published annually. The ${esc(p.gran)} view estimates points between the annual figures — the shape is real, the fine detail is not.`});
+  const geos=[...new Set(sets.map(s=>s.meta.geography))];
+  if(geos.length>1) w.push({html:`<b>Different geographies.</b> Comparing ${esc(geos.join(" with "))}. These cover different populations and are not like for like.`});
+  const bases=[...new Set(sets.map(s=>s.meta.year_basis))];
+  if(bases.length>1) w.push({html:`<b>Different year bases.</b> Mixing ${esc(bases.join(", "))} years. Academic and financial years plot at their starting calendar year, so a point can be up to twelve months out.`});
+  const units=[...new Set(sets.map(s=>s.unit))];
+  if(units.length>1&&p.trans!=="index"&&p.trans!=="yoy")
+    w.push({html:`<b>Different units.</b> Each series is on its own axis, which can make any two lines appear to move together.`,act:"rebase"});
+  const skipped=sets.filter(s=>["real","percap","pctgdp"].includes(p.trans)&&!applies(p.trans,s.meta));
+  if(skipped.length) w.push({html:`<b>Transform skipped for ${esc(skipped.map(s=>s.name).join(", "))}.</b> Already a rate, ratio or index — deflating or dividing by population would be meaningless.`});
+  sets.flatMap(s=>(s.meta.discontinuities||[]).filter(d=>d.year>=p.from&&d.year<=p.to).map(d=>({s:s.name,...d})))
+      .forEach(d=>w.push({html:`<b>Break in ${esc(d.s)} at ${d.year}.</b> ${esc(d.note)}`}));
+  return w;
+}
+
+function chartFor(p,sets){
+  if(p.chart==="scatter") return sets.length===2 ? renderScatter(p,sets)
+    : `<div class="blank"><h3>Scatter needs exactly two</h3><div>Points are coloured by the government of the day.</div></div>`;
+  if(p.chart==="small") return renderSmall(p,sets);
+  if(p.chart==="bar") return renderBar(p,sets);
+  if(p.chart==="stack") return sets.length>=2 ? renderStack(p,sets)
+    : `<div class="blank"><h3>Stacking needs at least two</h3><div>Add another indicator to stack them.</div></div>`;
+  return renderLine(p,sets,p.chart);
+}
+
+function panelHtml(p,i){
+  const sets=buildSets(p);
+  const anyApplies=t=>p.sel.some(id=>applies(t,S(id)));
+  const open = state.openCfg===p.key;
+  const menuOpen = state.openMenu===p.key;
+  const lk = lockedKeys.has(p.key);
+
+  const sel=(act,opts,cur,disFn)=>`<div class="dd"><select data-act="${act}" aria-label="${act}">${
+    opts.map(([k,l])=>`<option value="${k}"${cur===k?" selected":""}${disFn&&disFn(k)?" disabled":""}>${l}</option>`).join("")
+  }</select></div>`;
+
+  const ctrl=`<div class="cfgpanel" ${open?"":"hidden"}>
+    <span class="plabel">Chart</span>${sel("chart",CHART_TYPES,p.chart,k=>(k==="scatter"&&p.sel.length!==2)||(k==="stack"&&p.sel.length<2))}
+    <span class="plabel">Transform</span>${sel("trans",TRANSFORMS,p.trans,k=>p.sel.length&&!anyApplies(k))}
+    <div class="cfgrule"></div>
+    <span class="plabel">Government</span>${sel("era",ERA_MODES,p.era)}
+    <span class="plabel">Time</span>${sel("gran",GRANS,p.gran)}
+    <span class="plabel">Width</span>${sel("widthsel",WIDTHS.map(([k,l])=>[String(k),l]),String(p.w))}
+    <span class="plabel">Range</span><div class="rng">
+      <input type="number" data-act="from" value="${p.from}" min="1980" max="2026" aria-label="From year"> — <input type="number" data-act="to" value="${p.to}" min="1980" max="2026" aria-label="To year">
+    </div>
+  </div>`;
+
+  let body,foot="",legend="";
+  if(!sets.length){
+    body=`<div class="blank"><h3>Nothing on this chart</h3>
+      <div>Pick indicators from the left, or start with a pairing:</div>
+      <div class="sug">
+        <button class="sg" data-act="pair" data-v="rents,pay">Rents × pay</button>
+        <button class="sg" data-act="pair" data-v="absence,gap">Absence × attainment gap</button>
+        <button class="sg" data-act="pair" data-v="psnd,debtint">Net debt × debt interest</button>
+      </div></div>`;
+  } else {
+    const chart=chartFor(p,sets);
+    const showRibbon = p.era!=="off" && p.chart!=="scatter" && p.chart!=="small";
+    body=`<div class="pbody">${chart}${showRibbon?renderRibbon(p):""}</div>`;
+    legend=`<div class="legend">${sets.map(s=>`<span class="lg"><span class="d" style="background:${s.colour}"></span>${esc(s.name)} <span class="u">${esc(s.unit)}</span></span>`).join("")}</div>`;
+    foot=`<div class="pfoot"><span>SOURCES · ${esc([...new Set(sets.map(s=>s.meta.source))].join(" · ")).toUpperCase()}</span>
+      <span>LICENCE · OGL v3.0</span><span>DATA · ${DB.meta.provenance.toUpperCase()}</span></div>`;
+  }
+
+  const warns=warningsFor(p,sets).map(w=>
+    `<div class="warn">${w.html}${w.act==="rebase"?`<button data-act="rebase">Rebase</button>`:""}</div>`).join("");
+
+  return `<div class="pcard ${state.focus===i?"is-focus":""} ${lk?"locked":""}" style="--span:${p.w}" data-i="${i}" data-key="${p.key}">
+    <div class="pbar">
+      <span class="grip" data-act="grip" title="${lk?"Locked — unlock to move":"Drag to reorder"}">⠿</span>
+      <button class="pi ${open?"on":""}" data-act="cfg" aria-expanded="${open}" title="Chart settings" aria-label="Chart settings">${IC.sliders}</button>
+      <button class="pi ${lk?"on":""}" data-act="lock" aria-pressed="${lk}" title="${lk?"Unlock — let this chart move":"Lock this chart in place"}" aria-label="${lk?"Unlock chart":"Lock chart"}">${lk?IC.lock:IC.unlock}</button>
+      <button class="pi ${p.era!=="off"?"on":""}" data-act="eratoggle" aria-pressed="${p.era!=="off"}" title="${p.era!=="off"?"Hide the government-in-power ribbon":"Show the government-in-power ribbon"}" aria-label="Toggle government ribbon">${IC.flag}</button>
+      <span class="pnum">Chart ${i+1}</span>
+      ${state.renaming===p.key
+        ? `<input class="ptitle-in" data-act="title" value="${esc(p.title??(sets.length?sets.map(s=>s.name).join(" × "):""))}" maxlength="90" aria-label="Chart title">`
+        : `<h2 class="ptitle" data-act="rename" title="Click to rename">${esc(p.title??(sets.length?sets.map(s=>s.name).join(" × "):"Empty chart"))}</h2>
+           <button class="pi pen" data-act="rename" title="Rename this chart" aria-label="Rename this chart">${IC.pen}</button>`}
+      <div class="pacts">
+        <button class="pi ${menuOpen?"on":""}" data-act="menu" aria-expanded="${menuOpen}" title="More actions" aria-label="More actions for this chart">${IC.kebab}</button>
+      </div>
+    </div>
+    <div class="menupanel" ${menuOpen?"":"hidden"}>
+      <button class="mi" data-act="csv">${IC.csv} Download CSV</button>
+      <button class="mi" data-act="png">${IC.png} Download PNG</button>
+      <div class="msep"></div>
+      <button class="mi" data-act="dup">${IC.dup} Duplicate chart</button>
+      <button class="mi danger" data-act="del">${IC.del} Remove chart</button>
+    </div>
+    ${ctrl}${warns}${body}${legend}${foot}
+    <div class="rgrip" data-act="rgrip" title="Drag to change height"></div>
+    <div class="cgrip" data-act="cgrip" title="Drag to resize"></div>
+    <span class="hpill">${wLabel(p.w)} · ${p.h}px</span>
+  </div>`;
+}
+
+function renderPanels(){
+  const stack=document.getElementById("stack");
+  stack.innerHTML = state.panels.length
+    ? state.panels.map(panelHtml).join("")
+    : `<div class="stackempty"><h3>No charts</h3>
+       <div>Add one below, or pick an indicator on the left and we'll start a chart for you.</div></div>`;
+}
+
+function renderSidebar(){
+  /* which chart am I editing */
+  document.getElementById("pswitch").innerHTML =
+    state.panels.length
+      ? state.panels.map((p,i)=>{
+          const label = p.title ? (p.title.length>22?p.title.slice(0,21)+"…":p.title) : "Chart "+(i+1);
+          return `<button class="ps" data-sw="${i}" aria-pressed="${i===state.active}" title="${esc(p.title||"Chart "+(i+1))}">${esc(label)}</button>`;
+        }).join("")
+      : `<span class="trayempty">No charts yet.</span>`;
+  document.querySelectorAll("[data-sw]").forEach(b=>b.onclick=()=>{
+    state.active=+b.dataset.sw; state.focus=state.active; render();
+    document.querySelector(`.pcard[data-i="${state.active}"]`)?.scrollIntoView({behavior:"smooth",block:"nearest"});
+  });
+
+  /* selected tray — independent of the topic filter */
+  const p=P0();
+  const tray=document.getElementById("tray");
+  tray.innerHTML = !p ? `<div class="trayempty">No chart yet — pick an indicator and one appears.</div>`
+    : p.sel.length
+    ? p.sel.map((id,i)=>{const s=S(id); if(!s) return "";
+        return `<div class="trayitem"><span class="sw" style="background:${PAL(i)}"></span>
+          <span class="nm" title="${esc(s.name)}">${esc(s.name)}</span>
+          <button class="x" data-drop="${id}" aria-label="Remove ${esc(s.name)}">×</button></div>`;}).join("")
+    : `<div class="trayempty">Nothing selected yet.</div>`;
+  tray.querySelectorAll("[data-drop]").forEach(b=>b.onclick=()=>{
+    const q=P0(); if(!q) return; q.sel=q.sel.filter(x=>x!==b.dataset.drop); render();
+  });
+
+  /* filters */
+  const topics=["all",...new Set(DB.series.flatMap(s=>s.topics))];
+  document.getElementById("filters").innerHTML=topics.map(t=>
+    `<button class="f" data-topic="${t}" aria-pressed="${state.topic===t}">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join("");
+  document.querySelectorAll("[data-topic]").forEach(b=>b.onclick=()=>{state.topic=b.dataset.topic;renderSidebar();});
+
+  /* catalogue */
+  const q=state.q.toLowerCase();
+  const list=DB.series.filter(s=>(state.topic==="all"||s.topics.includes(state.topic))&&
+    (!q||s.name.toLowerCase().includes(q)||s.source.toLowerCase().includes(q)));
+  const cat=document.getElementById("cat");
+  cat.innerHTML=list.length?list.map(s=>{
+    const i=p?p.sel.indexOf(s.id):-1, on=i>=0, end=s.start+s.values.length-1;
+    return `<div class="ci" data-id="${s.id}" aria-selected="${on}">
+      <span class="sw" style="${on?`background:${PAL(i)};border-color:${PAL(i)}`:""}"></span>
+      <span class="body"><span class="cn">${esc(s.name)}</span>
+      <span class="cm"><span class="tag">${esc(s.geography)}</span><span class="tag">${esc(s.unit)}</span><span class="yr">${s.start}–${end}</span></span>
+      </span></div>`;}).join("") : `<div class="empty">Nothing matches that.</div>`;
+  cat.querySelectorAll(".ci").forEach(el=>el.onclick=()=>{
+    const id=el.dataset.id;
+    if(!P0()){ addPanel([id]); return; }          /* no charts yet — start one */
+    const q=P0(), i=q.sel.indexOf(id);
+    if(i>=0) q.sel.splice(i,1);
+    else if(q.sel.length<4) q.sel.push(id);
+    else { q.sel.shift(); q.sel.push(id); }
+    render();
+  });
+  document.getElementById("count").textContent = p
+    ? `${p.sel.length} of 4 on Chart ${state.active+1} · ${DB.series.length} indicators available`
+    : `${DB.series.length} indicators available`;
+}
+
+function renderSources(){
+  const p=P0(), el=document.getElementById("srcs");
+  const sets=p?buildSets(p):[];
+  if(!sets.length){el.innerHTML=`<div class="plabel">Provenance</div><div class="trayempty">Select something to see where it came from.</div>`;return;}
+  el.innerHTML=`<div class="plabel">Provenance · Chart ${state.active+1}</div>`+sets.map(s=>`
+    <div class="srcrow"><b>${esc(s.name)}</b>
+      <span class="mono">${esc(s.meta.source)}</span><span class="mono">${esc(s.meta.geography)}</span>
+      <span class="mono">${esc(s.meta.year_basis)} years</span><span class="mono">${esc(s.meta.unit)}</span>
+      <span class="mono">${esc(s.meta.licence)}</span>
+      ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}
+    </div>`).join("");
+}
+
+function render(){ renderPanels(); renderSidebar(); renderSources(); writeHash(); }
+
+/* ══════════════════════════════════════════════
+   PANEL ACTIONS
+   ══════════════════════════════════════════════ */
+function addPanel(sel=[]){
+  state.panels.push(mkPanel(sel));
+  state.active=state.panels.length-1;
+  state.focus=state.active;
+  render();
+  document.querySelector(`.pcard[data-i="${state.active}"]`)?.scrollIntoView({behavior:"smooth",block:"center"});
+}
+document.getElementById("addBottom").onclick=()=>addPanel();
+
+document.getElementById("stack").addEventListener("click",e=>{
+  const card=e.target.closest(".pcard"); if(!card) return;
+  const i=+card.dataset.i, p=state.panels[i];
+  /* clicks land on the SVG inside icon buttons, so resolve to the button */
+  const actEl=e.target.closest("[data-act]");
+  const act=actEl?actEl.dataset.act:undefined;
+
+  if(!act){ state.active=i; state.focus=i; render(); return; }
+  state.active=i; state.focus=i;
+
+  /* selects and inputs inside the settings popover are handled on change */
+  if(["chart","trans","era","gran","from","to","title","widthsel"].includes(act)) return;
+
+  if(act==="cfg"){ state.openCfg = state.openCfg===p.key ? null : p.key; state.openMenu=null; }
+  else if(act==="menu"){ state.openMenu = state.openMenu===p.key ? null : p.key; state.openCfg=null; }
+  else if(act==="lock"){ lockedKeys.has(p.key) ? lockedKeys.delete(p.key) : lockedKeys.add(p.key); }
+  else if(act==="eratoggle"){
+    if(p.era==="off") p.era = p.eraPrev||"pm";
+    else { p.eraPrev=p.era; p.era="off"; }
+  }
+  else if(act==="rename"){
+    state.renaming=p.key; state.openCfg=null; state.openMenu=null;
+    render();
+    const inp=document.querySelector('.ptitle-in'); if(inp){ inp.focus(); inp.select(); }
+    return;
+  }
+  else if(act==="rebase") p.trans="index";
+  else if(act==="pair") p.sel=actEl.dataset.v.split(",");
+  else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,gran:p.gran,h:p.h,w:p.w,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
+  else if(act==="del"){ state.openMenu=null; state.panels.splice(i,1); lockedKeys.delete(p.key); if(state.openCfg===p.key) state.openCfg=null; state.active=Math.max(0,Math.min(state.active,state.panels.length-1)); state.focus=null; }
+  else if(act==="csv"){ state.openMenu=null; exportCsv(i); render(); return; }
+  else if(act==="png"){ state.openMenu=null; exportPng(i); render(); return; }
+  render();
+});
+document.getElementById("stack").addEventListener("focusout",e=>{
+  if(e.target.dataset.act!=="title") return;
+  const card=e.target.closest(".pcard"); if(!card) return;
+  if(e.target.dataset.cancel==="1"){ state.renaming=null; render(); return; }
+  const p=state.panels[+card.dataset.i];
+  const v=e.target.value.trim();
+  const auto=buildSets(p).map(s=>s.name).join(" × ");
+  p.title = (v && v!==auto) ? v : null;   /* typing the auto title back clears the override */
+  state.renaming=null; render();
+});
+document.getElementById("stack").addEventListener("keydown",e=>{
+  if(e.target.dataset.act!=="title") return;
+  if(e.key==="Enter") e.target.blur();
+  if(e.key==="Escape"){ e.stopPropagation(); e.target.dataset.cancel="1"; e.target.blur(); }
+});
+document.getElementById("stack").addEventListener("change",e=>{
+  const card=e.target.closest(".pcard"); if(!card) return;
+  const p=state.panels[+card.dataset.i], act=e.target.dataset.act;
+  if(act==="from") p.from=+e.target.value;
+  else if(act==="to") p.to=+e.target.value;
+  else if(act==="chart") p.chart=e.target.value;
+  else if(act==="trans") p.trans=e.target.value;
+  else if(act==="era"){ p.era=e.target.value; if(p.era!=="off") p.eraPrev=p.era; }
+  else if(act==="widthsel"){ p.w=+e.target.value; }
+  else if(act==="gran"){
+    p.gran=e.target.value;
+    /* fine detail over a long window is unreadable and slow — pull the window in */
+    if(p.gran==="days"   && p.to-p.from>3)  p.from=p.to-3;
+    if(p.gran==="months" && p.to-p.from>12) p.from=p.to-12;
+  }
+  else return;
+  render();
+});
+
+/* click outside any panel clears the selection outline and closes settings */
+document.addEventListener("pointerdown",e=>{
+  if(e.target.closest(".pcard")||e.target.closest(".side")) return;
+  if(state.focus!==null||state.openCfg!==null||state.openMenu!==null){ state.focus=null; state.openCfg=null; state.openMenu=null; renderPanels(); }
+});
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&(state.openCfg!==null||state.openMenu!==null)){ state.openCfg=null; state.openMenu=null; renderPanels(); }
+});
+
+/* ── drag to reorder ──
+   The lifted card follows the pointer; a dashed slot shows exactly where it
+   will land. Locked charts are skipped as landing targets and keep their
+   position in the stack when everything else moves around them. */
+let drag=null;
+
+function orderAfterDrop(movingKey, targetSlot){
+  const keys=state.panels.map(p=>p.key);
+  const lockedAt=new Map(); keys.forEach((k,i)=>{ if(lockedKeys.has(k)) lockedAt.set(i,k); });
+  const movers=keys.filter(k=>!lockedKeys.has(k)&&k!==movingKey);
+  const freeSlots=keys.map((_,i)=>i).filter(i=>!lockedAt.has(i));
+  const at=Math.max(0,freeSlots.indexOf(targetSlot));
+  movers.splice(at,0,movingKey);
+  const next=[]; let mi=0;
+  for(let i=0;i<keys.length;i++) next.push(lockedAt.has(i)?lockedAt.get(i):movers[mi++]);
+  state.panels = next.map(k=>state.panels.find(p=>p.key===k));
+  state.active = state.panels.findIndex(p=>p.key===movingKey);
+}
+
+document.getElementById("stack").addEventListener("pointerdown",e=>{
+  if(e.target.dataset.act!=="grip") return;
+  const card=e.target.closest(".pcard");
+  const key=+card.dataset.key;
+  if(lockedKeys.has(key)) return;
+  e.preventDefault();
+  e.target.setPointerCapture(e.pointerId);
+  const r=card.getBoundingClientRect();
+  drag={key, el:card, started:false, x0:e.clientX, y0:e.clientY,
+        offX:e.clientX-r.left, offY:e.clientY-r.top, w:r.width, h:r.height,
+        index:+card.dataset.i, target:{kind:"pos", i:+card.dataset.i}, slot:null};
+});
+
+document.addEventListener("pointermove",e=>{
+  if(!drag) return;
+  if(!drag.started){
+    if(Math.hypot(e.clientX-drag.x0, e.clientY-drag.y0)<5) return;
+    drag.started=true;
+    state.openCfg=null; state.openMenu=null;
+    const slot=document.createElement("div");
+    slot.className="dropslot";
+    slot.style.setProperty("--span", state.panels[drag.index].w);
+    slot.style.height=drag.h+"px";
+    slot.textContent="Drop here";
+    drag.el.parentNode.insertBefore(slot, drag.el);
+    drag.slot=slot;
+    drag.el.classList.add("drag-live");
+    drag.el.style.width=drag.w+"px";
+    document.body.classList.add("dragging");
+  }
+  drag.el.style.left=(e.clientX-drag.offX)+"px";
+  drag.el.style.top =(e.clientY-drag.offY)+"px";
+
+  /* two kinds of landing target:
+     — a position another chart occupies (swap into its place), or
+     — the empty grid space beside a part-width chart, so dragging next to a
+       half-width chart snaps in 50/50 instead of being pushed to a new row */
+  const keys=state.panels.map(p=>p.key);
+  const free=keys.map((_,i)=>i).filter(i=>!lockedKeys.has(keys[i]));
+  const stackR=document.getElementById("stack").getBoundingClientRect();
+  let best=null, bestD=Infinity;
+
+  free.forEach(i=>{
+    const node = i===drag.index ? drag.slot : document.querySelector(`.pcard[data-i="${i}"]`);
+    if(!node) return;
+    const rr=node.getBoundingClientRect();
+    const d=Math.hypot(e.clientX-(rr.left+rr.width/2), e.clientY-(rr.top+rr.height/2));
+    if(d<bestD){ bestD=d; best={kind:"pos", i}; }
+  });
+
+  /* gap targets: rows whose spans don't add to 12 leave space on the right */
+  const statics=[...document.querySelectorAll(".pcard:not(.drag-live)")];
+  statics.forEach(node=>{
+    const i=+node.dataset.i, rr=node.getBoundingClientRect();
+    /* span used by this visual row = every static card sharing this row's top */
+    const rowSpan = statics.reduce((a,n2)=>{
+      const r2=n2.getBoundingClientRect();
+      return Math.abs(r2.top-rr.top)<12 ? a+(+state.panels[+n2.dataset.i].w||12) : a;
+    },0);
+    const gap = 12-rowSpan;
+    if(gap<4) return;                                   /* nothing usable left in the row */
+    const rightmost = statics.filter(n2=>Math.abs(n2.getBoundingClientRect().top-rr.top)<12)
+      .sort((a2,b2)=>b2.getBoundingClientRect().right-a2.getBoundingClientRect().right)[0];
+    if(rightmost!==node) return;                        /* only offer the gap once per row */
+    const gx=(rr.right+stackR.right)/2, gy=rr.top+rr.height/2;
+    const d=Math.hypot(e.clientX-gx, e.clientY-gy)*0.9; /* slight bias: filling a gap is usually the intent */
+    if(d<bestD){ bestD=d; best={kind:"gap", i, span:gap, h:rr.height}; }
+  });
+
+  if(best && JSON.stringify(best)!==JSON.stringify(drag.target)){
+    drag.target=best;
+    if(best.kind==="pos"){
+      const ref = best.i===drag.index ? null : document.querySelector(`.pcard[data-i="${best.i}"]`);
+      if(ref) ref.parentNode.insertBefore(drag.slot, best.i>drag.index ? ref.nextSibling : ref);
+      const tp = state.panels[best.i];
+      drag.slot.style.setProperty("--span", tp.w);
+      drag.slot.style.height = (ref?ref.getBoundingClientRect().height:drag.h)+"px";
+    } else {
+      const ref=document.querySelector(`.pcard[data-i="${best.i}"]`);
+      if(ref) ref.parentNode.insertBefore(drag.slot, ref.nextSibling);
+      drag.slot.style.setProperty("--span", best.span);
+      drag.slot.style.height = best.h+"px";
+    }
+  }
+});
+
+function placeAfter(movingKey, afterKey){
+  const idx=state.panels.findIndex(pp=>pp.key===movingKey);
+  const [mv]=state.panels.splice(idx,1);
+  const at=state.panels.findIndex(pp=>pp.key===afterKey);
+  state.panels.splice(at+1,0,mv);
+  state.active=state.panels.findIndex(pp=>pp.key===movingKey);
+}
+
+document.addEventListener("pointerup",()=>{
+  if(!drag) return;
+  const wasDrag=drag.started, key=drag.key, target=drag.target, from=drag.index;
+  if(wasDrag){
+    drag.el.classList.remove("drag-live");
+    drag.el.style.cssText="";
+    drag.slot?.remove();
+    document.body.classList.remove("dragging");
+    if(target && target.kind==="gap"){
+      /* slot into the empty space beside that chart, at the gap's width,
+         matching its height so the pair tiles as one row */
+      const beside=state.panels[target.i];
+      placeAfter(key, beside.key);
+      const mv=state.panels.find(pp=>pp.key===key);
+      if(mv){ mv.w=target.span; mv.h=beside.h; }
+    } else if(target && target.kind==="pos"){
+      const adoptW = target.i!==from && state.panels[target.i] ? state.panels[target.i].w : null;
+      orderAfterDrop(key, target.i);
+      if(adoptW!==null){ const mv=state.panels.find(pp=>pp.key===key); if(mv) mv.w=adoptW; }
+    }
+  }
+  drag=null;
+  if(wasDrag) render();
+});
+
+/* ── drag to resize ── */
+let rz=null;
+document.getElementById("stack").addEventListener("pointerdown",e=>{
+  const mode=e.target.dataset.act;
+  if(mode!=="rgrip"&&mode!=="cgrip") return;
+  const card=e.target.closest(".pcard"), i=+card.dataset.i;
+  rz={i,mode,y0:e.clientY,x0:e.clientX,h0:state.panels[i].h,w0:state.panels[i].w,card};
+  card.classList.add("is-resizing");
+  document.body.classList.add("resizing");
+  e.target.setPointerCapture(e.pointerId);
+  e.preventDefault();
+});
+let rzRaf=0;
+document.addEventListener("pointermove",e=>{
+  if(!rz) return;
+  const p=state.panels[rz.i];
+  p.h=Math.max(H_MIN,Math.min(H_MAX,Math.round((rz.h0+(e.clientY-rz.y0))/10)*10));
+  if(rzRaf) return;                      /* one chart rebuild per frame, not per event */
+  rzRaf=requestAnimationFrame(()=>{ rzRaf=0; });
+
+  const card=document.querySelector(`.pcard[data-i="${rz.i}"]`);
+  if(!card) return;
+
+  /* corner drag also sets width — snaps to half or full so the grid always tiles */
+  if(rz.mode==="cgrip"){
+    const stackW=document.getElementById("stack").getBoundingClientRect().width;
+    const want=Math.max(3,Math.min(12,(rz.w0/12*stackW + (e.clientX-rz.x0)) / stackW * 12));
+    let w=W_SNAPS[0];
+    W_SNAPS.forEach(s=>{ if(Math.abs(s-want)<Math.abs(w-want)) w=s; });
+    if(w!==p.w){ p.w=w; card.style.setProperty("--span",w); }
+  }
+  const sets=buildSets(p);
+  if(sets.length){
+    const holder=card.querySelector(".pbody");
+    const chart=chartFor(p,sets);
+    if(chart&&holder) holder.innerHTML=chart+((p.era!=="off"&&p.chart!=="scatter"&&p.chart!=="small")?renderRibbon(p):"");
+  }
+  const pill=card.querySelector(".hpill"); if(pill) pill.textContent=wLabel(p.w)+" · "+p.h+"px";
+});
+document.addEventListener("pointerup",()=>{
+  if(!rz) return;
+  const wasWidth = rz.mode==="cgrip" && state.panels[rz.i] && state.panels[rz.i].w!==rz.w0;
+  document.querySelector(`.pcard[data-i="${rz.i}"]`)?.classList.remove("is-resizing");
+  document.body.classList.remove("resizing");
+  rz=null;
+  if(wasWidth) render(); else writeHash();   /* width change needs a redraw at the new size */
+});
+
+/* ══════════════════════════════════════════════
+   EXPORT — per chart, CSV and PNG
+   ══════════════════════════════════════════════ */
+const dl=(blob,name)=>{const a=document.createElement("a");
+  a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);};
+const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)||"chart";
+
+function exportCsv(i){
+  const p=state.panels[i], sets=buildSets(p);
+  if(!sets.length) return;
+  const years=[...new Set(sets.flatMap(s=>s.pts.map(q=>q[0])))].sort();
+  const head=["year",...sets.map(s=>`"${s.name} (${s.unit})"`)].join(",");
+  const rows=years.map(y=>[y,...sets.map(s=>{const q=s.pts.find(q=>q[0]===y);return q&&q[1]!=null?q[1].toFixed(4):"";})].join(","));
+  const warn=DB.meta.provenance==="placeholder"?"# WARNING: placeholder data, not real statistics\n":"";
+  const csv=warn+`# Polyoptic — ${sets.map(s=>s.name).join(" x ")}\n`+
+    `# Sources: ${[...new Set(sets.map(s=>s.meta.source))].join("; ")}\n`+
+    `# Geography: ${[...new Set(sets.map(s=>s.meta.geography))].join("; ")}\n`+
+    `# Licence: OGL v3.0 — contains public sector information\n`+head+"\n"+rows.join("\n");
+  dl(new Blob([csv],{type:"text/csv"}), slug(sets.map(s=>s.name).join("-"))+".csv");
+}
+
+/* Styles have to travel with the SVG — a serialised node gets no page CSS,
+   and web fonts don't load in a detached image, so fall back to system stacks.
+   The palette follows the theme the person is looking at, so a dark-mode
+   export is a dark image rather than dark-mode lines on a white card. */
+const EXPORT_THEMES={
+  light:{bg:"#ffffff", grid:"#D3D8DD", muted:"#5C6672", ink:"#0F1419", warn:"#B45309"},
+  dark: {bg:"#151823", grid:"#262B36", muted:"#8A93A0", ink:"#E8ECF1", warn:"#E0B45C"}
+};
+const exportCss=th=>`
+  text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  .gridline{stroke:${th.grid};stroke-width:1}
+  .axlabel{font-size:10px;fill:${th.muted}}
+  .line{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+  .disc{stroke:${th.warn};stroke-width:1;stroke-dasharray:3 3;opacity:.6}
+  .sm-t{font-size:10px;font-weight:500}
+  .era text{font-size:9px;fill:#fff;font-weight:500}
+  .pmtick{stroke:${th.ink};stroke-width:1;stroke-dasharray:2 2;opacity:.3}
+  .etick{stroke:${th.ink};stroke-width:1.5}
+  .pmlabel{font-size:8.5px;fill:${th.muted}}
+  .eralabel{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:${th.muted}}
+  .ttl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:19px;fill:${th.ink}}
+  .sub{font-size:11px;fill:${th.muted}}
+  .cred{font-size:10px;fill:${th.muted}}`;
+
+function exportPng(i){
+  const p=state.panels[i], sets=buildSets(p);
+  const card=document.querySelector(`.pcard[data-i="${i}"]`);
+  if(!sets.length||!card) return;
+  const svgs=[...card.querySelectorAll(".pbody svg")];
+  if(!svgs.length) return;
+  const TH = EXPORT_THEMES[document.documentElement.dataset.theme==="dark"?"dark":"light"];
+
+  const PAD=26, TOP=74, LEGEND=26, FOOT=30, SCALE=2;
+  const inner=svgs.map(s=>{
+    const vb=s.getAttribute("viewBox").split(/\s+/).map(Number);
+    return {markup:s.innerHTML, w:vb[2], h:vb[3]};
+  });
+  const bodyH=inner.reduce((a,s)=>a+s.h+8,0);
+  const totalW=W+PAD*2, totalH=TOP+bodyH+LEGEND+FOOT+PAD;
+
+  let y=TOP, parts="";
+  inner.forEach(s=>{
+    parts+=`<svg x="${PAD}" y="${y}" width="${W}" height="${s.h}" viewBox="0 0 ${s.w} ${s.h}">${s.markup}</svg>`;
+    y+=s.h+8;
+  });
+  const legend=sets.map((s,k)=>{
+    const x=PAD+k*Math.min(300,(W)/sets.length);
+    return `<rect x="${x}" y="${y+6}" width="13" height="3" fill="${s.colour}"/>`+
+           `<text class="cred" x="${x+18}" y="${y+11}">${esc(s.name)} — ${esc(s.unit)}</text>`;
+  }).join("");
+
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}">
+    <style>${exportCss(TH)}</style>
+    <rect width="100%" height="100%" fill="${TH.bg}"/>
+    <text class="ttl" x="${PAD}" y="${PAD+14}">${esc(p.title??sets.map(s=>s.name).join(" × "))}</text>
+    <text class="sub" x="${PAD}" y="${PAD+34}">${p.from}–${p.to} · ${esc(TRANSFORMS.find(x=>x[0]===p.trans)[1])} · ${esc([...new Set(sets.map(s=>s.meta.geography))].join(", "))}</text>
+    ${parts}${legend}
+    <text class="cred" x="${PAD}" y="${totalH-PAD+4}">${DB.meta.provenance==="placeholder"?"PLACEHOLDER DATA — NOT REAL STATISTICS · ":""}Source: ${esc([...new Set(sets.map(s=>s.meta.source))].join("; "))} · OGL v3.0 · polyoptic.co</text>
+  </svg>`;
+
+  const img=new Image();
+  img.onload=()=>{
+    const c=document.createElement("canvas");
+    c.width=totalW*SCALE; c.height=totalH*SCALE;
+    const ctx=c.getContext("2d");
+    ctx.fillStyle=TH.bg; ctx.fillRect(0,0,c.width,c.height);
+    ctx.setTransform(SCALE,0,0,SCALE,0,0);
+    ctx.drawImage(img,0,0);
+    c.toBlob(b=>{ if(b) dl(b, slug(sets.map(s=>s.name).join("-"))+".png"); },"image/png");
+  };
+  img.onerror=()=>alert("Couldn't render the image in this browser.");
+  img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
+}
+
+/* ══════════════════════════════════════════════
+   PERMALINK
+   ══════════════════════════════════════════════ */
+function writeHash(){
+  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||"")].join("~")).join(";");
+  history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active);
+}
+function readHash(){
+  if(!location.hash) return;
+  const q=new URLSearchParams(location.hash.slice(1));
+  if(q.get("p")){
+    const panels=decodeURIComponent(q.get("p")).split(";").map(chunk=>{
+      const [sel,chart,trans,from,to,era,h,w,gran,ttl]=chunk.split("~");
+      /* old links stored the ribbon as 1/0 — map those onto the era modes */
+      const eraMode = era==="1"?"pm" : era==="0"?"off" : (ERA_MODES.some(m=>m[0]===era)?era:"pm");
+      return mkPanel((sel||"").split(",").filter(id=>S(id)),
+        {chart:chart||"line",trans:trans||"index",from:+from||1997,to:+to||2026,
+         era:eraMode,eraPrev:eraMode==="off"?"pm":eraMode,gran:(GRANS.some(g=>g[0]===gran)?gran:"years"),
+         title:ttl?decodeURIComponent(ttl):null,
+         h:Math.max(H_MIN,Math.min(H_MAX,+h||H_DEF)),w:(W_SNAPS.includes(+w)?+w:12)});
+    });
+    if(panels.length) state.panels=panels;
+  } else if(q.get("t")){                       /* topic deep-link from the homepage tiles */
+    const topic=q.get("t");
+    if(DB.series.some(s=>s.topics.includes(topic))) state.topic=topic;
+  }
+  state.active=Math.max(0,Math.min(+q.get("a")||0,state.panels.length-1));
+}
+
+/* sidebar collapse — persisted like the theme */
+(function(){
+  try{ if(localStorage.getItem("polyoptic-side")==="collapsed") document.body.classList.add("side-collapsed"); }catch(e){}
+  const set=c=>{ document.body.classList.toggle("side-collapsed",c);
+    try{ localStorage.setItem("polyoptic-side", c?"collapsed":"open"); }catch(e){} };
+  document.getElementById("sideHide").onclick=()=>set(true);
+  document.getElementById("sideHideTop").onclick=()=>set(true);
+  document.getElementById("sideOpen").onclick=()=>set(false);
+})();
+
+const themeBtn=document.getElementById("themeBtn");
+function syncThemeBtn(){
+  const dark=document.documentElement.dataset.theme==="dark";
+  /* the polyoptic eye: open when the lights are on, shut when they're off */
+  themeBtn.innerHTML = dark?IC.eyeShut:IC.eyeOpen;
+  themeBtn.title = dark ? "Switch to light mode" : "Switch to dark mode";
+  themeBtn.setAttribute("aria-label", themeBtn.title);
+}
+themeBtn.onclick=()=>{
+  const dark=document.documentElement.dataset.theme==="dark";
+  if(dark) delete document.documentElement.dataset.theme;
+  else document.documentElement.dataset.theme="dark";
+  try{ localStorage.setItem("polyoptic-theme", dark?"light":"dark"); }catch(e){}
+  syncThemeBtn(); render();   /* charts re-render so lines pick up the theme palette */
+};
+syncThemeBtn();
+
+document.getElementById("copyLink").onclick=()=>{
+  navigator.clipboard?.writeText(location.href);
+  const b=document.getElementById("copyLink"), o=b.textContent;
+  b.textContent="✓ Copied"; setTimeout(()=>b.textContent=o,1400);
+};
+document.getElementById("q").oninput=e=>{state.q=e.target.value;renderSidebar();};
+
+/* ── logo ── */
+(function(){
+  const shape="M10 50 Q50 -10 90 50 Q50 102 10 50 Z";
+  const bars=[[29.75,46.56,18.72],[41.25,36.48,28.80],[52.75,42.60,22.68],[64.25,30.72,34.56]]
+    .map(([x,y,h])=>`<rect x="${x}" y="${y}" width="6" height="${h}"/>`).join("");
+  document.getElementById("logo").innerHTML=
+   `<svg viewBox="6.5 16.5 87 63"><defs><clipPath id="lg"><path d="${shape}"/></clipPath></defs>`+
+   `<path d="${shape}" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>`+
+   `<g clip-path="url(#lg)" fill="#fff">${bars}</g></svg>`;
+})();
+
+/* ── boot: prefer real data if the ingest has run ── */
+fetch("data/bundle.json").then(r=>r.ok?r.json():Promise.reject()).then(d=>{DB=d;})
+  .catch(()=>{}).finally(()=>{ readHash(); render(); });
+</script>
+</body>
+</html>
