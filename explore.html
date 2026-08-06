@@ -14,13 +14,60 @@
 --rule:#D3D8DD;--rule-soft:#EEF0F2;
 --purple:#4633A8;--purple-dk:#3A2A8C;--soft:#F4F2FA;--soft-hover:#EAE5F6;--prule:#D8D2EC;
 --warn:#B45309;--warnbg:#FFF8E6;--warnrule:#E8D9A8;--warn-ink:#6B4A0A;--warn-ink-b:#4A3306;
---shadow:0 18px 40px -10px rgba(15,20,25,.3)}
+--shadow:0 18px 40px -10px rgba(15,20,25,.3);
+/* Union flag, drawn to the 60x30 construction (white saltire 6 wide with the
+   red 4 wide counterchanged, white cross 10, red cross 6). Inline so the
+   strict no-external-assets rule the rest of the site follows still holds. */
+--flag:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'><clipPath id='s'><path d='M0,0 v30 h60 v-30 z'/></clipPath><clipPath id='t'><path d='M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z'/></clipPath><g clip-path='url(%23s)'><path d='M0,0 v30 h60 v-30 z' fill='%23012169'/><path d='M0,0 L60,30 M60,0 L0,30' stroke='%23fff' stroke-width='6'/><path d='M0,0 L60,30 M60,0 L0,30' clip-path='url(%23t)' stroke='%23C8102E' stroke-width='4'/><path d='M30,0 v30 M0,15 h60' stroke='%23fff' stroke-width='10'/><path d='M30,0 v30 M0,15 h60' stroke='%23C8102E' stroke-width='6'/></g></svg>")}
 html[data-theme="dark"]{--paper:#0B0D12;--surface:#151823;--surface-2:#1A1E2A;--hover:#1C2130;--ink:#E8ECF1;--muted:#8A93A0;
 --rule:#262B36;--rule-soft:#20242E;
 --purple:#8B6BFF;--purple-dk:#7355E8;--soft:#241E3E;--soft-hover:#2C2450;--prule:#3A3260;
 --warn:#E0B45C;--warnbg:#2A2107;--warnrule:#4C3B10;--warn-ink:#E3B65E;--warn-ink-b:#F0CC80;
 --shadow:0 18px 44px -10px rgba(0,0,0,.65)}
 html[data-theme="dark"] input{color-scheme:dark}
+
+/* ── Brexit mode ────────────────────────────────────────────────
+   Union flag palette: Pantone 280 blue, Pantone 186 red, white.
+   Navy paper rather than white, because a white ground would leave
+   one of the three flag colours unusable for chart lines. */
+html[data-theme="brexit"]{--paper:#00133F;--surface:#012169;--surface-2:#0A2A72;--hover:#12367F;--ink:#FFFFFF;--muted:#A8BDE4;
+--rule:#1B3E8C;--rule-soft:#12306F;
+--purple:#C8102E;--purple-dk:#A60D26;--soft:#0C2C77;--soft-hover:#143681;--prule:#284E9B;
+--warn:#F0C24B;--warnbg:#2A2107;--warnrule:#5A4712;--warn-ink:#F0C24B;--warn-ink-b:#F7DA8E;
+--shadow:0 18px 44px -10px rgba(0,0,0,.7)}
+html[data-theme="brexit"] input{color-scheme:dark}
+html[data-theme="brexit"] .brand .b{color:#C8102E}
+
+/* the flag itself, flown very quietly behind the sheet */
+html[data-theme="brexit"] body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.07;
+  background:var(--flag) center/min(92vw,1100px) auto no-repeat}
+html[data-theme="brexit"] header,
+html[data-theme="brexit"] .shell{position:relative;z-index:1}
+html[data-theme="brexit"] header{border-bottom-color:#C8102E}
+
+/* the secret toggle — a bare strip down the far right of the sheet.
+   Invisible until you go looking for it, which is the point. */
+/* --sbw is the scrollbar width, set from JS. Without it the strip sits on top
+   of the scrollbar and every attempt to drag the page toggles the mode. */
+.secret{position:fixed;top:0;right:var(--sbw,0px);width:16px;height:100vh;z-index:60;
+  border:0;padding:0;background:transparent;cursor:pointer;
+  transition:background-color .18s, box-shadow .18s}
+.secret::after{content:"";position:absolute;inset:0;opacity:0;transition:opacity .18s;
+  background:var(--flag) center/cover no-repeat}
+.secret:hover::after,.secret:focus-visible::after{opacity:.85}
+.secret:focus-visible{outline:2px solid var(--purple);outline-offset:-2px}
+html[data-theme="brexit"] .secret::after{opacity:.5}
+
+/* the mode banner, so nobody is left wondering where their charts went */
+.modebar{display:none;align-items:center;gap:12px;flex-wrap:wrap;
+  background:var(--surface);border:1px solid var(--rule);border-left:4px solid #C8102E;
+  padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--muted)}
+html[data-theme="brexit"] .modebar{display:flex}
+.modebar b{color:var(--ink);font-weight:700;font-family:Archivo,sans-serif;letter-spacing:.01em}
+.modebar button{margin-left:auto;font:inherit;font-size:12px;background:transparent;color:var(--ink);
+  border:1px solid var(--rule);padding:4px 10px;cursor:pointer}
+.modebar button:hover{border-color:var(--purple);color:var(--purple)}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--paper);color:var(--ink);font-family:"Public Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;transition:background-color .2s}
@@ -260,6 +307,8 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   </div>
 </header>
 
+<button class="secret" id="modeBtn" aria-label="Toggle Brexit mode" aria-pressed="false"></button>
+
 <div class="siderail"><button id="sideOpen" title="Show the indicator panel" aria-label="Show the indicator panel">❯</button></div>
 <div class="shell">
   <div class="side">
@@ -287,6 +336,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   </div>
 
   <div>
+    <div class="modebar" id="modebar"></div>
     <div class="stack" id="stack"></div>
     <div class="addbar"><button class="addbtn" id="addBottom">+ Add another chart</button></div>
     <div class="srcpanel" id="srcs"></div>
@@ -350,10 +400,15 @@ const PLACEHOLDER = {
 let DB = PLACEHOLDER;
 
 /* theme — applied before first render so charts draw in the right palette */
-(function(){ try{ if(localStorage.getItem("polyoptic-theme")==="dark") document.documentElement.dataset.theme="dark"; }catch(e){} })();
+(function(){ try{
+  if(localStorage.getItem("polyoptic-mode")==="brexit") document.documentElement.dataset.theme="brexit";
+  else if(localStorage.getItem("polyoptic-theme")==="dark") document.documentElement.dataset.theme="dark";
+}catch(e){} })();
 const PAL_LIGHT=["#4633A8","#C2410C","#0F766E","#A21CAF"];
 const PAL_DARK =["#8B6BFF","#FB923C","#2DD4BF","#E879F9"];
-const PAL=i=>(document.documentElement.dataset.theme==="dark"?PAL_DARK:PAL_LIGHT)[i%4];
+/* red, white, and two blues light enough to read on the navy ground */
+const PAL_BREXIT=["#E4344F","#FFFFFF","#7FB2FF","#F0C24B"];
+const PAL=i=>({dark:PAL_DARK,brexit:PAL_BREXIT}[document.documentElement.dataset.theme]||PAL_LIGHT)[i%4];
 
 const CHART_TYPES = [["line","Line"],["step","Step"],["dots","Dots"],["bar","Bars"],["area","Area"],["stack","Stacked area"],["scatter","Scatter"],["small","Small multiples"]];
 const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["yoy","Year-on-year %"],
@@ -375,6 +430,21 @@ const state = { panels:[ mkPanel(["rents","pay"]) ], active:0, focus:null, q:"",
 const lockedKeys = new Set();
 const P0 = () => state.panels[state.active] || null;
 const S  = id => DB.series.find(s=>s.id===id);
+
+/* ── modes ──────────────────────────────────────────────────────
+   A mode is a named subset of the catalogue, defined in series.yaml and
+   carried through the bundle. Lookups by id (S above, sources, transforms)
+   still see the whole catalogue — only what you can BROWSE changes, so a
+   permalink into another mode keeps working. */
+let MODE = (()=>{ try{ return localStorage.getItem("polyoptic-mode")||"default"; }catch(e){ return "default"; } })();
+const modeDef  = () => (DB.modes||{})[MODE];
+const claimed  = () => new Set(Object.values(DB.modes||{}).flatMap(m=>m.series||[]));
+const catalogue = () => {
+  const m = modeDef();
+  if(!m) return DB.series.filter(s=>!claimed().has(s.id));
+  const want = new Set(m.series||[]);
+  return DB.series.filter(s=>want.has(s.id));
+};
 const yearsOf = s => s.values.map((_,i)=>s.start+i);
 const refAt = (ref,y) => { const r=DB.refs[ref]; if(!r) return null; const i=y-r.start; return (i>=0&&i<r.values.length)?r.values[i]:null; };
 
@@ -795,14 +865,15 @@ function renderSidebar(){
   });
 
   /* filters */
-  const topics=["all",...new Set(DB.series.flatMap(s=>s.topics))];
+  const inMode=catalogue();
+  const topics=["all",...new Set(inMode.flatMap(s=>s.topics))];
   document.getElementById("filters").innerHTML=topics.map(t=>
     `<button class="f" data-topic="${t}" aria-pressed="${state.topic===t}">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join("");
   document.querySelectorAll("[data-topic]").forEach(b=>b.onclick=()=>{state.topic=b.dataset.topic;renderSidebar();});
 
   /* catalogue */
   const q=state.q.toLowerCase();
-  const list=DB.series.filter(s=>(state.topic==="all"||s.topics.includes(state.topic))&&
+  const list=inMode.filter(s=>(state.topic==="all"||s.topics.includes(state.topic))&&
     (!q||s.name.toLowerCase().includes(q)||s.source.toLowerCase().includes(q)));
   const cat=document.getElementById("cat");
   cat.innerHTML=list.length?list.map(s=>{
@@ -822,8 +893,8 @@ function renderSidebar(){
     render();
   });
   document.getElementById("count").textContent = p
-    ? `${p.sel.length} of 4 on Chart ${state.active+1} · ${DB.series.length} indicators available`
-    : `${DB.series.length} indicators available`;
+    ? `${p.sel.length} of 4 on Chart ${state.active+1} · ${inMode.length} indicators available`
+    : `${inMode.length} indicators available`;
 }
 
 function renderSources(){
@@ -1143,7 +1214,10 @@ function exportCsv(i){
    export is a dark image rather than dark-mode lines on a white card. */
 const EXPORT_THEMES={
   light:{bg:"#ffffff", grid:"#D3D8DD", muted:"#5C6672", ink:"#0F1419", warn:"#B45309"},
-  dark: {bg:"#151823", grid:"#262B36", muted:"#8A93A0", ink:"#E8ECF1", warn:"#E0B45C"}
+  dark: {bg:"#151823", grid:"#262B36", muted:"#8A93A0", ink:"#E8ECF1", warn:"#E0B45C"},
+  /* Brexit mode needs its own entry, not a fall-through to light: one of its
+     four line colours is white, which would export invisibly onto a white card. */
+  brexit:{bg:"#012169", grid:"#1B3E8C", muted:"#A8BDE4", ink:"#FFFFFF", warn:"#F0C24B"}
 };
 const exportCss=th=>`
   text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
@@ -1167,7 +1241,7 @@ function exportPng(i){
   if(!sets.length||!card) return;
   const svgs=[...card.querySelectorAll(".pbody svg")];
   if(!svgs.length) return;
-  const TH = EXPORT_THEMES[document.documentElement.dataset.theme==="dark"?"dark":"light"];
+  const TH = EXPORT_THEMES[document.documentElement.dataset.theme] || EXPORT_THEMES.light;
 
   const PAD=26, TOP=74, LEGEND=26, FOOT=30, SCALE=2;
   const inner=svgs.map(s=>{
@@ -1235,7 +1309,7 @@ function readHash(){
     if(panels.length) state.panels=panels;
   } else if(q.get("t")){                       /* topic deep-link from the homepage tiles */
     const topic=q.get("t");
-    if(DB.series.some(s=>s.topics.includes(topic))) state.topic=topic;
+    if(catalogue().some(s=>s.topics.includes(topic))) state.topic=topic;
   }
   state.active=Math.max(0,Math.min(+q.get("a")||0,state.panels.length-1));
 }
@@ -1263,9 +1337,48 @@ themeBtn.onclick=()=>{
   if(dark) delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme="dark";
   try{ localStorage.setItem("polyoptic-theme", dark?"light":"dark"); }catch(e){}
+  if(MODE!=="default") setMode("default");    /* light/dark is a different axis to mode */
   syncThemeBtn(); render();   /* charts re-render so lines pick up the theme palette */
 };
 syncThemeBtn();
+
+/* ── mode switching ─────────────────────────────────────────────
+   Modes have disjoint catalogues, so anything on a chart when you switch
+   would be an id the new catalogue does not contain. Clear rather than
+   half-render, and put the reason on screen. */
+function applyThemeForMode(){
+  const el=document.documentElement;
+  if(MODE!=="default"){ el.dataset.theme="brexit"; return; }
+  let dark=false; try{ dark=localStorage.getItem("polyoptic-theme")==="dark"; }catch(e){}
+  if(dark) el.dataset.theme="dark"; else delete el.dataset.theme;
+}
+function setMode(next){
+  if(next===MODE) return;
+  MODE=next;
+  try{ localStorage.setItem("polyoptic-mode", MODE); }catch(e){}
+  state.panels=[]; state.active=0; state.topic="all"; state.q="";
+  const box=document.getElementById("q"); if(box) box.value="";
+  applyThemeForMode(); syncThemeBtn(); syncModeBtn(); render();
+}
+const modeBtn=document.getElementById("modeBtn");
+function syncModeBtn(){
+  const on=MODE!=="default";
+  modeBtn.setAttribute("aria-pressed",String(on));
+  modeBtn.title = on ? "Leave Brexit mode" : "";
+  const bar=document.getElementById("modebar"), m=modeDef();
+  bar.innerHTML = m
+    ? `<b>${esc(m.name||MODE)}</b><span>${esc(m.blurb||"")}</span>
+       <button id="modeOff">Back to the full catalogue</button>` : "";
+  const off=document.getElementById("modeOff");
+  if(off) off.onclick=()=>setMode("default");
+}
+modeBtn.onclick=()=>setMode(MODE==="default"?"brexit":"default");
+
+(function trackScrollbar(){
+  const set=()=>document.documentElement.style.setProperty(
+    "--sbw", (window.innerWidth-document.documentElement.clientWidth)+"px");
+  set(); addEventListener("resize",set); new ResizeObserver(set).observe(document.body);
+})();
 
 document.getElementById("copyLink").onclick=()=>{
   navigator.clipboard?.writeText(location.href);
@@ -1286,8 +1399,16 @@ document.getElementById("q").oninput=e=>{state.q=e.target.value;renderSidebar();
 })();
 
 /* ── boot: prefer real data if the ingest has run ── */
-fetch("data/bundle.json").then(r=>r.ok?r.json():Promise.reject()).then(d=>{DB=d;})
-  .catch(()=>{}).finally(()=>{ readHash(); render(); });
+/* no-cache means revalidate, not refetch — the browser still sends the ETag,
+   so this costs a 304 and stops a rebuilt bundle sitting invisible behind a
+   cached copy. */
+fetch("data/bundle.json",{cache:"no-cache"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{DB=d;})
+  .catch(()=>{}).finally(()=>{
+    /* a stored mode the bundle no longer defines must not strand the catalogue */
+    if(MODE!=="default" && !modeDef()) MODE="default";
+    applyThemeForMode(); syncThemeBtn(); syncModeBtn();
+    readHash(); render();
+  });
 </script>
 </body>
 </html>

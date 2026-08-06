@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
@@ -90,8 +91,45 @@ def get(url: str, params: dict | None = None) -> requests.Response:
     return r
 
 
-MONTHS = {"jan", "feb", "mar", "apr", "may", "jun",
-          "jul", "aug", "sep", "oct", "nov", "dec"}
+def get_file(url: str) -> Path:
+    """
+    Download to ingest/.cache, keyed by URL hash, and reuse it next run.
+
+    Statistical spreadsheets run to tens of megabytes and the publishers put a
+    content hash in the path, so a given URL is immutable — caching is safe and
+    turns a five-minute rebuild into a five-second one. Delete .cache to refetch.
+    """
+    import hashlib
+
+    CACHE.mkdir(exist_ok=True)
+    # The extension is not always in the path — ONS serves files as
+    # /file?uri=/…/table.xlsx — so look anywhere in the URL, last match wins.
+    found = re.findall(r"\.(xlsx|xlsm|xls|ods|csv|zip)(?![a-z0-9])", url, re.I)
+    suffix = found[-1].lower() if found else "bin"
+    path = CACHE / f"{hashlib.sha256(url.encode()).hexdigest()[:16]}.{suffix}"
+    if not path.exists() or path.stat().st_size == 0:
+        r = requests.get(url, headers=UA, timeout=300)
+        r.raise_for_status()
+        path.write_bytes(r.content)
+    return path
+
+
+# Ordered, not a set: _period_key needs the index to mean the month number.
+MONTHS = ("jan", "feb", "mar", "apr", "may", "jun",
+          "jul", "aug", "sep", "oct", "nov", "dec")
+
+
+def strip_revision_flags(label: str) -> str:
+    """
+    Drop the provisional / revised / estimated markers publishers append to
+    period labels: 'YE Dec 25 P', 'YE Mar 25 P R', '2024 [R]'.
+
+    Worth doing carefully. Left in, they make a period label unparseable, the
+    observation is silently dropped, and a 'last value in the year' series
+    quietly reports an older quarter instead — wrong, and wrong in a way that
+    looks entirely plausible on a chart.
+    """
+    return re.sub(r"(?:\s+\[?[PRE]\]?)+$", "", str(label).strip())
 
 
 def to_year(label: str, basis: str) -> int | None:
@@ -103,7 +141,9 @@ def to_year(label: str, basis: str) -> int | None:
     a 2023/24 academic figure sits at 2023 even though most of it happened in
     2024. The front end surfaces this whenever bases are mixed on one chart.
     """
-    label = str(label).strip()
+    label = strip_revision_flags(label)
+    if label.endswith(".0") and label[:-2].isdigit():        # 2018.0 from a float cell
+        label = label[:-2]
     # CMD time codes look like "Jul-17" — month abbreviation, two-digit year.
     parts = label.split("-")
     if len(parts) == 2 and parts[0][:3].lower() in MONTHS and parts[1].strip().isdigit():
@@ -114,8 +154,25 @@ def to_year(label: str, basis: str) -> int | None:
             head = label.split(sep)[0].strip()
             if head.isdigit() and len(head) == 4:
                 return int(head)
+            # Spelt-out ranges: 'Apr 2001 to Mar 2002' is the 2001 financial
+            # year, so take the year from the START of the range, never the end.
+            found = re.search(r"(?<!\d)(1[89]\d\d|20\d\d)(?!\d)", head)
+            if found:
+                return int(found.group(1))
     if len(label) >= 4 and label[:4].isdigit():
         return int(label[:4])
+    # ONS year-ending labels: "YE Dec 25". Two-digit year, month first, so none
+    # of the rules above can see it.
+    m = re.match(r"^(?:YE\s+)?([A-Za-z]{3})[a-z]*[\s-](\d{2})$", label, re.I)
+    if m and m.group(1).lower() in MONTHS:
+        yy = int(m.group(2))
+        return 2000 + yy if yy < 50 else 1900 + yy
+    # Spreadsheet stock dates: "31 Mar 2026", "as at 30 June 2015". Fall back to
+    # the last four-digit number in the label. Deliberately last — anything with
+    # a leading year should have matched above.
+    tail = re.findall(r"(?<!\d)(1[89]\d\d|20\d\d)(?!\d)", label)
+    if tail:
+        return int(tail[-1])
     return None
 
 
@@ -313,11 +370,325 @@ def fetch_csv(cfg: dict) -> dict[int, float]:
     return to_annual(pairs, cfg.get("aggregate", "mean"))
 
 
+# ─────────────────────────────────────────────────────────────
+# Spreadsheet adapter
+#
+# Most of British government statistics is not an API. The Home Office, MoJ,
+# HMRC, FCDO and the ONS crime team all publish .xlsx / .ods workbooks and
+# nothing else, so this adapter is the difference between a catalogue that can
+# cover borders, crime and tax and one that can only cover the economy.
+#
+# Two layouts, because publishers use both:
+#   long — one row per observation, dimensions in columns (Home Office style)
+#   wide — one row per measure, years across the columns (ONS table style)
+# ─────────────────────────────────────────────────────────────
+
+def _clean(v) -> str:
+    """Header and label text as published, minus the whitespace and footnote junk."""
+    s = "" if v is None else str(v)
+    # The same Home Office column is 'Date (as at…)' on one sheet and
+    # 'Date (as at...)' on the next, so normalise the ellipsis rather than
+    # asking the catalogue to guess which spelling a given workbook used.
+    s = s.replace("\xa0", " ").replace("’", "'").replace("…", "...")
+    s = re.sub(r"\s*\[(note|footnote)[^\]]*\]", "", s, flags=re.I)
+    s = re.sub(r"\s+", " ", s).strip()
+    return s[:-2] if s.endswith(".0") and s[:-2].isdigit() else s
+
+
+def _to_number(raw) -> float | None:
+    """Spreadsheet cell to float, or None for the many flavours of 'no data'."""
+    if raw is None:
+        return None
+    if isinstance(raw, (int, float)) and not isinstance(raw, bool):
+        return float(raw)
+    s = str(raw).strip().replace(",", "").replace("£", "").replace("%", "")
+    if s in {"", "..", ":", "-", "–", "z", "x", "c", "N/A", "n/a", "[z]", "[x]", "[c]", "[low]"}:
+        return None
+    if s.startswith("(") and s.endswith(")"):                 # (1,234) is negative
+        s = "-" + s[1:-1]
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
+def _read_sheet(path: Path, sheet: str | None) -> list[list]:
+    """
+    Read one worksheet into a list of rows. Handles .xlsx and .ods.
+
+    Parsed rows are cached next to the download. The Home Office crime-outcomes
+    workbooks are 700,000 rows and take about 90 seconds each to parse, and
+    several series read the same sheet — so without this, adding one indicator
+    adds minutes to every build.
+    """
+    import pickle
+
+    cached = path.with_name(f"{path.stem}.{(sheet or 'first').replace(' ', '_')}.pkl")
+    if cached.exists() and cached.stat().st_mtime >= path.stat().st_mtime:
+        try:
+            return pickle.loads(cached.read_bytes())
+        except Exception:                     # noqa: BLE001 — a bad cache is not fatal
+            cached.unlink(missing_ok=True)
+
+    rows = _parse_sheet(path, sheet)
+    try:
+        cached.write_bytes(pickle.dumps(rows, protocol=pickle.HIGHEST_PROTOCOL))
+    except OSError:
+        pass
+    return rows
+
+
+def _pick_sheet(names: list[str], sheet: str) -> str:
+    """
+    Resolve a sheet name, exactly if possible and loosely if not.
+
+    Publishers put the period in the tab name and are not consistent about it —
+    the same table is 'Outcomes_open_data_2022_23' one year and 'Outcomes open
+    data 2025_26' the next. Matching on the normalised name lets one catalogue
+    entry span every year's workbook.
+    """
+    if sheet in names:
+        return sheet
+    flat = lambda s: re.sub(r"[^a-z0-9]", "", s.lower())
+    loose = [n for n in names if flat(sheet) in flat(n)]
+    if loose:
+        return loose[0]
+    raise ValueError(f"no sheet {sheet!r}; workbook has {names}")
+
+
+def _parse_sheet(path: Path, sheet: str | None) -> list[list]:
+    if path.suffix == ".ods":
+        from odf.opendocument import load
+        from odf.table import Table, TableRow, TableCell
+        from odf.text import P
+
+        doc = load(str(path))
+        tables = doc.spreadsheet.getElementsByType(Table)
+        names = [t.getAttribute("name") for t in tables]
+        table = tables[0] if sheet is None else tables[names.index(_pick_sheet(names, sheet))]
+
+        rows: list[list] = []
+        for tr in table.getElementsByType(TableRow):
+            row: list = []
+            for tc in tr.getElementsByType(TableCell):
+                repeat = int(tc.getAttribute("numbercolumnsrepeated") or 1)
+                value = tc.getAttribute("value")
+                if value is None:
+                    value = "\n".join(str(p) for p in tc.getElementsByType(P)) or None
+                else:
+                    value = float(value)
+                # ODS pads rows out to the sheet width with a huge repeat count.
+                row.extend([value] * min(repeat, 512))
+            while row and row[-1] is None:
+                row.pop()
+            rows.append(row)
+        return rows
+
+    import openpyxl
+
+    wb = openpyxl.load_workbook(path, read_only=True, data_only=True)
+    try:
+        ws = wb[_pick_sheet(wb.sheetnames, sheet)] if sheet else wb[wb.sheetnames[0]]
+        return [list(r) for r in ws.iter_rows(values_only=True)]
+    finally:
+        wb.close()
+
+
+def _find_header(rows: list[list], must_have: list[str]) -> int:
+    """Locate the header row by the column names it has to contain."""
+    wanted = {w.lower() for w in must_have if w}
+    for i, row in enumerate(rows[:80]):
+        have = {_clean(c).lower() for c in row if c is not None}
+        if wanted <= have:
+            return i
+    raise ValueError(f"no header row containing {sorted(wanted)} in the first 80 rows")
+
+
+def _period_key(label: str) -> tuple:
+    """
+    Sort key putting sub-annual periods in calendar order.
+
+    This exists because 'last' means the last *quarter*, and the published
+    labels ('31 Dec 2015', '30 Jun 2015') sort into the wrong order as plain
+    strings — which would quietly hand you March instead of December.
+    """
+    s = re.sub(r"^YE\s+", "", strip_revision_flags(label), flags=re.I)   # "YE Dec 25 P" -> "Dec 25"
+    m = re.match(r"^(\d{4})\s*Q([1-4])$", s)                      # 2018 Q1
+    if m:
+        return (int(m.group(1)), int(m.group(2)) * 3)
+    m = re.match(r"^(\d{1,2})\s+([A-Za-z]{3})[a-z]*\s+(\d{4})$", s)   # 31 Dec 2015
+    if m and m.group(2).lower() in MONTHS:
+        return (int(m.group(3)), MONTHS.index(m.group(2).lower()) + 1, int(m.group(1)))
+    m = re.match(r"^([A-Za-z]{3})[a-z]*[- ](\d{2,4})$", s)        # Jul-17, Jul 2017
+    if m and m.group(1).lower() in MONTHS:
+        yy = int(m.group(2))
+        yy = yy if yy > 100 else (2000 + yy if yy < 50 else 1900 + yy)
+        return (yy, MONTHS.index(m.group(1).lower()) + 1)
+    return (to_year(s, "calendar") or 0, s)
+
+
+def _matches(cell, want) -> bool:
+    """Filter test. A list means membership; a scalar means equality."""
+    got = _clean(cell)
+    if isinstance(want, (list, tuple, set)):
+        return got in {_clean(w) for w in want}
+    return got == _clean(want)
+
+
+def fetch_spreadsheet(cfg: dict) -> dict[int, float]:
+    """
+    Published .xlsx / .ods workbook -> annual series.
+
+    long layout (default)
+        year_column, value_column, optional period_column and filter.
+        Values are summed within each period, then collapsed to a year with
+        `aggregate`. The two stages matter: a quarterly *stock* like the asylum
+        backlog must be summed across its breakdown rows but taken as the LAST
+        quarter of the year, never summed across quarters.
+
+        `rate` turns two filters into a percentage — numerator rows over all
+        filtered rows — for genuine rate measures (grant rates, charge rates)
+        where the publisher only gives you the counts.
+
+    wide layout
+        Years run across a header row; one data row holds the measure. Give
+        `row_match` (the row label) and `label_column`.
+    """
+    # Some publishers put one file per year (crime outcomes), so a series can
+    # span several workbooks. Same shape in each; merge the years.
+    urls = cfg.get("urls") or [cfg["url"]]
+    cfg["_resolved_url"] = urls[0] if len(urls) == 1 else f"{urls[0]} (+{len(urls) - 1} more)"
+
+    merged: dict[int, float] = {}
+    for url in urls:
+        rows = _read_sheet(get_file(url), cfg.get("sheet"))
+        merged.update(_wide(cfg, rows) if cfg.get("layout", "long") == "wide"
+                      else _long(cfg, rows))
+
+    # `scale` exists because publishers disagree about whether a percentage is
+    # 15.5 or 0.155, and the unit string in the catalogue has to be true.
+    offset, scale = cfg.get("year_offset", 0), cfg.get("scale", 1)
+    if offset or scale != 1:
+        merged = {y + offset: v * scale for y, v in merged.items()}
+    return merged
+
+
+def _long(cfg: dict, rows: list[list]) -> dict[int, float]:
+    """One row per observation, dimensions in columns."""
+    year_col, value_col = cfg["year_column"], cfg["value_column"]
+    header_row = cfg.get("header_row")
+    header_row = header_row - 1 if header_row else _find_header(rows, [year_col, value_col])
+    header = [_clean(c) for c in rows[header_row]]
+
+    def index_of(name: str) -> int:
+        try:
+            return header.index(_clean(name))
+        except ValueError:
+            raise ValueError(f"no column {name!r}; have {[h for h in header if h]}") from None
+
+    yi, vi = index_of(year_col), index_of(value_col)
+    pi = index_of(cfg["period_column"]) if cfg.get("period_column") else None
+    keep = {index_of(k): v for k, v in (cfg.get("filter") or {}).items()}
+    numer = {index_of(k): v for k, v in (cfg.get("rate") or {}).items()}
+
+    # (year, period) -> [denominator total, numerator total]
+    buckets: dict[tuple[int, str], list[float]] = {}
+    for row in rows[header_row + 1:]:
+        if len(row) <= max(yi, vi, pi or 0, *keep, *numer, 0):
+            row = list(row) + [None] * 64
+        if any(not _matches(row[i], want) for i, want in keep.items()):
+            continue
+        year = to_year(_clean(row[yi]), "calendar")
+        value = _to_number(row[vi])
+        if year is None or value is None:
+            continue
+        slot = buckets.setdefault((year, _clean(row[pi]) if pi is not None else ""), [0.0, 0.0])
+        slot[0] += value
+        if numer and all(_matches(row[i], want) for i, want in numer.items()):
+            slot[1] += value
+
+    if not buckets:
+        raise ValueError("no rows matched the filter — check the option spellings")
+
+    ordered = sorted(buckets.items(), key=lambda kv: (kv[0][0], _period_key(kv[0][1])))
+    how = cfg.get("aggregate", "sum")
+    if numer:
+        # Collapse numerator and denominator to the year SEPARATELY, then
+        # divide. Averaging four quarterly rates instead would weight a quiet
+        # quarter the same as a busy one and quietly misstate the year.
+        den = to_annual([(y, d) for (y, _), (d, _n) in ordered], how)
+        num = to_annual([(y, n) for (y, _), (_d, n) in ordered], how)
+        return {y: 100.0 * num[y] / den[y] for y in den if den.get(y)}
+    return to_annual([(y, d) for (y, _), (d, _n) in ordered], how)
+
+
+def _wide(cfg: dict, rows: list[list]) -> dict[int, float]:
+    """
+    Years across the top, measures down the side.
+
+    `row_filter` narrows by other columns on the same row — MoJ's prison tables
+    repeat every nationality row once per sex, so matching the label alone would
+    silently pick whichever block happens to come first.
+
+    `column_match` keeps only year columns whose header contains that text. ONS
+    outcome tables run a *rolling* quarterly series across the columns ('Year
+    ending Mar 2015', 'Year ending Jun 2015', …); without this the last quarter
+    in each calendar year wins and the financial-year figure is lost.
+    """
+    label_col = cfg.get("label_column", 0)
+    want = _clean(cfg["row_match"])
+    row_filter = {int(k): v for k, v in (cfg.get("row_filter") or {}).items()}
+
+    year_row = cfg.get("year_header_row")
+    if year_row:
+        year_row -= 1
+    else:                                    # the row with the most parseable years wins
+        year_row = max(
+            range(min(len(rows), 40)),
+            key=lambda i: sum(to_year(_clean(c), "calendar") is not None
+                              for c in rows[i] if _clean(c)),
+        )
+
+    # ONS wide tables end with derived columns — '…compared with previous year
+    # % change', '…Significance' — whose headers still contain a year. Left in,
+    # a -1.36% change lands in the series as if it were 5.2 million offences.
+    derived = re.compile(r"%\s*change|percentage change|significance|unweighted base", re.I)
+
+    column_match = _clean(cfg.get("column_match", "")).lower()
+    years: dict[int, int | None] = {}
+    for i, cell in enumerate(rows[year_row]):
+        header = _clean(cell)
+        if derived.search(header):
+            continue
+        if column_match and column_match not in header.lower():
+            continue
+        years[i] = to_year(header, "calendar")
+
+    for row in rows[year_row + 1:]:
+        if label_col >= len(row) or _clean(row[label_col]) != want:
+            continue
+        if any(i >= len(row) or not _matches(row[i], v) for i, v in row_filter.items()):
+            continue
+        out: dict[int, float] = {}
+        for i, cell in enumerate(row):
+            year, value = years.get(i), _to_number(cell)
+            # First column for a year wins. These tables run left-to-right in
+            # time and put derived columns last, so anything arriving second is
+            # a restatement or a rounding variant, not a newer observation.
+            if year is not None and value is not None and i != label_col and year not in out:
+                out[year] = value
+        if out:
+            return out
+    labels = [_clean(r[label_col]) for r in rows[year_row + 1:] if label_col < len(r)]
+    raise ValueError(f"no row labelled {want!r}; have {[l for l in labels if l][:25]}")
+
+
 ADAPTERS = {
     "ons_timeseries": fetch_ons_timeseries,
     "ons_beta": fetch_ons_beta,
     "dfe_ees": fetch_dfe_ees,
     "csv": fetch_csv,
+    "spreadsheet": fetch_spreadsheet,
 }
 
 
@@ -380,6 +751,7 @@ def main() -> int:
             print(f"  FAIL ref:{name} — {exc}", file=sys.stderr)
             print("       transforms depending on this reference will be unavailable", file=sys.stderr)
 
+    ok = {s.id for s in built}
     bundle = {
         "meta": {
             "provenance": "live" if not failed else "partial",
@@ -388,6 +760,12 @@ def main() -> int:
         },
         "eras": config["eras"],
         "pms": config["pms"],
+        # Modes are emitted with only the series that actually built, so a
+        # failed fetch can never leave the front end asking for a missing id.
+        "modes": {
+            key: {**mode, "series": [sid for sid in mode.get("series", []) if sid in ok]}
+            for key, mode in config.get("modes", {}).items()
+        },
         "refs": refs,
         "series": [asdict(s) for s in built],
     }

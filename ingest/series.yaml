@@ -6,11 +6,53 @@
 # data, the pipeline is generic, and the front end is a view over both.
 #
 # Every identifier below was verified against the live catalogues on
-# 2026-08-05 (ONS website timeseries, ONS CMD/beta API, DfE EES API).
-# Sources only published as ODS/XLSX spreadsheets (MHCLG live tables,
-# HMT GDP deflator, OBR databank) are NOT here yet — they need a
-# spreadsheet adapter, which is the next piece of pipeline work.
+# 2026-08-05 (ONS website timeseries, ONS CMD/beta API, DfE EES API)
+# and 2026-08-06 (the spreadsheet sources).
+#
+# The `spreadsheet` adapter landed on 2026-08-06, which is what makes the
+# borders / crime / tax block below possible: the Home Office, MoJ, HMRC
+# and FCDO publish .xlsx and .ods workbooks and nothing else.
 # ══════════════════════════════════════════════════════════════
+
+# ──────────────────────────────────────────────────────────────
+# Modes. A mode is a named subset of the catalogue that the explorer
+# can swap to wholesale. Series not claimed by any mode make up the
+# default catalogue; a series listed in a mode appears only there.
+#
+# Keeping the membership here rather than in the front end means a mode
+# is still just data — same as the series themselves.
+# ──────────────────────────────────────────────────────────────
+modes:
+  brexit:
+    name: Brexit mode
+    blurb: The numbers that get argued about most, and the denominators that usually go missing.
+    series:
+      - netmig
+      - smallboats
+      - asylumbacklog
+      - asylumgrant
+      - hotels
+      - returns
+      - returnsall
+      - visastudy
+      - visastudydep
+      - visawork
+      - visahcw
+      - oda
+      - odarefugee
+      - eugross
+      - eureceipts
+      - eunet
+      - nondoms
+      - nondomtax
+      - fno
+      - csew
+      - prc
+      - chargerate
+      - chargeviolence
+      - chargesexual
+      - chargetheft
+      - chargedamage
 
 eras:
   - {from: 1997, to: 2010, party: Labour,       colour: "#E4003B"}
@@ -211,3 +253,534 @@ series:
           - {filters: {eq: AFuxG}}       # FSM eligibility: total
           - {filters: {eq: UZb0R}}       # school type: total
           - {geographicLevels: {eq: NAT}}
+
+  # ══════════════════════════════════════════════════════════════
+  # BORDERS AND MIGRATION
+  #
+  # Home Office quarterly detailed datasets. Every one of these is a
+  # published count, not a modelled estimate, and every one of them is
+  # routinely quoted without its denominator — which is the whole reason
+  # for putting them next to each other on one axis.
+  # ══════════════════════════════════════════════════════════════
+
+  - id: netmig
+    name: Net migration (LTIM)
+    topics: [migration]
+    unit: people per year
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: ONS Long-term international migration
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/populationandmigration/internationalmigration/datasets/longterminternationalimmigrationemigrationandnetmigrationflowsprovisional
+    source_type: spreadsheet
+    fetch:
+      url: https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/populationandmigration/internationalmigration/datasets/longterminternationalimmigrationemigrationandnetmigrationflowsprovisional/yearendingdecember2025/may2026publicationspreadsheet.xlsx
+      sheet: "1"
+      header_row: 6
+      year_column: Period
+      period_column: Period
+      value_column: All Nationalities
+      filter: {Flow: Net migration}
+      aggregate: last
+    notes:
+      - "Each point is the year ending December, taken from a rolling four-quarter series"
+      - "The most recent years are provisional and have been revised substantially in the past — YE June 2024 was first published at 906,000 and now stands well below that"
+    discontinuities:
+      - {year: 2020, note: "ONS moved from the International Passenger Survey to an administrative-data method; estimates before and after are not produced the same way, and the series only starts in 2012 on the current basis"}
+
+  - id: smallboats
+    name: Small boat arrivals
+    topics: [migration]
+    unit: people detected per year
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: Home Office irregular migration statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a05e3b7ee62840dba48a2c7/illegal-entry-routes-to-the-uk-dataset-mar-2026.xlsx
+      sheet: Data_IER_D01
+      year_column: Year
+      period_column: Quarter
+      value_column: Number of detections
+      filter: {Method of entry: Small boat arrivals}
+    notes:
+      - "Detections only. This is not a count of everyone who entered without permission, and the Home Office says so explicitly"
+      - "The final year is partial — the release covers quarters up to the year ending March 2026"
+
+  - id: asylumbacklog
+    name: Asylum cases awaiting an initial decision
+    topics: [migration]
+    unit: claims
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: Home Office asylum statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a05df3d5f39105e0848a2be/asylum-claims-awaiting-decision-datasets-mar-2026.xlsx
+      sheet: Data_Asy_D03
+      year_column: Date (as at...)
+      period_column: Date (as at...)
+      value_column: Claims
+      filter: {Application stage: Pending initial decision}
+      aggregate: last
+    notes:
+      - "A stock, not a flow — the number of claims sitting undecided at the end of the year, so it falls when decisions speed up as well as when claims fall"
+      - "Excludes cases pending further review, which are counted separately"
+
+  - id: asylumgrant
+    name: Asylum grant rate at initial decision
+    topics: [migration]
+    unit: "% of initial decisions"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: Home Office asylum statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a05df9d97000cb6073e4e25/asylum-claims-datasets-mar-2026.xlsx
+      sheet: Data_Asy_D02
+      year_column: Year
+      value_column: Decisions
+      filter:
+        Applicant type: Main Applicant
+        Case outcome group: [Grant of Protection, Grant of Other Leave, Refused]
+      rate:
+        Case outcome group: [Grant of Protection, Grant of Other Leave]
+    notes:
+      - "Main applicants only. Withdrawn and administrative outcomes are excluded from both halves of the fraction"
+      - "Initial decisions only — it says nothing about what happens on appeal, where a large share of refusals are overturned"
+
+  - id: hotels
+    name: Asylum seekers in hotel accommodation
+    topics: [migration]
+    unit: people
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: Home Office asylum support statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a05dfcb5f39105e0848a2c2/asylum-seekers-receipt-support-datasets-mar-2026.xlsx
+      sheet: Data_Asy_D09
+      year_column: Date (as at...)
+      period_column: Date (as at...)
+      value_column: People
+      filter: {Accommodation Type: Contingency Accommodation - Hotel}
+      aggregate: last
+    notes:
+      - "The population in hotels, not the bill. Hotel SPEND is only published in the Home Office annual report and accounts, as a PDF, so it cannot be fetched — see the aid-funded refugee-cost series for the part of it that is machine-readable"
+      - "Hotel is identified separately only from December 2022; earlier hotel use is inside a combined Section 98 category"
+
+  - id: returns
+    name: Enforced removals
+    topics: [migration]
+    unit: returns per year
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: Home Office returns statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a05e53022977ebc82cb3fb7/returns-datasets-mar-2026.xlsx
+      sheet: Data_Ret_D01
+      year_column: Year
+      period_column: Quarter
+      value_column: Number of returns
+      filter: {Return type group: Enforced return}
+    notes:
+      - "Enforced returns only. Voluntary returns are the larger number and are counted separately — quoting either alone overstates or understates the total"
+
+  - id: returnsall
+    name: Returns, all types
+    topics: [migration]
+    unit: returns per year
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: Home Office returns statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a05e53022977ebc82cb3fb7/returns-datasets-mar-2026.xlsx
+      sheet: Data_Ret_D01
+      year_column: Year
+      period_column: Quarter
+      value_column: Number of returns
+
+  # Visa grants by route. The interesting thing about the post-2021 net
+  # migration surge is that it is almost entirely visible here, in routes
+  # the government designed and controlled, rather than in irregular arrivals.
+  - id: visastudy
+    name: Study visas granted
+    topics: [migration]
+    unit: visas granted
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: Home Office entry clearance visa statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables
+    source_type: spreadsheet
+    fetch: &visas
+      url: https://assets.publishing.service.gov.uk/media/6a1d5a9f916cd732dcdaad5c/entry-clearance-visa-outcomes-datasets-mar-2026.xlsx
+      sheet: Data_Vis_D02
+      header_row: 4
+      year_column: Year
+      period_column: Quarter
+      value_column: Decisions
+      filter: {Visa type group: Study, Case outcome: Issued}
+    notes:
+      - "Main applicants and dependants combined"
+
+  - id: visastudydep
+    name: Study visas granted to dependants
+    topics: [migration]
+    unit: visas granted
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: Home Office entry clearance visa statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      <<: *visas
+      filter: {Visa type group: Study, Applicant type: Dependant, Case outcome: Issued}
+    notes:
+      - "Dependants of students went from roughly 13,000 a year to 143,000 in three years, then collapsed after the January 2024 rule change. Almost nobody predicts this line correctly"
+
+  - id: visawork
+    name: Work visas granted
+    topics: [migration]
+    unit: visas granted
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: Home Office entry clearance visa statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      <<: *visas
+      filter: {Visa type group: Work, Case outcome: Issued}
+
+  - id: visahcw
+    name: Health and Care Worker visas granted
+    topics: [migration, health]
+    unit: visas granted
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: Home Office entry clearance visa statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/immigration-system-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      <<: *visas
+      filter: {Visa type subgroup: Health and Care Worker, Case outcome: Issued}
+    notes:
+      - "A route created in August 2020. It went from nothing to the single largest work route and back down again inside five years, entirely through policy decisions"
+
+  # ══════════════════════════════════════════════════════════════
+  # MONEY
+  # ══════════════════════════════════════════════════════════════
+
+  - id: oda
+    name: Overseas aid as a share of national income
+    topics: [economy, aid]
+    unit: "% of GNI"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: FCDO Statistics on International Development
+    source_url: https://www.gov.uk/government/statistics/statistics-on-international-development-provisional-uk-official-development-assistance-spend-2025
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/69d4cb4d826d774e7b263e3c/Tables-Statistics-on-International-Development-provisional-UK-ODA-spend-2025.ods
+      sheet: Fig1
+      header_row: 3
+      year_column: Year
+      value_column: ODA:GNI ratio (%) Current methodology in given year
+    notes:
+      - "The 0.7% target was met from 2013 to 2020 and cut to 0.5% in 2021"
+      - "The ratio has been propped up since 2022 by aid spent inside the UK on refugees, which counts as ODA under OECD rules — see the in-donor refugee cost series"
+
+  - id: odarefugee
+    name: Aid spent on refugees inside the UK
+    topics: [economy, aid, migration]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: FCDO Statistics on International Development
+    source_url: https://www.gov.uk/government/statistics/statistics-on-international-development-provisional-uk-official-development-assistance-spend-2025
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/69d4cb4d826d774e7b263e3c/Tables-Statistics-on-International-Development-provisional-UK-ODA-spend-2025.ods
+      sheet: Fig3
+      layout: wide
+      year_header_row: 3
+      label_column: 0
+      row_match: Total in-donor refugee costs in the UK
+    notes:
+      - "This is the machine-readable slice of asylum accommodation spend: the aid budget charged for housing asylum seekers in the UK, most of it Home Office hotel costs"
+      - "It peaked at 28% of the entire aid budget in 2022"
+
+  - id: eugross
+    name: Payments to EU institutions, gross
+    topics: [economy, europe]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Pink Book
+    source_url: https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/timeseries/gcsm/pb
+    source_type: ons_timeseries
+    fetch: {path: economy/nationalaccounts/balanceofpayments, cdid: GCSM, dataset: pb, granularity: years}
+    notes:
+      - "Total UK payments to EU institutions, after the rebate is deducted. The rebate was never actually sent — it came off the bill at source — which is why the £350m a week figure, which added it back on, was never money that could have been spent elsewhere"
+
+  - id: eureceipts
+    name: Receipts from EU institutions
+    topics: [economy, europe]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Pink Book
+    source_url: https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/timeseries/gcsl/pb
+    source_type: ons_timeseries
+    fetch: {path: economy/nationalaccounts/balanceofpayments, cdid: GCSL, dataset: pb, granularity: years}
+    notes:
+      - "Money coming back — farm payments, structural funds, research grants. The gap between this and the gross payment is the net contribution"
+
+  - id: eunet
+    name: Net position with EU institutions
+    topics: [economy, europe]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Pink Book
+    source_url: https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/timeseries/blzs/pb
+    source_type: ons_timeseries
+    fetch: {path: economy/nationalaccounts/balanceofpayments, cdid: BLZS, dataset: pb, granularity: years}
+    notes:
+      - "Negative means the UK paid in more than it got back"
+
+  - id: nondoms
+    name: Non-domiciled taxpayers
+    topics: [economy, tax]
+    unit: individuals
+    kind: count
+    geography: UK
+    year_basis: financial
+    source: HMRC statistics on non-domiciled taxpayers
+    source_url: https://www.gov.uk/government/statistics/statistics-on-non-domiciled-taxpayers-in-the-uk
+    source_type: spreadsheet
+    fetch: &nondom
+      url: https://assets.publishing.service.gov.uk/media/6a5a3d5b5ca06bf11ccb43fe/NONDOMTABLES.ods
+      sheet: Table_2
+      header_row: 7
+      year_column: Tax Year Ending
+      value_column: Number of individuals
+      year_offset: -1                    # 'tax year ending 2008' is the 2007-08 year
+    notes:
+      - "Individuals rounded to the nearest 100 by HMRC"
+      - "Non-dom status was abolished from April 2025, so this series ends as a measure of the old regime"
+
+  - id: nondomtax
+    name: Tax and NICs paid by non-domiciled taxpayers
+    topics: [economy, tax]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: financial
+    source: HMRC statistics on non-domiciled taxpayers
+    source_url: https://www.gov.uk/government/statistics/statistics-on-non-domiciled-taxpayers-in-the-uk
+    source_type: spreadsheet
+    fetch:
+      <<: *nondom
+      value_column: Total Tax and NICs liabilities (£ million)
+    notes:
+      - "Liabilities, not receipts, and it is the total tax these people pay — not a measure of what the non-dom regime costs, which is a different and much harder number"
+
+  # ══════════════════════════════════════════════════════════════
+  # CRIME AND JUSTICE
+  # ══════════════════════════════════════════════════════════════
+
+  - id: fno
+    name: Foreign nationals in prison
+    topics: [crime, migration]
+    unit: prisoners
+    kind: count
+    geography: England and Wales
+    year_basis: calendar
+    source: MoJ Offender Management Statistics Quarterly
+    source_url: https://www.gov.uk/government/statistics/offender-management-statistics-quarterly-january-to-march-2026
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a69e0e116bc92f51e1a4310/prison-population-2026.ods
+      sheet: Table_1_A_26
+      layout: wide
+      year_header_row: 5
+      label_column: 1
+      row_match: Foreign nationals
+      row_filter: {0: Male and female}
+    notes:
+      - "The population as at 30 June each year, both sexes, all custody types"
+      - "A count, not a share. It has been roughly flat at ten to eleven thousand for a decade while the prison population itself moved, so the percentage and the number tell different stories"
+
+  - id: csew
+    name: Crime Survey estimate of crime
+    topics: [crime]
+    unit: incidents (thousands)
+    kind: count
+    geography: England and Wales
+    year_basis: financial
+    source: ONS Crime in England and Wales
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice/datasets/crimeinenglandandwalesappendixtables
+    source_type: spreadsheet
+    fetch:
+      url: https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/crimeandjustice/datasets/crimeinenglandandwalesappendixtables/yearendingmarch2026/appendixtablesyemar2026.xlsx
+      sheet: Table A1a
+      layout: wide
+      year_header_row: 8
+      label_column: 0
+      row_match: ALL CSEW HEADLINE CRIME EXCLUDING FRAUD AND COMPUTER MISUSE
+    notes:
+      - "Asks people what happened to them, so it counts crime whether or not it was reported. This is the series that shows crime falling by around two thirds since the mid-1990s"
+      - "Excludes fraud and computer misuse, which would otherwise dominate the total"
+    discontinuities:
+      - {year: 2020, note: "Face-to-face interviewing stopped during the pandemic; the telephone survey that replaced it is not comparable, so there is a genuine hole here rather than a zero"}
+
+  - id: prc
+    name: Police recorded crime
+    topics: [crime]
+    unit: offences
+    kind: count
+    geography: England and Wales
+    year_basis: financial
+    source: ONS Crime in England and Wales (Home Office police recorded crime)
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice/datasets/crimeinenglandandwalesappendixtables
+    source_type: spreadsheet
+    fetch:
+      url: https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/crimeandjustice/datasets/crimeinenglandandwalesappendixtables/yearendingmarch2026/appendixtablesyemar2026.xlsx
+      sheet: Table A5a
+      layout: wide
+      year_header_row: 9
+      label_column: 1
+      row_match: TOTAL RECORDED CRIME - ALL OFFENCES EXCLUDING FRAUD AND COMPUTER MISUSE
+    notes:
+      - "Counts what the police wrote down. It rose sharply from 2014 largely because forces were told to record crime properly after being found not to be, which is why it moves opposite to the survey"
+      - "Not accredited as official statistics, on those grounds"
+    discontinuities:
+      - {year: 2014, note: "A change in recording practice following HMIC inspections; the rise from here on is substantially a recording effect rather than a change in crime"}
+
+  - id: chargerate
+    name: Charge rate, all offences
+    topics: [crime]
+    unit: "% of recorded offences"
+    kind: rate
+    geography: England and Wales
+    year_basis: financial
+    source: Home Office Crime Outcomes in England and Wales
+    source_url: https://www.gov.uk/government/statistics/crime-outcomes-in-england-and-wales-2025-to-2026
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a5f9de40dd52549f5f96ca4/outcomes-mar26-tables-230726.ods
+      sheet: Table_1_3
+      layout: wide
+      year_header_row: 9
+      label_column: 1
+      row_match: Charged/Summonsed
+      column_match: Year ending Mar
+      year_offset: -1
+      scale: 100
+    notes:
+      - "The share of recorded offences that ended in someone being charged or summonsed. It fell by roughly two thirds between 2014-15 and 2021-22 before recovering slightly"
+
+  # Charge rates by offence type. These come from the open data tables, which
+  # are published one workbook per financial year at ~40MB each, so the span is
+  # deliberately short — add more URLs below to extend it, at the cost of a
+  # slower first build. (Parsed sheets are cached, so only the first run pays.)
+  - id: chargeviolence
+    name: Charge rate, violence against the person
+    topics: [crime]
+    unit: "% of recorded offences"
+    kind: rate
+    geography: England and Wales
+    year_basis: financial
+    source: Home Office police recorded crime and outcomes open data
+    source_url: https://www.gov.uk/government/statistical-data-sets/police-recorded-crime-and-outcomes-open-data-tables
+    source_type: spreadsheet
+    fetch: &outcomes
+      urls:
+        - https://assets.publishing.service.gov.uk/media/6a5e57d624d44672cf1b4648/prc-outcomes-open-data-mar2023-tables-230726.xlsx
+        - https://assets.publishing.service.gov.uk/media/6a5e57ef30f5842e1f5a5ecf/prc-outcomes-open-data-mar2024-tables-230726.xlsx
+        - https://assets.publishing.service.gov.uk/media/6a5e580ec7c34404041b4648/prc-outcomes-open-data-mar2025-tables-230726.xlsx
+        - https://assets.publishing.service.gov.uk/media/6a5e586e4763c49e9be693fb/prc-outcomes-open-data-mar2026-tables-230726.xlsx
+      sheet: Outcomes open data
+      header_row: 1
+      year_column: Financial Year
+      period_column: Financial Quarter
+      value_column: Outcomes for offences that were recorded in the quarter
+      filter: {Offence Group: Violence against the person}
+      rate: {Outcome Group: Charged/Summonsed}
+    notes:
+      - "Measured against the offences recorded in the same period, which is the basis the headline charge rate uses. The most recent year is therefore understated — a lot of those investigations are still open, and their outcomes get assigned later"
+      - "That lag is not even across offence types. Sexual offences take the longest to investigate, so they are depressed the most in the latest year: on the closed-investigations basis the same year reads roughly twice as high"
+
+  - id: chargesexual
+    name: Charge rate, sexual offences
+    topics: [crime]
+    unit: "% of recorded offences"
+    kind: rate
+    geography: England and Wales
+    year_basis: financial
+    source: Home Office police recorded crime and outcomes open data
+    source_url: https://www.gov.uk/government/statistical-data-sets/police-recorded-crime-and-outcomes-open-data-tables
+    source_type: spreadsheet
+    fetch:
+      <<: *outcomes
+      filter: {Offence Group: Sexual offences}
+    notes:
+      - "Measured against the offences recorded in the same period, which is the basis the headline charge rate uses. The most recent year is therefore understated — a lot of those investigations are still open, and their outcomes get assigned later"
+      - "That lag is not even across offence types. Sexual offences take the longest to investigate, so they are depressed the most in the latest year: on the closed-investigations basis the same year reads roughly twice as high"
+
+  - id: chargetheft
+    name: Charge rate, theft offences
+    topics: [crime]
+    unit: "% of recorded offences"
+    kind: rate
+    geography: England and Wales
+    year_basis: financial
+    source: Home Office police recorded crime and outcomes open data
+    source_url: https://www.gov.uk/government/statistical-data-sets/police-recorded-crime-and-outcomes-open-data-tables
+    source_type: spreadsheet
+    fetch:
+      <<: *outcomes
+      filter: {Offence Group: Theft offences}
+    notes:
+      - "Measured against the offences recorded in the same period, which is the basis the headline charge rate uses. The most recent year is therefore understated — a lot of those investigations are still open, and their outcomes get assigned later"
+      - "That lag is not even across offence types. Sexual offences take the longest to investigate, so they are depressed the most in the latest year: on the closed-investigations basis the same year reads roughly twice as high"
+
+  - id: chargedamage
+    name: Charge rate, criminal damage and arson
+    topics: [crime]
+    unit: "% of recorded offences"
+    kind: rate
+    geography: England and Wales
+    year_basis: financial
+    source: Home Office police recorded crime and outcomes open data
+    source_url: https://www.gov.uk/government/statistical-data-sets/police-recorded-crime-and-outcomes-open-data-tables
+    source_type: spreadsheet
+    fetch:
+      <<: *outcomes
+      filter: {Offence Group: Criminal damage and arson}
+    notes:
+      - "Measured against the offences recorded in the same period, which is the basis the headline charge rate uses. The most recent year is therefore understated — a lot of those investigations are still open, and their outcomes get assigned later"
+      - "That lag is not even across offence types. Sexual offences take the longest to investigate, so they are depressed the most in the latest year: on the closed-investigations basis the same year reads roughly twice as high"
