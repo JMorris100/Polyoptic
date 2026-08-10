@@ -120,7 +120,7 @@ compare across mismatches:
 
 ## Adding an indicator
 
-Add an entry to `ingest/series.yaml`. No code changes. Four adapters cover
+Add an entry to `ingest/series.yaml`. No code changes. Five adapters cover
 almost everything published in the UK:
 
 | `source_type` | Use for |
@@ -128,18 +128,70 @@ almost everything published in the UK:
 | `ons_timeseries` | ONS website series JSON — one request, whole history. Pragmatic, but the URL encodes the site taxonomy so paths occasionally move |
 | `ons_beta` | ONS Beta API at `api.beta.ons.gov.uk/v1`. Open, no key. More stable, but you must know each dataset's dimension names |
 | `dfe_ees` | DfE Explore Education Statistics API. POST queries; note not every EES dataset is exposed through the API |
-| `csv` | MHCLG live tables, OBR databank, anything published as a file. Unglamorous, and you'll use it more than you expect |
+| `csv` | Anything published as a plain CSV file. Unglamorous, and you'll use it more than you expect |
+| `spreadsheet` | `.xlsx` / `.ods` workbooks — the Home Office, MoJ, HMRC, FCDO and the ONS crime team publish nothing else |
+
+### The spreadsheet adapter
+
+Two layouts, because publishers use both.
+
+**`long`** — one row per observation, dimensions in columns. Give it
+`year_column`, `value_column`, an optional `period_column`, and `filter`
+(a scalar means equality, a list means membership):
+
+```yaml
+source_type: spreadsheet
+fetch:
+  url: https://…/illegal-entry-routes-to-the-uk-dataset-mar-2026.xlsx
+  sheet: Data_IER_D01
+  year_column: Year
+  period_column: Quarter
+  value_column: Number of detections
+  filter: {Method of entry: Small boat arrivals}
+```
+
+Values are summed within each period, then collapsed to a year with
+`aggregate` (`sum`, `mean`, `last`). Both stages matter: a quarterly **stock**
+like the asylum backlog must be summed across its breakdown rows but taken as
+the *last* quarter of the year, never summed across quarters.
+
+Add `rate:` — a second filter, a subset of the first — to publish a
+percentage where the source only gives you counts. Numerator and denominator
+are each collapsed to the year before dividing, so a quiet quarter doesn't get
+the same weight as a busy one.
+
+**`wide`** — years across a header row, one row per measure. Give `row_match`
+and `label_column`, plus `row_filter` when the label alone isn't unique.
+
+Other options: `urls` (a list, when a series spans one workbook per year),
+`header_row` / `year_header_row`, `column_match` (keep only year columns whose
+header contains this — needed when a table carries a rolling quarterly series),
+`year_offset` (HMRC's "tax year ending 2008" is the 2007 financial year) and
+`scale`.
+
+Downloads and parsed sheets are both cached under `ingest/.cache`. The Home
+Office crime-outcomes workbooks are 700,000 rows and take about 90 seconds each
+to parse, so the first build of those series is slow and every later one isn't.
+
+### Modes
+
+A **mode** is a named subset of the catalogue that the explorer swaps to
+wholesale, defined at the top of `series.yaml`. Series listed in a mode appear
+only in that mode; everything unclaimed is the default catalogue. `brexit` is
+the one that exists — reachable from a deliberately unlabelled strip down the
+far right edge of the explorer.
 
 ---
 
 ## Status — read this before trusting anything
 
 **The pipeline is live.** Every identifier in `series.yaml` was verified
-against the live catalogues on 2026-08-05 and `data/bundle.json` is built
-from real releases: 9 series (housing, economy, education) plus the three
-reference series. The placeholder data embedded in `explore.html` is still
-invented — it only shows if `data/bundle.json` fails to load, and it is
-labelled as such.
+against the live catalogues on 2026-08-05, and the spreadsheet sources on
+2026-08-06. `data/bundle.json` is built from real releases: the original
+9 series (housing, economy, education) plus the Brexit-mode set — borders
+and migration, money, crime and justice — and the three reference series.
+The placeholder data embedded in `explore.html` is still invented — it only
+shows if `data/bundle.json` fails to load, and it is labelled as such.
 
 **How the sources shook out**
 
@@ -151,17 +203,38 @@ labelled as such.
 - `dfe_ees` works, but the catalogue is thinner than the site: school
   funding is not exposed through the API at all, which is why the education
   set is absence, KS2 disadvantage gap and pupil numbers.
-- The planned MHCLG housing series (net additions, social stock, temporary
-  accommodation), the HMT deflator and the OBR databank are all published
-  as ODS/XLS spreadsheets, not CSV. They need a spreadsheet adapter —
-  that's the next piece of pipeline work.
+- `spreadsheet` now carries everything the APIs don't: Home Office
+  immigration and returns, MoJ prison population, HMRC non-doms, FCDO aid,
+  ONS crime, Home Office crime outcomes. Traps worth knowing, all of which
+  bit during the build and are handled in `ingest.py`:
+  - ONS marks provisional and revised periods with a trailing `P` / `R`
+    (`YE Dec 25 P`). Unparsed, the period is dropped and a "last value in
+    the year" series silently reports an older quarter.
+  - ONS wide tables end with derived `% change` columns whose headers still
+    contain a year, so they overwrite the real observation unless excluded.
+  - The same Home Office column is `Date (as at…)` on one sheet and
+    `Date (as at...)` on the next.
+  - Tab names carry the period and change spelling between years
+    (`Outcomes_open_data_2022_23`, then `Outcomes open data 2025_26`).
 
 **Known gaps**
 
-- No spreadsheet (ODS/XLSX) adapter yet — see above; it unlocks most of
-  the missing housing catalogue.
-- The deflator is the ONS *implied* GDP deflator (L8GG, calendar years),
-  not the HMT financial-year deflator, until that adapter exists.
+- Asylum accommodation **spend**, hotels specifically, is only in the Home
+  Office annual report and accounts — a PDF. Not fetchable. What is
+  fetchable stands in for it: the hotel *population* (`hotels`) and the aid
+  budget charged for housing refugees in the UK (`odarefugee`).
+- BBC licence fee revenue is likewise PDF-only, in the BBC annual report.
+  There is no ONS series for it and no machine-readable DCMS release.
+- Charge rates **by offence type** span only four years — the open data
+  tables are one ~40MB workbook per financial year. Extend by adding URLs
+  to the `outcomes` anchor in `series.yaml`; the overall charge rate runs
+  from 2014-15 because that one comes from a summary table.
+- EU contributions are the ONS Pink Book figures, which are *after* the
+  rebate. The rebate was deducted at source, so the gross-before-rebate
+  number behind the £350m-a-week claim is a different (and more arguable)
+  measure.
+- The MHCLG housing series and the HMT financial-year deflator are now
+  unblocked by the spreadsheet adapter but not yet added.
 - No local-authority or regional breakdowns — the schema takes a single
   national series per id. Adding a `geography` dimension is the next real
   piece of architecture, and it's the one that unlocks maps.

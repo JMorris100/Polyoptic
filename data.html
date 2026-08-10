@@ -3,8 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
-<title>Data & verification — Polyoptic</title>
+<title>Explorer Verify — Polyoptic</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -31,36 +30,118 @@ svg{display:block}
 .topnav a:hover{color:#fff;border-bottom-color:rgba(255,255,255,.5)}
 .topnav a.btn-invert{background:#fff;color:var(--purple);font-weight:700;font-size:14px;padding:11px 24px;border-radius:100px;border:0;border-bottom:0;text-decoration:none;white-space:nowrap;transition:.15s}
 .topnav a.btn-invert:hover{background:#F1EEFA;color:var(--purple-dk)}
-@media(max-width:820px){.topnav a:not(.btn-invert){display:none}.topbar .wrap{height:68px}}
+/* second-tier call to action: outlined pill. Reads as important next to the
+   solid white button without competing with it. */
+.topnav a.btn-ghost{border:1px solid rgba(255,255,255,.5);color:#fff;font-weight:600;font-size:14px;
+  padding:10px 21px;border-radius:100px;white-space:nowrap;transition:.15s}
+.topnav a.btn-ghost:hover{background:rgba(255,255,255,.13);border-color:#fff}
+.topnav a.btn-ghost[aria-current="page"]{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.8)}
+@media(max-width:820px){.topnav a:not(.btn-invert):not(.btn-ghost){display:none}.topbar .wrap{height:68px}}
 
-.hero{padding:48px 0 8px}
-.eyebrow{font-family:"IBM Plex Mono";font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--purple);margin-bottom:20px}
-.hero h1{font-size:clamp(32px,4.6vw,48px);font-weight:800;max-width:22ch}
-.hero p{max-width:68ch;color:var(--muted);font-size:16.5px;margin:20px 0 0}
+.hero{padding:52px 0 8px}
+.hero h1{font-size:clamp(42px,6.4vw,72px);font-weight:800;letter-spacing:-0.042em}
+.hero p{max-width:68ch;color:var(--muted);font-size:16.5px;margin:22px 0 0}
+.hero p.deck{font-family:"Archivo";font-size:clamp(21px,2.7vw,29px);font-weight:600;
+  color:var(--purple);letter-spacing:-0.022em;line-height:1.14;margin:16px 0 0;max-width:38ch}
 
-.metastrip{display:flex;flex-wrap:wrap;gap:10px;margin:30px 0 0;font-family:"IBM Plex Mono";font-size:11.5px}
-.metastrip span{border:1px solid var(--rule);padding:7px 13px;color:var(--muted)}
-.metastrip b{color:var(--ink);font-weight:500}
-.metastrip .live b{color:#1a7f37}
-.metastrip .partial b{color:var(--warm)}
+/* build status — one hairline grid so the values line up in columns instead of
+   sitting in four ragged boxes of different widths */
+/* Borders live on the cells (right + bottom) with the container closing the top
+   and left. The box stays square at any column count, and a row that doesn't
+   fill leaves white space rather than a grey gap where a cell would have been. */
+.statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
+  margin:36px 0 0;max-width:860px;
+  border-top:1px solid var(--rule);border-left:1px solid var(--rule)}
+.stat{background:var(--surface);padding:13px 16px 14px;min-width:0;
+  border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.stat .k{display:block;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.15em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.stat .v{display:flex;align-items:center;gap:8px;font-family:"IBM Plex Mono";font-size:13px;
+  font-weight:500;color:var(--ink);line-height:1.3;overflow-wrap:break-word;min-width:0}
+.stat .v a{color:var(--purple);text-decoration:none;border-bottom:1px solid var(--prule)}
+.stat .v a:hover{border-bottom-color:var(--purple)}
+.dot{width:7px;height:7px;border-radius:50%;background:#1a7f37;flex-shrink:0;
+  box-shadow:0 0 0 3px rgba(26,127,55,.15)}
+.dot.warn{background:var(--warm);box-shadow:0 0 0 3px rgba(194,65,12,.15)}
+.stat.alert{background:#FFF8F5}
+.stat.alert .v{color:var(--warm);font-size:11.5px}
 
 section{padding:44px 0;border-top:1px solid var(--rule);margin-top:44px}
 .slabel{display:flex;align-items:baseline;gap:13px;margin-bottom:8px;flex-wrap:wrap}
-.snum{font-family:"IBM Plex Mono";font-size:11px;color:var(--purple);letter-spacing:.1em}
 section h2{font-size:clamp(24px,3vw,30px);font-weight:700}
 .lede{color:var(--muted);max-width:66ch;margin:12px 0 28px}
 
-.scard{border:1px solid var(--rule);margin-bottom:14px;background:var(--surface)}
-.scard-hd{padding:16px 20px 13px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:baseline}
-.scard-hd h3{font-size:17px;font-weight:700}
-.sid{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted)}
-.facts{display:flex;flex-wrap:wrap;gap:5px 0;padding:0 20px 12px;font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted)}
-.facts span{border:1px solid var(--rule);padding:3px 9px;margin-right:5px;margin-bottom:2px;white-space:nowrap}
-.slinks{padding:0 20px 14px;display:flex;flex-wrap:wrap;gap:8px}
+/* ── indicator search ───────────────────────────────────────── */
+.searchbar{border:1px solid var(--rule);background:var(--surface);margin-bottom:22px}
+.sfield{display:flex;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--rule)}
+.sfield .sicon{width:17px;height:17px;color:var(--muted);flex-shrink:0}
+.sfield input{flex:1;min-width:0;border:0;background:none;font-family:"Public Sans",system-ui,sans-serif;
+  font-size:15.5px;color:var(--ink);padding:2px 0}
+.sfield input::placeholder{color:var(--muted)}
+.sfield input:focus{outline:none}
+.sfield input::-webkit-search-cancel-button{display:none}
+.sfield:focus-within{box-shadow:inset 0 0 0 2px var(--prule)}
+#qclear{border:0;background:none;color:var(--muted);font-size:21px;line-height:1;cursor:pointer;
+  padding:0 4px;flex-shrink:0}
+#qclear:hover{color:var(--ink)}
+
+.facets{display:flex;flex-wrap:wrap;gap:14px 30px;padding:14px 16px}
+.facet{display:flex;align-items:baseline;gap:11px;flex-wrap:wrap;min-width:0}
+.flabel{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);flex-shrink:0;padding-top:3px}
+.fset{display:flex;flex-wrap:wrap;gap:6px}
+.fset button{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);background:var(--surface);
+  border:1px solid var(--rule);padding:5px 11px;border-radius:100px;cursor:pointer;transition:.14s;
+  white-space:nowrap}
+.fset button:hover{border-color:var(--purple);color:var(--purple);background:var(--soft)}
+.fset button[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
+.fset button .n{opacity:.6;margin-left:5px}
+
+.sresult{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:11px 16px;
+  border-top:1px solid var(--rule);background:#FAFAFB;
+  font-family:"IBM Plex Mono";font-size:11px;color:var(--muted)}
+.sresult b{color:var(--ink);font-weight:500}
+#qreset{font-family:"IBM Plex Mono";font-size:11px;color:var(--purple);background:var(--soft);
+  border:1px solid var(--prule);padding:4px 10px;border-radius:100px;cursor:pointer}
+#qreset:hover{border-color:var(--purple);background:#ECE8F8}
+.noresult{border:1px dashed var(--rule);padding:34px 22px;text-align:center;color:var(--muted);font-size:14.5px}
+.noresult b{color:var(--ink)}
+@media(max-width:620px){
+  .facet{flex-direction:column;align-items:flex-start;gap:7px}
+  .facets{gap:16px}
+}
+
+.scard{border:1px solid var(--rule);margin-bottom:16px;background:var(--surface)}
+.scard-hd{padding:17px 20px 0;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:baseline}
+.scard-hd h3{font-size:18px;font-weight:700}
+.sid{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);background:var(--paper);
+  border:1px solid var(--rule);padding:2px 8px;white-space:nowrap}
+
+/* topics are categories, not values — pills, and they drive the filter above */
+.topicrow{display:flex;align-items:center;gap:7px;flex-wrap:wrap;padding:13px 20px 0}
+.tpill{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--purple);background:var(--soft);
+  border:1px solid var(--prule);padding:3px 10px;border-radius:100px;cursor:pointer;transition:.14s}
+.tpill:hover{background:#ECE8F8;border-color:var(--purple)}
+
+/* everything else is label-above-value in aligned columns, so the eye can scan
+   down a column instead of parsing a wrapping row of identical chips */
+.kvgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(152px,1fr));gap:15px 22px;
+  padding:16px 20px 17px}
+.kv{min-width:0}
+.kvk{display:block;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);margin-bottom:4px}
+.kvv{display:block;font-size:13.5px;color:var(--ink);line-height:1.35;overflow-wrap:break-word}
+.kvv .sub{display:block;font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);margin-top:3px}
+.src{color:var(--purple);cursor:pointer;border-bottom:1px solid var(--prule)}
+.src:hover{border-bottom-color:var(--purple)}
+
+.slinks{padding:0 20px 16px;display:flex;flex-wrap:wrap;gap:8px}
 .slinks a,.slinks button{font-family:"IBM Plex Mono";font-size:11px;text-decoration:none;color:var(--purple);border:1px solid var(--prule);background:var(--soft);padding:6px 12px;border-radius:100px;cursor:pointer;transition:.14s}
 .slinks a:hover,.slinks button:hover{border-color:var(--purple);background:#ECE8F8}
-.snote{padding:0 20px 14px;font-size:13px;color:var(--muted);max-width:78ch}
-.snote b{color:var(--warm);font-weight:600}
+/* a series break is a caveat about the data, so it gets callout weight */
+.snote{margin:0 20px 16px;padding:11px 14px;background:#FFF8F5;border-left:3px solid var(--warm);
+  font-size:13px;color:var(--ink);max-width:82ch;line-height:1.5}
+.snote b{color:var(--warm);font-weight:700}
 details{border-top:1px solid var(--rule)}
 details summary{padding:11px 20px;font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);cursor:pointer;user-select:none}
 details summary:hover{color:var(--ink);background:#FAFAFB}
@@ -101,8 +182,8 @@ footer{border-top:1px solid var(--rule);padding:34px 0 44px;margin-top:60px}
     </a>
     <nav class="topnav">
       <a href="index.html#topics">Topics</a>
-      <a href="#verify">Verify</a>
       <a href="#refs">References</a>
+      <a class="btn-ghost" href="#catalogue" aria-current="page">Verify</a>
       <a class="btn-invert" href="explore.html">Open the explorer</a>
     </nav>
   </div>
@@ -110,26 +191,52 @@ footer{border-top:1px solid var(--rule);padding:34px 0 44px;margin-top:60px}
 
 <div class="wrap">
   <div class="hero">
-    <div class="eyebrow">Data &amp; verification</div>
-    <h1>Every number, and where it came from.</h1>
+    <h1>Explorer Verify</h1>
+    <p class="deck">Every number, and where it came from.</p>
     <p>Polyoptic publishes no data of its own. This page shows every value exactly as ingested —
        the figure, the year, the source release it belongs to and the machine endpoint it was pulled
        from — so any number on any chart can be traced back to the official publication and checked.</p>
-    <div class="metastrip" id="meta"></div>
+    <div class="statrow" id="meta"></div>
     <div id="loadfail"><b>Couldn't load <code>data/bundle.json</code>.</b> The raw bundle either
       hasn't been built yet or isn't being served. Run <code>python ingest/ingest.py</code> and reload.</div>
   </div>
 
   <section id="catalogue" style="border-top:0;margin-top:8px">
-    <div class="slabel"><span class="snum">01</span><h2>The catalogue</h2></div>
-    <p class="lede">One card per series. "Source release" is the human publication; "API endpoint"
+    <div class="slabel"><h2>Indicator search</h2></div>
+    <p class="lede">One card per indicator. "Source release" is the human publication; "API endpoint"
        is the exact machine address the values were fetched from — open it and compare the numbers
        yourself. The raw table is what the explorer plots, gaps and breaks included.</p>
+
+    <div class="searchbar">
+      <div class="sfield">
+        <svg class="sicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+             stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4.2-4.2"/></svg>
+        <input id="q" type="search" autocomplete="off" spellcheck="false"
+               placeholder="Search indicators, publishers or topics…"
+               aria-label="Search indicators, publishers or topics">
+        <button id="qclear" hidden aria-label="Clear search">×</button>
+      </div>
+      <div class="facets">
+        <div class="facet">
+          <span class="flabel">Topic</span>
+          <div class="fset" id="ftopic" role="group" aria-label="Filter by topic"></div>
+        </div>
+        <div class="facet">
+          <span class="flabel">Source</span>
+          <div class="fset" id="fsource" role="group" aria-label="Filter by source"></div>
+        </div>
+      </div>
+      <div class="sresult">
+        <span id="qcount" aria-live="polite"></span>
+        <button id="qreset" hidden>Reset filters</button>
+      </div>
+    </div>
+
     <div id="series"></div>
   </section>
 
   <section id="refs">
-    <div class="slabel"><span class="snum">02</span><h2>Reference series</h2></div>
+    <div class="slabel"><h2>Reference series</h2></div>
     <p class="lede">Three series power the transforms everywhere: population (per-person), the GDP
        deflator (real terms) and nominal GDP (%-of-GDP). If a transformed number looks wrong,
        check these first.</p>
@@ -137,7 +244,7 @@ footer{border-top:1px solid var(--rule);padding:34px 0 44px;margin-top:60px}
   </section>
 
   <section id="verify">
-    <div class="slabel"><span class="snum">03</span><h2>How to verify a number</h2></div>
+    <div class="slabel"><h2>How to verify a number</h2></div>
     <div class="howto">
       <ol>
         <li>Pick the series above and open its <b>API endpoint</b> — that is the same address the
@@ -179,6 +286,23 @@ const fmt=n=>{
   return s;
 };
 
+const MONTHS=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+/* Format straight off the ISO string rather than through Date, so a UTC stamp
+   stays the UTC stamp it claims to be whatever the reader's clock is set to. */
+function stamp(iso,withTime){
+  const m=/^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?/.exec(iso||"");
+  if(!m) return "—";
+  const d=`${+m[3]} ${MONTHS[+m[2]-1]} ${m[1]}`;
+  return (withTime&&m[4])?`${d}, ${m[4]}:${m[5]} UTC`:d;
+}
+const cap=s=>String(s).charAt(0).toUpperCase()+String(s).slice(1);
+/* publisher is the derived agency; fall back to the release name for any series
+   built before the pipeline started emitting it */
+const pubOf=s=>s.publisher||s.source||"Unknown";
+
+/* wired up by mountSearch — lets a tag on any card drive the filters above */
+let setFacet=()=>{};
+
 function csvFor(s){
   const rows=[["year","value"]];
   s.values.forEach((v,i)=>rows.push([s.start+i, v==null?"":v]));
@@ -209,42 +333,148 @@ function valueTable(s){
 }
 
 function card(s, isRef){
-  const facts=isRef?[]:[
-    ["topics",(s.topics||[]).join(", ")],["kind",s.kind],["geography",s.geography],
-    [ "years",s.year_basis],["unit",s.unit],["licence",s.licence||"OGL v3.0"],
-  ];
+  const end=s.start+s.values.length-1;
+  const total=s.values.length;
+  const obs=s.values.filter(v=>v!=null).length;
+  const coverage=`${s.start}–${end}<span class="sub">${obs} of ${total} years</span>`;
+  const pub=pubOf(s), full=s.publisher_full||s.source||"";
+
+  /* Source is clickable because it is the one field a reader is most likely to
+     want to pivot on: "show me everything else from this publisher". */
+  const fields=isRef
+    ? [["Source",esc(s.source||"ONS")],["Coverage",coverage]]
+    : [["Source",`<span class="src" data-facet-source="${esc(pub)}" role="button" tabindex="0"
+            title="${esc(full)} — click to filter to this publisher">${esc(pub)}</span>`],
+       ["Coverage",coverage],
+       ["Geography",esc(s.geography||"—")],
+       ["Unit",esc(s.unit||"—")],
+       ["Year basis",esc(s.year_basis||"—")],
+       ["Measure",esc(s.kind||"—")],
+       ["Licence",esc(s.licence||"OGL v3.0")],
+       ["Last fetched",esc(stamp(s.fetched))]];
+
+  const topics=isRef?"":(s.topics||[]).map(t=>
+    `<button class="tpill" data-facet-topic="${esc(t)}"
+       title="Filter to ${esc(t)}">${esc(cap(t))}</button>`).join("");
+
   const notes=[...(s.notes||[]).map(n=>esc(n)),
     ...(s.discontinuities||[]).map(d=>`<b>Break at ${d.year}.</b> ${esc(d.note)}`)];
-  const span=`${s.start}–${s.start+s.values.length-1}`;
-  const obs=s.values.filter(v=>v!=null).length;
+
   return `<div class="scard" id="s-${esc(s.id||s.name)}">
     <div class="scard-hd">
       <h3>${esc(s.name)}</h3>
-      <span class="sid">${esc(s.id?("id · "+s.id+" · "):"")}${span} · ${obs} observations${s.fetched?(" · fetched "+esc(s.fetched.slice(0,10))):""}</span>
+      ${s.id?`<span class="sid">${esc(s.id)}</span>`:""}
     </div>
-    ${facts.length?`<div class="facts">${facts.map(([k,v])=>`<span>${k} · ${esc(v)}</span>`).join("")}</div>`:""}
+    ${topics?`<div class="topicrow">${topics}</div>`:""}
+    <div class="kvgrid">${fields.map(([k,v])=>
+      `<div class="kv"><span class="kvk">${esc(k)}</span><span class="kvv">${v}</span></div>`).join("")}</div>
+    ${notes.length?`<div class="snote">${notes.join("<br>")}</div>`:""}
     <div class="slinks">
       ${s.source_url?`<a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}
       ${s.source_api?`<a href="${esc(s.source_api)}" target="_blank" rel="noopener">API endpoint ↗</a>`:""}
       <button data-dl="${esc(s.id||s.name)}">Download CSV</button>
     </div>
-    ${notes.length?`<div class="snote">${notes.join("<br>")}</div>`:""}
     <details><summary>Raw values (${obs})</summary>${valueTable(s)}</details>
   </div>`;
+}
+
+/* ══════════════════════════════════════════════
+   INDICATOR SEARCH
+   Free-text plus two single-select facets. Facet counts are computed
+   against the other active filters, not the whole catalogue, so a count
+   tells you what you'd actually get by clicking — and a facet that would
+   return nothing is disabled rather than left as a dead end.
+   ══════════════════════════════════════════════ */
+function mountSearch(all, SER){
+  const st={q:"",topic:"all",source:"all"};
+  const qBox =document.getElementById("q");
+  const qClr =document.getElementById("qclear");
+  const elT  =document.getElementById("ftopic");
+  const elS  =document.getElementById("fsource");
+  const out  =document.getElementById("series");
+  const cnt  =document.getElementById("qcount");
+  const rst  =document.getElementById("qreset");
+
+  const topics =[...new Set(all.flatMap(s=>s.topics||[]))].sort();
+  const sources=[...new Set(all.map(pubOf))].sort((a,b)=>a.localeCompare(b));
+
+  const HAY=new Map(all.map(s=>[s,[s.name,s.id,s.source,s.publisher,s.publisher_full,
+    s.unit,s.geography,...(s.topics||[])].filter(Boolean).join(" ").toLowerCase()]));
+
+  const okQ=s=>!st.q||HAY.get(s).includes(st.q);
+  const okT=(s,t=st.topic) =>t==="all"||(s.topics||[]).includes(t);
+  const okS=(s,x=st.source)=>x==="all"||pubOf(s)===x;
+
+  function facet(el,key,vals,tally,other){
+    const base=all.filter(s=>okQ(s)&&other(s));
+    const rows=[["all","All",base.length],
+                ...vals.map(v=>[v,key==="topic"?cap(v):v,base.filter(s=>tally(s,v)).length])];
+    el.innerHTML=rows.map(([v,label,n])=>{
+      const on=st[key]===v, dead=n===0&&!on&&v!=="all";
+      return `<button data-v="${esc(v)}" aria-pressed="${on}"${dead?' disabled':''}
+        ${dead?'style="opacity:.38;cursor:default"':''}>${esc(label)}<span class="n">${n}</span></button>`;
+    }).join("");
+    el.querySelectorAll("button").forEach(b=>{
+      if(!b.disabled) b.onclick=()=>{ st[key]=b.dataset.v; draw(); };
+    });
+  }
+
+  function draw(){
+    const list=all.filter(s=>okQ(s)&&okT(s)&&okS(s));
+
+    facet(elT,"topic", topics, (s,v)=>okT(s,v), s=>okS(s));
+    facet(elS,"source",sources,(s,v)=>okS(s,v), s=>okT(s));
+
+    out.innerHTML=list.length
+      ? list.map(s=>card(s,false)).join("")
+      : `<div class="noresult"><b>No indicator matches that.</b><br>
+         Try a broader search, or reset the filters.</div>`;
+
+    const filtered=st.q||st.topic!=="all"||st.source!=="all";
+    cnt.innerHTML=filtered
+      ? `showing <b>${list.length}</b> of <b>${all.length}</b> indicators`
+      : `<b>${all.length}</b> indicators`;
+    rst.hidden=!filtered;
+    qClr.hidden=!st.q;
+  }
+
+  let t;
+  qBox.addEventListener("input",()=>{
+    clearTimeout(t);
+    t=setTimeout(()=>{ st.q=qBox.value.trim().toLowerCase(); draw(); },120);
+  });
+  qBox.addEventListener("keydown",e=>{ if(e.key==="Escape"){ qBox.value=""; st.q=""; draw(); } });
+  qClr.onclick=()=>{ qBox.value=""; st.q=""; draw(); qBox.focus(); };
+  rst.onclick=()=>{ qBox.value=""; st.q=""; st.topic="all"; st.source="all"; draw(); };
+
+  /* A tag on a card sets the matching facet. The list below it is about to
+     change out from under the reader, so put them back at the search bar. */
+  setFacet=(key,val)=>{
+    st[key]=val; draw();
+    document.getElementById("catalogue").scrollIntoView({behavior:"smooth",block:"start"});
+  };
+
+  draw();
 }
 
 fetch("data/bundle.json").then(r=>r.ok?r.json():Promise.reject()).then(db=>{
   const m=db.meta||{};
   const prov=(m.provenance||"unknown");
+  const stats=[
+    ["Data",`<span class="dot${prov==="live"?"":" warn"}"></span>${esc(cap(prov))}`],
+    ["Last build",esc(stamp(m.generated,true))],
+    ["Indicators",String(db.series.length)],
+    ["Raw bundle",`<a href="data/bundle.json">bundle.json ↗</a>`],
+  ];
   document.getElementById("meta").innerHTML=
-    `<span class="${prov}">data · <b>${esc(prov.toUpperCase())}</b></span>`+
-    `<span>generated · <b>${esc((m.generated||"—").replace("T"," ").replace("+00:00"," UTC"))}</b></span>`+
-    `<span>series · <b>${db.series.length}</b></span>`+
-    `<span>raw bundle · <b><a href="data/bundle.json" style="color:var(--purple)">data/bundle.json</a></b></span>`+
-    ((m.failed||[]).length?`<span class="partial">failed this refresh · <b>${esc(m.failed.join(", "))}</b></span>`:"");
+    stats.map(([k,v])=>`<div class="stat"><span class="k">${esc(k)}</span><span class="v">${v}</span></div>`).join("")+
+    ((m.failed||[]).length
+      ? `<div class="stat alert"><span class="k">Failed this refresh</span>
+           <span class="v">${esc(m.failed.join(", "))}</span></div>` : "");
 
   const SER={};
-  document.getElementById("series").innerHTML=db.series.map(s=>{SER[s.id]=s;return card(s,false)}).join("");
+  db.series.forEach(s=>{SER[s.id]=s});
+  mountSearch(db.series, SER);
 
   const REFNAMES={population:"UK population (mid-year estimate)",deflator:"GDP deflator (ONS implied, L8GG)",gdp:"Nominal GDP (YBHA)"};
   document.getElementById("refsout").innerHTML=Object.entries(db.refs).map(([k,r])=>{
@@ -253,8 +483,22 @@ fetch("data/bundle.json").then(r=>r.ok?r.json():Promise.reject()).then(db=>{
     SER[k]=s; return card(s,true);
   }).join("");
 
-  document.querySelectorAll("button[data-dl]").forEach(b=>{
-    b.onclick=()=>{const s=SER[b.dataset.dl]; download("polyoptic-"+(s.id||"series")+".csv", csvFor(s));};
+  /* delegated: the series list re-renders on every search or facet change,
+     so per-button handlers would be lost on the first keystroke */
+  document.addEventListener("click",e=>{
+    const t=e.target.closest("[data-facet-topic]");
+    if(t){ setFacet("topic",t.dataset.facetTopic); return; }
+    const u=e.target.closest("[data-facet-source]");
+    if(u){ setFacet("source",u.dataset.facetSource); return; }
+    const b=e.target.closest("button[data-dl]"); if(!b) return;
+    const s=SER[b.dataset.dl]; if(!s) return;
+    download("polyoptic-"+(s.id||"series")+".csv", csvFor(s));
+  });
+  /* the source value is a span, so it needs the keyboard affordance a button gets free */
+  document.addEventListener("keydown",e=>{
+    if(e.key!=="Enter"&&e.key!==" ") return;
+    const u=e.target.closest?.("[data-facet-source]");
+    if(u){ e.preventDefault(); setFacet("source",u.dataset.facetSource); }
   });
 }).catch(()=>{ document.getElementById("loadfail").style.display="block"; });
 </script>

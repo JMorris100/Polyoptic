@@ -14,13 +14,77 @@
 --rule:#D3D8DD;--rule-soft:#EEF0F2;
 --purple:#4633A8;--purple-dk:#3A2A8C;--soft:#F4F2FA;--soft-hover:#EAE5F6;--prule:#D8D2EC;
 --warn:#B45309;--warnbg:#FFF8E6;--warnrule:#E8D9A8;--warn-ink:#6B4A0A;--warn-ink-b:#4A3306;
---shadow:0 18px 40px -10px rgba(15,20,25,.3)}
+--shadow:0 18px 40px -10px rgba(15,20,25,.3);
+/* Union flag, drawn to the 60x30 construction (white saltire 6 wide with the
+   red 4 wide counterchanged, white cross 10, red cross 6). Inline so the
+   strict no-external-assets rule the rest of the site follows still holds. */
+--flag:url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 30'><clipPath id='s'><path d='M0,0 v30 h60 v-30 z'/></clipPath><clipPath id='t'><path d='M30,15 h30 v15 z v15 h-30 z h-30 v-15 z v-15 h30 z'/></clipPath><g clip-path='url(%23s)'><path d='M0,0 v30 h60 v-30 z' fill='%23012169'/><path d='M0,0 L60,30 M60,0 L0,30' stroke='%23fff' stroke-width='6'/><path d='M0,0 L60,30 M60,0 L0,30' clip-path='url(%23t)' stroke='%23C8102E' stroke-width='4'/><path d='M30,0 v30 M0,15 h60' stroke='%23fff' stroke-width='10'/><path d='M30,0 v30 M0,15 h60' stroke='%23C8102E' stroke-width='6'/></g></svg>")}
 html[data-theme="dark"]{--paper:#0B0D12;--surface:#151823;--surface-2:#1A1E2A;--hover:#1C2130;--ink:#E8ECF1;--muted:#8A93A0;
 --rule:#262B36;--rule-soft:#20242E;
 --purple:#8B6BFF;--purple-dk:#7355E8;--soft:#241E3E;--soft-hover:#2C2450;--prule:#3A3260;
 --warn:#E0B45C;--warnbg:#2A2107;--warnrule:#4C3B10;--warn-ink:#E3B65E;--warn-ink-b:#F0CC80;
 --shadow:0 18px 44px -10px rgba(0,0,0,.65)}
 html[data-theme="dark"] input{color-scheme:dark}
+
+/* ── Brexit mode ────────────────────────────────────────────────
+   Union flag palette: Pantone 280 blue, Pantone 186 red, white.
+   Navy paper rather than white, because a white ground would leave
+   one of the three flag colours unusable for chart lines. */
+html[data-theme="brexit"]{--paper:#00133F;--surface:#012169;--surface-2:#0A2A72;--hover:#12367F;--ink:#FFFFFF;--muted:#A8BDE4;
+--rule:#1B3E8C;--rule-soft:#12306F;
+--purple:#C8102E;--purple-dk:#A60D26;--soft:#0C2C77;--soft-hover:#143681;--prule:#284E9B;
+--warn:#F0C24B;--warnbg:#2A2107;--warnrule:#5A4712;--warn-ink:#F0C24B;--warn-ink-b:#F7DA8E;
+--shadow:0 18px 44px -10px rgba(0,0,0,.7)}
+html[data-theme="brexit"] input{color-scheme:dark}
+html[data-theme="brexit"] .brand .b{color:#C8102E}
+
+/* the flag itself, flown very quietly behind the sheet */
+html[data-theme="brexit"] body::before{
+  content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.07;
+  background:var(--flag) center/min(92vw,1100px) auto no-repeat}
+html[data-theme="brexit"] header,
+html[data-theme="brexit"] .shell{position:relative;z-index:1}
+html[data-theme="brexit"] header{border-bottom-color:#C8102E}
+
+/* the secret toggle — a bare strip down the far right of the sheet.
+   Invisible until you go looking for it, which is the point. */
+/* --sbw is the scrollbar width, set from JS. Without it the strip sits on top
+   of the scrollbar and every attempt to drag the page toggles the mode. */
+.secret{position:fixed;top:0;right:var(--sbw,0px);width:16px;height:100vh;z-index:60;
+  border:0;padding:0;background:transparent;cursor:pointer;
+  transition:background-color .18s, box-shadow .18s}
+.secret::after{content:"";position:absolute;inset:0;opacity:0;transition:opacity .18s;
+  background:var(--flag) center/cover no-repeat}
+.secret:hover::after,.secret:focus-visible::after{opacity:.85}
+.secret:focus-visible{outline:2px solid var(--purple);outline-offset:-2px}
+html[data-theme="brexit"] .secret::after{opacity:.5}
+
+/* ── the geezer ─────────────────────────────────────────────────
+   Temporary. Fires once on entering Brexit mode, then gets out of the way.
+   pointer-events:none so it can never swallow a click on a chart. */
+.geezer{position:fixed;right:28px;bottom:24px;z-index:80;width:min(280px,38vw);
+  pointer-events:none;filter:drop-shadow(0 18px 30px rgba(0,0,0,.45));
+  animation:geezerIn .55s cubic-bezier(.2,1.5,.4,1) both}
+.geezer.out{animation:geezerOut .7s ease-in both}
+.geezer .flagwave{transform-origin:14px 12px;animation:wave 1.5s ease-in-out infinite}
+@keyframes geezerIn{
+  0%{transform:translateY(70px) scale(.75) rotate(-8deg);opacity:0}
+  100%{transform:translateY(0) scale(1) rotate(0);opacity:1}}
+@keyframes geezerOut{to{transform:translateY(26px) scale(.94);opacity:0}}
+@keyframes wave{0%,100%{transform:rotate(-3deg) skewX(0deg)}50%{transform:rotate(3deg) skewX(-4deg)}}
+@media (prefers-reduced-motion:reduce){
+  .geezer,.geezer.out,.geezer .flagwave{animation-duration:.01ms;animation-iteration-count:1}
+  .geezer{animation:none;opacity:1}.geezer.out{animation:none;opacity:0;transition:opacity .4s}}
+
+/* the mode banner, so nobody is left wondering where their charts went */
+.modebar{display:none;align-items:center;gap:12px;flex-wrap:wrap;
+  background:var(--surface);border:1px solid var(--rule);border-left:4px solid #C8102E;
+  padding:10px 14px;margin-bottom:14px;font-size:13px;color:var(--muted)}
+html[data-theme="brexit"] .modebar{display:flex}
+.modebar b{color:var(--ink);font-weight:700;font-family:Archivo,sans-serif;letter-spacing:.01em}
+.modebar button{margin-left:auto;font:inherit;font-size:12px;background:transparent;color:var(--ink);
+  border:1px solid var(--rule);padding:4px 10px;cursor:pointer}
+.modebar button:hover{border-color:var(--purple);color:var(--purple)}
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--paper);color:var(--ink);font-family:"Public Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;transition:background-color .2s}
@@ -245,6 +309,27 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .srcrow b{color:var(--ink);font-weight:600}
 .srcrow .mono{font-family:"IBM Plex Mono";font-size:10.5px}
 .ph{display:inline-block;font-family:"IBM Plex Mono";font-size:9.5px;background:var(--warnbg);border:1px solid var(--warnrule);color:var(--warn);padding:1px 6px}
+
+/* ── sourcing style ─────────────────────────────────────────── */
+.srchd{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between;
+  padding-bottom:10px;margin-bottom:4px;border-bottom:1px solid var(--rule)}
+.srcstyle{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.segs{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.segs button{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);background:var(--surface);
+  border:0;border-left:1px solid var(--rule);padding:5px 12px;cursor:pointer;transition:.14s}
+.segs button:first-child{border-left:0}
+.segs button:hover{color:var(--purple);background:var(--soft)}
+.segs button[aria-pressed="true"]{background:var(--purple);color:#fff}
+.copycite{font-family:"IBM Plex Mono";font-size:11px;color:var(--purple);background:var(--soft);
+  border:1px solid var(--prule);padding:5px 11px;border-radius:100px;cursor:pointer}
+.copycite:hover{border-color:var(--purple)}
+/* a citation ends in a source URL, which is one unbreakable token and will
+   push out of its container unless it is allowed to break mid-word */
+.srcrow.cite{display:block;font-size:12.5px;line-height:1.5;color:var(--ink);
+  overflow-wrap:anywhere}
+.pfoot.stacked{flex-direction:column;gap:5px;align-items:flex-start}
+.pfoot .cite{font-family:"Public Sans",system-ui,sans-serif;font-size:11.5px;line-height:1.45;
+  color:var(--muted);text-transform:none;letter-spacing:0;overflow-wrap:anywhere;max-width:100%}
 </style>
 </head>
 <body>
@@ -259,6 +344,8 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
     </div>
   </div>
 </header>
+
+<button class="secret" id="modeBtn" aria-label="Toggle Brexit mode" aria-pressed="false"></button>
 
 <div class="siderail"><button id="sideOpen" title="Show the indicator panel" aria-label="Show the indicator panel">❯</button></div>
 <div class="shell">
@@ -287,6 +374,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   </div>
 
   <div>
+    <div class="modebar" id="modebar"></div>
     <div class="stack" id="stack"></div>
     <div class="addbar"><button class="addbtn" id="addBottom">+ Add another chart</button></div>
     <div class="srcpanel" id="srcs"></div>
@@ -350,10 +438,15 @@ const PLACEHOLDER = {
 let DB = PLACEHOLDER;
 
 /* theme — applied before first render so charts draw in the right palette */
-(function(){ try{ if(localStorage.getItem("polyoptic-theme")==="dark") document.documentElement.dataset.theme="dark"; }catch(e){} })();
+(function(){ try{
+  if(localStorage.getItem("polyoptic-mode")==="brexit") document.documentElement.dataset.theme="brexit";
+  else if(localStorage.getItem("polyoptic-theme")==="dark") document.documentElement.dataset.theme="dark";
+}catch(e){} })();
 const PAL_LIGHT=["#4633A8","#C2410C","#0F766E","#A21CAF"];
 const PAL_DARK =["#8B6BFF","#FB923C","#2DD4BF","#E879F9"];
-const PAL=i=>(document.documentElement.dataset.theme==="dark"?PAL_DARK:PAL_LIGHT)[i%4];
+/* red, white, and two blues light enough to read on the navy ground */
+const PAL_BREXIT=["#E4344F","#FFFFFF","#7FB2FF","#F0C24B"];
+const PAL=i=>({dark:PAL_DARK,brexit:PAL_BREXIT}[document.documentElement.dataset.theme]||PAL_LIGHT)[i%4];
 
 const CHART_TYPES = [["line","Line"],["step","Step"],["dots","Dots"],["bar","Bars"],["area","Area"],["stack","Stacked area"],["scatter","Scatter"],["small","Small multiples"]];
 const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["yoy","Year-on-year %"],
@@ -375,8 +468,68 @@ const state = { panels:[ mkPanel(["rents","pay"]) ], active:0, focus:null, q:"",
 const lockedKeys = new Set();
 const P0 = () => state.panels[state.active] || null;
 const S  = id => DB.series.find(s=>s.id===id);
+
+/* ── modes ──────────────────────────────────────────────────────
+   A mode is a named subset of the catalogue, defined in series.yaml and
+   carried through the bundle. Lookups by id (S above, sources, transforms)
+   still see the whole catalogue — only what you can BROWSE changes, so a
+   permalink into another mode keeps working. */
+let MODE = (()=>{ try{ return localStorage.getItem("polyoptic-mode")||"default"; }catch(e){ return "default"; } })();
+const modeDef  = () => (DB.modes||{})[MODE];
+const claimed  = () => new Set(Object.values(DB.modes||{}).flatMap(m=>m.series||[]));
+const catalogue = () => {
+  const m = modeDef();
+  if(!m) return DB.series.filter(s=>!claimed().has(s.id));
+  const want = new Set(m.series||[]);
+  return DB.series.filter(s=>want.has(s.id));
+};
 const yearsOf = s => s.values.map((_,i)=>s.start+i);
 const refAt = (ref,y) => { const r=DB.refs[ref]; if(!r) return null; const i=y-r.start; return (i>=0&&i<r.values.length)?r.values[i]:null; };
+
+/* ── sourcing style ─────────────────────────────────────────────
+   One setting for how attribution is rendered, applied in all four places
+   a source appears: the chart footer, the provenance panel, the CSV header
+   and the PNG credit. Keeping it in one place is the point — a chart whose
+   footer disagrees with its own export is worse than either.
+
+   `off` strips attribution from the exports too, which is a deliberate
+   choice by the site owner. OGL v3.0 asks for an attribution statement
+   when you redistribute, so an exported chart with no source line is on
+   whoever publishes it.
+
+   The author is `publisher_full` from the bundle, not `source`: `source` is
+   a release name, and "ONS Index of Private Housing Rental Prices (2026)"
+   would be citing a title as if it were an author. */
+const SRC_STYLES=[["short","Short"],["harvard","Harvard"],["off","Off"]];
+let SRCSTYLE=(()=>{ try{ const v=localStorage.getItem("polyoptic-srcstyle");
+  return SRC_STYLES.some(s=>s[0]===v)?v:"short"; }catch(e){ return "short"; } })();
+
+const ukDate=iso=>{ const d=new Date(iso||""); return isNaN(d)?"" :
+  d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}); };
+
+/* Harvard for a continuously-revised online dataset. The year is the
+   version consulted — the fetch year — unless the series declares a real
+   edition year in `published`, which is why the pipeline never guesses it. */
+function citeHarvard(m){
+  const author=m.publisher_full||m.publisher||m.source||"Unknown";
+  const year=m.published||String(m.fetched||"").slice(0,4)||"n.d.";
+  const url=m.source_url||m.source_api||"";
+  const acc=ukDate(m.fetched);
+  let out=`${author} (${year}) ${m.name}`;
+  if(!/[.?!]$/.test(out)) out+=".";
+  if(url) out+=` Available at: ${url}`;
+  if(acc) out+=` (Accessed: ${acc}).`;
+  else if(url) out+=".";
+  return out;
+}
+
+/* The attribution lines for the current style: none when off, one compact
+   line when short, one full citation per series when Harvard. */
+function srcLines(sets){
+  if(SRCSTYLE==="off"||!sets.length) return [];
+  if(SRCSTYLE==="harvard") return sets.map(s=>citeHarvard(s.meta));
+  return [[...new Set(sets.map(s=>s.meta.source))].join(" · ")];
+}
 
 /* ── transforms ── */
 const applies=(t,s)=>(t==="real"||t==="percap"||t==="pctgdp") ? (s.kind==="money_cash"||s.kind==="count") : true;
@@ -722,8 +875,15 @@ function panelHtml(p,i){
     const showRibbon = p.era!=="off" && p.chart!=="scatter" && p.chart!=="small";
     body=`<div class="pbody">${chart}${showRibbon?renderRibbon(p):""}</div>`;
     legend=`<div class="legend">${sets.map(s=>`<span class="lg"><span class="d" style="background:${s.colour}"></span>${esc(s.name)} <span class="u">${esc(s.unit)}</span></span>`).join("")}</div>`;
-    foot=`<div class="pfoot"><span>SOURCES · ${esc([...new Set(sets.map(s=>s.meta.source))].join(" · ")).toUpperCase()}</span>
-      <span>LICENCE · OGL v3.0</span><span>DATA · ${DB.meta.provenance.toUpperCase()}</span></div>`;
+    /* Harvard citations are sentences, not chips — they get their own rows so
+       they stay readable, while short keeps the original single-line strip. */
+    const lines=srcLines(sets);
+    const attrib = SRCSTYLE==="off" ? ""
+      : SRCSTYLE==="harvard"
+        ? lines.map(c=>`<span class="cite">${esc(c)}</span>`).join("")+`<span>LICENCE · OGL v3.0</span>`
+        : `<span>SOURCES · ${esc(lines[0]).toUpperCase()}</span><span>LICENCE · OGL v3.0</span>`;
+    foot=`<div class="pfoot${SRCSTYLE==="harvard"?" stacked":""}">${attrib}
+      <span>DATA · ${DB.meta.provenance.toUpperCase()}</span></div>`;
   }
 
   const warns=warningsFor(p,sets).map(w=>
@@ -795,14 +955,15 @@ function renderSidebar(){
   });
 
   /* filters */
-  const topics=["all",...new Set(DB.series.flatMap(s=>s.topics))];
+  const inMode=catalogue();
+  const topics=["all",...new Set(inMode.flatMap(s=>s.topics))];
   document.getElementById("filters").innerHTML=topics.map(t=>
     `<button class="f" data-topic="${t}" aria-pressed="${state.topic===t}">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join("");
   document.querySelectorAll("[data-topic]").forEach(b=>b.onclick=()=>{state.topic=b.dataset.topic;renderSidebar();});
 
   /* catalogue */
   const q=state.q.toLowerCase();
-  const list=DB.series.filter(s=>(state.topic==="all"||s.topics.includes(state.topic))&&
+  const list=inMode.filter(s=>(state.topic==="all"||s.topics.includes(state.topic))&&
     (!q||s.name.toLowerCase().includes(q)||s.source.toLowerCase().includes(q)));
   const cat=document.getElementById("cat");
   cat.innerHTML=list.length?list.map(s=>{
@@ -822,21 +983,61 @@ function renderSidebar(){
     render();
   });
   document.getElementById("count").textContent = p
-    ? `${p.sel.length} of 4 on Chart ${state.active+1} · ${DB.series.length} indicators available`
-    : `${DB.series.length} indicators available`;
+    ? `${p.sel.length} of 4 on Chart ${state.active+1} · ${inMode.length} indicators available`
+    : `${inMode.length} indicators available`;
+}
+
+/* The style control lives here rather than in the header: this is the panel
+   about sourcing, and the setting governs how sourcing is written everywhere. */
+function srcStyleControl(){
+  return `<div class="srcstyle">
+    <span class="plabel">Sourcing</span>
+    <div class="segs" role="group" aria-label="Sourcing style">${
+      SRC_STYLES.map(([k,l])=>`<button data-src="${k}" aria-pressed="${SRCSTYLE===k}">${l}</button>`).join("")
+    }</div>
+    ${SRCSTYLE==="harvard"?`<button class="copycite" id="copyCite">Copy citations</button>`:""}
+  </div>`;
 }
 
 function renderSources(){
   const p=P0(), el=document.getElementById("srcs");
   const sets=p?buildSets(p):[];
-  if(!sets.length){el.innerHTML=`<div class="plabel">Provenance</div><div class="trayempty">Select something to see where it came from.</div>`;return;}
-  el.innerHTML=`<div class="plabel">Provenance · Chart ${state.active+1}</div>`+sets.map(s=>`
-    <div class="srcrow"><b>${esc(s.name)}</b>
-      <span class="mono">${esc(s.meta.source)}</span><span class="mono">${esc(s.meta.geography)}</span>
-      <span class="mono">${esc(s.meta.year_basis)} years</span><span class="mono">${esc(s.meta.unit)}</span>
-      <span class="mono">${esc(s.meta.licence)}</span>
-      ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}
-    </div>`).join("");
+  if(!sets.length){
+    el.innerHTML=`<div class="srchd"><div class="plabel">Provenance</div>${srcStyleControl()}</div>
+      <div class="trayempty">Select something to see where it came from.</div>`;
+    bindSrcStyle(); return;
+  }
+  const body = SRCSTYLE==="harvard"
+    ? sets.map(s=>`<div class="srcrow cite">${esc(citeHarvard(s.meta))}
+        ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}</div>`).join("")
+    : SRCSTYLE==="off"
+    ? `<div class="trayempty">Attribution is switched off — including on CSV and PNG exports.
+        The data is still OGL v3.0, which asks for a source statement when you republish it.</div>`
+    : sets.map(s=>`
+      <div class="srcrow"><b>${esc(s.name)}</b>
+        <span class="mono">${esc(s.meta.source)}</span><span class="mono">${esc(s.meta.geography)}</span>
+        <span class="mono">${esc(s.meta.year_basis)} years</span><span class="mono">${esc(s.meta.unit)}</span>
+        <span class="mono">${esc(s.meta.licence)}</span>
+        ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}
+      </div>`).join("");
+  el.innerHTML=`<div class="srchd"><div class="plabel">Provenance · Chart ${state.active+1}</div>${srcStyleControl()}</div>${body}`;
+  bindSrcStyle(sets);
+}
+
+function bindSrcStyle(sets){
+  document.querySelectorAll("[data-src]").forEach(b=>b.onclick=()=>{
+    SRCSTYLE=b.dataset.src;
+    try{ localStorage.setItem("polyoptic-srcstyle",SRCSTYLE); }catch(e){}
+    render();
+  });
+  const cp=document.getElementById("copyCite");
+  if(cp) cp.onclick=()=>{
+    const text=srcLines(sets||[]).join("\n");
+    if(!text) return;
+    navigator.clipboard?.writeText(text).then(()=>{
+      cp.textContent="Copied"; setTimeout(()=>{cp.textContent="Copy citations";},1400);
+    });
+  };
 }
 
 function render(){ renderPanels(); renderSidebar(); renderSources(); writeHash(); }
@@ -1123,6 +1324,27 @@ const dl=(blob,name)=>{const a=document.createElement("a");
   a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);};
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)||"chart";
 
+/* SVG text doesn't wrap, so a Harvard citation would run off the edge of an
+   exported image. Break on words at a character budget — monospace at 10px
+   is close enough to 6px a character to measure it that way. */
+function wrapText(s,max){
+  const out=[]; let cur="";
+  /* a source URL is one unbreakable token and routinely longer than the
+     line budget, so hard-break anything that can't fit on its own */
+  const words=String(s).split(/\s+/).filter(Boolean).flatMap(w=>{
+    if(w.length<=max) return [w];
+    const bits=[]; for(let i=0;i<w.length;i+=max) bits.push(w.slice(i,i+max));
+    return bits;
+  });
+  words.forEach(w=>{
+    if(!cur) cur=w;
+    else if((cur+" "+w).length<=max) cur+=" "+w;
+    else { out.push(cur); cur=w; }
+  });
+  if(cur) out.push(cur);
+  return out.length?out:[""];
+}
+
 function exportCsv(i){
   const p=state.panels[i], sets=buildSets(p);
   if(!sets.length) return;
@@ -1130,10 +1352,16 @@ function exportCsv(i){
   const head=["year",...sets.map(s=>`"${s.name} (${s.unit})"`)].join(",");
   const rows=years.map(y=>[y,...sets.map(s=>{const q=s.pts.find(q=>q[0]===y);return q&&q[1]!=null?q[1].toFixed(4):"";})].join(","));
   const warn=DB.meta.provenance==="placeholder"?"# WARNING: placeholder data, not real statistics\n":"";
-  const csv=warn+`# Polyoptic — ${sets.map(s=>s.name).join(" x ")}\n`+
-    `# Sources: ${[...new Set(sets.map(s=>s.meta.source))].join("; ")}\n`+
+  /* off strips the source and licence lines from the file as well as the
+     screen — see the note on SRC_STYLES. */
+  const lines=srcLines(sets);
+  const attrib = lines.length
+    ? lines.map(c=>`# ${SRCSTYLE==="harvard"?"":"Sources: "}${c}\n`).join("")+
+      `# Licence: OGL v3.0 — contains public sector information\n`
+    : "";
+  const csv=warn+`# Polyoptic — ${sets.map(s=>s.name).join(" x ")}\n`+attrib+
     `# Geography: ${[...new Set(sets.map(s=>s.meta.geography))].join("; ")}\n`+
-    `# Licence: OGL v3.0 — contains public sector information\n`+head+"\n"+rows.join("\n");
+    head+"\n"+rows.join("\n");
   dl(new Blob([csv],{type:"text/csv"}), slug(sets.map(s=>s.name).join("-"))+".csv");
 }
 
@@ -1143,7 +1371,10 @@ function exportCsv(i){
    export is a dark image rather than dark-mode lines on a white card. */
 const EXPORT_THEMES={
   light:{bg:"#ffffff", grid:"#D3D8DD", muted:"#5C6672", ink:"#0F1419", warn:"#B45309"},
-  dark: {bg:"#151823", grid:"#262B36", muted:"#8A93A0", ink:"#E8ECF1", warn:"#E0B45C"}
+  dark: {bg:"#151823", grid:"#262B36", muted:"#8A93A0", ink:"#E8ECF1", warn:"#E0B45C"},
+  /* Brexit mode needs its own entry, not a fall-through to light: one of its
+     four line colours is white, which would export invisibly onto a white card. */
+  brexit:{bg:"#012169", grid:"#1B3E8C", muted:"#A8BDE4", ink:"#FFFFFF", warn:"#F0C24B"}
 };
 const exportCss=th=>`
   text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
@@ -1167,14 +1398,26 @@ function exportPng(i){
   if(!sets.length||!card) return;
   const svgs=[...card.querySelectorAll(".pbody svg")];
   if(!svgs.length) return;
-  const TH = EXPORT_THEMES[document.documentElement.dataset.theme==="dark"?"dark":"light"];
+  const TH = EXPORT_THEMES[document.documentElement.dataset.theme] || EXPORT_THEMES.light;
 
-  const PAD=26, TOP=74, LEGEND=26, FOOT=30, SCALE=2;
+  const PAD=26, TOP=74, LEGEND=26, SCALE=2, CRED_LH=13;
   const inner=svgs.map(s=>{
     const vb=s.getAttribute("viewBox").split(/\s+/).map(Number);
     return {markup:s.innerHTML, w:vb[2], h:vb[3]};
   });
   const bodyH=inner.reduce((a,s)=>a+s.h+8,0);
+
+  /* The credit block is measured before the canvas is sized: Harvard puts a
+     full citation per series down there, so the image has to grow to fit it
+     rather than clipping it. */
+  const attribLines = SRCSTYLE==="off" ? ["polyoptic.co"]
+    : SRCSTYLE==="harvard" ? [...srcLines(sets), "OGL v3.0 · polyoptic.co"]
+    : [`Source: ${srcLines(sets)[0]} · OGL v3.0 · polyoptic.co`];
+  const credit = (DB.meta.provenance==="placeholder"
+      ? ["PLACEHOLDER DATA — NOT REAL STATISTICS"] : [])
+    .concat(attribLines.flatMap(t=>wrapText(t, Math.max(40,Math.floor(W/6.3)))));
+  const FOOT = 30 + Math.max(0,credit.length-1)*CRED_LH;
+
   const totalW=W+PAD*2, totalH=TOP+bodyH+LEGEND+FOOT+PAD;
 
   let y=TOP, parts="";
@@ -1194,7 +1437,7 @@ function exportPng(i){
     <text class="ttl" x="${PAD}" y="${PAD+14}">${esc(p.title??sets.map(s=>s.name).join(" × "))}</text>
     <text class="sub" x="${PAD}" y="${PAD+34}">${p.from}–${p.to} · ${esc(TRANSFORMS.find(x=>x[0]===p.trans)[1])} · ${esc([...new Set(sets.map(s=>s.meta.geography))].join(", "))}</text>
     ${parts}${legend}
-    <text class="cred" x="${PAD}" y="${totalH-PAD+4}">${DB.meta.provenance==="placeholder"?"PLACEHOLDER DATA — NOT REAL STATISTICS · ":""}Source: ${esc([...new Set(sets.map(s=>s.meta.source))].join("; "))} · OGL v3.0 · polyoptic.co</text>
+    ${credit.map((ln,k)=>`<text class="cred" x="${PAD}" y="${totalH-PAD+4-(credit.length-1-k)*CRED_LH}">${esc(ln)}</text>`).join("")}
   </svg>`;
 
   const img=new Image();
@@ -1216,11 +1459,15 @@ function exportPng(i){
    ══════════════════════════════════════════════ */
 function writeHash(){
   const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||"")].join("~")).join(";");
-  history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active);
+  history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active+
+    (SRCSTYLE!=="short"?"&src="+SRCSTYLE:""));
 }
 function readHash(){
   if(!location.hash) return;
   const q=new URLSearchParams(location.hash.slice(1));
+  /* a shared link carries the citation style, so the recipient sees the chart
+     credited the way the person who sent it credited it */
+  if(SRC_STYLES.some(s=>s[0]===q.get("src"))) SRCSTYLE=q.get("src");
   if(q.get("p")){
     const panels=decodeURIComponent(q.get("p")).split(";").map(chunk=>{
       const [sel,chart,trans,from,to,era,h,w,gran,ttl]=chunk.split("~");
@@ -1235,7 +1482,7 @@ function readHash(){
     if(panels.length) state.panels=panels;
   } else if(q.get("t")){                       /* topic deep-link from the homepage tiles */
     const topic=q.get("t");
-    if(DB.series.some(s=>s.topics.includes(topic))) state.topic=topic;
+    if(catalogue().some(s=>s.topics.includes(topic))) state.topic=topic;
   }
   state.active=Math.max(0,Math.min(+q.get("a")||0,state.panels.length-1));
 }
@@ -1263,9 +1510,158 @@ themeBtn.onclick=()=>{
   if(dark) delete document.documentElement.dataset.theme;
   else document.documentElement.dataset.theme="dark";
   try{ localStorage.setItem("polyoptic-theme", dark?"light":"dark"); }catch(e){}
+  if(MODE!=="default") setMode("default");    /* light/dark is a different axis to mode */
   syncThemeBtn(); render();   /* charts re-render so lines pick up the theme palette */
 };
 syncThemeBtn();
+
+/* ── mode switching ─────────────────────────────────────────────
+   Modes have disjoint catalogues, so anything on a chart when you switch
+   would be an id the new catalogue does not contain. Clear rather than
+   half-render, and put the reason on screen. */
+function applyThemeForMode(){
+  const el=document.documentElement;
+  if(MODE!=="default"){ el.dataset.theme="brexit"; return; }
+  let dark=false; try{ dark=localStorage.getItem("polyoptic-theme")==="dark"; }catch(e){}
+  if(dark) el.dataset.theme="dark"; else delete el.dataset.theme;
+}
+function setMode(next){
+  if(next===MODE) return;
+  MODE=next;
+  try{ localStorage.setItem("polyoptic-mode", MODE); }catch(e){}
+  state.panels=[]; state.active=0; state.topic="all"; state.q="";
+  const box=document.getElementById("q"); if(box) box.value="";
+  applyThemeForMode(); syncThemeBtn(); syncModeBtn(); render();
+  /* TEMPORARY — see the party trick block below. Deliberately only on a real
+     click: setMode is never called when the mode is restored from storage on
+     load, so a reload doesn't start playing music at you. */
+  if(MODE==="brexit"){ playAnthem(); showGeezer(); } else { stopAnthem(); hideGeezer(); }
+}
+const modeBtn=document.getElementById("modeBtn");
+function syncModeBtn(){
+  const on=MODE!=="default";
+  modeBtn.setAttribute("aria-pressed",String(on));
+  modeBtn.title = on ? "Leave Brexit mode" : "";
+  const bar=document.getElementById("modebar"), m=modeDef();
+  bar.innerHTML = m
+    ? `<b>${esc(m.name||MODE)}</b><span>${esc(m.blurb||"")}</span>
+       <button id="modeOff">Back to the full catalogue</button>` : "";
+  const off=document.getElementById("modeOff");
+  if(off) off.onclick=()=>setMode("default");
+}
+modeBtn.onclick=()=>setMode(MODE==="default"?"brexit":"default");
+
+/* ══════════════════════════════════════════════
+   TEMPORARY — Brexit mode party trick
+   Delete this block and its two calls in setMode() to remove.
+
+   The tune is Parry's setting of 1916, which is public domain, and it is
+   SYNTHESISED rather than played from a file: any actual recording carries
+   its own separate copyright, and the site loads no external assets anyway.
+   ══════════════════════════════════════════════ */
+
+/* Reconstructed by ear, so treat it as a first draft — the shape and key are
+   right, individual intervals may not be. It is a plain array: fix it here. */
+const TUNE=[["A4",1],["D5",1],["D5",1],["F#5",1],["F#5",1],["E5",1],["D5",1],["B4",2],
+            ["E5",1],["E5",1],["A5",1],["G5",1],["F#5",1],["E5",1],["D5",3]];
+const BEAT=0.62;                                   /* stately, as it should be */
+
+const freq=n=>{
+  const step={C:0,D:2,E:4,F:5,G:7,A:9,B:11}, m=/^([A-G])(#|b)?(\d)$/.exec(n);
+  if(!m) return 0;
+  const semi=step[m[1]]+(m[2]==="#"?1:m[2]==="b"?-1:0)+(+m[3]+1)*12;
+  return 440*Math.pow(2,(semi-69)/12);
+};
+
+let AC=null, anthem=null;
+function playAnthem(){
+  stopAnthem();
+  try{
+    AC = AC || new (window.AudioContext||window.webkitAudioContext)();
+    AC.resume();
+  }catch(e){ return; }                             /* no audio, no problem */
+
+  const out=AC.createGain(); out.gain.value=.16; out.connect(AC.destination);
+  anthem={gain:out, nodes:[]};
+  let t=AC.currentTime+.08;
+
+  for(const [note,beats] of TUNE){
+    const dur=beats*BEAT, f=freq(note);
+    /* two oscillators an octave apart reads as vaguely organ-ish, which is
+       as close to a parish church as an oscillator is going to get */
+    for(const [type,mult,level] of [["triangle",1,.7],["sine",2,.22],["sine",.5,.35]]){
+      const o=AC.createOscillator(), g=AC.createGain();
+      o.type=type; o.frequency.value=f*mult;
+      g.gain.setValueAtTime(0,t);
+      g.gain.linearRampToValueAtTime(level,t+.06);
+      g.gain.setValueAtTime(level,t+dur*.75);
+      g.gain.linearRampToValueAtTime(0,t+dur*.98);
+      o.connect(g); g.connect(out); o.start(t); o.stop(t+dur);
+      anthem.nodes.push(o);
+    }
+    t+=dur;
+  }
+}
+function stopAnthem(){
+  if(!anthem) return;
+  const {gain,nodes}=anthem; anthem=null;
+  try{                                             /* fade, don't clip */
+    gain.gain.cancelScheduledValues(AC.currentTime);
+    gain.gain.setValueAtTime(gain.gain.value,AC.currentTime);
+    gain.gain.linearRampToValueAtTime(0,AC.currentTime+.25);
+    nodes.forEach(o=>{ try{ o.stop(AC.currentTime+.3); }catch(e){} });
+  }catch(e){}
+}
+addEventListener("pagehide",stopAnthem);
+document.addEventListener("visibilitychange",()=>{ if(document.hidden) stopAnthem(); });
+
+const GEEZER=`<svg viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+  <g class="flagwave" transform="translate(112 18)">
+    <rect x="0" y="0" width="78" height="52" fill="#fff" stroke="#D8DEE8"/>
+    <rect x="0" y="20" width="78" height="12" fill="#CE1124"/>
+    <rect x="33" y="0" width="12" height="52" fill="#CE1124"/>
+  </g>
+  <rect x="104" y="16" width="4" height="150" rx="2" fill="#8A6A45"/>
+  <path d="M56 208 q-4-58 8-74 h52 q12 16 8 74 z" fill="#FFFFFF"/>
+  <path d="M56 208 q-4-58 8-74 h52 q12 16 8 74 z" fill="none" stroke="#D8DEE8" stroke-width="2"/>
+  <rect x="84" y="134" width="12" height="52" fill="#CE1124"/>
+  <rect x="62" y="152" width="56" height="12" fill="#CE1124"/>
+  <path d="M64 136 q-22 8-26 40 l16 5 q6-24 14-31 z" fill="#F2C79B"/>
+  <path d="M116 136 q26 6 30 34 l-17 6 q-5-22-15-28 z" fill="#F2C79B"/>
+  <circle cx="90" cy="106" r="30" fill="#F2C79B"/>
+  <path d="M60 100 q4-30 30-30 t30 30 q-8-16-30-16 t-30 16z" fill="#C98A4B"/>
+  <rect x="66" y="98" width="48" height="13" rx="4" fill="#16202E"/>
+  <path d="M74 130 q16 14 32 0 q-16 6-32 0z" fill="#7A2E2E"/>
+  <path d="M74 128 q16 16 32 0" fill="none" stroke="#8C4A3A" stroke-width="3" stroke-linecap="round"/>
+  <g transform="translate(140 158)">
+    <path d="M0 0 h30 l-4 40 h-22 z" fill="#E8A33D" opacity=".92"/>
+    <path d="M0 0 h30 l-1 9 h-28 z" fill="#FFF6E2"/>
+    <rect x="-1" y="-3" width="32" height="5" rx="2" fill="#DCE4EE"/>
+  </g>
+</svg>`;
+
+let geezerTimer=null;
+function showGeezer(){
+  document.getElementById("geezer")?.remove();
+  clearTimeout(geezerTimer);
+  const el=document.createElement("div");
+  el.id="geezer"; el.className="geezer"; el.innerHTML=GEEZER;
+  document.body.appendChild(el);
+  geezerTimer=setTimeout(()=>{
+    el.classList.add("out");
+    setTimeout(()=>el.remove(),800);
+  },2600);
+}
+function hideGeezer(){
+  clearTimeout(geezerTimer);
+  document.getElementById("geezer")?.remove();
+}
+
+(function trackScrollbar(){
+  const set=()=>document.documentElement.style.setProperty(
+    "--sbw", (window.innerWidth-document.documentElement.clientWidth)+"px");
+  set(); addEventListener("resize",set); new ResizeObserver(set).observe(document.body);
+})();
 
 document.getElementById("copyLink").onclick=()=>{
   navigator.clipboard?.writeText(location.href);
@@ -1286,8 +1682,16 @@ document.getElementById("q").oninput=e=>{state.q=e.target.value;renderSidebar();
 })();
 
 /* ── boot: prefer real data if the ingest has run ── */
-fetch("data/bundle.json").then(r=>r.ok?r.json():Promise.reject()).then(d=>{DB=d;})
-  .catch(()=>{}).finally(()=>{ readHash(); render(); });
+/* no-cache means revalidate, not refetch — the browser still sends the ETag,
+   so this costs a 304 and stops a rebuilt bundle sitting invisible behind a
+   cached copy. */
+fetch("data/bundle.json",{cache:"no-cache"}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{DB=d;})
+  .catch(()=>{}).finally(()=>{
+    /* a stored mode the bundle no longer defines must not strand the catalogue */
+    if(MODE!=="default" && !modeDef()) MODE="default";
+    applyThemeForMode(); syncThemeBtn(); syncModeBtn();
+    readHash(); render();
+  });
 </script>
 </body>
 </html>
