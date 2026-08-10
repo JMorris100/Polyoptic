@@ -38,10 +38,13 @@ html[data-theme="brexit"]{--paper:#00133F;--surface:#012169;--surface-2:#0A2A72;
 html[data-theme="brexit"] input{color-scheme:dark}
 html[data-theme="brexit"] .brand .b{color:#C8102E}
 
-/* the flag itself, flown very quietly behind the sheet */
+/* the flag itself, flown very quietly behind the sheet. `cover` rather than a
+   capped width, so it fills the viewport at any window size instead of sitting
+   as a 1100px block in the middle of a large screen. The element is fixed, so
+   it stays put behind the content as the page scrolls. */
 html[data-theme="brexit"] body::before{
   content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:.07;
-  background:var(--flag) center/min(92vw,1100px) auto no-repeat}
+  background:var(--flag) center/cover no-repeat}
 html[data-theme="brexit"] header,
 html[data-theme="brexit"] .shell{position:relative;z-index:1}
 html[data-theme="brexit"] header{border-bottom-color:#C8102E}
