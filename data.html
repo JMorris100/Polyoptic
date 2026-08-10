@@ -37,6 +37,14 @@ svg{display:block}
 .topnav a.btn-ghost:hover{background:rgba(255,255,255,.13);border-color:#fff}
 .topnav a.btn-ghost[aria-current="page"]{background:rgba(255,255,255,.16);border-color:rgba(255,255,255,.8)}
 @media(max-width:820px){.topnav a:not(.btn-invert):not(.btn-ghost){display:none}.topbar .wrap{height:68px}}
+/* Below ~560px the brand plus both pills stop fitting, so the second-tier pill
+   gives way to the primary one rather than pushing the page sideways. */
+@media(max-width:560px){
+  .topbar .wrap{gap:12px}
+  .topnav{gap:10px}
+  .topnav a.btn-invert{font-size:13px;padding:9px 16px}
+  .topnav a.btn-ghost{display:none}
+}
 
 .hero{padding:44px 0 6px}
 .hero h1{font-size:clamp(42px,6.4vw,72px);font-weight:800;letter-spacing:-0.042em}
