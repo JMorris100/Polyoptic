@@ -330,6 +330,54 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .pfoot.stacked{flex-direction:column;gap:5px;align-items:flex-start}
 .pfoot .cite{font-family:"Public Sans",system-ui,sans-serif;font-size:11.5px;line-height:1.45;
   color:var(--muted);text-transform:none;letter-spacing:0;overflow-wrap:anywhere;max-width:100%}
+
+/* ── the getting-started guide ───────────────────────────────────
+   Bottom right, first visit only. Sits below the geezer's z-index (80) and is
+   dismissed on entering Brexit mode, since the two share this corner. Every
+   colour is a theme var, so it follows light, dark and Brexit without extra
+   rules. */
+.guide{position:fixed;right:24px;bottom:24px;z-index:70;width:min(370px,calc(100vw - 40px));
+  background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);
+  display:none;flex-direction:column;overflow:hidden}
+.guide.on{display:flex}
+.ghd{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface-2);
+  border-bottom:1px solid var(--rule)}
+.ghd h2{font-family:Archivo,sans-serif;font-size:14.5px;font-weight:700;margin:0;color:var(--ink);
+  letter-spacing:-0.01em}
+.gstep{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);margin-left:auto}
+.gx{border:0;background:none;color:var(--muted);font-size:19px;line-height:1;cursor:pointer;
+  padding:0 2px}
+.gx:hover{color:var(--ink)}
+.gbody{padding:15px 16px 4px}
+.gbody h3{font-family:Archivo,sans-serif;font-size:15.5px;font-weight:700;margin:0 0 9px;
+  color:var(--ink);letter-spacing:-0.012em}
+.gbody ul{margin:0;padding:0;list-style:none}
+.gbody li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink);
+  line-height:1.45;margin-bottom:9px}
+.gbody li .gi{flex-shrink:0;width:17px;height:17px;color:var(--purple);margin-top:1px}
+.gbody li .gi svg{width:17px;height:17px}
+.gbody li b{font-weight:600}
+.gbody li .kbd{font-family:"IBM Plex Mono";font-size:11.5px;background:var(--soft);
+  border:1px solid var(--prule);border-radius:2px;padding:0 5px;color:var(--purple);
+  white-space:nowrap}
+.gft{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--rule);
+  margin-top:11px}
+.gdots{display:flex;gap:5px}
+.gdots i{width:6px;height:6px;border-radius:50%;background:var(--rule);display:block;
+  transition:.15s;cursor:pointer}
+.gdots i.on{background:var(--purple);transform:scale(1.25)}
+.gnav{margin-left:auto;display:flex;gap:6px}
+.gnav button{font-family:"IBM Plex Mono";font-size:11.5px;padding:6px 13px;cursor:pointer;
+  border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:2px;
+  transition:.14s}
+.gnav button:hover{border-color:var(--purple);color:var(--purple)}
+.gnav button.pri{background:var(--purple);border-color:var(--purple);color:#fff}
+.gnav button.pri:hover{background:var(--purple-dk);color:#fff}
+.gnav button:disabled{opacity:.4;cursor:default}
+.gnav button:disabled:hover{border-color:var(--rule);color:var(--ink)}
+@media(max-width:560px){
+  .guide{right:12px;left:12px;bottom:12px;width:auto}
+}
 </style>
 </head>
 <body>
@@ -340,10 +388,27 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
     <span class="crumb">Explorer</span>
     <div class="hact">
       <button class="hb eye" id="themeBtn"></button>
+      <button class="hb" id="helpBtn" title="How to use the explorer" aria-label="How to use the explorer">?</button>
       <button class="hb" id="copyLink">⧉ Copy link</button>
     </div>
   </div>
 </header>
+
+<aside class="guide" id="guide" role="dialog" aria-modal="false" aria-labelledby="gtitle" hidden>
+  <div class="ghd">
+    <h2 id="gtitle">Getting started</h2>
+    <span class="gstep" id="gstep"></span>
+    <button class="gx" id="gclose" aria-label="Close the guide">×</button>
+  </div>
+  <div class="gbody" id="gbody"></div>
+  <div class="gft">
+    <div class="gdots" id="gdots"></div>
+    <div class="gnav">
+      <button id="gback">Back</button>
+      <button class="pri" id="gnext">Next</button>
+    </div>
+  </div>
+</aside>
 
 <button class="secret" id="modeBtn" aria-label="Toggle Brexit mode" aria-pressed="false"></button>
 
@@ -1535,7 +1600,9 @@ function setMode(next){
   /* TEMPORARY — see the party trick block below. Deliberately only on a real
      click: setMode is never called when the mode is restored from storage on
      load, so a reload doesn't start playing music at you. */
-  if(MODE==="brexit"){ playAnthem(); showGeezer(); } else { stopAnthem(); hideGeezer(); }
+  /* the geezer lives in the same bottom-right corner as the guide */
+  if(MODE==="brexit"){ closeGuide(false); playAnthem(); showGeezer(); }
+  else { stopAnthem(); hideGeezer(); }
 }
 const modeBtn=document.getElementById("modeBtn");
 function syncModeBtn(){
@@ -1550,6 +1617,73 @@ function syncModeBtn(){
   if(off) off.onclick=()=>setMode("default");
 }
 modeBtn.onclick=()=>setMode(MODE==="default"?"brexit":"default");
+
+/* ══════════════════════════════════════════════
+   GETTING STARTED
+   Shown once, on a first visit, then only when the reader asks for it from the
+   header. The "seen" flag lives in localStorage rather than a cookie: nothing
+   here is sent to a server, and a cookie would be a consent question we don't
+   otherwise have to answer.
+   ══════════════════════════════════════════════ */
+const GUIDE_KEY="polyoptic-guide";
+const gi=svg=>`<span class="gi">${svg}</span>`;
+const GUIDE=[
+  {t:"Move and size your charts", li:[
+    [gi(IC.dup),`Drag the <span class="kbd">⠿</span> handle on any chart to reorder the stack.`],
+    [gi(IC.wide),`Drag a chart's <b>right edge</b> to change its width, or its <b>bottom edge</b> to change its height.`],
+    [gi(IC.lock),`The padlock pins a chart in place, so it can't be moved or resized by accident.`]]},
+  {t:"Charts and indicators", li:[
+    ["",`Pick indicators from the panel on the left — up to <b>four</b> on one chart. Click a selected one again to drop it.`],
+    ["",`<b>+ Add another chart</b> at the bottom starts a fresh one, and the ⋯ menu will duplicate or remove the chart you're on.`],
+    ["",`<b>Hide panel</b> at the foot of the list collapses it and gives the charts the full width. The rail on the left edge brings it back.`]]},
+  {t:"Change what the chart shows", li:[
+    [gi(IC.sliders),`Chart settings holds eight chart types — line, step, dots, bars, area, stacked, scatter and small multiples.`],
+    ["",`Transform the numbers without touching the source: <b>Rebase to 100</b>, <b>Year-on-year %</b>, <b>3-year average</b>, <b>Real terms</b>, <b>Per person</b> or <b>% of GDP</b>. Set the year range and granularity here too.`],
+    [gi(IC.flag),`Toggles the ribbon showing which party was in power, with prime ministers or elections marked.`]]},
+  {t:"Rename, export and share", li:[
+    [gi(IC.pen),`Click a chart's title to rename it. Your own title survives changing the indicators.`],
+    [gi(IC.png),`The ⋯ menu downloads the chart as a <b>PNG</b> or its numbers as a <b>CSV</b>, both carrying their source attribution.`],
+    ["",`<b>Copy link</b> in the header puts your whole layout in the URL — every chart, transform and year range.`]]},
+  {t:"Light or dark", li:[
+    ["",`The eye in the header switches between light and dark. It remembers which you picked.`],
+    ["",`Under the charts, <b>Sourcing</b> sets how attribution reads — short, full Harvard citations, or off.`],
+    ["",`That's everything. Reopen this any time with <span class="kbd">?</span> in the header.`]]},
+];
+let gAt=0;
+const gEl=document.getElementById("guide");
+function drawGuide(){
+  const s=GUIDE[gAt];
+  document.getElementById("gstep").textContent=`${gAt+1} of ${GUIDE.length}`;
+  document.getElementById("gbody").innerHTML=
+    `<h3>${s.t}</h3><ul>${s.li.map(([icon,txt])=>`<li>${icon||'<span class="gi"></span>'}<span>${txt}</span></li>`).join("")}</ul>`;
+  document.getElementById("gdots").innerHTML=
+    GUIDE.map((_,i)=>`<i class="${i===gAt?"on":""}" data-g="${i}" title="Step ${i+1}"></i>`).join("");
+  document.getElementById("gback").disabled=gAt===0;
+  document.getElementById("gnext").textContent=gAt===GUIDE.length-1?"Got it":"Next";
+  document.querySelectorAll("#gdots i").forEach(d=>d.onclick=()=>{gAt=+d.dataset.g;drawGuide();});
+}
+function openGuide(at){ gAt=at||0; gEl.hidden=false; gEl.classList.add("on"); drawGuide(); }
+/* hoisted, so setMode can call it regardless of where it sits in the file */
+function closeGuide(remember){
+  gEl.classList.remove("on"); gEl.hidden=true;
+  if(remember){ try{ localStorage.setItem(GUIDE_KEY,"seen"); }catch(e){} }
+}
+document.getElementById("gclose").onclick=()=>closeGuide(true);
+document.getElementById("gback").onclick =()=>{ if(gAt>0){ gAt--; drawGuide(); } };
+document.getElementById("gnext").onclick =()=>{
+  if(gAt<GUIDE.length-1){ gAt++; drawGuide(); } else closeGuide(true);
+};
+document.getElementById("helpBtn").onclick=()=>
+  gEl.classList.contains("on")?closeGuide(true):openGuide(0);
+document.addEventListener("keydown",e=>{
+  if(e.key==="Escape"&&gEl.classList.contains("on")) closeGuide(true);
+});
+/* first visit only — and never on top of a mode that owns this same corner */
+(function(){
+  let seen=true;
+  try{ seen=localStorage.getItem(GUIDE_KEY)==="seen"; }catch(e){}
+  if(!seen && MODE==="default") openGuide(0);
+})();
 
 /* ══════════════════════════════════════════════
    TEMPORARY — Brexit mode party trick
