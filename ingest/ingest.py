@@ -75,6 +75,8 @@ PUBLISHERS: dict[str, str] = {
     "OBR": "Office for Budget Responsibility",
     "DWP": "Department for Work and Pensions",
     "DHSC": "Department of Health and Social Care",
+    "DfT": "Department for Transport",
+    "DESNZ": "Department for Energy Security and Net Zero",
     "NHS England": "NHS England",
     "Institute for Government": "Institute for Government",
 }

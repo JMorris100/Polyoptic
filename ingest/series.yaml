@@ -798,3 +798,136 @@ series:
     notes:
       - "Measured against the offences recorded in the same period, which is the basis the headline charge rate uses. The most recent year is therefore understated — a lot of those investigations are still open, and their outcomes get assigned later"
       - "That lag is not even across offence types. Sexual offences take the longest to investigate, so they are depressed the most in the latest year: on the closed-investigations basis the same year reads roughly twice as high"
+
+  # ── TRANSPORT ────────────────────────────────────────────
+  # DfT's road safety tables carry deaths, all casualties and traffic volume on
+  # one sheet, which is why all three come from the same workbook. Note the
+  # geography: these are Great Britain, not UK — Northern Ireland reports
+  # separately, and the explorer's mismatch warning should fire when they are
+  # put next to a UK series.
+  - id: roaddeaths
+    name: Road deaths
+    topics: [transport]
+    unit: deaths per year
+    kind: count
+    geography: Great Britain
+    year_basis: calendar
+    source: DfT road safety statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/road-safety-statistics-data-tables
+    source_type: spreadsheet
+    fetch: &ras
+      url: https://assets.publishing.service.gov.uk/media/6a6398df9a419980593b2bdf/ras0101.ods
+      sheet: Casualties
+      year_column: Year
+      value_column: All road users (killed)
+    notes:
+      - "Deaths reported to the police on the STATS19 form. Fatalities are near-completely reported, so this is the most reliable series in the road safety set"
+      - "The 1926 start predates driving tests, MOTs and speed limits on most roads; deaths peaked in 1966 at over 7,900 with a fraction of today's traffic"
+
+  - id: casualties
+    name: Road casualties, all severities
+    topics: [transport]
+    unit: casualties per year
+    kind: count
+    geography: Great Britain
+    year_basis: calendar
+    source: DfT road safety statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/road-safety-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      <<: *ras
+      value_column: All road users (all severities)
+    notes:
+      - "Police-reported casualties only. DfT says plainly that non-fatal injuries are substantially under-reported — comparison with survey and hospital data suggests a large share never reaches a STATS19 form — so treat the level as a floor and the trend as the useful part"
+      - "Slight-injury counts are also affected by forces changing their injury-reporting systems from 2016, which raised recorded severity without any change on the road"
+
+  - id: traffic
+    name: Road traffic
+    topics: [transport]
+    unit: billion vehicle miles
+    kind: count
+    geography: Great Britain
+    year_basis: calendar
+    source: DfT road safety statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/road-safety-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      <<: *ras
+      value_column: All traffic (billion vehicle miles)
+    notes:
+      - "The denominator the casualty figures should usually be read against: traffic has roughly quadrupled since 1950 while deaths have fallen by around three quarters"
+
+  - id: busjourneys
+    name: Local bus passenger journeys
+    topics: [transport]
+    unit: million journeys per year
+    kind: count
+    geography: Great Britain
+    year_basis: financial
+    source: DfT bus statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/bus-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/69c11f97cfa346b9d4704a50/bus01.ods
+      sheet: BUS01a
+      year_column: Year ending March
+      value_column: Great Britain
+    notes:
+      - "Years ending March, so the year labelled 2021 is the one the pandemic hit hardest — journeys roughly halved and have not returned to the 2005 level"
+
+  # ── ENVIRONMENT & ENERGY ─────────────────────────────────
+  # Three shares off the same Energy Trends table. They deliberately do not sum
+  # to 100: low-carbon includes renewables plus nuclear, and net imports sit
+  # outside all three.
+  - id: renewshare
+    name: Renewable share of electricity generation
+    topics: [environment]
+    unit: "% of generation"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: DESNZ Energy Trends
+    source_url: https://www.gov.uk/government/statistics/electricity-section-5-energy-trends
+    source_type: spreadsheet
+    fetch: &et51
+      url: https://assets.publishing.service.gov.uk/media/6a6a0f222607fd81ff068812/ET_5.1_JUL_26.xlsx
+      sheet: Annual
+      layout: wide
+      label_column: 1
+      year_header_row: 133
+      row_match: Renewable generation share [note 2]
+    notes:
+      - "Share of electricity *generated*, not of energy consumed. Electricity is roughly a fifth of UK final energy use, so a renewables share above half does not mean half the country's energy is renewable"
+      - "Includes biomass, which is counted as renewable in this series but is contested as a carbon-neutral fuel"
+
+  - id: lowcarbon
+    name: Low-carbon share of electricity generation
+    topics: [environment]
+    unit: "% of generation"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: DESNZ Energy Trends
+    source_url: https://www.gov.uk/government/statistics/electricity-section-5-energy-trends
+    source_type: spreadsheet
+    fetch:
+      <<: *et51
+      row_match: Low-carbon generation share [note 2]
+    notes:
+      - "Renewables plus nuclear. Overlaps the renewables series rather than adding to it"
+
+  - id: fossilshare
+    name: Fossil fuel share of electricity generation
+    topics: [environment]
+    unit: "% of generation"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: DESNZ Energy Trends
+    source_url: https://www.gov.uk/government/statistics/electricity-section-5-energy-trends
+    source_type: spreadsheet
+    fetch:
+      <<: *et51
+      row_match: Fossil fuel generation share [note 2]
+    notes:
+      - "Coal, oil and gas. Coal's share went from around a third of generation in 1998 to nil when the last coal plant closed in 2024, so most of what remains here is gas"
