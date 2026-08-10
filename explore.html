@@ -309,6 +309,27 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .srcrow b{color:var(--ink);font-weight:600}
 .srcrow .mono{font-family:"IBM Plex Mono";font-size:10.5px}
 .ph{display:inline-block;font-family:"IBM Plex Mono";font-size:9.5px;background:var(--warnbg);border:1px solid var(--warnrule);color:var(--warn);padding:1px 6px}
+
+/* ── sourcing style ─────────────────────────────────────────── */
+.srchd{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between;
+  padding-bottom:10px;margin-bottom:4px;border-bottom:1px solid var(--rule)}
+.srcstyle{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.segs{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
+.segs button{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);background:var(--surface);
+  border:0;border-left:1px solid var(--rule);padding:5px 12px;cursor:pointer;transition:.14s}
+.segs button:first-child{border-left:0}
+.segs button:hover{color:var(--purple);background:var(--soft)}
+.segs button[aria-pressed="true"]{background:var(--purple);color:#fff}
+.copycite{font-family:"IBM Plex Mono";font-size:11px;color:var(--purple);background:var(--soft);
+  border:1px solid var(--prule);padding:5px 11px;border-radius:100px;cursor:pointer}
+.copycite:hover{border-color:var(--purple)}
+/* a citation ends in a source URL, which is one unbreakable token and will
+   push out of its container unless it is allowed to break mid-word */
+.srcrow.cite{display:block;font-size:12.5px;line-height:1.5;color:var(--ink);
+  overflow-wrap:anywhere}
+.pfoot.stacked{flex-direction:column;gap:5px;align-items:flex-start}
+.pfoot .cite{font-family:"Public Sans",system-ui,sans-serif;font-size:11.5px;line-height:1.45;
+  color:var(--muted);text-transform:none;letter-spacing:0;overflow-wrap:anywhere;max-width:100%}
 </style>
 </head>
 <body>
@@ -464,6 +485,51 @@ const catalogue = () => {
 };
 const yearsOf = s => s.values.map((_,i)=>s.start+i);
 const refAt = (ref,y) => { const r=DB.refs[ref]; if(!r) return null; const i=y-r.start; return (i>=0&&i<r.values.length)?r.values[i]:null; };
+
+/* ── sourcing style ─────────────────────────────────────────────
+   One setting for how attribution is rendered, applied in all four places
+   a source appears: the chart footer, the provenance panel, the CSV header
+   and the PNG credit. Keeping it in one place is the point — a chart whose
+   footer disagrees with its own export is worse than either.
+
+   `off` strips attribution from the exports too, which is a deliberate
+   choice by the site owner. OGL v3.0 asks for an attribution statement
+   when you redistribute, so an exported chart with no source line is on
+   whoever publishes it.
+
+   The author is `publisher_full` from the bundle, not `source`: `source` is
+   a release name, and "ONS Index of Private Housing Rental Prices (2026)"
+   would be citing a title as if it were an author. */
+const SRC_STYLES=[["short","Short"],["harvard","Harvard"],["off","Off"]];
+let SRCSTYLE=(()=>{ try{ const v=localStorage.getItem("polyoptic-srcstyle");
+  return SRC_STYLES.some(s=>s[0]===v)?v:"short"; }catch(e){ return "short"; } })();
+
+const ukDate=iso=>{ const d=new Date(iso||""); return isNaN(d)?"" :
+  d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}); };
+
+/* Harvard for a continuously-revised online dataset. The year is the
+   version consulted — the fetch year — unless the series declares a real
+   edition year in `published`, which is why the pipeline never guesses it. */
+function citeHarvard(m){
+  const author=m.publisher_full||m.publisher||m.source||"Unknown";
+  const year=m.published||String(m.fetched||"").slice(0,4)||"n.d.";
+  const url=m.source_url||m.source_api||"";
+  const acc=ukDate(m.fetched);
+  let out=`${author} (${year}) ${m.name}`;
+  if(!/[.?!]$/.test(out)) out+=".";
+  if(url) out+=` Available at: ${url}`;
+  if(acc) out+=` (Accessed: ${acc}).`;
+  else if(url) out+=".";
+  return out;
+}
+
+/* The attribution lines for the current style: none when off, one compact
+   line when short, one full citation per series when Harvard. */
+function srcLines(sets){
+  if(SRCSTYLE==="off"||!sets.length) return [];
+  if(SRCSTYLE==="harvard") return sets.map(s=>citeHarvard(s.meta));
+  return [[...new Set(sets.map(s=>s.meta.source))].join(" · ")];
+}
 
 /* ── transforms ── */
 const applies=(t,s)=>(t==="real"||t==="percap"||t==="pctgdp") ? (s.kind==="money_cash"||s.kind==="count") : true;
@@ -809,8 +875,15 @@ function panelHtml(p,i){
     const showRibbon = p.era!=="off" && p.chart!=="scatter" && p.chart!=="small";
     body=`<div class="pbody">${chart}${showRibbon?renderRibbon(p):""}</div>`;
     legend=`<div class="legend">${sets.map(s=>`<span class="lg"><span class="d" style="background:${s.colour}"></span>${esc(s.name)} <span class="u">${esc(s.unit)}</span></span>`).join("")}</div>`;
-    foot=`<div class="pfoot"><span>SOURCES · ${esc([...new Set(sets.map(s=>s.meta.source))].join(" · ")).toUpperCase()}</span>
-      <span>LICENCE · OGL v3.0</span><span>DATA · ${DB.meta.provenance.toUpperCase()}</span></div>`;
+    /* Harvard citations are sentences, not chips — they get their own rows so
+       they stay readable, while short keeps the original single-line strip. */
+    const lines=srcLines(sets);
+    const attrib = SRCSTYLE==="off" ? ""
+      : SRCSTYLE==="harvard"
+        ? lines.map(c=>`<span class="cite">${esc(c)}</span>`).join("")+`<span>LICENCE · OGL v3.0</span>`
+        : `<span>SOURCES · ${esc(lines[0]).toUpperCase()}</span><span>LICENCE · OGL v3.0</span>`;
+    foot=`<div class="pfoot${SRCSTYLE==="harvard"?" stacked":""}">${attrib}
+      <span>DATA · ${DB.meta.provenance.toUpperCase()}</span></div>`;
   }
 
   const warns=warningsFor(p,sets).map(w=>
@@ -914,17 +987,57 @@ function renderSidebar(){
     : `${inMode.length} indicators available`;
 }
 
+/* The style control lives here rather than in the header: this is the panel
+   about sourcing, and the setting governs how sourcing is written everywhere. */
+function srcStyleControl(){
+  return `<div class="srcstyle">
+    <span class="plabel">Sourcing</span>
+    <div class="segs" role="group" aria-label="Sourcing style">${
+      SRC_STYLES.map(([k,l])=>`<button data-src="${k}" aria-pressed="${SRCSTYLE===k}">${l}</button>`).join("")
+    }</div>
+    ${SRCSTYLE==="harvard"?`<button class="copycite" id="copyCite">Copy citations</button>`:""}
+  </div>`;
+}
+
 function renderSources(){
   const p=P0(), el=document.getElementById("srcs");
   const sets=p?buildSets(p):[];
-  if(!sets.length){el.innerHTML=`<div class="plabel">Provenance</div><div class="trayempty">Select something to see where it came from.</div>`;return;}
-  el.innerHTML=`<div class="plabel">Provenance · Chart ${state.active+1}</div>`+sets.map(s=>`
-    <div class="srcrow"><b>${esc(s.name)}</b>
-      <span class="mono">${esc(s.meta.source)}</span><span class="mono">${esc(s.meta.geography)}</span>
-      <span class="mono">${esc(s.meta.year_basis)} years</span><span class="mono">${esc(s.meta.unit)}</span>
-      <span class="mono">${esc(s.meta.licence)}</span>
-      ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}
-    </div>`).join("");
+  if(!sets.length){
+    el.innerHTML=`<div class="srchd"><div class="plabel">Provenance</div>${srcStyleControl()}</div>
+      <div class="trayempty">Select something to see where it came from.</div>`;
+    bindSrcStyle(); return;
+  }
+  const body = SRCSTYLE==="harvard"
+    ? sets.map(s=>`<div class="srcrow cite">${esc(citeHarvard(s.meta))}
+        ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}</div>`).join("")
+    : SRCSTYLE==="off"
+    ? `<div class="trayempty">Attribution is switched off — including on CSV and PNG exports.
+        The data is still OGL v3.0, which asks for a source statement when you republish it.</div>`
+    : sets.map(s=>`
+      <div class="srcrow"><b>${esc(s.name)}</b>
+        <span class="mono">${esc(s.meta.source)}</span><span class="mono">${esc(s.meta.geography)}</span>
+        <span class="mono">${esc(s.meta.year_basis)} years</span><span class="mono">${esc(s.meta.unit)}</span>
+        <span class="mono">${esc(s.meta.licence)}</span>
+        ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}
+      </div>`).join("");
+  el.innerHTML=`<div class="srchd"><div class="plabel">Provenance · Chart ${state.active+1}</div>${srcStyleControl()}</div>${body}`;
+  bindSrcStyle(sets);
+}
+
+function bindSrcStyle(sets){
+  document.querySelectorAll("[data-src]").forEach(b=>b.onclick=()=>{
+    SRCSTYLE=b.dataset.src;
+    try{ localStorage.setItem("polyoptic-srcstyle",SRCSTYLE); }catch(e){}
+    render();
+  });
+  const cp=document.getElementById("copyCite");
+  if(cp) cp.onclick=()=>{
+    const text=srcLines(sets||[]).join("\n");
+    if(!text) return;
+    navigator.clipboard?.writeText(text).then(()=>{
+      cp.textContent="Copied"; setTimeout(()=>{cp.textContent="Copy citations";},1400);
+    });
+  };
 }
 
 function render(){ renderPanels(); renderSidebar(); renderSources(); writeHash(); }
@@ -1211,6 +1324,27 @@ const dl=(blob,name)=>{const a=document.createElement("a");
   a.href=URL.createObjectURL(blob); a.download=name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),4000);};
 const slug=s=>s.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,60)||"chart";
 
+/* SVG text doesn't wrap, so a Harvard citation would run off the edge of an
+   exported image. Break on words at a character budget — monospace at 10px
+   is close enough to 6px a character to measure it that way. */
+function wrapText(s,max){
+  const out=[]; let cur="";
+  /* a source URL is one unbreakable token and routinely longer than the
+     line budget, so hard-break anything that can't fit on its own */
+  const words=String(s).split(/\s+/).filter(Boolean).flatMap(w=>{
+    if(w.length<=max) return [w];
+    const bits=[]; for(let i=0;i<w.length;i+=max) bits.push(w.slice(i,i+max));
+    return bits;
+  });
+  words.forEach(w=>{
+    if(!cur) cur=w;
+    else if((cur+" "+w).length<=max) cur+=" "+w;
+    else { out.push(cur); cur=w; }
+  });
+  if(cur) out.push(cur);
+  return out.length?out:[""];
+}
+
 function exportCsv(i){
   const p=state.panels[i], sets=buildSets(p);
   if(!sets.length) return;
@@ -1218,10 +1352,16 @@ function exportCsv(i){
   const head=["year",...sets.map(s=>`"${s.name} (${s.unit})"`)].join(",");
   const rows=years.map(y=>[y,...sets.map(s=>{const q=s.pts.find(q=>q[0]===y);return q&&q[1]!=null?q[1].toFixed(4):"";})].join(","));
   const warn=DB.meta.provenance==="placeholder"?"# WARNING: placeholder data, not real statistics\n":"";
-  const csv=warn+`# Polyoptic — ${sets.map(s=>s.name).join(" x ")}\n`+
-    `# Sources: ${[...new Set(sets.map(s=>s.meta.source))].join("; ")}\n`+
+  /* off strips the source and licence lines from the file as well as the
+     screen — see the note on SRC_STYLES. */
+  const lines=srcLines(sets);
+  const attrib = lines.length
+    ? lines.map(c=>`# ${SRCSTYLE==="harvard"?"":"Sources: "}${c}\n`).join("")+
+      `# Licence: OGL v3.0 — contains public sector information\n`
+    : "";
+  const csv=warn+`# Polyoptic — ${sets.map(s=>s.name).join(" x ")}\n`+attrib+
     `# Geography: ${[...new Set(sets.map(s=>s.meta.geography))].join("; ")}\n`+
-    `# Licence: OGL v3.0 — contains public sector information\n`+head+"\n"+rows.join("\n");
+    head+"\n"+rows.join("\n");
   dl(new Blob([csv],{type:"text/csv"}), slug(sets.map(s=>s.name).join("-"))+".csv");
 }
 
@@ -1260,12 +1400,24 @@ function exportPng(i){
   if(!svgs.length) return;
   const TH = EXPORT_THEMES[document.documentElement.dataset.theme] || EXPORT_THEMES.light;
 
-  const PAD=26, TOP=74, LEGEND=26, FOOT=30, SCALE=2;
+  const PAD=26, TOP=74, LEGEND=26, SCALE=2, CRED_LH=13;
   const inner=svgs.map(s=>{
     const vb=s.getAttribute("viewBox").split(/\s+/).map(Number);
     return {markup:s.innerHTML, w:vb[2], h:vb[3]};
   });
   const bodyH=inner.reduce((a,s)=>a+s.h+8,0);
+
+  /* The credit block is measured before the canvas is sized: Harvard puts a
+     full citation per series down there, so the image has to grow to fit it
+     rather than clipping it. */
+  const attribLines = SRCSTYLE==="off" ? ["polyoptic.co"]
+    : SRCSTYLE==="harvard" ? [...srcLines(sets), "OGL v3.0 · polyoptic.co"]
+    : [`Source: ${srcLines(sets)[0]} · OGL v3.0 · polyoptic.co`];
+  const credit = (DB.meta.provenance==="placeholder"
+      ? ["PLACEHOLDER DATA — NOT REAL STATISTICS"] : [])
+    .concat(attribLines.flatMap(t=>wrapText(t, Math.max(40,Math.floor(W/6.3)))));
+  const FOOT = 30 + Math.max(0,credit.length-1)*CRED_LH;
+
   const totalW=W+PAD*2, totalH=TOP+bodyH+LEGEND+FOOT+PAD;
 
   let y=TOP, parts="";
@@ -1285,7 +1437,7 @@ function exportPng(i){
     <text class="ttl" x="${PAD}" y="${PAD+14}">${esc(p.title??sets.map(s=>s.name).join(" × "))}</text>
     <text class="sub" x="${PAD}" y="${PAD+34}">${p.from}–${p.to} · ${esc(TRANSFORMS.find(x=>x[0]===p.trans)[1])} · ${esc([...new Set(sets.map(s=>s.meta.geography))].join(", "))}</text>
     ${parts}${legend}
-    <text class="cred" x="${PAD}" y="${totalH-PAD+4}">${DB.meta.provenance==="placeholder"?"PLACEHOLDER DATA — NOT REAL STATISTICS · ":""}Source: ${esc([...new Set(sets.map(s=>s.meta.source))].join("; "))} · OGL v3.0 · polyoptic.co</text>
+    ${credit.map((ln,k)=>`<text class="cred" x="${PAD}" y="${totalH-PAD+4-(credit.length-1-k)*CRED_LH}">${esc(ln)}</text>`).join("")}
   </svg>`;
 
   const img=new Image();
@@ -1307,11 +1459,15 @@ function exportPng(i){
    ══════════════════════════════════════════════ */
 function writeHash(){
   const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||"")].join("~")).join(";");
-  history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active);
+  history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active+
+    (SRCSTYLE!=="short"?"&src="+SRCSTYLE:""));
 }
 function readHash(){
   if(!location.hash) return;
   const q=new URLSearchParams(location.hash.slice(1));
+  /* a shared link carries the citation style, so the recipient sees the chart
+     credited the way the person who sent it credited it */
+  if(SRC_STYLES.some(s=>s[0]===q.get("src"))) SRCSTYLE=q.get("src");
   if(q.get("p")){
     const panels=decodeURIComponent(q.get("p")).split(";").map(chunk=>{
       const [sel,chart,trans,from,to,era,h,w,gran,ttl]=chunk.split("~");
