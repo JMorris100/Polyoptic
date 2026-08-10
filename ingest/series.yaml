@@ -12,6 +12,20 @@
 # The `spreadsheet` adapter landed on 2026-08-06, which is what makes the
 # borders / crime / tax block below possible: the Home Office, MoJ, HMRC
 # and FCDO publish .xlsx and .ods workbooks and nothing else.
+#
+# Optional per-series keys, beyond the required ones:
+#
+#   publisher:       short agency used by the verify page's Source facet.
+#   publisher_full:  corporate author used by the explorer's Harvard
+#                    citations.
+#   published:       edition year, for sources where a specific edition is
+#                    the right thing to cite (the Pink Book, say). Leave it
+#                    out for continuously-revised datasets — the front end
+#                    then cites the version consulted, via the fetch date.
+#
+# The first two are derived from the leading agency in `source` (see
+# PUBLISHERS in ingest.py) and only need setting when that derivation is
+# wrong. `published` is never derived.
 # ══════════════════════════════════════════════════════════════
 
 # ──────────────────────────────────────────────────────────────

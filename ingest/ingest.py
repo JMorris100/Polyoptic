@@ -15,6 +15,9 @@ Design notes
   Store what was published; derive the rest on demand.
 * Every series carries geography, year_basis, unit and licence. The front end
   refuses to silently compare across mismatches.
+* `publisher` / `publisher_full` are derived here rather than in the front end,
+  so the verify page's Source facet and the explorer's citation builder agree
+  by construction instead of by two copies of the same lookup table.
 
 Run:
     pip install -r ingest/requirements.txt
@@ -46,6 +49,53 @@ TIMEOUT = 45
 
 
 # ─────────────────────────────────────────────────────────────
+# Publishers
+#
+# `source` is a release name ("ONS Index of Private Housing Rental
+# Prices"), which is the right thing to show on a card but the wrong
+# thing to cite: Harvard wants a corporate author, and a facet wants a
+# handful of buckets rather than one per release. Both are derived from
+# the leading agency in `source`, longest prefix first so "Home Office"
+# is not shadowed by a shorter key.
+#
+# A series can override either with `publisher:` / `publisher_full:` in
+# series.yaml when the derived answer is wrong.
+# ─────────────────────────────────────────────────────────────
+
+PUBLISHERS: dict[str, str] = {
+    "ONS": "Office for National Statistics",
+    "Home Office": "Home Office",
+    "DfE": "Department for Education",
+    "MoJ": "Ministry of Justice",
+    "HMRC": "HM Revenue & Customs",
+    "FCDO": "Foreign, Commonwealth & Development Office",
+    "MHCLG": "Ministry of Housing, Communities & Local Government",
+    "HM Treasury": "HM Treasury",
+    "HM Land Registry": "HM Land Registry",
+    "OBR": "Office for Budget Responsibility",
+    "DWP": "Department for Work and Pensions",
+    "DHSC": "Department of Health and Social Care",
+    "NHS England": "NHS England",
+    "Institute for Government": "Institute for Government",
+}
+
+
+def resolve_publisher(spec: dict) -> tuple[str, str]:
+    """Short and full publisher for a series spec.
+
+    Falls back to the first word of `source` so a new agency still gets a
+    usable facet before anyone remembers to add it to PUBLISHERS.
+    """
+    short = spec.get("publisher")
+    if not short:
+        source = spec.get("source", "")
+        matches = [k for k in PUBLISHERS if source.startswith(k)]
+        short = max(matches, key=len) if matches else (source.split()[0] if source else "Unknown")
+    full = spec.get("publisher_full") or PUBLISHERS.get(short, short)
+    return short, full
+
+
+# ─────────────────────────────────────────────────────────────
 # Schema
 # ─────────────────────────────────────────────────────────────
 
@@ -63,6 +113,9 @@ class Series:
     kind: str                  # money_cash | money_real | count | rate | ratio | index
     start: int
     values: list[float | None]
+    publisher: str = ""        # short agency, for facets — "ONS"
+    publisher_full: str = ""   # corporate author, for citations
+    published: str = ""        # edition year, where one is meaningful; else blank
     discontinuities: list[dict] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     fetched: str = ""
@@ -700,12 +753,15 @@ def build_series(spec: dict) -> Series:
     adapter = ADAPTERS[spec["source_type"]]
     by_year = adapter(spec["fetch"])
     start, values = densify(by_year)
+    publisher, publisher_full = resolve_publisher(spec)
     s = Series(
         id=spec["id"], name=spec["name"], topics=spec["topics"], unit=spec["unit"],
         geography=spec["geography"], year_basis=spec["year_basis"],
         source=spec["source"], source_url=spec.get("source_url", ""),
         licence=spec.get("licence", "OGL v3.0"), kind=spec["kind"],
         start=start, values=values,
+        publisher=publisher, publisher_full=publisher_full,
+        published=str(spec.get("published", "")),
         discontinuities=spec.get("discontinuities", []),
         notes=spec.get("notes", []),
         fetched=datetime.now(timezone.utc).isoformat(timespec="seconds"),
