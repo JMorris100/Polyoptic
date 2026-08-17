@@ -258,6 +258,10 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .warn b{color:var(--warn-ink-b)}
 .warn button{margin-left:8px;font-family:"IBM Plex Mono";font-size:10.5px;background:transparent;border:1px solid var(--warnrule);padding:3px 8px;cursor:pointer;color:var(--warn-ink);border-radius:2px}
 .pbody{padding:14px 16px 6px}
+.pbody.scrolls{overflow:auto;scrollbar-width:thin}
+/* width fixed at the viewBox's own scale so the rows keep their height; the
+   panel scrolls rather than the labels shrinking. */
+.areasvg{width:940px;max-width:none;height:auto;display:block}
 .legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 12px}
 .lg{display:flex;align-items:center;gap:7px;font-size:12.5px}
 .lg .d{width:13px;height:3px;flex-shrink:0}
@@ -516,7 +520,8 @@ const PAL_DARK =["#8B6BFF","#FB923C","#2DD4BF","#E879F9"];
 const PAL_BREXIT=["#E4344F","#FFFFFF","#7FB2FF","#F0C24B"];
 const PAL=i=>({dark:PAL_DARK,brexit:PAL_BREXIT}[document.documentElement.dataset.theme]||PAL_LIGHT)[i%4];
 
-const CHART_TYPES = [["line","Line"],["step","Step"],["dots","Dots"],["bar","Bars"],["area","Area"],["stack","Stacked area"],["scatter","Scatter"],["small","Small multiples"]];
+const CHART_TYPES = [["line","Line"],["step","Step"],["dots","Dots"],["bar","Bars"],["area","Area"],["stack","Stacked area"],["scatter","Scatter"],["small","Small multiples"],["areas","Areas"]];
+const AREA_SORTS = [["desc","Highest first"],["asc","Lowest first"],["name","A to Z"]];
 const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["yoy","Year-on-year %"],
                     ["roll3","3-year average"],["real","Real terms"],["percap","Per person"],["pctgdp","% of GDP"]];
 const ERA_MODES = [["off","Off"],["party","Party"],["pm","Party + PMs"],["elections","Elections"]];
@@ -530,7 +535,7 @@ const wLabel=w=>({12:"full",9:"3/4",8:"2/3",6:"1/2",4:"1/3"}[w]||w+"/12");
 
 let uid=0;
 const mkPanel = (sel=[], over={}) =>
-  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"pm", eraPrev:"pm", gran:"years", h:H_DEF, w:12, title:null, ...over});
+  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"pm", eraPrev:"pm", gran:"years", h:H_DEF, w:12, title:null, lvl:"", asort:"desc", ...over});
 
 const state = { panels:[ mkPanel(["rents","pay"]) ], active:0, focus:null, q:"", topic:"all", openCfg:null, openMenu:null, renaming:null };
 const lockedKeys = new Set();
@@ -802,6 +807,125 @@ function renderSmall(p,sets){
   return `<svg viewBox="0 0 ${W} ${rows*ph}" style="width:100%;height:auto" role="img" aria-label="Small multiples">${g.join("")}</svg>`;
 }
 
+/* ── areas ───────────────────────────────────────────────────────
+   Local detail is not in the bundle. data/areas/index.json carries the area
+   registry and which series have local figures; data/areas/<id>.json carries
+   one series' values for every area. Together they are thirty times the
+   bundle's size, for a view most visits never open, so both are fetched on
+   first use and kept.
+
+   The panel's Range "to" year is the year shown. Reusing it rather than
+   adding a control means the ranking and the time chart it came from stay in
+   step, and an existing permalink already carries the right year.
+
+   Values are drawn as dots on a shared scale, not bars. A ranked bar chart
+   whose axis does not start at zero — and an employment rate between 68 and
+   82 per cent cannot start at zero and stay readable — makes length mean
+   nothing while still looking like it means something. */
+const AREA_ROW=15, AREA_ML=196, AREA_MR=70, AREA_TOP=26;
+let AREAIX=null;
+const AREADATA=new Map();
+const areaPending=new Set();
+
+function areaGet(url,store){
+  if(areaPending.has(url)) return;
+  areaPending.add(url);
+  fetch(url,{cache:"no-cache"})
+    .then(r=>r.ok?r.json():Promise.reject())
+    .then(d=>{ store(d); render(); })
+    .catch(()=>{ store("error"); render(); });   /* stored, so it is not retried on every render */
+}
+function areaIndex(){
+  if(!AREAIX) areaGet("data/areas/index.json",d=>{AREAIX=d;});
+  return AREAIX;
+}
+function areaData(id){
+  if(AREADATA.has(id)) return AREADATA.get(id);
+  areaGet(`data/areas/${id}.json`,d=>AREADATA.set(id,d));
+  return null;
+}
+/* The series a given area panel is actually showing: the first selection with
+   local detail, so adding a second indicator to compare over time does not
+   silently blank the area view. */
+const areaSet = sets => sets.find(s=>s.meta.areas) || null;
+function areaLevels(id){
+  const ix=AREAIX; return (ix&&ix!=="error"&&ix.series[id]||{}).levels||[];
+}
+const areaLevel = (p,id) => {
+  const lv=areaLevels(id);
+  return lv.includes(p.lvl) ? p.lvl : (lv.includes("la") ? "la" : lv[lv.length-1]||"");
+};
+
+/* The year on show, and the rows at that level. ELS publishes different
+   levels on different schedules, so the requested year can be empty at one
+   level and full at the next — step back rather than showing nothing. */
+function areaRows(p,d,ix,lvl){
+  const len=Math.max(...Object.values(d.values).map(v=>v.length));
+  const end=d.start+len-1;
+  let yr=Math.min(Math.max(p.to,d.start),end);
+  const at=y=>Object.entries(d.values)
+    .filter(([c])=>(ix.areas[c]||{}).l===lvl)
+    .map(([c,v])=>[c,(ix.areas[c]||{}).n||c,v[y-d.start]])
+    .filter(r=>r[2]!=null);
+  let rows=at(yr);
+  while(!rows.length && yr>d.start) rows=at(--yr);
+  return {rows,year:yr,end};
+}
+
+function renderAreas(p,sets){
+  const blank=(h,b)=>`<div class="blank"><h3>${h}</h3><div>${b}</div></div>`;
+  const set=areaSet(sets);
+  if(!set) return blank("No local detail here",
+    "Local figures come from ONS Explore Local Statistics. Pick an indicator that carries them — most of the population, economy and wellbeing series do.");
+  const ix=areaIndex(), d=areaData(set.id);
+  if(ix==="error"||d==="error") return blank("Local detail unavailable","The area files could not be loaded. The time chart above is unaffected.");
+  if(!ix||!d) return blank("Loading local detail…","One file per indicator, fetched the first time you ask for it.");
+
+  const lvl=areaLevel(p,set.id);
+  const {rows,year}=areaRows(p,d,ix,lvl);
+  if(!rows.length) return blank("Nothing at this level","No areas at this level carry a figure for this indicator.");
+
+  rows.sort(p.asort==="name" ? (a,b)=>a[1].localeCompare(b[1])
+          : p.asort==="asc"  ? (a,b)=>a[2]-b[2]
+          :                    (a,b)=>b[2]-a[2]);
+
+  /* The national figure, drawn as the reference the ranking is read against.
+     Prefer the UK row; fall back to whatever aggregate the indicator has. */
+  const natCode=["K02000001","E92000001","K03000001"].find(c=>d.values[c]&&d.values[c][year-d.start]!=null);
+  const nat=natCode?d.values[natCode][year-d.start]:null;
+  const natName=natCode?(ix.areas[natCode]||{}).n||"National":"";
+
+  const [mn,mx]=scale(rows.map(r=>r[2]).concat(nat!=null?[nat]:[]));
+  const H=AREA_TOP+rows.length*AREA_ROW+8;
+  const x=v=>AREA_ML+((v-mn)/Math.max(1e-9,mx-mn))*(W-AREA_ML-AREA_MR);
+  const g=[];
+
+  for(let i=0;i<=4;i++){
+    const v=mn+(mx-mn)*i/4, gx=x(v);
+    g.push(`<line class="gridline" x1="${gx.toFixed(1)}" y1="${AREA_TOP-8}" x2="${gx.toFixed(1)}" y2="${H-4}"/>`);
+    g.push(`<text class="axlabel" x="${gx.toFixed(1)}" y="${AREA_TOP-13}" text-anchor="middle">${fmt(v)}</text>`);
+  }
+  if(nat!=null){
+    g.push(`<line class="disc" x1="${x(nat).toFixed(1)}" y1="${AREA_TOP-8}" x2="${x(nat).toFixed(1)}" y2="${H-4}"/>`);
+    g.push(`<text class="axlabel" x="${x(nat).toFixed(1)}" y="${H+2}" text-anchor="middle">${esc(natName)} ${fmt(nat)}</text>`);
+  }
+  rows.forEach((r,i)=>{
+    const y=AREA_TOP+i*AREA_ROW+AREA_ROW/2;
+    const name=r[1].length>30?r[1].slice(0,29)+"…":r[1];
+    g.push(`<text class="axlabel" x="${AREA_ML-10}" y="${y+3.5}" text-anchor="end">${esc(name)}</text>`);
+    /* a hairline from the reference to the dot: it reads as distance from the
+       national figure, which is the comparison the eye should be making */
+    if(nat!=null) g.push(`<line x1="${x(nat).toFixed(1)}" y1="${y.toFixed(1)}" x2="${x(r[2]).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${set.colour}" stroke-width="1" opacity=".35"/>`);
+    g.push(`<circle cx="${x(r[2]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.2" fill="${set.colour}"/>`);
+    g.push(`<text class="axlabel" x="${W-AREA_MR+10}" y="${y+3.5}">${fmt(r[2])}</text>`);
+  });
+  /* Unlike the time charts, this one must not scale with the panel. Row height
+     is a legibility floor, not a proportion — squeezed into a third-width
+     panel the labels would overlap into a smear — so it keeps its natural
+     size and the panel scrolls to it. */
+  return `<svg class="areasvg" viewBox="0 0 ${W} ${H+8}" role="img" aria-label="${esc(set.name)} by area, ${year}">${g.join("")}</svg>`;
+}
+
 function renderRibbon(p){
   if(p.era==="off") return "";
   const g=[];
@@ -880,6 +1004,24 @@ function buildSets(p){
 
 function warningsFor(p,sets){
   const w=[];
+  /* The area view is a cross-section, so most of the warnings below are about
+     things it does not do. It gets its own set instead. */
+  if(p.chart==="areas"){
+    const set=areaSet(sets);
+    if(!set) return w;
+    if(sets.length>1)
+      w.push({html:`<b>Showing ${esc(set.name)} only.</b> An area ranking is one indicator at one moment; the other ${sets.length>2?"indicators are":"indicator is"} still on the chart's other views.`});
+    if(p.trans!=="none")
+      w.push({html:`<b>Figures as published.</b> Rebasing, year-on-year and the per-person transforms describe movement over time and are not applied here.`});
+    const ix=AREAIX, d=AREADATA.get(set.id);
+    if(ix&&ix!=="error"&&d&&d!=="error"){
+      const {year,end}=areaRows(p,d,ix,areaLevel(p,set.id));
+      if(year!==Math.min(p.to,end))
+        w.push({html:`<b>Showing ${year}.</b> No area at this level carries a figure for ${p.to}; ${year} is the most recent that does.`});
+      w.push({html:`<b>Areas as they are drawn today.</b> Local authorities merge and split, and ONS restates the back series onto current boundaries — so a long run for one area is a run for the ground it now covers, not for the council that used to run it.`});
+    }
+    return w;
+  }
   if(p.gran!=="years"&&sets.length)
     w.push({html:`<b>Interpolated detail.</b> These series are published annually. The ${esc(p.gran)} view estimates points between the annual figures — the shape is real, the fine detail is not.`});
   const geos=[...new Set(sets.map(s=>s.meta.geography))];
@@ -897,6 +1039,7 @@ function warningsFor(p,sets){
 }
 
 function chartFor(p,sets){
+  if(p.chart==="areas") return renderAreas(p,sets);
   if(p.chart==="scatter") return sets.length===2 ? renderScatter(p,sets)
     : `<div class="blank"><h3>Scatter needs exactly two</h3><div>Points are coloured by the government of the day.</div></div>`;
   if(p.chart==="small") return renderSmall(p,sets);
@@ -917,9 +1060,19 @@ function panelHtml(p,i){
     opts.map(([k,l])=>`<option value="${k}"${cur===k?" selected":""}${disFn&&disFn(k)?" disabled":""}>${l}</option>`).join("")
   }</select></div>`;
 
+  /* Level and order only exist for the area view, and the level list is the
+     one this particular indicator publishes — no offering districts for a
+     series that stops at regions. */
+  const aset=p.chart==="areas"?areaSet(sets):null;
+  const alvls=aset?areaLevels(aset.id):[];
+  const areaCtrl = p.chart!=="areas"||!alvls.length ? "" :
+    `<span class="plabel">Level</span>${sel("lvl",alvls.map(k=>[k,((AREAIX||{}).levelNames||{})[k]||k]),areaLevel(p,aset.id))}
+     <span class="plabel">Order</span>${sel("asort",AREA_SORTS,p.asort)}`;
+
   const ctrl=`<div class="cfgpanel" ${open?"":"hidden"}>
     <span class="plabel">Chart</span>${sel("chart",CHART_TYPES,p.chart,k=>(k==="scatter"&&p.sel.length!==2)||(k==="stack"&&p.sel.length<2))}
     <span class="plabel">Transform</span>${sel("trans",TRANSFORMS,p.trans,k=>p.sel.length&&!anyApplies(k))}
+    ${areaCtrl}
     <div class="cfgrule"></div>
     <span class="plabel">Government</span>${sel("era",ERA_MODES,p.era)}
     <span class="plabel">Time</span>${sel("gran",GRANS,p.gran)}
@@ -940,9 +1093,18 @@ function panelHtml(p,i){
       </div></div>`;
   } else {
     const chart=chartFor(p,sets);
-    const showRibbon = p.era!=="off" && p.chart!=="scatter" && p.chart!=="small";
-    body=`<div class="pbody">${chart}${showRibbon?renderRibbon(p):""}</div>`;
-    legend=`<div class="legend">${sets.map(s=>`<span class="lg"><span class="d" style="background:${s.colour}"></span>${esc(s.name)} <span class="u">${esc(s.unit)}</span></span>`).join("")}</div>`;
+    const showRibbon = p.era!=="off" && p.chart!=="scatter" && p.chart!=="small" && p.chart!=="areas";
+    /* A ranking is as tall as the number of areas, which at local-authority
+       level is a few hundred rows. The panel's height becomes the window onto
+       it rather than a cap on what is drawn — the PNG export still gets the
+       whole thing, because it reads the SVG and not the scrolled view. */
+    body=`<div class="pbody${p.chart==="areas"?" scrolls":""}"${p.chart==="areas"?` style="max-height:${p.h}px"`:""}>${chart}${showRibbon?renderRibbon(p):""}</div>`;
+    /* The area view draws one series and ignores the transform, so it gets a
+       legend that says so. Left to the general one it would caption a chart of
+       published pounds as "index, 1997=100" — the chart and its own key
+       disagreeing, which is the failure this site exists to avoid. */
+    const lgSets = p.chart==="areas" && aset ? [{...aset, unit:aset.meta.unit}] : sets;
+    legend=`<div class="legend">${lgSets.map(s=>`<span class="lg"><span class="d" style="background:${s.colour}"></span>${esc(s.name)} <span class="u">${esc(s.unit)}</span></span>`).join("")}</div>`;
     /* Harvard citations are sentences, not chips — they get their own rows so
        they stay readable, while short keeps the original single-line strip. */
     const lines=srcLines(sets);
@@ -1178,6 +1340,8 @@ document.getElementById("stack").addEventListener("change",e=>{
   else if(act==="to") p.to=+e.target.value;
   else if(act==="chart") p.chart=e.target.value;
   else if(act==="trans") p.trans=e.target.value;
+  else if(act==="lvl") p.lvl=e.target.value;
+  else if(act==="asort") p.asort=e.target.value;
   else if(act==="era"){ p.era=e.target.value; if(p.era!=="off") p.eraPrev=p.era; }
   else if(act==="widthsel"){ p.w=+e.target.value; }
   else if(act==="gran"){
@@ -1413,9 +1577,36 @@ function wrapText(s,max){
   return out.length?out:[""];
 }
 
+/* The area export carries the area code as well as the name, because the name
+   alone will not join to anything and a rankings CSV is exactly the file
+   someone will want to join. Attribution follows SRCSTYLE like every other
+   surface — see the note on SRC_STYLES. */
+function exportAreaCsv(p,sets){
+  const set=areaSet(sets), ix=AREAIX, d=set&&AREADATA.get(set.id);
+  if(!set||!ix||ix==="error"||!d||d==="error") return;
+  const lvl=areaLevel(p,set.id);
+  const {rows,year}=areaRows(p,d,ix,lvl);
+  if(!rows.length) return;
+  rows.sort(p.asort==="name" ? (a,b)=>a[1].localeCompare(b[1])
+          : p.asort==="asc"  ? (a,b)=>a[2]-b[2]
+          :                    (a,b)=>b[2]-a[2]);
+  const lines=srcLines([set]);
+  const attrib = lines.length
+    ? lines.map(c=>`# ${SRCSTYLE==="harvard"?"":"Sources: "}${c}\n`).join("")+
+      `# Licence: OGL v3.0 — contains public sector information\n`
+    : "";
+  const csv=`# Polyoptic — ${set.name} by area, ${year}\n`+attrib+
+    `# Level: ${(ix.levelNames||{})[lvl]||lvl}\n`+
+    `# Areas are on current boundaries; ONS restates the back series when they change\n`+
+    `area_code,area_name,level,year,"${set.name} (${set.unit})"\n`+
+    rows.map(r=>`${r[0]},"${r[1].replace(/"/g,'""')}",${lvl},${year},${r[2]}`).join("\n");
+  dl(new Blob([csv],{type:"text/csv"}), slug(set.name+"-by-area-"+year)+".csv");
+}
+
 function exportCsv(i){
   const p=state.panels[i], sets=buildSets(p);
   if(!sets.length) return;
+  if(p.chart==="areas") return exportAreaCsv(p,sets);
   const years=[...new Set(sets.flatMap(s=>s.pts.map(q=>q[0])))].sort();
   const head=["year",...sets.map(s=>`"${s.name} (${s.unit})"`)].join(",");
   const rows=years.map(y=>[y,...sets.map(s=>{const q=s.pts.find(q=>q[0]===y);return q&&q[1]!=null?q[1].toFixed(4):"";})].join(","));
@@ -1526,7 +1717,10 @@ function exportPng(i){
    PERMALINK
    ══════════════════════════════════════════════ */
 function writeHash(){
-  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||"")].join("~")).join(";");
+  /* Fields are positional and append-only: lvl and asort go on the end so a
+     link made before the area view existed still reads, and gets the
+     defaults for the two it does not carry. */
+  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||""),p.lvl,p.asort].join("~")).join(";");
   history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active+
     (SRCSTYLE!=="short"?"&src="+SRCSTYLE:""));
 }
@@ -1538,13 +1732,14 @@ function readHash(){
   if(SRC_STYLES.some(s=>s[0]===q.get("src"))) SRCSTYLE=q.get("src");
   if(q.get("p")){
     const panels=decodeURIComponent(q.get("p")).split(";").map(chunk=>{
-      const [sel,chart,trans,from,to,era,h,w,gran,ttl]=chunk.split("~");
+      const [sel,chart,trans,from,to,era,h,w,gran,ttl,lvl,asort]=chunk.split("~");
       /* old links stored the ribbon as 1/0 — map those onto the era modes */
       const eraMode = era==="1"?"pm" : era==="0"?"off" : (ERA_MODES.some(m=>m[0]===era)?era:"pm");
       return mkPanel((sel||"").split(",").filter(id=>S(id)),
         {chart:chart||"line",trans:trans||"index",from:+from||1997,to:+to||2026,
          era:eraMode,eraPrev:eraMode==="off"?"pm":eraMode,gran:(GRANS.some(g=>g[0]===gran)?gran:"years"),
          title:ttl?decodeURIComponent(ttl):null,
+         lvl:lvl||"", asort:(AREA_SORTS.some(a=>a[0]===asort)?asort:"desc"),
          h:Math.max(H_MIN,Math.min(H_MAX,+h||H_DEF)),w:(W_SNAPS.includes(+w)?+w:12)});
     });
     if(panels.length) state.panels=panels;

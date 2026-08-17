@@ -380,6 +380,7 @@ function detailHtml(s,isRef){
     <div class="dlinks">
       ${s.source_url?`<a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}
       ${s.source_api?`<a href="${esc(s.source_api)}" target="_blank" rel="noopener">API endpoint ↗</a>`:""}
+      ${s.areas?`<a href="data/areas/${esc(s.id)}.json">Local figures ↗</a>`:""}
       <button data-dl="${esc(s.id||s.name)}">Download CSV</button>
     </div>
     <details class="rawtoggle"><summary>Raw values (${obs})</summary>${rawCols(s)}</details>

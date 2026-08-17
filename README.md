@@ -120,7 +120,7 @@ compare across mismatches:
 
 ## Adding an indicator
 
-Add an entry to `ingest/series.yaml`. No code changes. Five adapters cover
+Add an entry to `ingest/series.yaml`. No code changes. Six adapters cover
 almost everything published in the UK:
 
 | `source_type` | Use for |
@@ -129,7 +129,47 @@ almost everything published in the UK:
 | `ons_beta` | ONS Beta API at `api.beta.ons.gov.uk/v1`. Open, no key. More stable, but you must know each dataset's dimension names |
 | `dfe_ees` | DfE Explore Education Statistics API. POST queries; note not every EES dataset is exposed through the API |
 | `csv` | Anything published as a plain CSV file. Unglamorous, and you'll use it more than you expect |
+| `els` | ONS Explore Local Statistics. One indicator slug, whole history, and the same call returns every local area — see below |
 | `spreadsheet` | `.xlsx` / `.ods` workbooks — the Home Office, MoJ, HMRC, FCDO and the ONS crime team publish nothing else |
+
+### The Explore Local Statistics adapter
+
+ONS's subnational service, and the one source here that is an ingest job
+rather than a build. A series needs one line:
+
+```yaml
+source_type: els
+fetch: {indicator: gross-median-weekly-pay}
+```
+
+`geo` defaults to `K02000001`, the UK. `time=all` is sent for you and is not
+optional in spirit — without it the service returns the latest period only,
+silently, and you get a one-point series.
+
+Two things come free with an `els` entry:
+
+**Candidate entries.** `python ingest/ingest.py --els-catalogue` reads ONS's
+own indicator metadata and prints ready-made `series.yaml` blocks — name,
+unit, coverage, publisher, and the release's caveats as `notes`. Review before
+pasting: it cannot pick a short permalink `id`, choose this catalogue's topic
+tags, or judge which caveats are worth carrying. `--els-geo` and
+`--els-min-span` narrow what it offers.
+
+**Local detail.** The same indicator is fetched for every area into
+`data/areas/<id>.json`, with `data/areas/index.json` holding the area registry
+and which series have local figures. These are deliberately *not* in
+`bundle.json`: together they are around 1.8 MB against the bundle's 100 KB,
+for a view most visits never open, so the explorer fetches them the first time
+someone asks for areas. `--areas-only` rebuilds them without touching the
+bundle; `--no-areas` skips them.
+
+Levels come from the area code, not the row: `E07…` is a district, `TLC31` is
+ITL3. ONS's own level naming differs between the API and the published files
+while the coding scheme is stable.
+
+One trap worth knowing: an indicator's metadata can list a geography level it
+does not actually serve. `urban-heat-regulating` claims UK coverage, 400s when
+you ask for it, and is published here as England.
 
 ### The spreadsheet adapter
 
@@ -203,6 +243,11 @@ shows if `data/bundle.json` fails to load, and it is labelled as such.
 - `dfe_ees` works, but the catalogue is thinner than the site: school
   funding is not exposed through the API at all, which is why the education
   set is absence, KS2 disadvantage gap and pupil numbers.
+- `els` (Explore Local Statistics) added 33 UK-level series in one go —
+  population, business demography, wellbeing, healthy life expectancy,
+  natural capital — and local figures for all of them. Its metadata
+  endpoint describes each indicator well enough to generate most of a
+  `series.yaml` entry, caveats included.
 - `spreadsheet` now carries everything the APIs don't: Home Office
   immigration and returns, MoJ prison population, HMRC non-doms, FCDO aid,
   ONS crime, Home Office crime outcomes. Traps worth knowing, all of which
@@ -235,9 +280,13 @@ shows if `data/bundle.json` fails to load, and it is labelled as such.
   measure.
 - The MHCLG housing series and the HMT financial-year deflator are now
   unblocked by the spreadsheet adapter but not yet added.
-- No local-authority or regional breakdowns — the schema takes a single
-  national series per id. Adding a `geography` dimension is the next real
-  piece of architecture, and it's the one that unlocks maps.
+- Local breakdowns exist only for the 33 `els` series. The other 42 are still
+  a single national figure per id, and the schema still has no general
+  `geography` dimension — the area files sit beside the bundle rather than
+  inside the series objects.
+- The area view is a ranking, not a map. Boundary polygons are a much larger
+  download than the figures they would colour, and a ranked list answers
+  "where does this area sit" without one.
 - No sub-annual data. Everything collapses to years at ingest.
 - No tests.
 
