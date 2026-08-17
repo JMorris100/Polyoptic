@@ -931,3 +931,609 @@ series:
       row_match: Fossil fuel generation share [note 2]
     notes:
       - "Coal, oil and gas. Coal's share went from around a third of generation in 1998 to nil when the last coal plant closed in 2024, so most of what remains here is gas"
+
+  # ══════════════════════════════════════════════════════════
+  # ONS Explore Local Statistics
+  #
+  # One endpoint, one indicator slug per series (see fetch_els in
+  # ingest.py). These are the UK-level rows of a service whose real
+  # subject is local geography — the same slugs drive data/areas.json,
+  # so anything added here gains a map's worth of detail for free.
+  #
+  # Generated with `python ingest/ingest.py --els-catalogue` and then
+  # edited: short ids, this catalogue's topic tags, and the notes that
+  # tie a new series to one already here. Most notes below are ONS's
+  # own caveats, carried through rather than paraphrased.
+  # ══════════════════════════════════════════════════════════
+
+  # ── ECONOMY — from ONS Explore Local Statistics ─────────────
+
+  - id: firms
+    name: Active businesses
+    topics: [economy]
+    unit: "number of enterprises"
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: active-businesses}
+    notes:
+      - "The starting point for demography is the concept of a population of active businesses in a reference year (t). These are defined as businesses that had either turnover or employment at any time during the reference period."
+
+  - id: firmbirths
+    name: Business births
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: business-births}
+    notes:
+      - "A birth is identified as a business that was present in year t, but did not exist in year t-1 or t-2. Births are identified by making comparison of annual active population files and identifying those present in the latest file, but not the two previous ones."
+      - "The birth rate is calculated using the number of births as a proportion of the active businesses."
+
+  - id: firmdeaths
+    name: Business deaths
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: business-deaths}
+    notes:
+      - "A death is defined as a business that was on the active file in year t, but was no longer present in the active file in t+1 and t+2. In order to provide an early estimate of deaths, an adjustment has been made to the latest two years deaths to allow for reactivations. These figures are provisional and subject to revision."
+      - "The death rate is calculated using the number of deaths as a proportion of the active businesses."
+
+  - id: claimants
+    name: Claimant Count
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/regionallabourmarket/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: claimant-count}
+    notes:
+      - "Not the unemployment rate: it counts benefit claims, which respond to eligibility rules as well as to the labour market. Read it against the LFS unemployment series rather than instead of it"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Proportions of people claiming are the number of claimants in a year divided by the population aged from 16 to 64 from mid-year 2023 population estimates."
+      - "The experimental Claimant Count consists of claimants of Jobseekers Allowance (JSA) and some Universal Credit (UC) Claimants. The UC claimants that are included are 1) those that were recorded as not in employment (May 2013-April 2015), and 2) those claimants of Universal Credit who are required to search for work, i.e. within the Searching for Work conditionality regime as defined by the Department for Work & Pensions (from April 2015 onwards)."
+      - "The count is based on live claims on the second Thursday of the reference month."
+      - "Under certain circumstances, some people are able to claim both contribution-based JSA and UC at the same time. Consequently, there has been a small amount of double counting. Information from DWP suggests this double counting increased at the start of the pandemic and has stabilised at approximately 1.0 to 1.5% of the Claimant Count."
+      - "Northern Ireland local government districts Claimant Count figures are only available from 2013 onwards."
+
+  - id: inactive
+    name: Economic inactivity rate
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: Great Britain
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/datasets/li01regionallabourmarketlocalindicatorsforcountieslocalandunitaryauthorities
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: economic-inactivity-rate}
+    notes:
+      - "ONS titles this indicator Great Britain but serves the top-level row as 'United Kingdom'. Published here on the narrower claim in the title"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Calculation of economic inactivity rate: number of economically inactive people aged 16 to 64 years divided by the population aged 16 to 64 years. Population is the sum of employed plus unemployed plus inactive."
+      - "The ongoing challenges with response rates, response levels and weighting approach mean that labour market statistics based on both the Labour Force Survey (LFS) and Annual Population Survey (APS) will be considered [official statistics in development](https://osr.statisticsauthority.gov.uk/policies/official-statistics-policies/official-statistics-in-development/) until further review. Because of increased volatility of LFS and APS estimates, estimates of change should be treated with additional caution."
+      - "Updates to this indicator have been temporarily suspended until the APS reweighting is implemented in 2026."
+
+  - id: emprate
+    name: Employment rate
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: Great Britain
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/datasets/li01regionallabourmarketlocalindicatorsforcountieslocalandunitaryauthorities
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: employment-rate}
+    notes:
+      - "ONS titles this indicator Great Britain but serves the top-level row as 'United Kingdom'. Published here on the narrower claim in the title"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Calculation of employment rate: number of employed people aged 16 to 64 years divided by the population aged 16 to 64 years. Population is the sum of employed plus unemployed plus inactive."
+      - "The ongoing challenges with response rates, response levels and weighting approach mean that labour market statistics based on both the Labour Force Survey (LFS) and Annual Population Survey (APS) will be considered [official statistics in development](https://osr.statisticsauthority.gov.uk/policies/official-statistics-policies/official-statistics-in-development/) until further review. Because of increased volatility of LFS and APS estimates, estimates of change should be treated with additional caution."
+      - "Updates to this indicator have been temporarily suspended until the APS reweighting is implemented in 2026."
+
+  - id: foodoutlets
+    name: Food outlets
+    topics: [health, economy]
+    unit: "per 1,000 population"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/ukbusinessactivitysizeandlocation/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: food-outlets}
+    notes:
+      - "The data for this indicator is sourced from [Nomis](https://www.nomisweb.co.uk/query/construct/summary.asp?reset=yes&mode=construct&dataset=142&version=0), based on an extract from the Inter-Departmental Business Register (IDBR). This dataset records the number of enterprises that were live at a reference point in March each year."
+      - "An enterprise can be thought of as the overall business, made up of all the individual sites or workplaces. It is defined as the smallest combination of legal units (generally based on VAT and/or PAYE records) that has a certain degree of autonomy within an enterprise group."
+      - "Please refer to the [UK business; activity, size and location quality and methods guide](https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/methodologies/ukbusinessactivitysizeandlocationqmi) for more information."
+      - "Mid-year population estimates for the period 2010 to 2024 have been used to calculate rates per 1,000 population (sourced from [Nomis](https://www.nomisweb.co.uk/datasets/pestsyoala)). The most recent (2024) population estimates have been used to produce rates for the 2025 data."
+
+  - id: gdhi
+    name: Gross disposable household income per head
+    topics: [economy, housing]
+    unit: "£"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/regionalaccounts/grossdisposablehouseholdincome/bulletins/regionalgrossdisposablehouseholdincomegdhi/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: gross-disposable-household-income-per-head}
+    notes:
+      - "Figures for 2023 are provisional, as national estimates have not been through supply and use balancing at the time of the data source publication."
+
+  - id: gdpheadreal
+    name: Gross domestic product per head in chained volume measures
+    topics: [economy]
+    unit: "£"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/regionaleconomicactivitybygrossdomesticproductuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: gross-domestic-product-per-head-chained-volume-measure}
+    notes:
+      - "Chained volume measures — real terms, and the series to use for 'are we better off', with the cash series alongside to show how much of the nominal rise was prices"
+      - "This time series has the effects of inflation removed by considering changes in quantity between consecutive periods, holding prices from previous periods constant and is most useful for monitoring growth over time within any given area."
+      - "2023 data are provisional."
+      - "Data for the City of London has been excluded from the visualisations on this service due to its very high GDP figures and very low population, which distort the overall representation. Please refer to the accompanying dataset below or the [data source](https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/regionaleconomicactivitybygrossdomesticproductuk/previousreleases) for this information."
+
+  - id: gdphead
+    name: Gross domestic product per head at current market prices
+    topics: [economy]
+    unit: "£"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/regionaleconomicactivitybygrossdomesticproductuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: gross-domestic-product-per-head-current-market-price}
+    notes:
+      - "Cash prices, so most of the rise before the mid-2000s is inflation. The chained volume series is the real-terms answer to the same question"
+      - "This time series includes the effects of inflation and is most useful for comparison of levels between different areas."
+      - "2023 data are provisional."
+      - "Data for the City of London has been excluded from the visualisations on this service due to its very high GDP figures and very low population, which distort the overall representation. Please refer to the accompanying dataset below or the [data source](https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/regionaleconomicactivitybygrossdomesticproductuk/previousreleases) for this information."
+
+  - id: paymed
+    name: Gross median weekly pay
+    topics: [economy]
+    unit: "£"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/bulletins/annualsurveyofhoursandearnings/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: gross-median-weekly-pay}
+    notes:
+      - "The median, and residence-based — the existing average weekly earnings series is a workplace-based mean over a different population, so the two are not alternative estimates of the same thing and the gap between them is the point"
+      - "Assembled by ONS from more than one collection (Office for National Statistics, Northern Ireland Statistics and Research Agency), so the nations are not always on identical definitions"
+      - "For Great Britain data, 2025 estimates are provisional and relate to the pay period that includes 30 April 2025. Estimates for 2024 have been revised and relate to the pay period that includes 17 April 2024."
+      - "The country level figure for Northern Ireland has been sourced from Nomis rather than NISRA. This is to allow for confidence intervals."
+      - "Combined Authority data has been sourced from the following: [2023 (revised)](https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/adhocs/2934annualsurveyofhoursandearningsestimatesofearningsofresidencebasedemployeesbycombinedauthorities), [2024 (revised) and 2025 (provisional)](https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/adhocs/3107annualsurveyofhoursandearningsestimatesofearningsofresidenceandworkbasedemployeesbycombinedauthorities2024revisedand2025provisional)."
+
+  - id: highgrowth
+    name: High growth businesses
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: high-growth-businesses}
+    notes:
+      - "High growth measures all businesses with an average growth in employment of greater than 20%, per annum, over a three-year period. The size threshold used to identify these businesses is that they have 10 or more employees."
+      - "The rate of high growth businesses is calculated using the number of high growth businesses as a proportion of the active businesses with 10 or more employees."
+
+  - id: fdiin
+    name: Inward foreign direct investment
+    topics: [economy]
+    unit: "£ millions"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/articles/foreigndirectinvestmentexperimentaluksubnationalstatistics/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: inward-foreign-direct-investment}
+    notes:
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Foreign direct investment (FDI) is cross-border investment made with the objective of establishing a lasting interest in the host economy. FDI is also defined by control relationships, where the direct investor (parent company) controls at least 10% of the voting power (ordinary shares) of the direct investment enterprise. These relationships can be measured in two directions:"
+      - "- outward: the direct investments of UK-resident companies in other countries."
+      - "- inward: the direct investments in the UK from non-resident companies."
+      - "Several factors affected FDI statistics for 2020. This not only includes disruption from the coronavirus (COVID-19) pandemic and global recession, but also some changes to the FDI statistical populations and sampling methods. We advise caution when comparing results for 2020 with earlier years. More detail can be found in [Foreign direct investment statistics, overview of methods changes: 2020](https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/articles/foreigndirectinvestmentstatisticsoverviewofmethodschanges/2020)."
+
+  - id: fdiout
+    name: Outward foreign direct investment
+    topics: [economy]
+    unit: "£ millions"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/articles/foreigndirectinvestmentexperimentaluksubnationalstatistics/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: outward-foreign-direct-investment}
+    notes:
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Foreign direct investment (FDI) is cross-border investment made with the objective of establishing a lasting interest in the host economy. FDI is also defined by control relationships, where the direct investor (parent company) controls at least 10% of the voting power (ordinary shares) of the direct investment enterprise. These relationships can be measured in two directions:"
+      - "- outward: the direct investments of UK-resident companies in other countries."
+      - "- inward: the direct investments in the UK from non-resident companies."
+      - "Several factors affected FDI statistics for 2020. This not only includes disruption from the coronavirus (COVID-19) pandemic and global recession, but also some changes to the FDI statistical populations and sampling methods. We advise caution when comparing results for 2020 with earlier years. More detail can be found in [Foreign direct investment statistics, overview of methods changes: 2020](https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/articles/foreigndirectinvestmentstatisticsoverviewofmethodschanges/2020)."
+
+  # ── ENVIRONMENT — natural capital and emissions ─────────────
+
+  - id: airreg
+    name: Air pollution regulating
+    topics: [environment]
+    unit: "£ millions, 2024 prices"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/uknaturalcapitalaccounts/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: air-pollution-regulating}
+    notes:
+      - "A valuation of an ecosystem service, not spending: ONS estimates what the vegetation's removal of air pollutants would otherwise have cost in health damage. Treat it as an accounting estimate with wide uncertainty, not a measured flow of money"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "This data includes all pollutants and all habitats."
+      - "Please refer to the [UK natural capital accounts quality and methods guide](https://www.ons.gov.uk/economy/environmentalaccounts/methodologies/uknaturalcapitalaccountsqualityandmethodsguide) for more information."
+
+  - id: ghgcapita
+    name: Greenhouse gas emissions
+    topics: [environment]
+    unit: "tCO2e per capita"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/collections/uk-local-authority-and-regional-greenhouse-gas-emissions-national-statistics
+    publisher: DESNZ
+    source_type: els
+    fetch: {indicator: greenhouse-gas-emissions}
+    notes:
+      - "Greenhouse gas emissions (tCO2e) per capita refers to the average amount of greenhouse gas emissions produced by each person in a specific area over a year. This metric is calculated by dividing the total greenhouse gas emissions of an area by its population. The result is expressed in tonnes of CO2 equivalent (tCO2e) per person."
+      - "Greenhouse gas emissions here include territorial emissions of carbon dioxide (CO2), methane (CH4) and nitrous oxide (N2O)."
+      - "Emissions are reported against the areas where they occurred except for emissions associated with energy supply that are distributed to the areas based on where the 'end-use' of the energy occurred and emissions from waste that have been distributed based on the waste arising in each area."
+      - "Emissions data is from UK local authority greenhouse gas emissions estimates where some emissions can't be fully allocated to individual local authorities for technical or disclosure reasons."
+      - "Some of this data has been aggregated and may show differences to other published figures."
+      - "Emissions data is also visualised on [Local Authority Greenhouse Gas Map.](https://naei.energysecurity.gov.uk/laghgapp/)"
+
+  - id: ghgreg
+    name: Greenhouse gas regulating
+    topics: [environment]
+    unit: "£ millions, 2024 prices"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/uknaturalcapitalaccounts/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: greenhouse-gas-regulating}
+    notes:
+      - "A valuation of carbon sequestration by UK habitats, priced at the government's non-traded carbon values. Not money that changed hands"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "This data includes all habitats."
+      - "Local greenhouse gas regulating estimates are produced through local authority modelling of national estimates and are not specific to the land management of each authority."
+      - "Greenhouse gas regulating estimates measure the net greenhouse gas emitted and absorbed."
+      - "Please refer to the [UK natural capital accounts quality and methods guide](https://www.ons.gov.uk/economy/environmentalaccounts/methodologies/uknaturalcapitalaccountsqualityandmethodsguide) for more information."
+
+  - id: heatreg
+    name: Urban heat regulating
+    topics: [environment]
+    unit: "£ millions, 2024 prices"
+    kind: money_real
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/uknaturalcapitalaccounts/previousreleases
+    publisher: ONS
+    source_type: els
+    # ELS lists K02 among this indicator's geography types, but the UK row
+    # does not exist and the request 400s. England does, so this is England.
+    fetch: {indicator: urban-heat-regulating, geo: E92000001}
+    notes:
+      - "A valuation of the cooling urban vegetation provides. Not money that changed hands"
+      - "England only. ONS's own metadata lists this indicator as UK-wide, but no UK-level figure is served"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Hot days are defined as days with a maximum temperature of 28 degrees Celsius and above."
+      - "The UK and country level values for the number of hot days are the sum of the number of hot days per local authority."
+      - "There are two parts to the calculation of annual value. The value that nature provides in work productivity savings during hot days and savings on air conditioning. The air conditioning value is based on a model from 2014 and we assume a flat time series for this contribution. When there are no hot days for a local authority, this means that the only value comes from the air conditioning value."
+      - "These values have been rounded to 1 decimal place. Some Local Authorities with 0 values may have an annual and asset value that are hidden by being rounded to 1 decimal place. Please view the Natural Capital Accounts [Detailed Summary Tables](https://www.ons.gov.uk/economy/environmentalaccounts/datasets/uknaturalcapitalaccountsdetailedsummarytables) for the full details."
+      - "Please refer to the [UK natural capital accounts quality and methods guide](https://www.ons.gov.uk/economy/environmentalaccounts/methodologies/uknaturalcapitalaccountsqualityandmethodsguide) for more information."
+
+  # ── HEALTH & WELLBEING ──────────────────────────────────────
+
+  - id: hlefemale
+    name: Female healthy life expectancy
+    topics: [health]
+    unit: "years"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/bulletins/healthstatelifeexpectanciesuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: healthy-life-expectancy-female}
+    notes:
+      - "Healthy life expectancy, not life expectancy — years lived in self-reported good health. It has been flat or falling while total life expectancy rose, which is the whole reason to plot the two together"
+      - "Pooled 2-year estimates, plotted at the first year of each band — a point here summarises 2 years, not one"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Healthy life expectancy is a summary measure of health that adds a quality dimension to estimates of life expectancy by dividing expected lifespan into time spent in different states of health. Healthy life expectancy measures health-related wellbeing and represents the average time an individual is expected to live in \"very good\" or \"good\" general health, based on how individuals perceive their general health."
+      - "The estimates in this indicator have been produced using an interim methodological fix. The decline in sample size of the Annual Population Survey has impaired our ability to continue using the previous method to estimate age-specific prevalence of \"good\" general health by local authority. We therefore used logistic regression to estimate \"good\" health prevalence instead of using the survey's observed prevalence. This enables continuity in local area reporting with a viable, comparable time series. ONS is currently conducting a review of data sources to assess their future potential to provide robust, reliable and durable measures of health status."
+      - "Figures are based on the number of deaths registered, mid-year population estimates, and health state prevalence aggregated over three consecutive years. Figures exclude deaths of non-residents."
+      - "Estimates for Isles of Scilly and City of London are excluded because of insufficient population counts."
+      - "Estimates for Northern Ireland’s local government districts are available only from 2014 to 2016 onward."
+      - "These estimates of healthy life expectancy in Northern Ireland use different methods and data sources compared to those produced by the Northern Ireland Department of Health; please see their [Health inequalities annual report](https://www.health-ni.gov.uk/news/health-inequalities-annual-report-2025) for more information."
+      - "More quality and methodology information on strengths, limitations, appropriate uses, and how the data were created is available in the [Health state life expectancies, UK quality and methodology information (QMI) report](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/methodologies/healthstatelifeexpectanciesukqmi2020to2022)."
+
+  - id: hlemale
+    name: Male healthy life expectancy
+    topics: [health]
+    unit: "years"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/bulletins/healthstatelifeexpectanciesuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: healthy-life-expectancy-male}
+    notes:
+      - "Healthy life expectancy, not life expectancy — years lived in self-reported good health"
+      - "Pooled 2-year estimates, plotted at the first year of each band — a point here summarises 2 years, not one"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Healthy life expectancy is a summary measure of health that adds a quality dimension to estimates of life expectancy by dividing expected lifespan into time spent in different states of health. Healthy life expectancy measures health-related wellbeing and represents the average time an individual is expected to live in \"very good\" or \"good\" general health, based on how individuals perceive their general health."
+      - "The estimates in this indicator have been produced using an interim methodological fix. The decline in sample size of the Annual Population Survey has impaired our ability to continue using the previous method to estimate age-specific prevalence of \"good\" general health by local authority. We therefore used logistic regression to estimate \"good\" health prevalence instead of using the survey's observed prevalence. This enables continuity in local area reporting with a viable, comparable time series. ONS is currently conducting a review of data sources to assess their future potential to provide robust, reliable and durable measures of health status."
+      - "Figures are based on the number of deaths registered, mid-year population estimates, and health state prevalence aggregated over three consecutive years. Figures exclude deaths of non-residents."
+      - "Estimates for Isles of Scilly and City of London are excluded because of insufficient population counts."
+      - "Estimates for Northern Ireland’s local government districts are available only from 2014 to 2016 onward."
+      - "These estimates of healthy life expectancy in Northern Ireland use different methods and data sources compared to those produced by the Northern Ireland Department of Health; please see their [Health inequalities annual report](https://www.health-ni.gov.uk/news/health-inequalities-annual-report-2025) for more information."
+      - "More quality and methodology information on strengths, limitations, appropriate uses, and how the data were created is available in the [Health state life expectancies, UK quality and methodology information (QMI) report](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/methodologies/healthstatelifeexpectanciesukqmi2020to2022)."
+
+  - id: wbanxiety
+    name: Anxiety
+    topics: [health]
+    unit: "score out of 10"
+    kind: ratio
+    geography: UK
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/bulletins/measuringnationalwellbeing/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: wellbeing-anxiety}
+
+  - id: wbhappy
+    name: Happiness
+    topics: [health]
+    unit: "score out of 10"
+    kind: ratio
+    geography: UK
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/bulletins/measuringnationalwellbeing/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: wellbeing-happiness}
+
+  - id: wbsatisfied
+    name: Life satisfaction
+    topics: [health]
+    unit: "score out of 10"
+    kind: ratio
+    geography: UK
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/bulletins/measuringnationalwellbeing/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: wellbeing-satisfaction}
+
+  - id: wbworthwhile
+    name: Feeling life is worthwhile
+    topics: [health]
+    unit: "score out of 10"
+    kind: ratio
+    geography: UK
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/bulletins/measuringnationalwellbeing/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: wellbeing-worthwhile}
+
+  # ── HOUSING ─────────────────────────────────────────────────
+
+  - id: houseprice
+    name: Average house price
+    topics: [housing, economy]
+    unit: "£"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/collections/uk-house-price-index-reports
+    publisher: HM Land Registry
+    source_type: els
+    fetch: {indicator: average-house-price, aggregate: mean}
+    notes:
+      - "For the UK House Price Index (UK HPI), the standard average house price is calculated by taking the average (geometric mean) price in January 2015 and then recalculating it in accordance with the index change back in time and forward to the present day. The geometric mean reduces the weighting given to high value properties when compared to the arithmetic mean and is typically lower, usually closer to that of the median."
+      - "Estimates for the most recent months are provisional and are likely to be updated as more data is incorporated into the index. Read [Revisions to the UK HPI data](https://www.gov.uk/government/publications/about-the-uk-house-price-index/about-the-uk-house-price-index#monthly-revision)."
+      - "The UK House Price Index (UK HPI) is calculated by the Office for National Statistics and Land & Property Services Northern Ireland. Find out about the [methodology used](https://www.gov.uk/government/publications/about-the-uk-house-price-index/quality-and-methodology#methods-used-to-produce-the-uk-hpi) to create the UK HPI."
+      - "Data for the UK House Price Index is provided by HM Land Registry, Registers of Scotland, The Land & Property Services Northern Ireland Statistics & Research Agency and the Valuation Office Agency. Find out more [about the UK House Price Index](https://www.gov.uk/government/publications/about-the-uk-house-price-index)."
+
+  - id: ftbsales
+    name: First-time buyer mortgage sales
+    topics: [housing]
+    unit: "per 1,000 stock"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/housing/datasets/firsttimebuyermortgagesalesbylocalauthorityuk2006to2023
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: first-time-buyer-mortgage-sales}
+    notes:
+      - "Mortgage Product Sales Data (PSD001) is regulatory data reported to the Financial Conduct Authority (FCA) by regulated mortgage lenders."
+      - "This data reflects the number of mortgages taken out by first-time buyers, either individually or jointly, but does not include first-time buyers who purchased a property without a mortgage."
+      - "The first-time buyer indicator in the FCA data is reported by the mortgage providers and its definition may vary across firms. For example, for individuals who are not remortgaging but have previously owned a property may or may not be counted as first-time buyers. Additionally, if a mortgage is taken out jointly by one first-time buyer and one non-first-time buyer, it may or may not be counted as a first-time buyer."
+      - "The dwelling stock estimates used are published by MHCLG, Welsh Government, Scottish Government and the Northern Ireland Department of Finance."
+      - "Some of this data has been aggregated and may differ from other published figures. Data for the Isles of Scilly is unavailable for all years due to low counts. Mortgage sales for Isles of Scilly have been excluded from aggregated areas that would normally include data from this area."
+
+  # ── POPULATION ──────────────────────────────────────────────
+
+  - id: popchange5
+    name: Five-year population change
+    topics: [population]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: five-year-population-change}
+    notes:
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: medianage
+    name: Median age
+    topics: [population]
+    unit: "years"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: median-age}
+    notes:
+      - "Median age is calculated as the age category in which the mid-point of the population distribution falls. There may be slight differences when compared with other sources, as these may reflect where the mid-point falls within the given age category. These reflect differences in precision, not accuracy."
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: pop015
+    name: Population aged 0 to 15
+    topics: [population]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: percentage-population-aged-0-to-15}
+    notes:
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: pop1664
+    name: Population aged 16 to 64
+    topics: [population]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: percentage-population-aged-16-to-64}
+    notes:
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: pop65
+    name: Population aged 65 and over
+    topics: [population]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: percentage-population-aged-65}
+    notes:
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: poptotal
+    name: Total population
+    topics: [population]
+    unit: "people"
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: population-count}
+    notes:
+      - "The same mid-year estimates that power this site's per-person transforms, published here as a series in its own right"
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: popdensity
+    name: Population density
+    topics: [population]
+    unit: "persons per square kilometre"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: population-density}
+    notes:
+      - "[Standard Area Measurements (December 2024) in the UK](https://geoportal.statistics.gov.uk/datasets/ons::standard-area-measurements-for-the-local-authority-districts-december-2024-in-the-uk/about) was used to calculate population density by dividing the total population by the area in square kilometres."
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
