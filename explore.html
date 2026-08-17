@@ -222,7 +222,22 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 
 /* settings popover — label + control pairs on one aligned grid, anchored to
    the management cluster at the top-left of the card */
-.cfgpanel{position:absolute;top:44px;left:12px;z-index:60;width:min(300px,86vw);
+/* Chart picker. Tiles rather than a dropdown: fourteen types in a select is a
+   list you scroll past, and the area views live at the bottom of it. */
+.ctgroup{grid-column:1/-1}
+.ctghead{display:block;font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--muted);margin:0 0 7px}
+.ctgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
+.ct{display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 2px 6px;
+  border:1px solid var(--rule);background:var(--surface);color:var(--muted);
+  border-radius:3px;cursor:pointer;font:inherit;font-size:9.5px;line-height:1.15;text-align:center}
+.ct svg{width:26px;height:18px;display:block}
+.ct span{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ct:hover:not(:disabled){border-color:var(--purple);color:var(--ink)}
+.ct.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.ct:disabled{opacity:.35;cursor:not-allowed}
+.ct:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
+.cfgpanel{position:absolute;top:44px;left:12px;z-index:60;width:min(340px,90vw);
   background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);
   padding:14px 16px;display:grid;grid-template-columns:max-content 1fr;gap:10px 12px;align-items:center;border-radius:2px}
 .cfgpanel[hidden]{display:none}
@@ -286,9 +301,10 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   background:var(--ink);color:var(--paper);padding:3px 7px;border-radius:2px;opacity:0;transition:opacity .15s;pointer-events:none}
 .pcard.is-resizing .hpill{opacity:1;background:var(--purple);color:#fff;font-size:12px;padding:5px 11px;bottom:22px;right:16px}
 
-.gridline{stroke:var(--rule);stroke-width:1}
+/* Grid recedes: it is scaffolding for reading a value, not a mark. */
+.gridline{stroke:var(--rule);stroke-width:1;opacity:.7}
 .axlabel{font-family:"IBM Plex Mono";font-size:10px;fill:var(--muted)}
-.line{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+.line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 .ribbon-t{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:10px 0 5px}
 .era rect{opacity:.84}.era:hover rect{opacity:1}
 .era text{font-family:"IBM Plex Mono";font-size:9px;fill:#fff;font-weight:500}
@@ -514,14 +530,64 @@ let DB = PLACEHOLDER;
   if(localStorage.getItem("polyoptic-mode")==="brexit") document.documentElement.dataset.theme="brexit";
   else if(localStorage.getItem("polyoptic-theme")==="dark") document.documentElement.dataset.theme="dark";
 }catch(e){} })();
-const PAL_LIGHT=["#4633A8","#C2410C","#0F766E","#A21CAF"];
-const PAL_DARK =["#8B6BFF","#FB923C","#2DD4BF","#E879F9"];
+/* Categorical slots, violet-led so a chart reads as this site's.
+   The two modes are the SAME four hues stepped for their own surface, not a
+   light set brightened — that is what makes them read as one system.
+   Both were validated rather than eyeballed: lightness band, chroma floor,
+   colour-blind separation, normal-vision floor and contrast, against #fff and
+   #151823. The set these replace failed two checks — the brand purple sat
+   below the light band, and the teal was under the chroma floor, which means
+   it was rendering as grey. */
+const PAL_LIGHT=["#6D4AE0","#0E9384","#D97706","#DB2777"];
+const PAL_DARK =["#8367E8","#17A394","#C58207","#DE5A96"];
 /* red, white, and two blues light enough to read on the navy ground */
 const PAL_BREXIT=["#E4344F","#FFFFFF","#7FB2FF","#F0C24B"];
 const PAL=i=>({dark:PAL_DARK,brexit:PAL_BREXIT}[document.documentElement.dataset.theme]||PAL_LIGHT)[i%4];
 
-const CHART_TYPES = [["line","Line"],["step","Step"],["dots","Dots"],["bar","Bars"],["area","Area"],["stack","Stacked area"],["scatter","Scatter"],["small","Small multiples"],["areas","Areas"]];
-const AREA_SORTS = [["desc","Highest first"],["asc","Lowest first"],["name","A to Z"]];
+/* Sequential ramp for magnitude — the heatmap. One hue, light to dark, built
+   from slot 1 so a value scale is visibly the same family as the categorical
+   set rather than a second colour system. Each mode's lightest step sits near
+   its own surface, which is what makes "near zero" recede. */
+const RAMP_LIGHT=["#F2EEFD","#DCD3F8","#C3B4F2","#A68DEA","#8A69E4","#6D4AE0","#4B2FA8"];
+const RAMP_DARK =["#1D1A2E","#2A2447","#3A3068","#4C3F90","#6250B8","#7A63DC","#9B84F0"];
+const RAMP_BREXIT=["#0A2A72","#173C8C","#2751A6","#3C69BF","#5B85D6","#8FB0E8","#D7E3F7"];
+const RAMP=()=>({dark:RAMP_DARK,brexit:RAMP_BREXIT}[document.documentElement.dataset.theme]||RAMP_LIGHT);
+
+/* Chart types, grouped by what they answer. The grouping is not decoration:
+   the area views were previously the last entries of a flat dropdown inside a
+   collapsed panel, which is a good way to ship a feature nobody finds. */
+const CHART_GROUPS = [
+  ["Over time", [
+    ["line","Line"],["step","Step"],["dots","Dots"],["area","Area"],
+    ["bar","Columns"],["stack","Stacked area"],["colstack","Stacked columns"],
+    ["slope","Slope"],["scatter","Scatter"],["small","Small multiples"]]],
+  ["By area", [
+    ["areas","Ranking"],["arrow","Change"],["range","Range"],["heat","Heatmap"]]],
+];
+const CHART_TYPES = CHART_GROUPS.flatMap(([,xs])=>xs);
+/* The views that read data/areas rather than the series' own values. */
+const AREA_CHARTS = new Set(["areas","arrow","range","heat"]);
+const AREA_SORTS = [["desc","Highest first"],["asc","Lowest first"],["name","A to Z"],["change","Biggest change"]];
+
+/* Glyphs for the picker. Deliberately crude — at 26px a tile reads as a
+   silhouette, so shape does the work and detail only muddies it. */
+const CG=(...p)=>`<svg viewBox="0 0 26 18" aria-hidden="true">${p.join("")}</svg>`;
+const CHART_ICON={
+  line:   CG(`<path d="M2 14 L8 8 L13 11 L18 4 L24 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`),
+  step:   CG(`<path d="M2 14 H8 V8 H13 V11 H18 V4 H24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`),
+  dots:   CG(`<g fill="currentColor">${[[3,14],[9,8],[14,11],[19,4],[24,7]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.9"/>`).join("")}</g>`),
+  area:   CG(`<path d="M2 15 L8 8 L13 11 L18 4 L24 7 V15 Z" fill="currentColor" opacity=".35"/><path d="M2 15 L8 8 L13 11 L18 4 L24 7" fill="none" stroke="currentColor" stroke-width="1.6"/>`),
+  bar:    CG(`<g fill="currentColor">${[[3,7],[8,4],[13,9],[18,2],[23,6]].map(([x,y])=>`<rect x="${x}" y="${y}" width="3" height="${15-y}" rx="1.2"/>`).join("")}</g>`),
+  stack:  CG(`<path d="M2 15 L8 10 L14 12 L20 7 L24 9 V15 Z" fill="currentColor" opacity=".8"/><path d="M2 10 L8 6 L14 8 L20 3 L24 5 L24 9 L20 7 L14 12 L8 10 L2 15 Z" fill="currentColor" opacity=".35"/>`),
+  colstack:CG(`<g fill="currentColor">${[3,9,15,21].map((x,i)=>`<rect x="${x}" y="${[8,5,9,4][i]}" width="3.4" height="${15-[8,5,9,4][i]}" rx="1.2"/><rect x="${x}" y="${[4,2,5,1][i]}" width="3.4" height="${[8,5,9,4][i]-[4,2,5,1][i]-1}" rx="1.2" opacity=".45"/>`).join("")}</g>`),
+  slope:  CG(`<path d="M5 13 L21 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 5 L21 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".5"/><g fill="currentColor"><circle cx="5" cy="13" r="2"/><circle cx="21" cy="4" r="2"/><circle cx="5" cy="5" r="2" opacity=".5"/><circle cx="21" cy="11" r="2" opacity=".5"/></g>`),
+  scatter:CG(`<g fill="currentColor">${[[5,12],[9,7],[12,13],[15,5],[18,9],[22,3]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.8"/>`).join("")}</g>`),
+  small:  CG(`<g fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 8 L5 5 L8 7 L11 3"/><path d="M15 8 L18 4 L21 7 L24 5"/><path d="M2 16 L5 13 L8 15 L11 12"/><path d="M15 16 L18 12 L21 15 L24 13"/></g>`),
+  areas:  CG(`<g><line x1="9" y1="3" x2="9" y2="16" stroke="currentColor" stroke-width="1" opacity=".45" stroke-dasharray="2 2"/><g fill="currentColor">${[[20,4],[16,8],[6,12],[13,16]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2"/>`).join("")}</g></g>`),
+  arrow:  CG(`<g stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round">${[[4,4,18],[9,9,22],[6,14,13]].map(([x1,y,x2])=>`<line x1="${x1}" y1="${y}" x2="${x2-3}" y2="${y}"/><path d="M${x2-5} ${y-2.6} L${x2} ${y} L${x2-5} ${y+2.6}"/>`).join("")}</g>`),
+  range:  CG(`<g>${[[4,13,4],[8,20,9],[6,16,14]].map(([a,b,y])=>`<line x1="${a}" y1="${y}" x2="${b}" y2="${y}" stroke="currentColor" stroke-width="1.5" opacity=".5"/><circle cx="${a}" cy="${y}" r="2" fill="currentColor" opacity=".45"/><circle cx="${b}" cy="${y}" r="2" fill="currentColor"/>`).join("")}</g>`),
+  heat:   CG(`<g fill="currentColor">${[0,1,2,3].flatMap(r=>[0,1,2,3,4].map(c=>`<rect x="${2+c*4.7}" y="${2+r*3.9}" width="3.7" height="2.9" rx=".7" opacity="${[.18,.34,.55,.8,1][(r+c)%5]}"/>`)).join("")}</g>`),
+};
 const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["yoy","Year-on-year %"],
                     ["roll3","3-year average"],["real","Real terms"],["percap","Per person"],["pctgdp","% of GDP"]];
 const ERA_MODES = [["off","Off"],["party","Party"],["pm","Party + PMs"],["elections","Elections"]];
@@ -730,12 +796,18 @@ function renderBar(p,sets){
   const mn=Math.min(0,mn0);
   frame(p,g,mn,mx,sets[0].unit);
   const Y=v=>M.t+(1-(v-mn)/(mx-mn))*(H-M.t-M.b);
-  const years=sets[0].pts.map(q=>q[0]);
-  const slot=(W-M.l-M.r)/Math.max(1,years.length), bw=Math.max(1.5,(slot*0.72)/sets.length);
-  years.forEach((yr,yi)=>sets.forEach((s,si)=>{
-    const v=s.pts[yi]&&s.pts[yi][1]; if(v==null)return;
-    const x=M.l+yi*slot+slot*0.14+si*bw, y0=Y(Math.max(0,v)), y1=Y(Math.min(0,v));
-    g.push(`<rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(0.5,y1-y0).toFixed(1)}" fill="${s.colour}" opacity="0.88"><title>${yr}: ${fmt(v)}</title></rect>`);
+  /* Placed by year, not by index. An index layout puts the first bar under the
+     axis's first year even when the series doesn't start for another fifteen —
+     the bar says 2015 in its tooltip while sitting above a tick reading 2000. */
+  const years=[...new Set(sets.flatMap(s=>s.pts.map(q=>q[0])))].sort((a,b)=>a-b);
+  const slot=(W-M.l-M.r)/Math.max(1,p.to-p.from+1);
+  const bw=Math.max(1.5,(slot*0.78)/sets.length);
+  years.forEach(yr=>sets.forEach((s,si)=>{
+    const q=s.pts.find(q=>q[0]===yr), v=q&&q[1]; if(v==null)return;
+    const x=px(p,yr)-(bw*sets.length)/2+si*bw, y0=Y(Math.max(0,v)), y1=Y(Math.min(0,v));
+    /* Rounded at the data end, full-strength fill, and a hair of surface
+       between neighbours so adjacent columns stay separate marks. */
+    g.push(`<rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${Math.max(1,bw-1).toFixed(1)}" height="${Math.max(0.5,y1-y0).toFixed(1)}" rx="1.5" fill="${s.colour}"><title>${yr}: ${fmt(v)}</title></rect>`);
   }));
   return wrapSvg(p,g);
 }
@@ -764,6 +836,81 @@ function renderStack(p,sets){
   return wrapSvg(p,g);
 }
 
+/* Stacked columns. The same composition question as the stacked area, asked of
+   discrete years — which is the honest form when the periods are annual counts
+   rather than a continuous flow. A 2px gap between segments keeps them reading
+   as separate marks instead of one wash. */
+function renderColStack(p,sets){
+  const g=[],H=p.h;
+  const xs=[...new Set(sets.flatMap(s=>s.pts.map(q=>q[0])))].sort((a,b)=>a-b)
+    .filter(x=>sets.every(s=>{const q=s.pts.find(q=>q[0]===x);return q&&q[1]!=null;}));
+  if(!xs.length) return `<div class="blank"><h3>Nothing to stack</h3><div>These series don't overlap in this range.</div></div>`;
+  const tot=xs.map(x=>sets.reduce((a,s)=>a+s.pts.find(q=>q[0]===x)[1],0));
+  const mx=Math.max(...tot)*1.06;
+  frame(p,g,0,mx,sets.every(s=>s.unit===sets[0].unit)?sets[0].unit:"");
+  const Y=v=>M.t+(1-v/mx)*(H-M.t-M.b);
+  const slot=(W-M.l-M.r)/Math.max(1,p.to-p.from+1), bw=Math.max(2,slot*0.7);
+  xs.forEach(x=>{
+    let below=0;
+    sets.forEach(s=>{
+      const v=s.pts.find(q=>q[0]===x)[1];
+      const y0=Y(below+v), y1=Y(below), h=Math.max(0.5,y1-y0-2);
+      g.push(`<rect x="${(px(p,x)-bw/2).toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1.5" fill="${s.colour}"><title>${x} ${esc(s.name)}: ${fmt(v)}</title></rect>`);
+      below+=v;
+    });
+  });
+  return wrapSvg(p,g);
+}
+
+/* Slope. Two moments, one line each — the form that answers "who moved, and
+   which way" without the noise of everything in between.
+
+   It insists on one unit rather than quietly giving each series its own axis.
+   Two scales on one plot is the single most misleading thing a chart can do,
+   and on a slope it is worse than usual: the crossing point would be an
+   artefact of the scaling rather than anything that happened. */
+function renderSlope(p,sets){
+  if(!sets.every(s=>s.unit===sets[0].unit))
+    return `<div class="blank"><h3>Slope needs one unit</h3>
+      <div>These series are on different scales, and giving each its own axis would invent a crossing point. Rebase them to compare the movement.</div>
+      <div class="sug"><button class="sg" data-act="rebase">Rebase to 100</button></div></div>`;
+  const pick=(s,want)=>s.pts.reduce((best,q)=>
+    q[1]==null?best:(!best||Math.abs(q[0]-want)<Math.abs(best[0]-want)?q:best),null);
+  const rows=sets.map(s=>({s,a:pick(s,p.from),b:pick(s,p.to)}))
+                 .filter(o=>o.a&&o.b&&o.a[0]!==o.b[0]);
+  if(!rows.length) return `<div class="blank"><h3>Not enough to compare</h3><div>These series don't have values at both ends of this range.</div></div>`;
+
+  const g=[],H=p.h;
+  const [mn,mx]=scale(rows.flatMap(o=>[o.a[1],o.b[1]]));
+  const xa=M.l+150, xb=W-M.r-80, top=M.t+16, bot=H-M.b-6;
+  const Y=v=>top+(1-(v-mn)/Math.max(1e-9,mx-mn))*(bot-top);
+  [[xa,rows[0].a[0]],[xb,rows[0].b[0]]].forEach(([x,yr])=>{
+    g.push(`<line class="gridline" x1="${x}" y1="${top-6}" x2="${x}" y2="${bot+6}"/>`);
+    g.push(`<text class="axlabel" x="${x}" y="${top-12}" text-anchor="middle">${yr}</text>`);
+  });
+  /* Nudge labels apart where two series land on nearly the same value. Without
+     it a slope's whole point — which line ended where — is the first thing to
+     become unreadable. */
+  const declutter=vals=>{
+    const order=vals.map((v,i)=>[i,Y(v)]).sort((a,b)=>a[1]-b[1]);
+    for(let k=1;k<order.length;k++)
+      if(order[k][1]-order[k-1][1]<12) order[k][1]=order[k-1][1]+12;
+    const out=[]; order.forEach(([i,y])=>out[i]=y); return out;
+  };
+  const ly=declutter(rows.map(o=>o.a[1])), ry=declutter(rows.map(o=>o.b[1]));
+  rows.forEach((o,i)=>{
+    g.push(`<path class="line" d="M${xa} ${Y(o.a[1]).toFixed(1)} L${xb} ${Y(o.b[1]).toFixed(1)}" stroke="${o.s.colour}"/>`);
+    g.push(`<circle cx="${xa}" cy="${Y(o.a[1]).toFixed(1)}" r="4" fill="${o.s.colour}"/>`);
+    g.push(`<circle cx="${xb}" cy="${Y(o.b[1]).toFixed(1)}" r="4" fill="${o.s.colour}"/>`);
+    /* Four series at most on a panel, so every line is named on the chart and
+       identity never rests on colour alone. */
+    const nm=o.s.name.length>16?o.s.name.slice(0,15)+"…":o.s.name;
+    g.push(`<text class="sm-t" x="${xa-9}" y="${(ly[i]+3.5).toFixed(1)}" text-anchor="end" fill="${o.s.colour}">${esc(nm)} ${fmt(o.a[1])}</text>`);
+    g.push(`<text class="sm-t" x="${xb+9}" y="${(ry[i]+3.5).toFixed(1)}" fill="${o.s.colour}">${fmt(o.b[1])}</text>`);
+  });
+  return wrapSvg(p,g);
+}
+
 function renderScatter(p,sets){
   const g=[],H=p.h,[X,Yv]=sets,pairs=[];
   const ym=new Map(Yv.pts.map(q=>[q[0],q[1]]));
@@ -775,7 +922,9 @@ function renderScatter(p,sets){
     g.push(`<line class="gridline" x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}"/>`);
     g.push(`<text class="axlabel" x="${M.l-9}" y="${y+3.5}" text-anchor="end">${fmt(by-(by-ay)*i/4)}</text>`);
   }
-  for(let i=0;i<=4;i++)
+  /* Four ticks, not five: the axis name is right-aligned on this same
+     baseline, and the fifth tick lands underneath it. */
+  for(let i=0;i<4;i++)
     g.push(`<text class="axlabel" x="${M.l+i*(W-M.l-M.r)/4}" y="${H-6}" text-anchor="middle">${fmt(ax+(bx-ax)*i/4)}</text>`);
   pairs.forEach(([yr,vx,vy])=>{
     const era=DB.eras.find(e=>yr>=e.from&&yr<e.to);
@@ -856,34 +1005,77 @@ const areaLevel = (p,id) => {
   return lv.includes(p.lvl) ? p.lvl : (lv.includes("la") ? "la" : lv[lv.length-1]||"");
 };
 
-/* The year on show, and the rows at that level. ELS publishes different
-   levels on different schedules, so the requested year can be empty at one
-   level and full at the next — step back rather than showing nothing. */
-function areaRows(p,d,ix,lvl){
+/* One year's values at one level. ELS publishes different levels on different
+   schedules, so the requested year can be empty at one level and full at the
+   next — step back rather than showing nothing. */
+function areaYear(d,ix,lvl,want){
   const len=Math.max(...Object.values(d.values).map(v=>v.length));
   const end=d.start+len-1;
-  let yr=Math.min(Math.max(p.to,d.start),end);
-  const at=y=>Object.entries(d.values)
-    .filter(([c])=>(ix.areas[c]||{}).l===lvl)
-    .map(([c,v])=>[c,(ix.areas[c]||{}).n||c,v[y-d.start]])
-    .filter(r=>r[2]!=null);
-  let rows=at(yr);
-  while(!rows.length && yr>d.start) rows=at(--yr);
-  return {rows,year:yr,end};
+  let y=Math.min(Math.max(want,d.start),end);
+  const at=yy=>{
+    const m={};
+    for(const [c,v] of Object.entries(d.values)){
+      if((ix.areas[c]||{}).l!==lvl) continue;
+      const x=v[yy-d.start]; if(x!=null) m[c]=x;
+    }
+    return m;
+  };
+  let map=at(y);
+  while(!Object.keys(map).length && y>d.start) map=at(--y);
+  return {year:y,map,end};
+}
+const areaName=(ix,c)=>(ix.areas[c]||{}).n||c;
+
+function areaRows(p,d,ix,lvl){
+  const {year,map,end}=areaYear(d,ix,lvl,p.to);
+  return {rows:Object.entries(map).map(([c,v])=>[c,areaName(ix,c),v]), year, end};
 }
 
-function renderAreas(p,sets){
-  const blank=(h,b)=>`<div class="blank"><h3>${h}</h3><div>${b}</div></div>`;
+/* Every area view needs the same four things before it can draw anything.
+   Doing it once means the loading, error and empty states are identical
+   across them instead of four near-copies drifting apart. */
+const areaBlank=(h,b)=>`<div class="blank"><h3>${h}</h3><div>${b}</div></div>`;
+function areaPrep(p,sets){
   const set=areaSet(sets);
-  if(!set) return blank("No local detail here",
-    "Local figures come from ONS Explore Local Statistics. Pick an indicator that carries them — most of the population, economy and wellbeing series do.");
+  if(!set) return {err:areaBlank("No local detail here",
+    "Local figures come from ONS Explore Local Statistics. Pick an indicator that carries them — most of the population, economy and wellbeing series do.")};
   const ix=areaIndex(), d=areaData(set.id);
-  if(ix==="error"||d==="error") return blank("Local detail unavailable","The area files could not be loaded. The time chart above is unaffected.");
-  if(!ix||!d) return blank("Loading local detail…","One file per indicator, fetched the first time you ask for it.");
+  if(ix==="error"||d==="error") return {err:areaBlank("Local detail unavailable","The area files could not be loaded. The other views are unaffected.")};
+  if(!ix||!d) return {err:areaBlank("Loading local detail…","One file per indicator, fetched the first time you ask for it.")};
+  return {set,ix,d,lvl:areaLevel(p,set.id)};
+}
 
-  const lvl=areaLevel(p,set.id);
+function renderAreaChart(p,sets){
+  const a=areaPrep(p,sets);
+  if(a.err) return a.err;
+  return p.chart==="arrow" ? renderAreaArrow(p,a)
+       : p.chart==="range" ? renderAreaRange(p,a)
+       : p.chart==="heat"  ? renderAreaHeat(p,a)
+       :                     renderAreaRanking(p,a);
+}
+
+/* The frame every row-per-area view draws into: a left gutter of names, a
+   value scale across the top, and as many rows as the level has areas. */
+function areaFrame(rows,mn,mx,head){
+  const H=AREA_TOP+rows.length*AREA_ROW+8;
+  const x=v=>AREA_ML+((v-mn)/Math.max(1e-9,mx-mn))*(W-AREA_ML-AREA_MR);
+  const g=[];
+  for(let i=0;i<=4;i++){
+    const v=mn+(mx-mn)*i/4, gx=x(v);
+    g.push(`<line class="gridline" x1="${gx.toFixed(1)}" y1="${AREA_TOP-8}" x2="${gx.toFixed(1)}" y2="${H-4}"/>`);
+    g.push(`<text class="axlabel" x="${gx.toFixed(1)}" y="${AREA_TOP-13}" text-anchor="middle">${fmt(v)}</text>`);
+  }
+  if(head) g.push(`<text class="axlabel" x="${AREA_ML-10}" y="${AREA_TOP-13}" text-anchor="end">${esc(head)}</text>`);
+  return {g,H,x,rowY:i=>AREA_TOP+i*AREA_ROW+AREA_ROW/2};
+}
+const areaLabel=(g,y,name)=>g.push(
+  `<text class="axlabel" x="${AREA_ML-10}" y="${y+3.5}" text-anchor="end">${esc(name.length>30?name.slice(0,29)+"…":name)}</text>`);
+const areaSvg=(H,g,label)=>
+  `<svg class="areasvg" viewBox="0 0 ${W} ${H+8}" role="img" aria-label="${esc(label)}">${g.join("")}</svg>`;
+
+function renderAreaRanking(p,{set,ix,d,lvl}){
   const {rows,year}=areaRows(p,d,ix,lvl);
-  if(!rows.length) return blank("Nothing at this level","No areas at this level carry a figure for this indicator.");
+  if(!rows.length) return areaBlank("Nothing at this level","No areas at this level carry a figure for this indicator.");
 
   rows.sort(p.asort==="name" ? (a,b)=>a[1].localeCompare(b[1])
           : p.asort==="asc"  ? (a,b)=>a[2]-b[2]
@@ -896,34 +1088,138 @@ function renderAreas(p,sets){
   const natName=natCode?(ix.areas[natCode]||{}).n||"National":"";
 
   const [mn,mx]=scale(rows.map(r=>r[2]).concat(nat!=null?[nat]:[]));
-  const H=AREA_TOP+rows.length*AREA_ROW+8;
-  const x=v=>AREA_ML+((v-mn)/Math.max(1e-9,mx-mn))*(W-AREA_ML-AREA_MR);
-  const g=[];
+  const {g,H,x,rowY}=areaFrame(rows,mn,mx,String(year));
 
-  for(let i=0;i<=4;i++){
-    const v=mn+(mx-mn)*i/4, gx=x(v);
-    g.push(`<line class="gridline" x1="${gx.toFixed(1)}" y1="${AREA_TOP-8}" x2="${gx.toFixed(1)}" y2="${H-4}"/>`);
-    g.push(`<text class="axlabel" x="${gx.toFixed(1)}" y="${AREA_TOP-13}" text-anchor="middle">${fmt(v)}</text>`);
-  }
   if(nat!=null){
     g.push(`<line class="disc" x1="${x(nat).toFixed(1)}" y1="${AREA_TOP-8}" x2="${x(nat).toFixed(1)}" y2="${H-4}"/>`);
     g.push(`<text class="axlabel" x="${x(nat).toFixed(1)}" y="${H+2}" text-anchor="middle">${esc(natName)} ${fmt(nat)}</text>`);
   }
   rows.forEach((r,i)=>{
-    const y=AREA_TOP+i*AREA_ROW+AREA_ROW/2;
-    const name=r[1].length>30?r[1].slice(0,29)+"…":r[1];
-    g.push(`<text class="axlabel" x="${AREA_ML-10}" y="${y+3.5}" text-anchor="end">${esc(name)}</text>`);
+    const y=rowY(i);
+    areaLabel(g,y,r[1]);
     /* a hairline from the reference to the dot: it reads as distance from the
        national figure, which is the comparison the eye should be making */
     if(nat!=null) g.push(`<line x1="${x(nat).toFixed(1)}" y1="${y.toFixed(1)}" x2="${x(r[2]).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${set.colour}" stroke-width="1" opacity=".35"/>`);
-    g.push(`<circle cx="${x(r[2]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.2" fill="${set.colour}"/>`);
+    g.push(`<circle cx="${x(r[2]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${set.colour}"><title>${esc(r[1])}: ${fmt(r[2])}</title></circle>`);
     g.push(`<text class="axlabel" x="${W-AREA_MR+10}" y="${y+3.5}">${fmt(r[2])}</text>`);
   });
   /* Unlike the time charts, this one must not scale with the panel. Row height
      is a legibility floor, not a proportion — squeezed into a third-width
      panel the labels would overlap into a smear — so it keeps its natural
      size and the panel scrolls to it. */
-  return `<svg class="areasvg" viewBox="0 0 ${W} ${H+8}" role="img" aria-label="${esc(set.name)} by area, ${year}">${g.join("")}</svg>`;
+  return areaSvg(H,g,`${set.name} by area, ${year}`);
+}
+
+/* Both two-year views read the same pair of snapshots; only the mark differs.
+   Areas missing from either year are dropped rather than drawn as a change
+   from nothing. */
+function areaPair(p,d,ix,lvl){
+  const a=areaYear(d,ix,lvl,Math.min(p.from,p.to));
+  const b=areaYear(d,ix,lvl,Math.max(p.from,p.to));
+  const rows=Object.keys(b.map)
+    .filter(c=>a.map[c]!=null)
+    .map(c=>[c,areaName(ix,c),a.map[c],b.map[c],b.map[c]-a.map[c]]);
+  return {rows, y0:a.year, y1:b.year};
+}
+const areaSortPair = asort =>
+    asort==="name" ? (r,s)=>r[1].localeCompare(s[1])
+  : asort==="asc"  ? (r,s)=>r[3]-s[3]
+  : asort==="change"?(r,s)=>s[4]-r[4]
+  :                  (r,s)=>s[3]-r[3];
+
+function renderAreaArrow(p,{set,ix,d,lvl}){
+  const {rows,y0,y1}=areaPair(p,d,ix,lvl);
+  if(!rows.length) return areaBlank("No change to show",
+    `Not enough areas carry a figure for both ${Math.min(p.from,p.to)} and ${Math.max(p.from,p.to)} at this level. Widen the range.`);
+  if(y0===y1) return areaBlank("One year on both ends","Widen the chart's range so the arrows have two different years to span.");
+  rows.sort(areaSortPair(p.asort==="desc"?"change":p.asort));
+
+  const [mn,mx]=scale(rows.flatMap(r=>[r[2],r[3]]));
+  const {g,H,x,rowY}=areaFrame(rows,mn,mx,`${y0} → ${y1}`);
+  rows.forEach((r,i)=>{
+    const y=rowY(i), x0=x(r[2]), x1=x(r[3]);
+    areaLabel(g,y,r[1]);
+    /* One colour, and direction carried by the arrowhead. Colouring rises green
+       and falls red would be this site taking a view: a fall in emissions and a
+       fall in life expectancy are not the same news, and the chart does not
+       know which indicator it is drawing. */
+    const dir=x1>=x0?1:-1, tip=x1-dir*0.5;
+    g.push(`<line x1="${x0.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(tip-dir*4).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${set.colour}" stroke-width="1.8" opacity=".55" stroke-linecap="round"/>`);
+    g.push(`<path d="M${(tip-dir*5).toFixed(1)} ${(y-3).toFixed(1)} L${tip.toFixed(1)} ${y.toFixed(1)} L${(tip-dir*5).toFixed(1)} ${(y+3).toFixed(1)}" fill="none" stroke="${set.colour}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`);
+    g.push(`<circle cx="${x0.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" fill="${set.colour}" opacity=".4"><title>${esc(r[1])}: ${fmt(r[2])} in ${y0}, ${fmt(r[3])} in ${y1}</title></circle>`);
+    g.push(`<text class="axlabel" x="${W-AREA_MR+10}" y="${y+3.5}">${r[4]>=0?"+":"−"}${fmt(Math.abs(r[4]))}</text>`);
+  });
+  return areaSvg(H,g,`${set.name} by area, change ${y0} to ${y1}`);
+}
+
+function renderAreaRange(p,{set,ix,d,lvl}){
+  const {rows,y0,y1}=areaPair(p,d,ix,lvl);
+  if(!rows.length) return areaBlank("Nothing to span",
+    `Not enough areas carry a figure for both ${Math.min(p.from,p.to)} and ${Math.max(p.from,p.to)} at this level. Widen the range.`);
+  rows.sort(areaSortPair(p.asort));
+
+  const [mn,mx]=scale(rows.flatMap(r=>[r[2],r[3]]));
+  const {g,H,x,rowY}=areaFrame(rows,mn,mx,`${y0} → ${y1}`);
+  rows.forEach((r,i)=>{
+    const y=rowY(i);
+    areaLabel(g,y,r[1]);
+    g.push(`<line x1="${x(r[2]).toFixed(1)}" y1="${y.toFixed(1)}" x2="${x(r[3]).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${set.colour}" stroke-width="2" opacity=".35" stroke-linecap="round"/>`);
+    /* Hollow for the earlier year, solid for the later: shape carries which is
+       which, so the pair does not rely on the reader remembering an opacity. */
+    g.push(`<circle cx="${x(r[2]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.2" fill="var(--surface)" stroke="${set.colour}" stroke-width="1.6"><title>${y0}: ${fmt(r[2])}</title></circle>`);
+    g.push(`<circle cx="${x(r[3]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${set.colour}"><title>${y1}: ${fmt(r[3])}</title></circle>`);
+    g.push(`<text class="axlabel" x="${W-AREA_MR+10}" y="${y+3.5}">${fmt(r[3])}</text>`);
+  });
+  return areaSvg(H,g,`${set.name} by area, ${y0} and ${y1}`);
+}
+
+function renderAreaHeat(p,{set,ix,d,lvl}){
+  const len=Math.max(...Object.values(d.values).map(v=>v.length));
+  const lo=Math.max(p.from,d.start), hi=Math.min(p.to,d.start+len-1);
+  if(hi<lo) return areaBlank("Outside the published range",
+    `This indicator runs ${d.start}–${d.start+len-1}. Move the chart's range into it.`);
+  const years=[];
+  for(let y=lo;y<=hi;y++) years.push(y);
+
+  const codes=Object.keys(d.values).filter(c=>(ix.areas[c]||{}).l===lvl);
+  const rows=codes.map(c=>[c,areaName(ix,c),years.map(y=>d.values[c][y-d.start])])
+                  .filter(r=>r[2].some(v=>v!=null));
+  if(!rows.length) return areaBlank("Nothing at this level","No areas at this level carry figures across this range.");
+
+  const last=r=>[...r[2]].reverse().find(v=>v!=null);
+  rows.sort(p.asort==="name" ? (a,b)=>a[1].localeCompare(b[1])
+          : p.asort==="asc"  ? (a,b)=>(last(a)??0)-(last(b)??0)
+          :                    (a,b)=>(last(b)??0)-(last(a)??0));
+
+  const flat=rows.flatMap(r=>r[2]).filter(v=>v!=null);
+  const mn=Math.min(...flat), mx=Math.max(...flat);
+  const ramp=RAMP();
+  /* Sequential, one hue: the lightest step means "near the bottom of the range"
+     and is allowed to recede toward the surface. */
+  const fill=v=>v==null?"none":ramp[Math.max(0,Math.min(ramp.length-1,
+    Math.round(((v-mn)/Math.max(1e-9,mx-mn))*(ramp.length-1))))];
+
+  const ROW=12, TOP=AREA_TOP+12;
+  const cw=(W-AREA_ML-AREA_MR)/years.length;
+  const H=TOP+rows.length*ROW+8;
+  const g=[];
+  /* Legend first — a value scale with no key is a picture, not a chart. */
+  ramp.forEach((c,i)=>g.push(`<rect x="${(AREA_ML+i*16).toFixed(1)}" y="4" width="15" height="7" fill="${c}"/>`));
+  g.push(`<text class="axlabel" x="${(AREA_ML-10)}" y="10.5" text-anchor="end">${fmt(mn)}</text>`);
+  g.push(`<text class="axlabel" x="${(AREA_ML+ramp.length*16+6)}" y="10.5">${fmt(mx)}</text>`);
+  years.forEach((y,i)=>{ if(years.length<=14 || i%Math.ceil(years.length/12)===0)
+    g.push(`<text class="axlabel" x="${(AREA_ML+i*cw+cw/2).toFixed(1)}" y="${TOP-5}" text-anchor="middle">${String(y).slice(2)}</text>`); });
+  rows.forEach((r,i)=>{
+    const y=TOP+i*ROW;
+    areaLabel(g,y+ROW/2-3.5,r[1]);
+    r[2].forEach((v,j)=>{
+      if(v==null) return;
+      /* 2px surface gap between cells, so adjacent tones read as separate
+         marks rather than one continuous wash. */
+      g.push(`<rect x="${(AREA_ML+j*cw).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(1,cw-2).toFixed(1)}" height="${ROW-2}" fill="${fill(v)}" rx="1"><title>${esc(r[1])} ${years[j]}: ${fmt(v)}</title></rect>`);
+    });
+  });
+  return areaSvg(H,g,`${set.name} by area and year, ${lo} to ${hi}`);
 }
 
 function renderRibbon(p){
@@ -1006,18 +1302,26 @@ function warningsFor(p,sets){
   const w=[];
   /* The area view is a cross-section, so most of the warnings below are about
      things it does not do. It gets its own set instead. */
-  if(p.chart==="areas"){
+  if(AREA_CHARTS.has(p.chart)){
     const set=areaSet(sets);
     if(!set) return w;
     if(sets.length>1)
-      w.push({html:`<b>Showing ${esc(set.name)} only.</b> An area ranking is one indicator at one moment; the other ${sets.length>2?"indicators are":"indicator is"} still on the chart's other views.`});
+      w.push({html:`<b>Showing ${esc(set.name)} only.</b> The area views draw one indicator; the other ${sets.length>2?"indicators are":"indicator is"} still on the chart's other views.`});
     if(p.trans!=="none")
       w.push({html:`<b>Figures as published.</b> Rebasing, year-on-year and the per-person transforms describe movement over time and are not applied here.`});
     const ix=AREAIX, d=AREADATA.get(set.id);
     if(ix&&ix!=="error"&&d&&d!=="error"){
-      const {year,end}=areaRows(p,d,ix,areaLevel(p,set.id));
-      if(year!==Math.min(p.to,end))
-        w.push({html:`<b>Showing ${year}.</b> No area at this level carries a figure for ${p.to}; ${year} is the most recent that does.`});
+      const lvl=areaLevel(p,set.id);
+      if(p.chart==="areas"){
+        const {year,end}=areaRows(p,d,ix,lvl);
+        if(year!==Math.min(p.to,end))
+          w.push({html:`<b>Showing ${year}.</b> No area at this level carries a figure for ${p.to}; ${year} is the most recent that does.`});
+      } else if(p.chart==="arrow"||p.chart==="range"){
+        const {y0,y1}=areaPair(p,d,ix,lvl);
+        if(y0!==Math.min(p.from,p.to)||y1!==Math.max(p.from,p.to))
+          w.push({html:`<b>Comparing ${y0} with ${y1}.</b> The years asked for are not both published at this level, so the nearest that are have been used.`});
+        w.push({html:`<b>Two moments, not a trend.</b> Everything between the two years is left out, so an area that rose and fell back looks unchanged.`});
+      }
       w.push({html:`<b>Areas as they are drawn today.</b> Local authorities merge and split, and ONS restates the back series onto current boundaries — so a long run for one area is a run for the ground it now covers, not for the council that used to run it.`});
     }
     return w;
@@ -1039,7 +1343,10 @@ function warningsFor(p,sets){
 }
 
 function chartFor(p,sets){
-  if(p.chart==="areas") return renderAreas(p,sets);
+  if(AREA_CHARTS.has(p.chart)) return renderAreaChart(p,sets);
+  if(p.chart==="slope") return renderSlope(p,sets);
+  if(p.chart==="colstack") return sets.length>=2 ? renderColStack(p,sets)
+    : `<div class="blank"><h3>Stacking needs at least two</h3><div>Add another indicator to stack them.</div></div>`;
   if(p.chart==="scatter") return sets.length===2 ? renderScatter(p,sets)
     : `<div class="blank"><h3>Scatter needs exactly two</h3><div>Points are coloured by the government of the day.</div></div>`;
   if(p.chart==="small") return renderSmall(p,sets);
@@ -1063,14 +1370,31 @@ function panelHtml(p,i){
   /* Level and order only exist for the area view, and the level list is the
      one this particular indicator publishes — no offering districts for a
      series that stops at regions. */
-  const aset=p.chart==="areas"?areaSet(sets):null;
+  const aset=AREA_CHARTS.has(p.chart)?areaSet(sets):null;
   const alvls=aset?areaLevels(aset.id):[];
-  const areaCtrl = p.chart!=="areas"||!alvls.length ? "" :
+  const areaCtrl = !aset||!alvls.length ? "" :
     `<span class="plabel">Level</span>${sel("lvl",alvls.map(k=>[k,((AREAIX||{}).levelNames||{})[k]||k]),areaLevel(p,aset.id))}
      <span class="plabel">Order</span>${sel("asort",AREA_SORTS,p.asort)}`;
 
+  /* Why a type is unavailable belongs on the tile, not in a silent disable —
+     "Scatter needs exactly two" is the answer to the question the greyed-out
+     tile provokes. */
+  const chartWhy = k =>
+      k==="scatter" && p.sel.length!==2                      ? "Scatter needs exactly two indicators"
+    : (k==="stack"||k==="colstack") && p.sel.length<2        ? "Stacking needs at least two indicators"
+    : AREA_CHARTS.has(k) && p.sel.length && !areaSet(sets)   ? "No local figures for these indicators"
+    : "";
+  const picker = CHART_GROUPS.map(([head,items])=>
+    `<div class="ctgroup"><span class="ctghead">${head}</span><div class="ctgrid">${
+      items.map(([k,label])=>{ const why=chartWhy(k);
+        return `<button class="ct${p.chart===k?" on":""}" data-act="charttile" data-v="${k}"`+
+          `${why?` disabled title="${esc(why)}"`:""} aria-pressed="${p.chart===k}">`+
+          `${CHART_ICON[k]}<span>${esc(label)}</span></button>`;
+      }).join("")}</div></div>`).join("");
+
   const ctrl=`<div class="cfgpanel" ${open?"":"hidden"}>
-    <span class="plabel">Chart</span>${sel("chart",CHART_TYPES,p.chart,k=>(k==="scatter"&&p.sel.length!==2)||(k==="stack"&&p.sel.length<2))}
+    ${picker}
+    <div class="cfgrule"></div>
     <span class="plabel">Transform</span>${sel("trans",TRANSFORMS,p.trans,k=>p.sel.length&&!anyApplies(k))}
     ${areaCtrl}
     <div class="cfgrule"></div>
@@ -1093,17 +1417,19 @@ function panelHtml(p,i){
       </div></div>`;
   } else {
     const chart=chartFor(p,sets);
-    const showRibbon = p.era!=="off" && p.chart!=="scatter" && p.chart!=="small" && p.chart!=="areas";
+    const showRibbon = p.era!=="off" && p.chart!=="scatter" && p.chart!=="small"
+                       && p.chart!=="slope" && !AREA_CHARTS.has(p.chart);
     /* A ranking is as tall as the number of areas, which at local-authority
        level is a few hundred rows. The panel's height becomes the window onto
        it rather than a cap on what is drawn — the PNG export still gets the
        whole thing, because it reads the SVG and not the scrolled view. */
-    body=`<div class="pbody${p.chart==="areas"?" scrolls":""}"${p.chart==="areas"?` style="max-height:${p.h}px"`:""}>${chart}${showRibbon?renderRibbon(p):""}</div>`;
+    const tall=AREA_CHARTS.has(p.chart);
+    body=`<div class="pbody${tall?" scrolls":""}"${tall?` style="max-height:${p.h}px"`:""}>${chart}${showRibbon?renderRibbon(p):""}</div>`;
     /* The area view draws one series and ignores the transform, so it gets a
        legend that says so. Left to the general one it would caption a chart of
        published pounds as "index, 1997=100" — the chart and its own key
        disagreeing, which is the failure this site exists to avoid. */
-    const lgSets = p.chart==="areas" && aset ? [{...aset, unit:aset.meta.unit}] : sets;
+    const lgSets = aset ? [{...aset, unit:aset.meta.unit}] : sets;
     legend=`<div class="legend">${lgSets.map(s=>`<span class="lg"><span class="d" style="background:${s.colour}"></span>${esc(s.name)} <span class="u">${esc(s.unit)}</span></span>`).join("")}</div>`;
     /* Harvard citations are sentences, not chips — they get their own rows so
        they stay readable, while short keeps the original single-line strip. */
@@ -1311,8 +1637,9 @@ document.getElementById("stack").addEventListener("click",e=>{
     return;
   }
   else if(act==="rebase") p.trans="index";
+  else if(act==="charttile") p.chart=actEl.dataset.v;
   else if(act==="pair") p.sel=actEl.dataset.v.split(",");
-  else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,gran:p.gran,h:p.h,w:p.w,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
+  else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,gran:p.gran,h:p.h,w:p.w,lvl:p.lvl,asort:p.asort,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
   else if(act==="del"){ state.openMenu=null; state.panels.splice(i,1); lockedKeys.delete(p.key); if(state.openCfg===p.key) state.openCfg=null; state.active=Math.max(0,Math.min(state.active,state.panels.length-1)); state.focus=null; }
   else if(act==="csv"){ state.openMenu=null; exportCsv(i); render(); return; }
   else if(act==="png"){ state.openMenu=null; exportPng(i); render(); return; }
@@ -1585,28 +1912,56 @@ function exportAreaCsv(p,sets){
   const set=areaSet(sets), ix=AREAIX, d=set&&AREADATA.get(set.id);
   if(!set||!ix||ix==="error"||!d||d==="error") return;
   const lvl=areaLevel(p,set.id);
-  const {rows,year}=areaRows(p,d,ix,lvl);
-  if(!rows.length) return;
-  rows.sort(p.asort==="name" ? (a,b)=>a[1].localeCompare(b[1])
-          : p.asort==="asc"  ? (a,b)=>a[2]-b[2]
-          :                    (a,b)=>b[2]-a[2]);
+  const q=s=>`"${String(s).replace(/"/g,'""')}"`;
   const lines=srcLines([set]);
   const attrib = lines.length
     ? lines.map(c=>`# ${SRCSTYLE==="harvard"?"":"Sources: "}${c}\n`).join("")+
       `# Licence: OGL v3.0 — contains public sector information\n`
     : "";
-  const csv=`# Polyoptic — ${set.name} by area, ${year}\n`+attrib+
+  const head=(what)=>`# Polyoptic — ${set.name} by area, ${what}\n`+attrib+
     `# Level: ${(ix.levelNames||{})[lvl]||lvl}\n`+
-    `# Areas are on current boundaries; ONS restates the back series when they change\n`+
-    `area_code,area_name,level,year,"${set.name} (${set.unit})"\n`+
-    rows.map(r=>`${r[0]},"${r[1].replace(/"/g,'""')}",${lvl},${year},${r[2]}`).join("\n");
-  dl(new Blob([csv],{type:"text/csv"}), slug(set.name+"-by-area-"+year)+".csv");
+    `# Areas are on current boundaries; ONS restates the back series when they change\n`;
+
+  let body="", name="";
+  /* Each view exports what it actually shows — a change view whose file held
+     only the end year would not reproduce the chart it came from. */
+  if(p.chart==="arrow"||p.chart==="range"){
+    const {rows,y0,y1}=areaPair(p,d,ix,lvl);
+    if(!rows.length) return;
+    rows.sort(areaSortPair(p.chart==="arrow"&&p.asort==="desc"?"change":p.asort));
+    body=head(`${y0} and ${y1}`)+
+      `area_code,area_name,level,${y0},${y1},change\n`+
+      rows.map(r=>`${r[0]},${q(r[1])},${lvl},${r[2]},${r[3]},${+r[4].toFixed(6)}`).join("\n");
+    name=`${set.name}-by-area-${y0}-${y1}`;
+  } else if(p.chart==="heat"){
+    const len=Math.max(...Object.values(d.values).map(v=>v.length));
+    const lo=Math.max(p.from,d.start), hi=Math.min(p.to,d.start+len-1);
+    if(hi<lo) return;
+    const years=[]; for(let y=lo;y<=hi;y++) years.push(y);
+    const codes=Object.keys(d.values).filter(c=>(ix.areas[c]||{}).l===lvl).sort();
+    body=head(`${lo} to ${hi}`)+
+      `area_code,area_name,level,${years.join(",")}\n`+
+      codes.map(c=>`${c},${q(areaName(ix,c))},${lvl},`+
+        years.map(y=>{const v=d.values[c][y-d.start];return v==null?"":v;}).join(",")).join("\n");
+    name=`${set.name}-by-area-${lo}-${hi}`;
+  } else {
+    const {rows,year}=areaRows(p,d,ix,lvl);
+    if(!rows.length) return;
+    rows.sort(p.asort==="name" ? (a,b)=>a[1].localeCompare(b[1])
+            : p.asort==="asc"  ? (a,b)=>a[2]-b[2]
+            :                    (a,b)=>b[2]-a[2]);
+    body=head(String(year))+
+      `area_code,area_name,level,year,${q(set.name+" ("+set.unit+")")}\n`+
+      rows.map(r=>`${r[0]},${q(r[1])},${lvl},${year},${r[2]}`).join("\n");
+    name=`${set.name}-by-area-${year}`;
+  }
+  dl(new Blob([body],{type:"text/csv"}), slug(name)+".csv");
 }
 
 function exportCsv(i){
   const p=state.panels[i], sets=buildSets(p);
   if(!sets.length) return;
-  if(p.chart==="areas") return exportAreaCsv(p,sets);
+  if(AREA_CHARTS.has(p.chart)) return exportAreaCsv(p,sets);
   const years=[...new Set(sets.flatMap(s=>s.pts.map(q=>q[0])))].sort();
   const head=["year",...sets.map(s=>`"${s.name} (${s.unit})"`)].join(",");
   const rows=years.map(y=>[y,...sets.map(s=>{const q=s.pts.find(q=>q[0]===y);return q&&q[1]!=null?q[1].toFixed(4):"";})].join(","));
@@ -1637,9 +1992,9 @@ const EXPORT_THEMES={
 };
 const exportCss=th=>`
   text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
-  .gridline{stroke:${th.grid};stroke-width:1}
+  .gridline{stroke:${th.grid};stroke-width:1;opacity:.7}
   .axlabel{font-size:10px;fill:${th.muted}}
-  .line{fill:none;stroke-width:2.2;stroke-linejoin:round;stroke-linecap:round}
+  .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
   .disc{stroke:${th.warn};stroke-width:1;stroke-dasharray:3 3;opacity:.6}
   .sm-t{font-size:10px;font-weight:500}
   .era text{font-size:9px;fill:#fff;font-weight:500}
