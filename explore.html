@@ -190,10 +190,17 @@ body.side-collapsed .siderail{display:block}
 .ci .sw{width:11px;height:11px;flex-shrink:0;margin-top:3px;border:1.5px solid var(--rule);background:transparent;border-radius:2px}
 .ci .body{flex:1;min-width:0}
 .ci .cn{display:block;font-size:13.5px;font-weight:600;line-height:1.35;color:var(--ink)}
-.ci .cm{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;align-items:center}
-.ci .tag{font-family:"IBM Plex Mono";font-size:9.5px;color:var(--muted);background:var(--paper);border:1px solid var(--rule);padding:1px 6px;white-space:nowrap}
-.ci .yr{font-family:"IBM Plex Mono";font-size:9.5px;color:var(--muted);padding:1px 2px}
+/* One muted line, not three competing chips. Geography, unit and coverage are
+   three different kinds of fact; boxing two of them made them look like peers
+   and let the unit — much the longest — dominate the row. Only geography keeps
+   a badge, because it is the field that varies once sub-national data lands
+   and the one that fires the incomparability warnings. */
+.ci .cm{display:block;margin-top:5px;font-family:"IBM Plex Mono";font-size:9.5px;
+  line-height:1.5;color:var(--muted)}
+.ci .tag{background:var(--paper);border:1px solid var(--rule);padding:1px 5px;
+  white-space:nowrap;margin-right:5px;color:var(--muted)}
 .ci[aria-selected="true"] .tag{background:#fff;border-color:var(--prule)}
+.ci .cm .sep{opacity:.5;padding:0 3px}
 .empty{padding:18px 16px;font-size:13px;color:var(--muted)}
 .foot{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted)}
 
@@ -337,7 +344,14 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .lg{display:flex;align-items:center;gap:7px;font-size:12.5px}
 .lg .d{width:13px;height:3px;flex-shrink:0}
 .lg .u{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted)}
-.pfoot{padding:10px 16px 12px;border-top:1px solid var(--rule);font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:5px 18px}
+/* Sources read as prose; metadata recedes. No all-caps mono — small caps at
+   low contrast is the least legible treatment available, and this is the
+   component carrying the site's entire trust claim. */
+.pfoot{padding:10px 16px 12px;border-top:1px solid var(--rule);display:flex;
+  flex-direction:column;gap:3px}
+.psrc{font-size:12px;line-height:1.45;color:var(--ink);overflow-wrap:anywhere}
+.pmeta{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);letter-spacing:.01em;
+  overflow-wrap:anywhere}
 
 /* resize grip along the bottom edge */
 .rgrip{height:16px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;
@@ -369,6 +383,8 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .pmlabel{font-family:"IBM Plex Mono";font-size:8.5px;fill:var(--muted)}
 .eralabel{font-family:"IBM Plex Mono";font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:var(--muted)}
 .disc{stroke:var(--warn);stroke-width:1;stroke-dasharray:3 3;opacity:.6}
+.nodata{fill:var(--ink);opacity:.045}
+.nodatat{opacity:.75;letter-spacing:.04em}
 .sm-t{font-family:"IBM Plex Mono";font-size:10px;font-weight:500}
 
 .blank{padding:56px 24px;text-align:center;color:var(--muted)}
@@ -377,7 +393,16 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .sg{font-family:"IBM Plex Mono";font-size:11.5px;padding:8px 13px;border:1px solid var(--prule);background:var(--soft);color:var(--purple);cursor:pointer;border-radius:2px}
 .sg:hover{background:var(--soft-hover)}
 
-.addbar{display:flex;justify-content:center;padding:4px 0 0}
+.addbar{display:flex;justify-content:center;align-items:center;gap:14px;padding:4px 0 0;flex-wrap:wrap}
+.layoutpick{display:flex;gap:4px;align-items:center}
+.layoutpick .lb{display:flex;align-items:center;justify-content:center;padding:7px 8px;
+  border:1px solid var(--rule);background:var(--surface);color:var(--muted);border-radius:3px;
+  cursor:pointer;line-height:0}
+.layoutpick .lb svg{width:26px;height:16px;fill:currentColor;opacity:.8}
+.layoutpick .lb:hover{border-color:var(--purple);color:var(--ink)}
+.layoutpick .lb.on{background:var(--purple);border-color:var(--purple);color:#fff}
+.layoutpick .lb.on svg{opacity:1}
+.layoutpick .lb:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
 .addbtn{font-family:"IBM Plex Mono";font-size:12px;padding:11px 24px;border:1px dashed var(--prule);
   background:var(--surface);color:var(--purple);cursor:pointer;border-radius:2px;width:100%;transition:.14s}
 .addbtn:hover{background:var(--soft);border-color:var(--purple);border-style:solid}
@@ -435,9 +460,8 @@ html[data-theme="dark"] .fchip.f-partial{color:#E4CE88;border-color:#4A3E14;back
    push out of its container unless it is allowed to break mid-word */
 .srcrow.cite{display:block;font-size:12.5px;line-height:1.5;color:var(--ink);
   overflow-wrap:anywhere}
-.pfoot.stacked{flex-direction:column;gap:5px;align-items:flex-start}
-.pfoot .cite{font-family:"Public Sans",system-ui,sans-serif;font-size:11.5px;line-height:1.45;
-  color:var(--muted);text-transform:none;letter-spacing:0;overflow-wrap:anywhere;max-width:100%}
+.psrc .cite{display:block;margin-bottom:3px}
+.psrc .cite:last-child{margin-bottom:0}
 
 /* ── the getting-started guide ───────────────────────────────────
    Bottom right, first visit only. Sits below the geezer's z-index (80) and is
@@ -571,7 +595,10 @@ html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px col
   <div>
     <div class="modebar" id="modebar"></div>
     <div class="stack" id="stack"></div>
-    <div class="addbar"><button class="addbtn" id="addBottom">+ Add another chart</button></div>
+    <div class="addbar">
+      <div class="layoutpick" id="layoutpick" role="group" aria-label="Chart layout"></div>
+      <button class="addbtn" id="addBottom">+ Add another chart</button>
+    </div>
     <div class="srcpanel" id="srcs"></div>
   </div>
 </div>
@@ -706,6 +733,36 @@ const WIDTHS=[[12,"Full width"],[9,"Three quarters"],[8,"Two thirds"],[6,"Half"]
 const W_SNAPS=[4,6,8,9,12];
 const wLabel=w=>({12:"full",9:"3/4",8:"2/3",6:"1/2",4:"1/3"}[w]||w+"/12");
 
+/* Layouts, chosen from a short list rather than dragged out of a corner.
+   `w` is a width in twelfths applied by position, so "Lead + pair" gives the
+   first chart the full row and pairs everything after it. */
+const LAYOUTS=[
+  {k:"full",  label:"Full width", w:()=>12},
+  {k:"two",   label:"Two across", w:()=>6},
+  {k:"three", label:"Three across", w:()=>4},
+  {k:"lead",  label:"Lead + pairs", w:i=>i===0?12:6},
+];
+const LAYOUT_ICON={
+  full:'<svg viewBox="0 0 26 16"><rect x="1" y="1" width="24" height="6" rx="1"/><rect x="1" y="9" width="24" height="6" rx="1"/></svg>',
+  two:'<svg viewBox="0 0 26 16"><rect x="1" y="1" width="11.5" height="14" rx="1"/><rect x="13.5" y="1" width="11.5" height="14" rx="1"/></svg>',
+  three:'<svg viewBox="0 0 26 16"><rect x="1" y="1" width="7.3" height="14" rx="1"/><rect x="9.3" y="1" width="7.3" height="14" rx="1"/><rect x="17.6" y="1" width="7.4" height="14" rx="1"/></svg>',
+  lead:'<svg viewBox="0 0 26 16"><rect x="1" y="1" width="24" height="6" rx="1"/><rect x="1" y="9" width="11.5" height="6" rx="1"/><rect x="13.5" y="9" width="11.5" height="6" rx="1"/></svg>',
+};
+function applyLayout(k){
+  const L=LAYOUTS.find(l=>l.k===k); if(!L) return;
+  state.layout=k;
+  state.panels.forEach((p,i)=>{ p.w=L.w(i); });
+  render();
+}
+/* Which preset the current widths correspond to, so the control can show the
+   active one — and show none when someone has arrived on an older permalink
+   with a bespoke arrangement. */
+function currentLayout(){
+  if(!state.panels.length) return state.layout||"full";
+  const hit=LAYOUTS.find(L=>state.panels.every((p,i)=>p.w===L.w(i)));
+  return hit?hit.k:"";
+}
+
 let uid=0;
 const mkPanel = (sel=[], over={}) =>
   ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"pm", eraPrev:"pm", gran:"years", h:H_DEF, w:12, title:null, lvl:"", asort:"desc", table:false, ...over});
@@ -823,13 +880,37 @@ function transform(s,p){
   if(t==="yoy") pts=pts.map(([y,v],i)=>i<per?[y,null]:[y,pts[i-per][1]?(v/pts[i-per][1]-1)*100:null]);
   if(t==="roll3") pts=pts.map(([y,_],i)=>{const w=pts.slice(Math.max(0,i-(3*per-1)),i+1).map(q=>q[1]).filter(v=>v!=null);
     return [y,w.length?w.reduce((a,b)=>a+b,0)/w.length:null];});
-  if(t==="index"){const b=pts.find(q=>q[0]>=p.from&&q[1]!=null);
-    if(b) pts=pts.map(([y,v])=>[y,v!=null?v/b[1]*100:null]);}
+  if(t==="index"){
+    /* One base for the whole panel, not one per series. Basing each series on
+       its own first available year silently rebases two lines to years that
+       can be a decade apart, and then labels them with a third — which is
+       exactly the incomparability rebasing is supposed to remove. */
+    const base=indexBase(p);
+    const b = base!=null ? pts.find(q=>q[0]>=base&&q[1]!=null)
+                         : pts.find(q=>q[0]>=p.from&&q[1]!=null);
+    if(b) pts=pts.map(([y,v])=>[y,v!=null?v/b[1]*100:null]);
+  }
   return pts.filter(q=>q[0]>=p.from&&q[0]<=p.to);
 }
+
+/* The earliest period at or after `from` where EVERY selected series has a
+   value — the only year they can all honestly be set to 100 at. null when
+   they never overlap, which the panel warns about rather than papering over. */
+function indexBase(p){
+  const ids=(p.sel||[]).filter(id=>S(id));
+  if(!ids.length) return null;
+  let base=-Infinity;
+  for(const id of ids){
+    const first=seriesPts(S(id),p.gran).find(q=>q[0]>=p.from&&q[1]!=null);
+    if(!first) return null;
+    if(first[0]>base) base=first[0];
+  }
+  return base>p.to ? null : base;
+}
+
 function unitLabel(s,p){
   const t=p.trans;
-  if(t==="index") return `index, ${p.from}=100`;
+  if(t==="index"){ const b=indexBase(p); return `index, ${b==null?p.from:Math.floor(b)}=100`; }
   if(t==="yoy") return "% change on year";
   if(t==="real"&&applies(t,s)) return s.unit.replace(/,?\s*cash/,"")+", 2024 prices";
   if(t==="percap"&&applies(t,s)) return s.unit+" per person";
@@ -966,7 +1047,9 @@ const HIT_MAX=200;
 /* ══════════════════════════════════════════════
    CHART ENGINE — height comes from the panel
    ══════════════════════════════════════════════ */
-const W=940, M={t:16,r:66,b:26,l:58};
+/* Right margin carries the series name as well as its last value now, so it is
+   wider than a value alone would need. */
+const W=940, M={t:16,r:118,b:26,l:58};
 const px=(p,y)=>M.l+((y-p.from)/Math.max(1,p.to-p.from))*(W-M.l-M.r);
 function scale(vals){
   const v=vals.filter(x=>x!=null);
@@ -982,13 +1065,31 @@ const fmt=n=>n==null?"–":Math.abs(n)>=1000?n.toFixed(0).replace(/\B(?=(\d{3})+
              Math.abs(n)>=100?n.toFixed(0):Math.abs(n)>=10?n.toFixed(1):
              (n!==0&&Math.abs(n)<0.01)?(+n.toPrecision(3)).toString():n.toFixed(2);
 
+/* Ticks a person would have chosen. Dividing the padded range into four gives
+   83.2 / 127 / 170 / 213 / 257 — arithmetically fine and unreadable. This is
+   the standard 1-2-5 step: pick the round step nearest the ideal spacing, then
+   walk it across the domain. */
+/* A nice tick of 60 should read "60", not "60.0" — fmt's one-decimal rule is
+   right for data values and wrong for round axis steps. */
+const fmtTick=v=>fmt(v).replace(/\.0+$/,"");
+function niceTicks(mn,mx,want=5){
+  if(!(mx>mn)) return [mn];
+  const raw=(mx-mn)/Math.max(1,want-1);
+  const mag=Math.pow(10,Math.floor(Math.log10(raw)));
+  const n=raw/mag;
+  const step=(n<1.5?1:n<3?2:n<7?5:10)*mag;
+  const out=[];
+  for(let v=Math.ceil(mn/step)*step; v<=mx+step*1e-9; v+=step) out.push(+v.toPrecision(12));
+  return out.length?out:[mn,mx];
+}
+
 function frame(p,g,mn,mx,label){
   const H=p.h;
-  for(let i=0;i<=4;i++){
-    const y=M.t+i*(H-M.t-M.b)/4, val=mx-(mx-mn)*i/4;
-    g.push(`<line class="gridline" x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}"/>`);
-    g.push(`<text class="axlabel" x="${M.l-9}" y="${y+3.5}" text-anchor="end">${fmt(val)}</text>`);
-  }
+  niceTicks(mn,mx,5).forEach(val=>{
+    const y=M.t+(1-(val-mn)/(mx-mn))*(H-M.t-M.b);
+    g.push(`<line class="gridline" x1="${M.l}" y1="${y.toFixed(1)}" x2="${W-M.r}" y2="${y.toFixed(1)}"/>`);
+    g.push(`<text class="axlabel" x="${M.l-9}" y="${(y+3.5).toFixed(1)}" text-anchor="end">${fmtTick(val)}</text>`);
+  });
   const span=p.to-p.from, step=span>24?5:span>12?2:1;
   for(let yr=Math.ceil(p.from/step)*step;yr<=p.to;yr+=step)
     g.push(`<text class="axlabel" x="${px(p,yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
@@ -1001,6 +1102,16 @@ function renderLine(p,sets,mode){
   const shared=sets.every(s=>s.unit===sets[0].unit);
   let [mn,mx]=scale(sets.flatMap(s=>s.pts.map(q=>q[1])));
   frame(p,g,mn,mx,shared?sets[0].unit:"");
+  /* Say that the data is missing rather than leaving white space that reads as
+     a rendering failure. This is the same fact the rebasing warning states in
+     words, drawn where the eye is already asking the question. */
+  const firstData=Math.min(...sets.map(s=>{
+    const f=s.pts.find(q=>q[1]!=null); return f?f[0]:Infinity; }));
+  if(isFinite(firstData)&&firstData>p.from+0.5){
+    const x0=px(p,p.from), x1=px(p,firstData);
+    g.push(`<rect class="nodata" x="${x0.toFixed(1)}" y="${M.t}" width="${(x1-x0).toFixed(1)}" height="${H-M.t-M.b}"/>`);
+    if(x1-x0>108) g.push(`<text class="axlabel nodatat" x="${((x0+x1)/2).toFixed(1)}" y="${(M.t+14)}" text-anchor="middle">no data before ${Math.floor(firstData)}</text>`);
+  }
   sets.flatMap(s=>(s.meta.discontinuities||[])).forEach(d=>{
     if(d.year>=p.from&&d.year<=p.to)
       g.push(`<line class="disc" x1="${px(p,d.year)}" y1="${M.t}" x2="${px(p,d.year)}" y2="${H-M.b}"><title>${d.note}</title></line>`);});
@@ -1023,10 +1134,27 @@ function renderLine(p,sets,mode){
         d+=(pen?"L":"M")+x+" "+y+" "; pen=true; lastY=y; });
       g.push(`<path class="line" d="${d}" stroke="${s.colour}"/>`);
     }
-    const last=[...s.pts].reverse().find(q=>q[1]!=null);
-    if(last) g.push(`<text class="sm-t" x="${W-M.r+7}" y="${Y(last[1])+3.5}" fill="${s.colour}">${fmt(last[1])}</text>`);
     if(s.pts.length<=HIT_MAX) s.pts.forEach(q=>{ if(q[1]!=null)
       g.push(hit(s.id,q[0],px(p,q[0]),Y(q[1]))); });
+  });
+  /* Names at the line ends, not in a legend underneath. The legend was the
+     only thing mapping colour to name, so it could not simply be deleted as
+     duplication — the label has to carry the name before the legend can go.
+     Decluttered, because two series ending on similar values is common. */
+  const ends=sets.map(s=>{
+    const last=[...s.pts].reverse().find(q=>q[1]!=null);
+    if(!last) return null;
+    let a=mn,b=mx;
+    if(!shared) [a,b]=scale(s.pts.map(q=>q[1]));
+    return {s,v:last[1],y:M.t+(1-(last[1]-a)/(b-a))*(H-M.t-M.b)};
+  }).filter(Boolean);
+  const order=ends.map((e,i)=>[i,e.y]).sort((x,y)=>x[1]-y[1]);
+  for(let k=1;k<order.length;k++)
+    if(order[k][1]-order[k-1][1]<13) order[k][1]=order[k-1][1]+13;
+  order.forEach(([i,y])=>{
+    const e=ends[i], nm=e.s.name.length>18?e.s.name.slice(0,17)+"…":e.s.name;
+    g.push(`<text class="sm-t" x="${W-M.r+7}" y="${(y-3).toFixed(1)}" fill="${e.s.colour}">${esc(nm)}</text>`);
+    g.push(`<text class="axlabel" x="${W-M.r+7}" y="${(y+8).toFixed(1)}">${fmt(e.v)}</text>`);
   });
   return wrapSvg(p,g);
 }
@@ -1185,9 +1313,10 @@ function renderSmall(p,sets){
     const PX=y=>cx+m.l+((y-p.from)/Math.max(1,p.to-p.from))*(pw-m.l-m.r);
     const PY=v=>cy+m.t+(1-(v-a)/(b-a))*(ph-m.t-m.b);
     g.push(`<text class="sm-t" x="${cx+m.l}" y="${cy+14}" fill="${s.colour}">${s.name}</text>`);
-    [0,1,2].forEach(k=>{const y=cy+m.t+k*(ph-m.t-m.b)/2;
-      g.push(`<line class="gridline" x1="${cx+m.l}" y1="${y}" x2="${cx+pw-m.r}" y2="${y}"/>`);
-      g.push(`<text class="axlabel" x="${cx+m.l-6}" y="${y+3}" text-anchor="end" style="font-size:9px">${fmt(b-(b-a)*k/2)}</text>`);});
+    niceTicks(a,b,3).forEach(val=>{
+      const y=cy+m.t+(1-(val-a)/(b-a))*(ph-m.t-m.b);
+      g.push(`<line class="gridline" x1="${cx+m.l}" y1="${y.toFixed(1)}" x2="${cx+pw-m.r}" y2="${y.toFixed(1)}"/>`);
+      g.push(`<text class="axlabel" x="${cx+m.l-6}" y="${(y+3).toFixed(1)}" text-anchor="end" style="font-size:9px">${fmtTick(val)}</text>`);});
     let d="",pen=false;
     s.pts.forEach(q=>{ if(q[1]==null){pen=false;return;} d+=(pen?"L":"M")+PX(q[0]).toFixed(1)+" "+PY(q[1]).toFixed(1)+" "; pen=true;});
     g.push(`<path class="line" d="${d}" stroke="${s.colour}" stroke-width="2"/>`);
@@ -1301,11 +1430,11 @@ function areaFrame(rows,mn,mx,head){
   const H=AREA_TOP+rows.length*AREA_ROW+8;
   const x=v=>AREA_ML+((v-mn)/Math.max(1e-9,mx-mn))*(W-AREA_ML-AREA_MR);
   const g=[];
-  for(let i=0;i<=4;i++){
-    const v=mn+(mx-mn)*i/4, gx=x(v);
+  niceTicks(mn,mx,5).forEach(v=>{
+    const gx=x(v);
     g.push(`<line class="gridline" x1="${gx.toFixed(1)}" y1="${AREA_TOP-8}" x2="${gx.toFixed(1)}" y2="${H-4}"/>`);
-    g.push(`<text class="axlabel" x="${gx.toFixed(1)}" y="${AREA_TOP-13}" text-anchor="middle">${fmt(v)}</text>`);
-  }
+    g.push(`<text class="axlabel" x="${gx.toFixed(1)}" y="${AREA_TOP-13}" text-anchor="middle">${fmtTick(v)}</text>`);
+  });
   if(head) g.push(`<text class="axlabel" x="${AREA_ML-10}" y="${AREA_TOP-13}" text-anchor="end">${esc(head)}</text>`);
   return {g,H,x,rowY:i=>AREA_TOP+i*AREA_ROW+AREA_ROW/2};
 }
@@ -1527,6 +1656,8 @@ const IC={
   del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg>',
   flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"/><path d="M6 4h11l-2.5 4L17 12H6"/></svg>',
   pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/></svg>',
+  mvL:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg>',
+  mvR:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6l6 6-6 6"/></svg>',
   table:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 10h16M10 10v9"/></svg>',
   half:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="8" height="12" rx="1.5"/><rect x="13" y="6" width="8" height="12" rx="1.5"/></svg>',
   wide:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1.5"/></svg>',
@@ -1583,6 +1714,16 @@ function warningsFor(p,sets){
   const units=[...new Set(sets.map(s=>s.unit))];
   if(units.length>1&&p.trans!=="index"&&p.trans!=="yoy")
     w.push({html:`<b>Different units.</b> Each series is on its own axis, which can make any two lines appear to move together.`,act:"rebase"});
+  /* The base is a panel-wide fact and it is frequently not the year the reader
+     typed into the range box, so say so. Silence here is what made two lines
+     rebased a decade apart look like a like-for-like comparison. */
+  if(p.trans==="index"&&sets.length){
+    const b=indexBase(p);
+    if(b==null)
+      w.push({html:`<b>Nothing to rebase on.</b> These series never overlap inside this range, so each one is set to 100 at its own first year and the two lines are not comparable. Narrow the selection or widen the range.`});
+    else if(Math.floor(b)!==p.from)
+      w.push({html:`<b>Rebased to ${Math.floor(b)}, not ${p.from}.</b> That is the first year every series on this chart has a figure — the earliest point they can honestly share a base.`});
+  }
   const skipped=sets.filter(s=>["real","percap","pctgdp"].includes(p.trans)&&!applies(p.trans,s.meta));
   if(skipped.length) w.push({html:`<b>Transform skipped for ${esc(skipped.map(s=>s.name).join(", "))}.</b> Already a rate, ratio or index — deflating or dividing by population would be meaningless.`});
   /* A break warning that only states the problem leaves the reader holding it.
@@ -1717,16 +1858,35 @@ function panelHtml(p,i){
        published pounds as "index, 1997=100" — the chart and its own key
        disagreeing, which is the failure this site exists to avoid. */
     const lgSets = aset ? [{...aset, unit:aset.meta.unit}] : sets;
-    legend=`<div class="legend">${lgSets.map(s=>`<span class="lg"><span class="d" style="background:${s.colour}"></span>${esc(s.name)} <span class="u">${esc(s.unit)}</span></span>`).join("")}</div>`;
+    /* The area views draw one series with no line-end label, so they keep a
+       key. The time charts name their lines directly and do not need one. */
+    legend = AREA_CHARTS.has(p.chart)
+      ? `<div class="legend">${lgSets.map(s=>`<span class="lg"><span class="d" style="background:${s.colour}"></span>${esc(s.name)} <span class="u">${esc(s.unit)}</span></span>`).join("")}</div>`
+      : "";
     /* Harvard citations are sentences, not chips — they get their own rows so
        they stay readable, while short keeps the original single-line strip. */
+    /* Two lines with two jobs. The sources are prose and want reading, so they
+       are sentence case at readable weight; the licence, coverage and build
+       state are machine metadata and sit quieter underneath. The old strip put
+       a field label, two publisher names, a licence and a build state at one
+       size in one case separated by identical dots — nothing told the eye what
+       was a label and what was a value, on the component carrying the whole
+       trust claim. */
     const lines=srcLines(sets);
-    const attrib = SRCSTYLE==="off" ? ""
-      : SRCSTYLE==="harvard"
-        ? lines.map(c=>`<span class="cite">${esc(c)}</span>`).join("")+`<span>LICENCE · OGL v3.0</span>`
-        : `<span>SOURCES · ${esc(lines[0]).toUpperCase()}</span><span>LICENCE · OGL v3.0</span>`;
-    foot=`<div class="pfoot${SRCSTYLE==="harvard"?" stacked":""}">${attrib}
-      <span>DATA · ${DB.meta.provenance.toUpperCase()}</span></div>`;
+    const geos=[...new Set(sets.map(s=>s.meta.geography))].join(" · ");
+    const meta=[`OGL v3.0`, geos,
+                p.trans!=="none"?TRANSFORMS.find(t=>t[0]===p.trans)[1]:null,
+                `Data ${DB.meta.provenance}`,
+                DB.meta.generated?`built ${ukDate(DB.meta.generated)}`:null]
+               .filter(Boolean).join(" · ");
+    foot = SRCSTYLE==="off"
+      ? `<div class="pfoot"><span class="pmeta">${esc(meta)}</span></div>`
+      : `<div class="pfoot">
+          <div class="psrc">${SRCSTYLE==="harvard"
+            ? lines.map(c=>`<span class="cite">${esc(c)}</span>`).join("")
+            : esc(lines[0])}</div>
+          <div class="pmeta">${esc(meta)}</div>
+        </div>`;
   }
 
   /* The working, or an invitation to open one. The hint sits in the same slot
@@ -1763,13 +1923,17 @@ function panelHtml(p,i){
       <button class="mi" data-act="csv">${IC.csv} Download CSV</button>
       <button class="mi" data-act="png">${IC.png} Download PNG</button>
       <div class="msep"></div>
+      <!-- Reordering without a pointer. Drag is fine with a mouse and useless
+           with a keyboard, and roughly nobody discovers it on a phone. -->
+      <button class="mi" data-act="moveback" ${i===0?"disabled":""}>${IC.mvL} Move earlier</button>
+      <button class="mi" data-act="movefwd" ${i===state.panels.length-1?"disabled":""}>${IC.mvR} Move later</button>
+      <div class="msep"></div>
       <button class="mi" data-act="dup">${IC.dup} Duplicate chart</button>
       <button class="mi danger" data-act="del">${IC.del} Remove chart</button>
     </div>
     ${ctrl}${warns}${body}${work}${legend}${foot}
     <div class="rgrip" data-act="rgrip" title="Drag to change height"></div>
-    <div class="cgrip" data-act="cgrip" title="Drag to resize"></div>
-    <span class="hpill">${wLabel(p.w)} · ${p.h}px</span>
+    <span class="hpill">${p.h}px</span>
   </div>`;
 }
 
@@ -1826,7 +1990,7 @@ function renderSidebar(){
     return `<div class="ci" data-id="${s.id}" aria-selected="${on}">
       <span class="sw" style="${on?`background:${PAL(i)};border-color:${PAL(i)}`:""}"></span>
       <span class="body"><span class="cn">${esc(s.name)}</span>
-      <span class="cm"><span class="tag">${esc(s.geography)}</span><span class="tag">${esc(s.unit)}</span><span class="yr">${s.start}–${end}</span></span>
+      <span class="cm"><span class="tag">${esc(s.geography)}</span>${esc(s.unit)}<span class="sep">·</span>${s.start}–${end}</span>
       </span></div>`;}).join("") : `<div class="empty">Nothing matches that.</div>`;
   cat.querySelectorAll(".ci").forEach(el=>el.onclick=()=>{
     const id=el.dataset.id;
@@ -1951,7 +2115,16 @@ function bindSrcStyle(sets){
   };
 }
 
-function render(){ renderPanels(); renderSidebar(); renderSources(); writeHash(); }
+function renderLayoutPick(){
+  const el=document.getElementById("layoutpick"); if(!el) return;
+  const cur=currentLayout();
+  el.innerHTML=LAYOUTS.map(L=>
+    `<button class="lb${cur===L.k?" on":""}" data-layout="${L.k}" aria-pressed="${cur===L.k}"
+      title="${L.label}" aria-label="${L.label}">${LAYOUT_ICON[L.k]}</button>`).join("");
+  el.querySelectorAll("[data-layout]").forEach(b=>b.onclick=()=>applyLayout(b.dataset.layout));
+}
+
+function render(){ renderPanels(); renderSidebar(); renderSources(); renderLayoutPick(); writeHash(); }
 
 /* ══════════════════════════════════════════════
    PANEL ACTIONS
@@ -2011,6 +2184,12 @@ document.getElementById("stack").addEventListener("click",e=>{
   else if(act==="unprobe") state.probe=null;
   else if(act==="charttile") p.chart=actEl.dataset.v;
   else if(act==="pair") p.sel=actEl.dataset.v.split(",");
+  else if(act==="moveback"||act==="movefwd"){
+    const j=act==="moveback"?i-1:i+1;
+    if(j<0||j>=state.panels.length) return;
+    state.panels.splice(j,0,state.panels.splice(i,1)[0]);
+    state.active=j; state.focus=j; state.openMenu=null;
+  }
   else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,gran:p.gran,h:p.h,w:p.w,lvl:p.lvl,asort:p.asort,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
   else if(act==="del"){ state.openMenu=null; state.panels.splice(i,1); lockedKeys.delete(p.key); if(state.openCfg===p.key) state.openCfg=null; state.active=Math.max(0,Math.min(state.active,state.panels.length-1)); state.focus=null; }
   else if(act==="csv"){ state.openMenu=null; exportCsv(i); render(); return; }
@@ -2200,11 +2379,15 @@ document.addEventListener("pointerup",()=>{
   if(wasDrag) render();
 });
 
-/* ── drag to resize ── */
+/* ── drag to change height ──
+   Width used to be draggable from the same corner: five snap points, a live
+   preview and a feedback pill, all discoverable only by trying it. Most people
+   want a standard arrangement rather than a bespoke one, so widths are now set
+   declaratively from the layout presets and this gesture does height only. */
 let rz=null;
 document.getElementById("stack").addEventListener("pointerdown",e=>{
   const mode=e.target.dataset.act;
-  if(mode!=="rgrip"&&mode!=="cgrip") return;
+  if(mode!=="rgrip") return;
   const card=e.target.closest(".pcard"), i=+card.dataset.i;
   rz={i,mode,y0:e.clientY,x0:e.clientX,h0:state.panels[i].h,w0:state.panels[i].w,card};
   card.classList.add("is-resizing");
@@ -2223,29 +2406,20 @@ document.addEventListener("pointermove",e=>{
   const card=document.querySelector(`.pcard[data-i="${rz.i}"]`);
   if(!card) return;
 
-  /* corner drag also sets width — snaps to half or full so the grid always tiles */
-  if(rz.mode==="cgrip"){
-    const stackW=document.getElementById("stack").getBoundingClientRect().width;
-    const want=Math.max(3,Math.min(12,(rz.w0/12*stackW + (e.clientX-rz.x0)) / stackW * 12));
-    let w=W_SNAPS[0];
-    W_SNAPS.forEach(s=>{ if(Math.abs(s-want)<Math.abs(w-want)) w=s; });
-    if(w!==p.w){ p.w=w; card.style.setProperty("--span",w); }
-  }
   const sets=buildSets(p);
   if(sets.length){
     const holder=card.querySelector(".pbody");
     const chart=chartFor(p,sets);
     if(chart&&holder) holder.innerHTML=chart+((p.era!=="off"&&p.chart!=="scatter"&&p.chart!=="small")?renderRibbon(p):"");
   }
-  const pill=card.querySelector(".hpill"); if(pill) pill.textContent=wLabel(p.w)+" · "+p.h+"px";
+  const pill=card.querySelector(".hpill"); if(pill) pill.textContent=p.h+"px";
 });
 document.addEventListener("pointerup",()=>{
   if(!rz) return;
-  const wasWidth = rz.mode==="cgrip" && state.panels[rz.i] && state.panels[rz.i].w!==rz.w0;
   document.querySelector(`.pcard[data-i="${rz.i}"]`)?.classList.remove("is-resizing");
   document.body.classList.remove("resizing");
   rz=null;
-  if(wasWidth) render(); else writeHash();   /* width change needs a redraw at the new size */
+  writeHash();
 });
 
 /* ══════════════════════════════════════════════
@@ -2368,6 +2542,8 @@ const exportCss=th=>`
   .axlabel{font-size:10px;fill:${th.muted}}
   .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
   .disc{stroke:${th.warn};stroke-width:1;stroke-dasharray:3 3;opacity:.6}
+  .nodata{fill:${th.ink};opacity:.045}
+  .nodatat{opacity:.75;letter-spacing:.04em}
   .sm-t{font-size:10px;font-weight:500}
   .era text{font-size:9px;fill:#fff;font-weight:500}
   .pmtick{stroke:${th.ink};stroke-width:1;stroke-dasharray:2 2;opacity:.3}
