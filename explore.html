@@ -381,6 +381,26 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);
   display:none;flex-direction:column;overflow:hidden}
 .guide.on{display:flex}
+/* Anchored to whatever the step is about. left/top are set in script, so the
+   corner offsets have to be cleared or they fight each other. */
+.guide.anchored{right:auto;bottom:auto;transition:left .32s cubic-bezier(.4,0,.2,1),top .32s cubic-bezier(.4,0,.2,1)}
+@media (prefers-reduced-motion:reduce){.guide.anchored{transition:none}}
+
+/* The ring is drawn with a spread shadow and the scrim with a second, huge
+   one on the same element — one box, no overlay stack to keep in sync. */
+#gspot{position:fixed;z-index:68;border-radius:4px;pointer-events:none;display:none;
+  box-shadow:0 0 0 2px var(--purple), 0 0 0 6px color-mix(in srgb,var(--purple) 26%,transparent),
+             0 0 0 9999px rgba(8,10,16,.34);
+  transition:left .32s cubic-bezier(.4,0,.2,1),top .32s cubic-bezier(.4,0,.2,1),
+             width .32s cubic-bezier(.4,0,.2,1),height .32s cubic-bezier(.4,0,.2,1)}
+html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px color-mix(in srgb,var(--purple) 30%,transparent), 0 0 0 9999px rgba(0,0,0,.56)}
+#gspot.on{display:block}
+@media (prefers-reduced-motion:reduce){#gspot{transition:none}}
+/* Pointer-events off throughout: the guide explains the page, it doesn't
+   take it away — you can still click the thing being described. */
+#garrow{position:fixed;inset:0;z-index:69;pointer-events:none;display:none}
+#garrow.on{display:block}
+#garrow path{fill:none;stroke:var(--purple);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .ghd{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface-2);
   border-bottom:1px solid var(--rule)}
 .ghd h2{font-family:Archivo,sans-serif;font-size:14.5px;font-weight:700;margin:0;color:var(--ink);
@@ -435,6 +455,8 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   </div>
 </header>
 
+<div id="gspot" aria-hidden="true"></div>
+<svg id="garrow" aria-hidden="true"><path id="garrowp"/></svg>
 <aside class="guide" id="guide" role="dialog" aria-modal="false" aria-labelledby="gtitle" hidden>
   <div class="ghd">
     <h2 id="gtitle">Getting started</h2>
@@ -2356,32 +2378,112 @@ modeBtn.onclick=()=>setMode(MODE==="default"?"brexit":"default");
    ══════════════════════════════════════════════ */
 const GUIDE_KEY="polyoptic-guide";
 const gi=svg=>`<span class="gi">${svg}</span>`;
+/* Each step points at ONE thing. `sel` is tried in order and the first match
+   wins, so a step survives a chart type that doesn't draw its target. `setup`
+   runs before the target is looked for — that is how the steps about the
+   settings popover and the ⋯ menu can point inside something that has to be
+   opened first. */
 const GUIDE=[
-  {t:"Move and size your charts", li:[
-    [gi(IC.dup),`Drag the <span class="kbd">⠿</span> handle on any chart to reorder the stack.`],
-    [gi(IC.wide),`Drag a chart's <b>right edge</b> to change its width, or its <b>bottom edge</b> to change its height.`],
-    [gi(IC.lock),`The padlock pins a chart in place, so it can't be moved or resized by accident.`]]},
-  {t:"Charts and indicators", li:[
-    ["",`Pick indicators from the panel on the left — up to <b>four</b> on one chart. Click a selected one again to drop it.`],
-    ["",`<b>+ Add another chart</b> at the bottom starts a fresh one, and the ⋯ menu will duplicate or remove the chart you're on.`],
-    ["",`<b>Hide panel</b> at the foot of the list collapses it and gives the charts the full width. The rail on the left edge brings it back.`]]},
-  {t:"Change what the chart shows", li:[
-    [gi(IC.sliders),`Chart settings holds eight chart types — line, step, dots, bars, area, stacked, scatter and small multiples.`],
-    ["",`Transform the numbers without touching the source: <b>Rebase to 100</b>, <b>Year-on-year %</b>, <b>3-year average</b>, <b>Real terms</b>, <b>Per person</b> or <b>% of GDP</b>. Set the year range and granularity here too.`],
-    [gi(IC.flag),`Toggles the ribbon showing which party was in power, with prime ministers or elections marked.`]]},
-  {t:"Rename, export and share", li:[
-    [gi(IC.pen),`Click a chart's title to rename it. Your own title survives changing the indicators.`],
-    [gi(IC.png),`The ⋯ menu downloads the chart as a <b>PNG</b> or its numbers as a <b>CSV</b>, both carrying their source attribution.`],
-    ["",`<b>Copy link</b> in the header puts your whole layout in the URL — every chart, transform and year range.`]]},
-  {t:"Light or dark", li:[
-    ["",`The eye in the header switches between light and dark. It remembers which you picked.`],
-    ["",`Under the charts, <b>Sourcing</b> sets how attribution reads — short, full Harvard citations, or off.`],
-    ["",`That's everything. Reopen this any time with <span class="kbd">?</span> in the header.`]]},
+  {t:"Every indicator, here", sel:["#cat"],
+   li:[["",`The catalogue. Search or filter, then click to put an indicator on the chart you're editing — up to <b>four</b> at once. Click a selected one again to drop it.`]]},
+  {t:"What's on this chart", sel:["#tray"],
+   li:[["",`The indicators on the chart you're editing right now. The <span class="kbd">×</span> on each one removes it.`]]},
+  {t:"Chart settings", sel:['.pcard [data-act="cfg"]'], setup:()=>{state.openCfg=null;},
+   li:[[gi(IC.sliders),`Everything about how this chart looks lives behind this button — chart type, transforms, the year range and the width.`]]},
+  {t:"Fourteen ways to draw it", sel:['.cfgpanel .ctgrid','.cfgpanel'],
+   setup:()=>{const p=P0(); if(p) state.openCfg=p.key;},
+   li:[["",`Lines, columns, slopes and small multiples under <b>Over time</b>. Under <b>By area</b>, the same indicator broken down to local authorities — a ranking, the change between two years, or a heatmap.`],
+       ["",`Below these: transforms that rebase to 100, show year-on-year change, real terms, per person or % of GDP.`]]},
+  {t:"Who was in power", sel:['.pcard [data-act="eratoggle"]'], setup:()=>{state.openCfg=null;},
+   li:[[gi(IC.flag),`Puts a ribbon under the chart showing the governing party, with prime ministers or elections marked.`]]},
+  {t:"Show the working", sel:['.pcard .workhint','.pcard .working','.pcard .hit'],
+   li:[["",`Click any point on a chart and it shows you the published figure, the figure being plotted, and the arithmetic in between — with a link to the release it came from.`]]},
+  {t:"Export and duplicate", sel:['.pcard [data-act="menu"]'], setup:()=>{const p=P0(); if(p) state.openMenu=p.key;},
+   li:[[gi(IC.png),`Download the chart as a <b>PNG</b> or its numbers as a <b>CSV</b> — both carry their source attribution. Duplicate and remove live here too.`]]},
+  {t:"Rename it", sel:['.pcard .ptitle'], setup:()=>{state.openMenu=null;},
+   li:[[gi(IC.pen),`Click a chart's title to rename it. Your own title survives changing the indicators underneath it.`]]},
+  {t:"Move, size and pin", sel:['.pcard .grip'],
+   li:[[gi(IC.dup),`Drag this handle to reorder the stack. Drag a chart's <b>right</b> or <b>bottom</b> edge to resize it, and the padlock pins it so neither happens by accident.`]]},
+  {t:"More charts", sel:["#addBottom"],
+   li:[["",`Start a fresh chart. They stack down the page and each one keeps its own settings.`]]},
+  {t:"Room to work", sel:["#sideHide"],
+   li:[["",`Collapses the indicator panel and gives the charts the full width. The rail on the left edge brings it back.`]]},
+  {t:"Where it all came from", sel:["#srcs"],
+   li:[["",`Every source on the page, and a <b>Sourcing</b> setting that switches attribution between short, full Harvard citations, or off. It applies to the exports as well as the screen.`]]},
+  {t:"Take it with you", sel:["#copyLink"],
+   li:[["",`<b>Copy link</b> puts your whole layout in the URL — every chart, transform and year range. The eye beside it switches light and dark, and <span class="kbd">?</span> reopens this tour.`]]},
 ];
 let gAt=0;
 const gEl=document.getElementById("guide");
+const gSpot=document.getElementById("gspot");
+const gArrow=document.getElementById("garrow");
+const gArrowP=document.getElementById("garrowp");
+let gTarget=null;
+
+/* Below this width there is nowhere to stand beside anything, so the card goes
+   back to being a card in the corner. */
+const gRoomy=()=>innerWidth>=820;
+
+function gFind(sels){
+  for(const s of (sels||[])){ const el=document.querySelector(s); if(el) return el; }
+  return null;
+}
+
+/* Card first, then ring, then arrow — each needs the one before it measured. */
+function gPlace(){
+  if(!gTarget||!gTarget.isConnected||!gRoomy()){
+    gEl.classList.remove("anchored");
+    gEl.style.left=gEl.style.top="";
+    gSpot.classList.remove("on"); gArrow.classList.remove("on");
+    return;
+  }
+  const t=gTarget.getBoundingClientRect();
+  if(t.width===0&&t.height===0){ gSpot.classList.remove("on"); gArrow.classList.remove("on"); return; }
+
+  const PAD=6;
+  gSpot.style.left=(t.left-PAD)+"px"; gSpot.style.top=(t.top-PAD)+"px";
+  gSpot.style.width=(t.width+PAD*2)+"px"; gSpot.style.height=(t.height+PAD*2)+"px";
+  gSpot.classList.add("on");
+
+  gEl.classList.add("anchored");
+  const c=gEl.getBoundingClientRect(), GAP=34, M=14, vw=innerWidth, vh=innerHeight;
+  const spots=[
+    {k:"right",x:t.right+GAP,               y:t.top+t.height/2-c.height/2},
+    {k:"left", x:t.left-GAP-c.width,        y:t.top+t.height/2-c.height/2},
+    {k:"below",x:t.left+t.width/2-c.width/2,y:t.bottom+GAP},
+    {k:"above",x:t.left+t.width/2-c.width/2,y:t.top-GAP-c.height},
+  ];
+  const fits=s=>s.x>=M&&s.y>=M&&s.x+c.width<=vw-M&&s.y+c.height<=vh-M;
+  /* Fall back to whichever placement overflows least rather than to a fixed
+     side — on a short window "below" can be the only survivor. */
+  const over=s=>Math.max(0,M-s.x)+Math.max(0,M-s.y)+
+                Math.max(0,s.x+c.width-(vw-M))+Math.max(0,s.y+c.height-(vh-M));
+  const pick=spots.find(fits)||spots.reduce((a,b)=>over(a)<=over(b)?a:b);
+  const x=Math.max(M,Math.min(pick.x,vw-M-c.width));
+  const y=Math.max(M,Math.min(pick.y,vh-M-c.height));
+  gEl.style.left=x+"px"; gEl.style.top=y+"px";
+
+  /* Arrow from the card's edge to the ring, bowed slightly so it reads as a
+     pointer rather than a table rule. */
+  const cx=x+c.width/2, cy=y+c.height/2;
+  const tx=t.left+t.width/2, ty=t.top+t.height/2;
+  const dx=tx-cx, dy=ty-cy, len=Math.hypot(dx,dy)||1;
+  const ux=dx/len, uy=dy/len;
+  const sx=cx+ux*Math.min(c.width/2+6,len/2), sy=cy+uy*Math.min(c.height/2+6,len/2);
+  const ex=tx-ux*(Math.min(t.width,120)/2+PAD+11), ey=ty-uy*(Math.min(t.height,80)/2+PAD+11);
+  const mx2=(sx+ex)/2-uy*22, my2=(sy+ey)/2+ux*22;   /* perpendicular bow */
+  const ah=Math.atan2(ey-my2,ex-mx2), A=9;
+  gArrowP.setAttribute("d",
+    `M${sx.toFixed(1)} ${sy.toFixed(1)} Q${mx2.toFixed(1)} ${my2.toFixed(1)} ${ex.toFixed(1)} ${ey.toFixed(1)}`+
+    ` M${(ex-A*Math.cos(ah-0.42)).toFixed(1)} ${(ey-A*Math.sin(ah-0.42)).toFixed(1)}`+
+    ` L${ex.toFixed(1)} ${ey.toFixed(1)}`+
+    ` L${(ex-A*Math.cos(ah+0.42)).toFixed(1)} ${(ey-A*Math.sin(ah+0.42)).toFixed(1)}`);
+  gArrow.classList.add("on");
+}
+
 function drawGuide(){
   const s=GUIDE[gAt];
+  if(s.setup){ s.setup(); render(); }
   document.getElementById("gstep").textContent=`${gAt+1} of ${GUIDE.length}`;
   document.getElementById("gbody").innerHTML=
     `<h3>${s.t}</h3><ul>${s.li.map(([icon,txt])=>`<li>${icon||'<span class="gi"></span>'}<span>${txt}</span></li>`).join("")}</ul>`;
@@ -2390,11 +2492,29 @@ function drawGuide(){
   document.getElementById("gback").disabled=gAt===0;
   document.getElementById("gnext").textContent=gAt===GUIDE.length-1?"Got it":"Next";
   document.querySelectorAll("#gdots i").forEach(d=>d.onclick=()=>{gAt=+d.dataset.g;drawGuide();});
+
+  gTarget=gRoomy()?gFind(s.sel):null;
+  if(gTarget){
+    const r=gTarget.getBoundingClientRect();
+    /* Bring the target into view first; the scroll handler re-places the card
+       as it moves, so there is no wait-then-guess. */
+    if(r.top<70||r.bottom>innerHeight-70)
+      gTarget.scrollIntoView({block:"center",behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"});
+  }
+  gPlace();
 }
+const gReflow=()=>{ if(gEl.classList.contains("on")) gPlace(); };
+addEventListener("scroll",gReflow,{passive:true});
+addEventListener("resize",gReflow);
 function openGuide(at){ gAt=at||0; gEl.hidden=false; gEl.classList.add("on"); drawGuide(); }
 /* hoisted, so setMode can call it regardless of where it sits in the file */
 function closeGuide(remember){
-  gEl.classList.remove("on"); gEl.hidden=true;
+  gEl.classList.remove("on","anchored"); gEl.hidden=true;
+  gEl.style.left=gEl.style.top="";
+  gSpot.classList.remove("on"); gArrow.classList.remove("on"); gTarget=null;
+  /* The tour opens popovers to point inside them; leaving one open after it
+     ends would look like the page had been left mid-click. */
+  if(state.openCfg!==null||state.openMenu!==null){ state.openCfg=null; state.openMenu=null; render(); }
   if(remember){ try{ localStorage.setItem(GUIDE_KEY,"seen"); }catch(e){} }
 }
 document.getElementById("gclose").onclick=()=>closeGuide(true);
