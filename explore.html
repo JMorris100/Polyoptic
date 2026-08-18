@@ -270,6 +270,24 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.1em;text-transform:uppercase}
 
 .warn{background:var(--warnbg);border-bottom:1px solid var(--warnrule);padding:9px 16px;font-size:12.5px;color:var(--warn-ink)}
+/* Show-your-working. Monospace and selectable: the numbers are meant to be
+   read against the source and copied out, not just glanced at. */
+.hit{fill:transparent;cursor:pointer}
+.hit:hover{fill:currentColor;fill-opacity:.14}
+.working{margin:2px 16px 12px;padding:10px 12px;background:var(--soft);
+  border:1px solid var(--prule);border-radius:3px;
+  font-family:"IBM Plex Mono";font-size:11.5px;line-height:1.7;color:var(--ink);
+  user-select:text;position:relative}
+.working .wtop{font-weight:600;font-size:12.5px}
+.working .wop{display:block;overflow-wrap:anywhere}
+.working .wmut{color:var(--muted)}
+.working .wnote{display:block;color:var(--warn-ink);margin-top:3px}
+.working a{color:var(--purple);text-underline-offset:2px}
+.working .wx{position:absolute;top:5px;right:6px;border:0;background:transparent;
+  color:var(--muted);cursor:pointer;font:inherit;font-size:14px;line-height:1;padding:3px 5px}
+.working .wx:hover{color:var(--ink)}
+.workhint{margin:0 16px 10px;font-family:"IBM Plex Mono";font-size:10px;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .warn b{color:var(--warn-ink-b)}
 .warn button{margin-left:8px;font-family:"IBM Plex Mono";font-size:10.5px;background:transparent;border:1px solid var(--warnrule);padding:3px 8px;cursor:pointer;color:var(--warn-ink);border-radius:2px}
 .pbody{padding:14px 16px 6px}
@@ -603,7 +621,9 @@ let uid=0;
 const mkPanel = (sel=[], over={}) =>
   ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"pm", eraPrev:"pm", gran:"years", h:H_DEF, w:12, title:null, lvl:"", asort:"desc", ...over});
 
-const state = { panels:[ mkPanel(["rents","pay"]) ], active:0, focus:null, q:"", topic:"all", openCfg:null, openMenu:null, renaming:null };
+const state = { panels:[ mkPanel(["rents","pay"]) ], active:0, focus:null, q:"", topic:"all", openCfg:null, openMenu:null, renaming:null,
+  /* the point whose working is open: {key, id, x} — one at a time, site-wide */
+  probe:null };
 const lockedKeys = new Set();
 const P0 = () => state.panels[state.active] || null;
 const S  = id => DB.series.find(s=>s.id===id);
@@ -728,6 +748,132 @@ function unitLabel(s,p){
   return s.unit;
 }
 
+/* ── show your working ──────────────────────────────────────────
+   Click a point and get the published figure, the figure on the chart, and
+   the arithmetic between them. The site's argument is that official numbers
+   should be checkable; the moment someone wants to check one is while they
+   are looking at it, not on a separate page.
+
+   Everything below MIRRORS transform() above. If a transform changes there,
+   it changes here — a working panel that describes an operation the chart did
+   not perform would be worse than no panel at all. */
+
+const REF_META={
+  gdp:       {name:"Nominal GDP",   note:"nominal GDP"},
+  population:{name:"UK population", note:"mid-year population estimate"},
+  deflator:  {name:"GDP deflator",  note:"GDP deflator, 2024 = base"},
+};
+const refCdid=k=>{
+  const m=((DB.refs||{})[k]||{}).source_api?.match(/timeseries\/([a-z0-9]+)\//i);
+  return m?m[1].toUpperCase():"";
+};
+const refHref=k=>(((DB.refs||{})[k]||{}).source_api||"").replace(/\/data$/,"");
+
+/* The published figure, the plotted figure, and the steps between. Returns
+   null when the point is no longer on the chart, so a stale probe just
+   disappears rather than describing a value nobody can see. */
+function working(p,set,xk){
+  const s=set.meta, t=p.trans, per=GRAN_PER[p.gran]||1;
+  const raw=seriesPts(s,p.gran);
+  const i=raw.findIndex(q=>q[0]===xk);
+  if(i<0) return null;
+  const shownPt=transform(s,p).find(q=>q[0]===xk);
+  if(!shownPt) return null;
+
+  const year=Math.floor(xk), pub=raw[i][1], shown=shownPt[1];
+  const skipped=(t==="real"||t==="percap"||t==="pctgdp")&&!applies(t,s);
+  const step={};
+
+  if(t==="index"){
+    const b=raw.find(q=>q[0]>=p.from&&q[1]!=null);
+    if(b&&pub!=null) step.op=`${fmt(pub)} ÷ ${fmt(b[1])} × 100`,
+                     step.why=`rebased on the ${Math.floor(b[0])} figure`;
+  } else if(t==="yoy"){
+    const prev=raw[i-per];
+    if(prev&&prev[1]!=null&&pub!=null)
+      step.op=`(${fmt(pub)} − ${fmt(prev[1])}) ÷ ${fmt(prev[1])} × 100`,
+      step.why=`against ${Math.floor(prev[0])}`;
+  } else if(t==="roll3"){
+    const w=raw.slice(Math.max(0,i-(3*per-1)),i+1).filter(q=>q[1]!=null);
+    if(w.length) step.op=`mean of ${w.length} ${w.length===1?"point":"points"}, ${Math.floor(w[0][0])}–${year}`;
+  } else if(!skipped&&t==="real"){
+    const b=refAt("deflator",2024), d=refAt("deflator",year);
+    if(b&&d&&pub!=null) step.op=`${fmt(pub)} × (${fmt(b)} ÷ ${fmt(d)})`, step.ref="deflator";
+  } else if(!skipped&&t==="percap"){
+    const q=refAt("population",year);
+    if(q&&pub!=null) step.op=`${fmt(pub)} ÷ ${fmt(q)}`, step.ref="population";
+  } else if(!skipped&&t==="pctgdp"){
+    const gv=refAt("gdp",year);
+    if(gv&&pub!=null) step.op=`${fmt(pub)} ÷ ${fmt(gv)} × 100`, step.ref="gdp";
+  }
+  return {year, xk, pub, shown, step, skipped,
+          interpolated: per!==1 && Math.abs(xk-year)>1e-9,
+          unitShown: unitLabel(s,p), unitPub: s.unit, s};
+}
+
+function workingHtml(p,sets){
+  const pr=state.probe;
+  if(!pr||pr.key!==p.key) return "";
+  const set=sets.find(x=>x.id===pr.id);
+  if(!set) return "";
+
+  /* The area views apply no transform at all, so their "working" is the
+     shorter and more important statement: this is the published figure. */
+  if(AREA_CHARTS.has(p.chart)){
+    const code=pr.code, ix=AREAIX, d=AREADATA.get(set.id);
+    if(!code||!ix||ix==="error"||!d||d==="error"||!d.values[code]) return "";
+    const lvl=areaLevel(p,set.id);
+    /* Read the years back out of the data rather than carrying them on the
+       mark, so the panel follows the chart when the range or level moves. */
+    const shown = p.chart!=="areas"
+      ? (()=>{const {y0,y1}=areaPair(p,d,ix,lvl);
+              return [y0,y1].map(y=>[y,d.values[code][y-d.start]]);})()
+      : [[areaYear(d,ix,lvl,p.to).year, null]].map(([y])=>[y,d.values[code][y-d.start]]);
+    const s=set.meta;
+    const delta = shown.length===2 && shown[0][1]!=null && shown[1][1]!=null
+      ? `<span class="wop">${fmt(shown[1][1])} − ${fmt(shown[0][1])} = ${shown[1][1]-shown[0][1]>=0?"+":"−"}${fmt(Math.abs(shown[1][1]-shown[0][1]))}</span>` : "";
+    return `<div class="working"><button class="wx" data-act="unprobe" title="Close" aria-label="Close working">×</button>
+      <span class="wtop">${esc(areaName(ix,code))} · ${shown.map(([y,v])=>`${y} ${fmt(v)}`).join(" → ")} ${esc(s.unit)}</span>
+      ${delta}
+      <span class="wop wmut">As published — the area views apply no transform. ${esc((ix.levelNames||{})[lvl]||lvl)}, area code ${esc(code)}.</span>
+      <span class="wop wmut">${esc(s.source)}${s.source_url?` · <a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}${
+        d.source_api?` · <a href="${esc(d.source_api)}" target="_blank" rel="noopener">API ↗</a>`:""} · <a href="data/areas/${esc(set.id)}.json">Local figures ↗</a></span>
+    </div>`;
+  }
+
+  const w=working(p,set,pr.x);
+  if(!w) return "";
+  const s=set.meta;
+  const refBit=w.step.ref
+    ? ` <span class="wmut">(${esc(REF_META[w.step.ref].name)}${refCdid(w.step.ref)?", "+refCdid(w.step.ref):""}` +
+      `${refHref(w.step.ref)?` · <a href="${esc(refHref(w.step.ref))}" target="_blank" rel="noopener">↗</a>`:""})</span>`
+    : "";
+  const notes=[];
+  if(w.skipped) notes.push(`Transform not applied — ${esc(s.name)} is a ${esc(s.kind.replace("_"," "))}, so deflating or dividing it would be meaningless. The figure shown is as published.`);
+  if(w.interpolated) notes.push(`This point sits between two annual figures. It is interpolated for the ${esc(p.gran)} view, not published.`);
+
+  return `<div class="working"><button class="wx" data-act="unprobe" title="Close" aria-label="Close working">×</button>
+    <span class="wtop">${w.year} · ${fmt(w.shown)} ${esc(w.unitShown)}</span>
+    ${w.step.op
+      ? `<span class="wop">${esc(w.step.op)}${refBit}${w.step.why?` <span class="wmut">— ${esc(w.step.why)}</span>`:""}</span>`
+      : `<span class="wop wmut">As published — no transform applied.</span>`}
+    <span class="wop wmut">As published: ${fmt(w.pub)} ${esc(w.unitPub)} · ${esc(s.source)}${
+      s.source_url?` · <a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}${
+      s.source_api?` · <a href="${esc(s.source_api)}" target="_blank" rel="noopener">API ↗</a>`:""}</span>
+    ${notes.map(n=>`<span class="wnote">${n}</span>`).join("")}
+  </div>`;
+}
+
+/* Chart types that carry hit targets. The rest draw no probe rather than a
+   half-working one. */
+const PROBEABLE=new Set(["line","step","dots","area","bar","colstack","areas","arrow","range","heat"]);
+/* Transparent, generous, and only worth drawing while the points are countable
+   — a day-granularity chart has thousands, and a hit target per point would
+   cost more than the feature is worth. */
+const hit=(sid,xk,cx,cy,r)=>
+  `<circle class="hit" data-probe="${esc(sid)}" data-x="${xk}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r||7}"/>`;
+const HIT_MAX=200;
+
 /* ══════════════════════════════════════════════
    CHART ENGINE — height comes from the panel
    ══════════════════════════════════════════════ */
@@ -740,8 +886,12 @@ function scale(vals){
   if(a===b){a-=1;b+=1;}
   const pad=(b-a)*0.12; return [a-pad,b+pad];
 }
+/* Two decimals is right down to about 0.01 and wrong below it: a per-person
+   figure off a £m series is genuinely 0.00066, and rendering that as "0.00"
+   turns a real number into an apparent zero — on the axis as well as here. */
 const fmt=n=>n==null?"–":Math.abs(n)>=1000?n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,","):
-             Math.abs(n)>=100?n.toFixed(0):Math.abs(n)>=10?n.toFixed(1):n.toFixed(2);
+             Math.abs(n)>=100?n.toFixed(0):Math.abs(n)>=10?n.toFixed(1):
+             (n!==0&&Math.abs(n)<0.01)?(+n.toPrecision(3)).toString():n.toFixed(2);
 
 function frame(p,g,mn,mx,label){
   const H=p.h;
@@ -786,6 +936,8 @@ function renderLine(p,sets,mode){
     }
     const last=[...s.pts].reverse().find(q=>q[1]!=null);
     if(last) g.push(`<text class="sm-t" x="${W-M.r+7}" y="${Y(last[1])+3.5}" fill="${s.colour}">${fmt(last[1])}</text>`);
+    if(s.pts.length<=HIT_MAX) s.pts.forEach(q=>{ if(q[1]!=null)
+      g.push(hit(s.id,q[0],px(p,q[0]),Y(q[1]))); });
   });
   return wrapSvg(p,g);
 }
@@ -807,7 +959,7 @@ function renderBar(p,sets){
     const x=px(p,yr)-(bw*sets.length)/2+si*bw, y0=Y(Math.max(0,v)), y1=Y(Math.min(0,v));
     /* Rounded at the data end, full-strength fill, and a hair of surface
        between neighbours so adjacent columns stay separate marks. */
-    g.push(`<rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${Math.max(1,bw-1).toFixed(1)}" height="${Math.max(0.5,y1-y0).toFixed(1)}" rx="1.5" fill="${s.colour}"><title>${yr}: ${fmt(v)}</title></rect>`);
+    g.push(`<rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${Math.max(1,bw-1).toFixed(1)}" height="${Math.max(0.5,y1-y0).toFixed(1)}" rx="1.5" fill="${s.colour}" data-probe="${esc(s.id)}" data-x="${yr}" style="cursor:pointer"><title>${yr}: ${fmt(v)}</title></rect>`);
   }));
   return wrapSvg(p,g);
 }
@@ -855,7 +1007,7 @@ function renderColStack(p,sets){
     sets.forEach(s=>{
       const v=s.pts.find(q=>q[0]===x)[1];
       const y0=Y(below+v), y1=Y(below), h=Math.max(0.5,y1-y0-2);
-      g.push(`<rect x="${(px(p,x)-bw/2).toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1.5" fill="${s.colour}"><title>${x} ${esc(s.name)}: ${fmt(v)}</title></rect>`);
+      g.push(`<rect x="${(px(p,x)-bw/2).toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1.5" fill="${s.colour}" data-probe="${esc(s.id)}" data-x="${x}" style="cursor:pointer"><title>${x} ${esc(s.name)}: ${fmt(v)}</title></rect>`);
       below+=v;
     });
   });
@@ -1102,6 +1254,9 @@ function renderAreaRanking(p,{set,ix,d,lvl}){
     if(nat!=null) g.push(`<line x1="${x(nat).toFixed(1)}" y1="${y.toFixed(1)}" x2="${x(r[2]).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${set.colour}" stroke-width="1" opacity=".35"/>`);
     g.push(`<circle cx="${x(r[2]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${set.colour}"><title>${esc(r[1])}: ${fmt(r[2])}</title></circle>`);
     g.push(`<text class="axlabel" x="${W-AREA_MR+10}" y="${y+3.5}">${fmt(r[2])}</text>`);
+    /* Row-wide hit target: the dot is 7px across on a 940px row, so anything
+       smaller than the whole row is a game of skill. */
+    g.push(`<rect class="hit" data-probe="${esc(set.id)}" data-area="${r[0]}" x="0" y="${(y-AREA_ROW/2).toFixed(1)}" width="${W}" height="${AREA_ROW}"/>`);
   });
   /* Unlike the time charts, this one must not scale with the panel. Row height
      is a legibility floor, not a proportion — squeezed into a third-width
@@ -1148,6 +1303,7 @@ function renderAreaArrow(p,{set,ix,d,lvl}){
     g.push(`<path d="M${(tip-dir*5).toFixed(1)} ${(y-3).toFixed(1)} L${tip.toFixed(1)} ${y.toFixed(1)} L${(tip-dir*5).toFixed(1)} ${(y+3).toFixed(1)}" fill="none" stroke="${set.colour}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`);
     g.push(`<circle cx="${x0.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" fill="${set.colour}" opacity=".4"><title>${esc(r[1])}: ${fmt(r[2])} in ${y0}, ${fmt(r[3])} in ${y1}</title></circle>`);
     g.push(`<text class="axlabel" x="${W-AREA_MR+10}" y="${y+3.5}">${r[4]>=0?"+":"−"}${fmt(Math.abs(r[4]))}</text>`);
+    g.push(`<rect class="hit" data-probe="${esc(set.id)}" data-area="${r[0]}" x="0" y="${(y-AREA_ROW/2).toFixed(1)}" width="${W}" height="${AREA_ROW}"/>`);
   });
   return areaSvg(H,g,`${set.name} by area, change ${y0} to ${y1}`);
 }
@@ -1169,6 +1325,7 @@ function renderAreaRange(p,{set,ix,d,lvl}){
     g.push(`<circle cx="${x(r[2]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.2" fill="var(--surface)" stroke="${set.colour}" stroke-width="1.6"><title>${y0}: ${fmt(r[2])}</title></circle>`);
     g.push(`<circle cx="${x(r[3]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${set.colour}"><title>${y1}: ${fmt(r[3])}</title></circle>`);
     g.push(`<text class="axlabel" x="${W-AREA_MR+10}" y="${y+3.5}">${fmt(r[3])}</text>`);
+    g.push(`<rect class="hit" data-probe="${esc(set.id)}" data-area="${r[0]}" x="0" y="${(y-AREA_ROW/2).toFixed(1)}" width="${W}" height="${AREA_ROW}"/>`);
   });
   return areaSvg(H,g,`${set.name} by area, ${y0} and ${y1}`);
 }
@@ -1218,6 +1375,7 @@ function renderAreaHeat(p,{set,ix,d,lvl}){
          marks rather than one continuous wash. */
       g.push(`<rect x="${(AREA_ML+j*cw).toFixed(1)}" y="${y.toFixed(1)}" width="${Math.max(1,cw-2).toFixed(1)}" height="${ROW-2}" fill="${fill(v)}" rx="1"><title>${esc(r[1])} ${years[j]}: ${fmt(v)}</title></rect>`);
     });
+    g.push(`<rect class="hit" data-probe="${esc(set.id)}" data-area="${r[0]}" x="0" y="${y.toFixed(1)}" width="${W}" height="${ROW-2}"/>`);
   });
   return areaSvg(H,g,`${set.name} by area and year, ${lo} to ${hi}`);
 }
@@ -1442,6 +1600,12 @@ function panelHtml(p,i){
       <span>DATA · ${DB.meta.provenance.toUpperCase()}</span></div>`;
   }
 
+  /* The working, or an invitation to open one. The hint sits in the same slot
+     so the card does not jump when a point is clicked. */
+  const wh=sets.length?workingHtml(p,sets):"";
+  const work = wh || (sets.length&&PROBEABLE.has(p.chart)
+    ? `<div class="workhint">Click a point to show the working</div>` : "");
+
   const warns=warningsFor(p,sets).map(w=>
     `<div class="warn">${w.html}${w.act==="rebase"?`<button data-act="rebase">Rebase</button>`:""}</div>`).join("");
 
@@ -1467,7 +1631,7 @@ function panelHtml(p,i){
       <button class="mi" data-act="dup">${IC.dup} Duplicate chart</button>
       <button class="mi danger" data-act="del">${IC.del} Remove chart</button>
     </div>
-    ${ctrl}${warns}${body}${legend}${foot}
+    ${ctrl}${warns}${body}${work}${legend}${foot}
     <div class="rgrip" data-act="rgrip" title="Drag to change height"></div>
     <div class="cgrip" data-act="cgrip" title="Drag to resize"></div>
     <span class="hpill">${wLabel(p.w)} · ${p.h}px</span>
@@ -1613,6 +1777,17 @@ document.getElementById("addBottom").onclick=()=>addPanel();
 document.getElementById("stack").addEventListener("click",e=>{
   const card=e.target.closest(".pcard"); if(!card) return;
   const i=+card.dataset.i, p=state.panels[i];
+  /* A data point beats the generic card click: clicking a mark should open its
+     working, not just focus the panel. */
+  const mark=e.target.closest("[data-probe]");
+  if(mark){
+    const id=mark.dataset.probe, code=mark.dataset.area, x=mark.dataset.x;
+    const same = state.probe && state.probe.key===p.key && state.probe.id===id &&
+                 (code ? state.probe.code===code : state.probe.x===+x);
+    state.probe = same ? null : (code ? {key:p.key,id,code} : {key:p.key,id,x:+x});
+    state.active=i; state.focus=i; render(); return;
+  }
+
   /* clicks land on the SVG inside icon buttons, so resolve to the button */
   const actEl=e.target.closest("[data-act]");
   const act=actEl?actEl.dataset.act:undefined;
@@ -1637,6 +1812,7 @@ document.getElementById("stack").addEventListener("click",e=>{
     return;
   }
   else if(act==="rebase") p.trans="index";
+  else if(act==="unprobe") state.probe=null;
   else if(act==="charttile") p.chart=actEl.dataset.v;
   else if(act==="pair") p.sel=actEl.dataset.v.split(",");
   else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,gran:p.gran,h:p.h,w:p.w,lvl:p.lvl,asort:p.asort,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
