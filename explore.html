@@ -309,9 +309,27 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .workhint{margin:0 16px 10px;font-family:"IBM Plex Mono";font-size:10px;
   letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .warn b{color:var(--warn-ink-b)}
-.warn button{margin-left:8px;font-family:"IBM Plex Mono";font-size:10.5px;background:transparent;border:1px solid var(--warnrule);padding:3px 8px;cursor:pointer;color:var(--warn-ink);border-radius:2px}
+.warn button,.warn .wlink{margin-left:8px;font-family:"IBM Plex Mono";font-size:10.5px;background:transparent;border:1px solid var(--warnrule);padding:3px 8px;cursor:pointer;color:var(--warn-ink);border-radius:2px;text-decoration:none;display:inline-block;white-space:nowrap}
+.warn button:hover,.warn .wlink:hover{background:var(--warnrule);color:var(--warn-ink-b)}
 .pbody{padding:14px 16px 6px}
 .pbody.scrolls{overflow:auto;scrollbar-width:thin}
+.tbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:9px 16px 0;
+  font-size:12px;color:var(--muted)}
+.tbar button{margin-left:auto;display:inline-flex;align-items:center;gap:6px;
+  font-family:"IBM Plex Mono";font-size:10.5px;background:var(--soft);color:var(--purple);
+  border:1px solid var(--prule);padding:5px 10px;border-radius:2px;cursor:pointer}
+.tbar button:hover{border-color:var(--purple)}
+.tbar button svg{width:13px;height:13px}
+.ptable{width:100%;border-collapse:collapse;font-size:12.5px}
+.ptable th{position:sticky;top:0;background:var(--surface);text-align:left;font-weight:600;
+  padding:7px 10px;border-bottom:1px solid var(--rule);white-space:nowrap;z-index:1}
+.ptable th i{display:block;font-family:"IBM Plex Mono";font-size:9.5px;font-style:normal;
+  color:var(--muted);font-weight:400;letter-spacing:.04em}
+.ptable td{padding:5px 10px;border-bottom:1px solid var(--rule-soft)}
+.ptable td.num,.ptable th.num{text-align:right;font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums}
+.ptable td.mono{font-family:"IBM Plex Mono";color:var(--muted)}
+.ptable tr.brk td{border-bottom:1px dashed var(--warn)}
+.ptable tr:hover td{background:var(--hover)}
 /* width fixed at the viewBox's own scale so the rows keep their height; the
    panel scrolls rather than the labels shrinking. */
 .areasvg{width:940px;max-width:none;height:auto;display:block}
@@ -369,6 +387,35 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .srcrow:last-child{border-bottom:0}
 .srcrow b{color:var(--ink);font-weight:600}
 .srcrow .mono{font-family:"IBM Plex Mono";font-size:10.5px}
+.srcx{border:0;background:none;color:var(--muted);cursor:pointer;padding:0 3px;font-size:10px;
+  transition:transform .15s}
+.srcrow.open .srcx{transform:rotate(90deg);color:var(--purple)}
+.srcx:hover{color:var(--ink)}
+.fchip{font-family:"IBM Plex Mono";font-size:9px;letter-spacing:.05em;text-transform:uppercase;
+  padding:1px 5px;border-radius:2px;border:1px solid var(--rule);color:var(--muted)}
+.fchip.f-discontinued{color:#9B1C1C;border-color:#E9B7B7;background:#FDF0F0}
+.fchip.f-definition{color:#92400E;border-color:#EBCFA6;background:#FFF6EA}
+.fchip.f-partial{color:#7A5A0A;border-color:#E4D4A0;background:#FFFAEC}
+html[data-theme="dark"] .fchip.f-discontinued{color:#F0A0A0;border-color:#5A2323;background:#301414}
+html[data-theme="dark"] .fchip.f-definition{color:#EDBE86;border-color:#553C13;background:#2E2109}
+html[data-theme="dark"] .fchip.f-partial{color:#E4CE88;border-color:#4A3E14;background:#2A2308}
+.srcdet{padding:2px 0 14px 20px;border-bottom:1px solid var(--rule-soft)}
+.sdnote{padding:9px 12px;background:var(--warnbg);border-left:3px solid var(--warn);
+  color:var(--warn-ink);font-size:12.5px;line-height:1.45;margin-bottom:11px}
+.sdmeta{display:flex;flex-wrap:wrap;gap:8px 26px;margin-bottom:10px;font-size:12.5px;color:var(--ink)}
+.sdmeta i{display:block;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--muted);font-style:normal}
+.sdvals{display:flex;flex-wrap:wrap;gap:3px 14px;font-family:"IBM Plex Mono";font-size:10.5px;
+  max-height:132px;overflow:auto;padding:2px 0 8px;scrollbar-width:thin}
+.sdvals .rv{display:flex;gap:6px}
+.sdvals .rv i{font-style:normal;color:var(--muted)}
+.sdvals .rv b{font-weight:500}
+.sdvals .rv.gap b{color:var(--muted);font-weight:400}
+.sdvals .rv.brk{border-bottom:1px dashed var(--warn)}
+.sdlinks{display:flex;flex-wrap:wrap;gap:7px}
+.sdlinks a{font-family:"IBM Plex Mono";font-size:10.5px;text-decoration:none;color:var(--purple);
+  border:1px solid var(--prule);background:var(--soft);padding:4px 9px;border-radius:2px}
+.sdlinks a:hover{border-color:var(--purple)}
 .ph{display:inline-block;font-family:"IBM Plex Mono";font-size:9.5px;background:var(--warnbg);border:1px solid var(--warnrule);color:var(--warn);padding:1px 6px}
 
 /* ── sourcing style ─────────────────────────────────────────── */
@@ -661,7 +708,7 @@ const wLabel=w=>({12:"full",9:"3/4",8:"2/3",6:"1/2",4:"1/3"}[w]||w+"/12");
 
 let uid=0;
 const mkPanel = (sel=[], over={}) =>
-  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"pm", eraPrev:"pm", gran:"years", h:H_DEF, w:12, title:null, lvl:"", asort:"desc", ...over});
+  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"pm", eraPrev:"pm", gran:"years", h:H_DEF, w:12, title:null, lvl:"", asort:"desc", table:false, ...over});
 
 const state = { panels:[ mkPanel(["rents","pay"]) ], active:0, focus:null, q:"", topic:"all", openCfg:null, openMenu:null, renaming:null,
   /* the point whose working is open: {key, id, x} — one at a time, site-wide */
@@ -1480,6 +1527,7 @@ const IC={
   del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg>',
   flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"/><path d="M6 4h11l-2.5 4L17 12H6"/></svg>',
   pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/></svg>',
+  table:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 10h16M10 10v9"/></svg>',
   half:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="8" height="12" rx="1.5"/><rect x="13" y="6" width="8" height="12" rx="1.5"/></svg>',
   wide:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1.5"/></svg>',
   /* the polyoptic eye — open for light, lidded shut for dark */
@@ -1537,8 +1585,13 @@ function warningsFor(p,sets){
     w.push({html:`<b>Different units.</b> Each series is on its own axis, which can make any two lines appear to move together.`,act:"rebase"});
   const skipped=sets.filter(s=>["real","percap","pctgdp"].includes(p.trans)&&!applies(p.trans,s.meta));
   if(skipped.length) w.push({html:`<b>Transform skipped for ${esc(skipped.map(s=>s.name).join(", "))}.</b> Already a rate, ratio or index — deflating or dividing by population would be meaningless.`});
-  sets.flatMap(s=>(s.meta.discontinuities||[]).filter(d=>d.year>=p.from&&d.year<=p.to).map(d=>({s:s.name,...d})))
-      .forEach(d=>w.push({html:`<b>Break in ${esc(d.s)} at ${d.year}.</b> ${esc(d.note)}`}));
+  /* A break warning that only states the problem leaves the reader holding it.
+     Cutting the range at the break is the honest chart, and it is one click. */
+  sets.flatMap(s=>(s.meta.discontinuities||[])
+        .filter(d=>d.year>=p.from&&d.year<=p.to).map(d=>({s:s.name,id:s.id,...d})))
+      .forEach(d=>w.push({
+        html:`<b>Break in ${esc(d.s)} at ${d.year}.</b> ${esc(d.note)}`,
+        act:"cut", year:d.year, id:d.id, name:d.s}));
   return w;
 }
 
@@ -1554,6 +1607,36 @@ function chartFor(p,sets){
   if(p.chart==="stack") return sets.length>=2 ? renderStack(p,sets)
     : `<div class="blank"><h3>Stacking needs at least two</h3><div>Add another indicator to stack them.</div></div>`;
   return renderLine(p,sets,p.chart);
+}
+
+/* The numbers behind the chart, exactly as plotted — same transform, same
+   granularity, same rounding as the axis. A table that quietly showed the
+   published values instead would be a different claim from the one on screen. */
+function tableFor(p,sets){
+  if(AREA_CHARTS.has(p.chart)){
+    const a=areaPrep(p,sets);
+    if(a.err) return a.err;
+    const {rows,year}=areaRows(p,a.d,a.ix,a.lvl);
+    if(!rows.length) return `<div class="blank"><h3>Nothing at this level</h3><div>No areas here carry a figure.</div></div>`;
+    rows.sort((x,y)=>y[2]-x[2]);
+    return `<table class="ptable"><thead><tr><th>Area</th><th>Code</th>
+      <th class="num">${year} · ${esc(a.set.meta.unit)}</th></tr></thead><tbody>${
+      rows.map(r=>`<tr><td>${esc(r[1])}</td><td class="mono">${esc(r[0])}</td><td class="num">${fmt(r[2])}</td></tr>`).join("")
+    }</tbody></table>`;
+  }
+  const xs=[...new Set(sets.flatMap(s=>s.pts.map(q=>q[0])))].sort((a,b)=>a-b);
+  if(!xs.length) return `<div class="blank"><h3>Nothing to tabulate</h3><div>No values in this range.</div></div>`;
+  const brk=id=>new Set(((S(id)||{}).discontinuities||[]).map(d=>d.year));
+  const brks=sets.map(s=>brk(s.id));
+  return `<table class="ptable"><thead><tr><th>${p.gran==="years"?"Year":"Period"}</th>${
+    sets.map(s=>`<th class="num">${esc(s.name)}<i>${esc(s.unit)}</i></th>`).join("")
+  }</tr></thead><tbody>${xs.map(x=>{
+    const isBrk=brks.some(b=>b.has(Math.floor(x)));
+    return `<tr${isBrk?' class="brk" title="Series break in this year"':""}><td class="mono">${
+      p.gran==="years"?x:(+x).toFixed(2)}</td>${
+      sets.map(s=>{const q=s.pts.find(q=>q[0]===x);
+        return `<td class="num">${q&&q[1]!=null?fmt(q[1]):"–"}</td>`;}).join("")}</tr>`;
+  }).join("")}</tbody></table>`;
 }
 
 function panelHtml(p,i){
@@ -1624,7 +1707,11 @@ function panelHtml(p,i){
        it rather than a cap on what is drawn — the PNG export still gets the
        whole thing, because it reads the SVG and not the scrolled view. */
     const tall=AREA_CHARTS.has(p.chart);
-    body=`<div class="pbody${tall?" scrolls":""}"${tall?` style="max-height:${p.h}px"`:""}>${chart}${showRibbon?renderRibbon(p):""}</div>`;
+    body = p.table
+      ? `<div class="tbar"><span>Exactly the numbers plotted — same transform, same rounding as the axis.</span>
+           <button data-act="csv">${IC.csv} Download CSV</button></div>
+         <div class="pbody scrolls" style="max-height:${p.h}px">${tableFor(p,sets)}</div>`
+      : `<div class="pbody${tall?" scrolls":""}"${tall?` style="max-height:${p.h}px"`:""}>${chart}${showRibbon?renderRibbon(p):""}</div>`;
     /* The area view draws one series and ignores the transform, so it gets a
        legend that says so. Left to the general one it would caption a chart of
        published pounds as "index, 1997=100" — the chart and its own key
@@ -1649,13 +1736,19 @@ function panelHtml(p,i){
     ? `<div class="workhint">Click a point to show the working</div>` : "");
 
   const warns=warningsFor(p,sets).map(w=>
-    `<div class="warn">${w.html}${w.act==="rebase"?`<button data-act="rebase">Rebase</button>`:""}</div>`).join("");
+    `<div class="warn">${w.html}${
+      w.act==="rebase" ? `<button data-act="rebase">Rebase</button>` :
+      w.act==="cut"    ? `<button data-act="cutbefore" data-v="${w.year}">Stop at ${w.year-1}</button>`+
+                         `<button data-act="cutafter" data-v="${w.year}">Start at ${w.year}</button>`+
+                         (w.id?`<a class="wlink" href="data.html#${esc(w.id)}" target="_blank" rel="noopener">Full caveat ↗</a>`:"")
+                       : ""}</div>`).join("");
 
   return `<div class="pcard ${state.focus===i?"is-focus":""} ${lk?"locked":""}" style="--span:${p.w}" data-i="${i}" data-key="${p.key}">
     <div class="pbar">
       <span class="grip" data-act="grip" title="${lk?"Locked — unlock to move":"Drag to reorder"}">⠿</span>
       <button class="pi ${open?"on":""}" data-act="cfg" aria-expanded="${open}" title="Chart settings" aria-label="Chart settings">${IC.sliders}</button>
       <button class="pi ${lk?"on":""}" data-act="lock" aria-pressed="${lk}" title="${lk?"Unlock — let this chart move":"Lock this chart in place"}" aria-label="${lk?"Unlock chart":"Lock chart"}">${lk?IC.lock:IC.unlock}</button>
+      <button class="pi ${p.table?"on":""}" data-act="tabletoggle" aria-pressed="${!!p.table}" title="${p.table?"Back to the chart":"Show the numbers behind this chart"}" aria-label="Toggle the numbers table">${IC.table}</button>
       <button class="pi ${p.era!=="off"?"on":""}" data-act="eratoggle" aria-pressed="${p.era!=="off"}" title="${p.era!=="off"?"Hide the government-in-power ribbon":"Show the government-in-power ribbon"}" aria-label="Toggle government ribbon">${IC.flag}</button>
       <span class="pnum">Chart ${i+1}</span>
       ${state.renaming===p.key
@@ -1761,6 +1854,43 @@ function srcStyleControl(){
   </div>`;
 }
 
+/* Provenance detail, inline. The verify page has all of this, but the moment
+   someone doubts a number is while they are looking at the chart — sending
+   them to another page to check is where the checking stops happening. Same
+   content as a Verify row, scoped to what is on screen. */
+const srcOpen=new Set();
+const FLAG_LABEL={discontinued:"Discontinued",definition:"Definition changed",
+  partial:"Partial period",provisional:"Provisional",geography:"Sub-UK coverage"};
+const flagChips=m=>(m.flags||[]).filter(f=>FLAG_LABEL[f])
+  .map(f=>`<span class="fchip f-${f}">${FLAG_LABEL[f]}</span>`).join("");
+
+function srcDetail(s){
+  const m=s.meta, end=m.start+m.values.length-1;
+  const obs=m.values.filter(v=>v!=null).length;
+  const notes=[...(m.notes||[]).map(n=>esc(n)),
+    ...(m.discontinuities||[]).map(d=>`<b>Break at ${d.year}.</b> ${esc(d.note)}`)];
+  const brk=new Set((m.discontinuities||[]).map(d=>d.year));
+  const vals=m.values.map((v,i)=>{
+    const y=m.start+i;
+    return `<span class="rv${v==null?" gap":""}${brk.has(y)?" brk":""}"><i>${y}</i><b>${v==null?"–":fmt(v)}</b></span>`;
+  }).join("");
+  return `<div class="srcdet">
+    ${notes.length?`<div class="sdnote">${notes.join("<br>")}</div>`:""}
+    <div class="sdmeta">
+      <span><i>Publisher</i>${esc(m.publisher_full||m.source)}</span>
+      <span><i>Coverage</i>${m.start}–${end}</span>
+      <span><i>Observations</i>${obs} of ${m.values.length}</span>
+      <span><i>Fetched</i>${esc((m.fetched||"").slice(0,10))}</span>
+    </div>
+    <div class="sdvals">${vals}</div>
+    <div class="sdlinks">
+      <a href="data.html#${esc(s.id)}">Full record on Verify ↗</a>
+      ${m.source_url?`<a href="${esc(m.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}
+      ${m.source_api?`<a href="${esc(m.source_api)}" target="_blank" rel="noopener">API endpoint ↗</a>`:""}
+    </div>
+  </div>`;
+}
+
 function renderSources(){
   const p=P0(), el=document.getElementById("srcs");
   const sets=p?buildSets(p):[];
@@ -1769,24 +1899,43 @@ function renderSources(){
       <div class="trayempty">Select something to see where it came from.</div>`;
     bindSrcStyle(); return;
   }
+  /* The expander is on both visible styles. Only `off` goes without, because
+     an expander there would contradict the setting it is sitting under. */
   const body = SRCSTYLE==="harvard"
-    ? sets.map(s=>`<div class="srcrow cite">${esc(citeHarvard(s.meta))}
-        ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}</div>`).join("")
+    ? sets.map(s=>{
+        const open=srcOpen.has(s.id);
+        return `<div class="srcrow cite${open?" open":""}">
+          <button class="srcx" data-srcx="${esc(s.id)}" aria-expanded="${open}"
+            aria-label="${open?"Hide":"Show"} the detail for ${esc(s.name)}">▶</button>
+          ${esc(citeHarvard(s.meta))}${flagChips(s.meta)}
+          ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}</div>${
+          open?srcDetail(s):""}`;
+      }).join("")
     : SRCSTYLE==="off"
     ? `<div class="trayempty">Attribution is switched off — including on CSV and PNG exports.
         The data is still OGL v3.0, which asks for a source statement when you republish it.</div>`
-    : sets.map(s=>`
-      <div class="srcrow"><b>${esc(s.name)}</b>
+    : sets.map(s=>{
+      const open=srcOpen.has(s.id);
+      return `<div class="srcrow${open?" open":""}">
+        <button class="srcx" data-srcx="${esc(s.id)}" aria-expanded="${open}"
+          aria-label="${open?"Hide":"Show"} the detail for ${esc(s.name)}">▶</button>
+        <b>${esc(s.name)}</b>${flagChips(s.meta)}
         <span class="mono">${esc(s.meta.source)}</span><span class="mono">${esc(s.meta.geography)}</span>
         <span class="mono">${esc(s.meta.year_basis)} years</span><span class="mono">${esc(s.meta.unit)}</span>
         <span class="mono">${esc(s.meta.licence)}</span>
         ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}
-      </div>`).join("");
+      </div>${open?srcDetail(s):""}`;
+    }).join("");
   el.innerHTML=`<div class="srchd"><div class="plabel">Provenance · Chart ${state.active+1}</div>${srcStyleControl()}</div>${body}`;
   bindSrcStyle(sets);
 }
 
 function bindSrcStyle(sets){
+  document.querySelectorAll("[data-srcx]").forEach(b=>b.onclick=()=>{
+    const id=b.dataset.srcx;
+    srcOpen.has(id)?srcOpen.delete(id):srcOpen.add(id);
+    renderSources();
+  });
   document.querySelectorAll("[data-src]").forEach(b=>b.onclick=()=>{
     SRCSTYLE=b.dataset.src;
     try{ localStorage.setItem("polyoptic-srcstyle",SRCSTYLE); }catch(e){}
@@ -1843,6 +1992,7 @@ document.getElementById("stack").addEventListener("click",e=>{
   if(act==="cfg"){ state.openCfg = state.openCfg===p.key ? null : p.key; state.openMenu=null; }
   else if(act==="menu"){ state.openMenu = state.openMenu===p.key ? null : p.key; state.openCfg=null; }
   else if(act==="lock"){ lockedKeys.has(p.key) ? lockedKeys.delete(p.key) : lockedKeys.add(p.key); }
+  else if(act==="tabletoggle"){ p.table=!p.table; state.probe=null; }
   else if(act==="eratoggle"){
     if(p.era==="off") p.era = p.eraPrev||"pm";
     else { p.eraPrev=p.era; p.era="off"; }
@@ -1854,6 +2004,10 @@ document.getElementById("stack").addEventListener("click",e=>{
     return;
   }
   else if(act==="rebase") p.trans="index";
+  /* Truncate at the break, either side of it. The range controls could do this
+     by hand; the point is that the warning offers it at the moment it matters. */
+  else if(act==="cutbefore"){ p.to=Math.max(p.from, +actEl.dataset.v-1); state.probe=null; }
+  else if(act==="cutafter"){ p.from=Math.min(p.to, +actEl.dataset.v); state.probe=null; }
   else if(act==="unprobe") state.probe=null;
   else if(act==="charttile") p.chart=actEl.dataset.v;
   else if(act==="pair") p.sel=actEl.dataset.v.split(",");
@@ -2293,7 +2447,7 @@ function writeHash(){
   /* Fields are positional and append-only: lvl and asort go on the end so a
      link made before the area view existed still reads, and gets the
      defaults for the two it does not carry. */
-  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||""),p.lvl,p.asort].join("~")).join(";");
+  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||""),p.lvl,p.asort,p.table?1:0].join("~")).join(";");
   history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active+
     (SRCSTYLE!=="short"?"&src="+SRCSTYLE:""));
 }
@@ -2305,14 +2459,14 @@ function readHash(){
   if(SRC_STYLES.some(s=>s[0]===q.get("src"))) SRCSTYLE=q.get("src");
   if(q.get("p")){
     const panels=decodeURIComponent(q.get("p")).split(";").map(chunk=>{
-      const [sel,chart,trans,from,to,era,h,w,gran,ttl,lvl,asort]=chunk.split("~");
+      const [sel,chart,trans,from,to,era,h,w,gran,ttl,lvl,asort,tbl]=chunk.split("~");
       /* old links stored the ribbon as 1/0 — map those onto the era modes */
       const eraMode = era==="1"?"pm" : era==="0"?"off" : (ERA_MODES.some(m=>m[0]===era)?era:"pm");
       return mkPanel((sel||"").split(",").filter(id=>S(id)),
         {chart:chart||"line",trans:trans||"index",from:+from||1997,to:+to||2026,
          era:eraMode,eraPrev:eraMode==="off"?"pm":eraMode,gran:(GRANS.some(g=>g[0]===gran)?gran:"years"),
          title:ttl?decodeURIComponent(ttl):null,
-         lvl:lvl||"", asort:(AREA_SORTS.some(a=>a[0]===asort)?asort:"desc"),
+         lvl:lvl||"", asort:(AREA_SORTS.some(a=>a[0]===asort)?asort:"desc"), table:tbl==="1",
          h:Math.max(H_MIN,Math.min(H_MAX,+h||H_DEF)),w:(W_SNAPS.includes(+w)?+w:12)});
     });
     if(panels.length) state.panels=panels;

@@ -3,23 +3,23 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>What does the debt cost to carry? — Polyoptic</title>
-<meta name="description" content="Public sector net debt against the interest paid to service it, both rebased. 1993–2026, UK.">
-<link rel="canonical" href="https://polyoptic.co/q/debt-and-interest/">
+<title>Has pay kept up with prices? — Polyoptic</title>
+<meta name="description" content="Average weekly earnings against CPIH inflation, both rebased to the same starting year. 2000–2026, UK, from ONS releases.">
+<link rel="canonical" href="https://polyoptic.co/q/has-pay-kept-up-with-prices/">
 <meta property="og:site_name" content="Polyoptic">
-<meta property="og:title" content="What does the debt cost to carry?">
-<meta property="og:description" content="Public sector net debt × debt interest, both rebased. 1993–2026, UK.">
-<meta property="og:image" content="https://polyoptic.co/og/debt-and-interest.png">
+<meta property="og:title" content="Has pay kept up with prices?">
+<meta property="og:description" content="Average weekly earnings × CPIH, both rebased. 2000–2026, UK.">
+<meta property="og:image" content="https://polyoptic.co/og/has-pay-kept-up-with-prices.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Public sector net debt × debt interest, both rebased, 1993 to 2026">
-<meta property="og:url" content="https://polyoptic.co/q/debt-and-interest/">
+<meta property="og:image:alt" content="Average weekly earnings × CPIH, both rebased, 2000 to 2026">
+<meta property="og:url" content="https://polyoptic.co/q/has-pay-kept-up-with-prices/">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
-{"@context":"https://schema.org","@type":"WebPage","name":"What does the debt cost to carry?",
- "url":"https://polyoptic.co/q/debt-and-interest/","description":"Public sector net debt against the interest paid to service it, both rebased. 1993\u20132026, UK.","inLanguage":"en-GB",
- "primaryImageOfPage":{"@type":"ImageObject","url":"https://polyoptic.co/og/debt-and-interest.png","width":1200,"height":630},
+{"@context":"https://schema.org","@type":"WebPage","name":"Has pay kept up with prices?",
+ "url":"https://polyoptic.co/q/has-pay-kept-up-with-prices/","description":"Average weekly earnings against CPIH inflation, both rebased to the same starting year. 2000\u20132026, UK, from ONS releases.","inLanguage":"en-GB",
+ "primaryImageOfPage":{"@type":"ImageObject","url":"https://polyoptic.co/og/has-pay-kept-up-with-prices.png","width":1200,"height":630},
  "license":"https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
  "isPartOf":{"@type":"WebSite","name":"Polyoptic","url":"https://polyoptic.co/"}}
 </script>
@@ -58,6 +58,10 @@ h1{font-family:Archivo,sans-serif;font-size:40px;font-weight:800;letter-spacing:
 .cols{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:48px;margin-top:44px;align-items:start}
 @media (max-width:900px){.cols{grid-template-columns:1fr;gap:30px}}
 h2{font-family:Archivo,sans-serif;font-size:19px;font-weight:700;margin:0 0 9px;letter-spacing:-0.015em}
+h2.step{margin-top:26px}
+h2.step:first-child{margin-top:0}
+h2.step i{display:block;font-family:"IBM Plex Mono";font-size:10.5px;font-style:normal;
+  font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--purple);margin-bottom:5px}
 p{max-width:66ch;margin:0 0 14px}
 a{color:var(--purple)}
 .care{background:var(--soft);border:1px solid var(--prule);border-radius:3px;padding:18px 20px}
@@ -94,41 +98,43 @@ footer p{max-width:52ch;margin:0}
       <a href="../../index.html">Home</a>
       <a href="../../about.html">About</a>
       <a href="../../data.html">Verify</a>
-      <a class="btn-invert" href="../../explore.html#p=psnd,debtint~line~index~1993~2026~pm">Open in the explorer</a>
+      <a class="btn-invert" href="../../explore.html#p=pay,cpih~line~index~2000~2026~pm">Open in the explorer</a>
     </nav>
   </div>
 </div>
 
 <main class="wrap">
   <p class="eyebrow">Arguments worth having</p>
-  <h1>What does the debt cost to carry?</h1>
-  <p class="sub">Public sector net debt × debt interest, both rebased · 1993–2026 · UK</p>
+  <h1>Has pay kept up with prices?</h1>
+  <p class="sub">Average weekly earnings × CPIH, both rebased · 2000–2026 · UK</p>
 
   <div class="chartcard">
     <div id="chart"><p id="fallback">Loading the chart…</p></div>
     <div class="legend" id="legend"></div>
   </div>
 
-  <a class="cta" href="../../explore.html#p=psnd,debtint~line~index~1993~2026~pm">Open this in the explorer →</a>
+  <a class="cta" href="../../explore.html#p=pay,cpih~line~index~2000~2026~pm">Open this in the explorer →</a>
 
   <div class="cols">
     <div>
-      <h2>Why this pairing</h2>
-      <p>The stock and the flow. Debt as a share of GDP is the number that gets quoted; what it costs to carry each year is the one that constrains a budget, and the two do not move together — interest tracks rates as much as it tracks borrowing.</p>
-      <p>The explorer will show you the working behind any point on this chart — the
-        published figure, the figure being plotted, and the arithmetic between them, with a
-        link to the release it came from. Every value is also listed on
-        <a href="../../data.html">Explorer Verify</a>.</p>
+      <h2 class="step"><i>The claim</i>Pay has not kept up with the cost of living.</h2>
+      <h2 class="step"><i>The number</i></h2>
+      <p>Rebased to 2000, average weekly earnings and CPIH track each other closely until 2008, separate during the following decade, and converge again after 2021. The gap between the two lines at any point is the real-terms position at that point — above means pay has grown faster than prices since the base year, below means it has not.</p>
+      <h2 class="step"><i>What it actually shows</i></h2>
+      <p>This is the whole-economy average, so it answers the question for the economy and not for any particular person. A mean is pulled up by high earners; it moves when the composition of who is employed changes, not only when anyone gets a rise. And it is cumulative from the base year — change the start year in the explorer and the answer can change with it, which is worth doing before quoting any single figure from it.</p>
+      <p>Click any point in the explorer and it shows the published figure, the figure
+        being plotted, and the arithmetic between them, with a link to the release it came
+        from. Every value is listed on <a href="../../data.html">Explorer Verify</a>.</p>
     </div>
     <aside class="care">
       <h2>Read it carefully</h2>
-      <p>Debt interest here is interest and dividends paid to the private sector and the rest of the world, excluding public sector banks. Net debt is also excluding public sector banks.</p>
+      <p>CPIH includes owner-occupiers&#x27; housing costs, which CPI does not, and runs below CPI in most periods — the choice of price index materially changes the answer. Earnings here are total pay including bonuses, seasonally adjusted.</p>
     </aside>
   </div>
 
   <div class="more">
     <p class="eyebrow">Other comparisons</p>
-    <ul><li><a href="../rents-vs-pay/">Have rents outrun pay?</a></li><li><a href="../pay-vs-prices/">Has pay kept ahead of prices?</a></li><li><a href="../absence-and-attainment/">Did lost schooling widen the gap?</a></li></ul>
+    <ul><li><a href="../have-rents-outrun-pay/">Have rents outrun pay?</a></li><li><a href="../what-does-the-debt-cost-to-carry/">What does the debt cost to carry?</a></li><li><a href="../did-lost-schooling-widen-the-gap/">Did lost schooling widen the attainment gap?</a></li></ul>
   </div>
 </main>
 
@@ -145,7 +151,7 @@ footer p{max-width:52ch;margin:0}
    stand on its own for someone who arrived from a shared link, and it should
    not wait on the explorer to do it. Both series rebased to the first year in
    range, which is the same thing the permalink asks the explorer for. */
-const IDS=["psnd", "debtint"], FROM=1993, TO=2026;
+const IDS=["pay", "cpih"], FROM=2000, TO=2026;
 const W=940,H=380,M={t:18,r:64,b:28,l:54};
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const fmt=n=>Math.abs(n)>=1000?n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,","):
@@ -180,7 +186,7 @@ fetch("../../data/bundle.json",{cache:"no-cache"}).then(r=>r.ok?r.json():Promise
     g.push(`<text x="${W-M.r+7}" y="${PY(last[1])+3.5}" font-family="IBM Plex Mono" font-size="10.5" font-weight="500" fill="${s.colour}">${fmt(last[1])}</text>`);
   });
   document.getElementById("chart").innerHTML=
-    `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="What does the debt cost to carry?">${g.join("")}</svg>`;
+    `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Has pay kept up with prices?">${g.join("")}</svg>`;
   document.getElementById("legend").innerHTML=
     sets.map(s=>`<span><i style="background:${s.colour}"></i>${esc(s.name)}</span>`).join("")+
     `<span>index, ${x0}=100</span>`;

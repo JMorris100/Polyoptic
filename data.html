@@ -95,6 +95,15 @@ svg{display:block}
 section{padding:36px 0 0;margin-top:34px;border-top:1px solid var(--rule)}
 section h2{font-size:clamp(22px,2.6vw,27px);font-weight:700}
 .lede{color:var(--muted);max-width:74ch;margin:10px 0 22px;font-size:15px}
+.lede .flag{margin-left:0;margin-right:2px}
+.steps{margin:0;padding:0;list-style:none;counter-reset:st;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.steps li{counter-increment:st;background:var(--surface);border:1px solid var(--rule);
+  border-radius:3px;padding:15px 17px 15px 44px;position:relative;font-size:14px;
+  line-height:1.5;color:var(--ink)}
+.steps li::before{content:counter(st);position:absolute;left:15px;top:14px;
+  font-family:"IBM Plex Mono";font-size:12px;font-weight:600;color:var(--purple)}
+.steps code{font-size:11.5px}
 
 /* ── the tool bar ─────────────────────────────────────────────────
    Sticks to the top of the viewport so the filters stay reachable however
@@ -153,7 +162,22 @@ td.cx{width:30px;padding:0 0 0 10px}
   line-height:1;transition:transform .15s}
 tr.irow.open .exp{transform:rotate(90deg);color:var(--purple)}
 td.cname{white-space:normal;min-width:230px;font-weight:500;line-height:1.3}
-td.cname .flag{color:var(--warm);font-weight:700;margin-left:5px;cursor:help}
+/* Named tiers, not a bare "!". A mark that fires on nearly every row tells you
+   nothing; one that says "Definition changed" tells you what to go and read. */
+.flag{display:inline-block;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.05em;
+  text-transform:uppercase;padding:2px 6px;border-radius:2px;margin-left:7px;
+  vertical-align:1px;white-space:nowrap;font-weight:500;cursor:help}
+.flag.f-discontinued{background:#FDE7E7;color:#9B1C1C;border:1px solid #F5C2C2}
+.flag.f-definition  {background:#FFF1E0;color:#92400E;border:1px solid #F2D8B0}
+.flag.f-partial     {background:#FFF8E6;color:#7A5A0A;border:1px solid #EBDCA8}
+.flag.f-provisional {background:#F1F0F6;color:#4B4B63;border:1px solid #DCDAE6}
+.flag.f-geography   {background:#EEF3F8;color:#2F5273;border:1px solid #CFDEEB}
+.flag.more{background:none;border:1px dashed var(--rule);color:var(--muted)}
+html[data-theme="dark"] .flag.f-discontinued{background:#3A1414;color:#F5A3A3;border-color:#5C2222}
+html[data-theme="dark"] .flag.f-definition  {background:#3A2708;color:#F0C08A;border-color:#5A3E12}
+html[data-theme="dark"] .flag.f-partial     {background:#332A08;color:#E8D18A;border-color:#4E4114}
+html[data-theme="dark"] .flag.f-provisional {background:#23222E;color:#B4B2C6;border-color:#38364A}
+html[data-theme="dark"] .flag.f-geography   {background:#16232E;color:#93B7D4;border-color:#25394A}
 td.cunit{max-width:210px;overflow:hidden;text-overflow:ellipsis}
 td.cmono,td.cid{font-family:"IBM Plex Mono";font-size:11.5px;color:var(--muted)}
 td.cid{color:var(--muted)}
@@ -171,6 +195,17 @@ tr.drow>td{padding:0;height:auto;background:var(--soft);border-bottom:1px solid 
 .tpill{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--purple);background:var(--surface);
   border:1px solid var(--prule);padding:2px 9px;border-radius:100px;cursor:pointer;margin-right:4px}
 .tpill:hover{background:#ECE8F8;border-color:var(--purple)}
+.dflags{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.dflags .flag{margin-left:0}
+.dshape{display:flex;align-items:center;gap:22px;flex-wrap:wrap;margin:2px 0 14px}
+.spark{width:132px;height:30px;flex:none;overflow:visible}
+.sstats{display:flex;gap:22px;font-family:"IBM Plex Mono";font-size:11px}
+.sstats span{display:flex;flex-direction:column;line-height:1.35}
+.sstats i{font-style:normal;color:var(--muted);font-size:9.5px;letter-spacing:.09em;text-transform:uppercase}
+.sstats b{font-weight:600;font-size:13px}
+.sstats u{text-decoration:none;color:var(--muted)}
+.dlinks a.prim{background:var(--purple);color:#fff;border-color:var(--purple);font-weight:500}
+.dlinks a.prim:hover{background:var(--purple-dk,#3A2A8C);border-color:var(--purple)}
 .dnote{padding:10px 13px;background:#FFF8F5;border-left:3px solid var(--warm);
   font-size:12.5px;color:var(--ink);line-height:1.5;margin-bottom:14px;max-width:90ch}
 .dnote b{color:var(--warm);font-weight:700}
@@ -197,17 +232,10 @@ tr.drow>td{padding:0;height:auto;background:var(--soft);border-bottom:1px solid 
   color:var(--muted);font-size:14.5px}
 .noresult b{color:var(--ink)}
 
-details.fold{border:1px solid var(--rule);margin-top:14px}
-details.fold>summary{padding:13px 18px;font-family:"Archivo";font-size:15px;font-weight:600;
-  cursor:pointer;user-select:none}
-details.fold>summary:hover{background:#FAFAFB;color:var(--purple)}
-details.fold[open]>summary{border-bottom:1px solid var(--rule)}
-.foldbody{padding:18px 20px 20px}
-.foldbody ol{margin:0;padding-left:20px}
-.foldbody li{margin-bottom:9px;font-size:14px;color:var(--ink);max-width:88ch}
-.foldbody li code{font-family:"IBM Plex Mono";font-size:12px;background:var(--soft);
-  border:1px solid var(--prule);padding:1px 5px}
-.foldbody p{font-size:14px;color:var(--muted);max-width:88ch}
+/* The collapsed fold this replaced is gone: "How to verify" is now a numbered
+   strip near the top, because a page whose purpose is checkability should not
+   hide the instructions for checking. */
+.steps code{background:var(--soft);border:1px solid var(--prule);padding:1px 5px}
 
 footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
 .fgrid{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;color:var(--muted);font-size:13px}
@@ -249,19 +277,59 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
   <div class="hero">
     <h1>Explorer Verify</h1>
     <p class="deck">Every number, and where it came from.</p>
-    <p class="sub">Polyoptic publishes no data of its own. Search the catalogue, then open any
-       indicator for its source release, the exact machine endpoint the values came from, and
-       every value as ingested — gaps and breaks included.</p>
+    <p class="sub">This is the reference copy, not the front door — the page to land on when
+       you are deciding whether to rely on any of this. Polyoptic publishes no data of its own.
+       Every indicator carries its source release, the exact machine endpoint the values were
+       pulled from, the date they were pulled, and every value as ingested, gaps and breaks
+       included. Charts live in the <a href="explore.html">explorer</a>.</p>
     <div class="statrow" id="meta"></div>
     <div id="loadfail"><b>Couldn't load <code>data/bundle.json</code>.</b> The raw bundle either
       hasn't been built yet or isn't being served. Run <code>python ingest/ingest.py</code> and reload.</div>
   </div>
 
-  <section id="catalogue" style="border-top:0;margin-top:22px">
+  <!-- Promoted above the catalogue. This is the one block that tells someone
+       landing here what the page is for; collapsed at the bottom, under the
+       reference series, it was the last thing anyone would find. -->
+  <section id="verify" style="border-top:0;margin-top:26px">
+    <h2>How to verify a number</h2>
+    <p class="lede">Four steps, none of which require taking our word for anything.</p>
+    <ol class="steps">
+      <li><b>Open the indicator</b> below and hit its <b>API endpoint</b> — the same
+        address the pipeline called, at the source, not a copy we host.</li>
+      <li><b>Compare the year you care about</b> with the raw values in the expanded row.
+        Monthly and quarterly sources are averaged to one value per year, so compare
+        against the annual figure where the source publishes one.</li>
+      <li><b>Read the source release</b> for context. Definitions, revisions and footnotes
+        live there, and the caveat badges on each row point at what to look for.</li>
+      <li><b>Or reproduce the whole thing.</b> Clone the repo and run
+        <code>python ingest/ingest.py --dry-run</code>: it fetches everything fresh and
+        reports what it got. Nothing is computed at ingest beyond collapsing to years —
+        every transform happens in your browser, from the values on this page.</li>
+    </ol>
+    <p class="lede" style="margin-top:16px">Found a mismatch? The bundle records when it was
+      fetched, and sources revise their own history — that is normal for official statistics.
+      If the current release disagrees with the bundle, the weekly refresh will pick it up.
+      Anything else is a bug, and worth telling us about.</p>
+  </section>
+
+  <section id="refs">
+    <h2>Reference series</h2>
+    <p class="lede">Three series power every transform on the site: population behind
+      <b>per person</b>, the GDP deflator behind <b>real terms</b>, and nominal GDP behind
+      <b>% of GDP</b>. If a transformed number looks wrong, check these first — a transform
+      is only ever as good as its denominator.</p>
+    <div id="refstbl"></div>
+  </section>
+
+  <section id="catalogue">
     <h2>Indicator search</h2>
-    <p class="lede">Filter down, then expand a row to verify it. Rows marked
-       <b style="color:var(--warm)">!</b> carry a series break or a caveat worth reading before
-       you use the numbers.</p>
+    <p class="lede">Filter down, then expand a row to verify it. Badges name the caveat that
+       applies — <span class="flag f-discontinued">Discontinued</span>
+       <span class="flag f-definition">Definition changed</span>
+       <span class="flag f-partial">Partial period</span>
+       <span class="flag f-provisional">Provisional</span>
+       <span class="flag f-geography">Sub-UK coverage</span> — so a marked row tells you what
+       to go and read, rather than only that something exists to read.</p>
 
     <div class="toolbar">
       <div class="sfield">
@@ -279,38 +347,6 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
     <div id="tbl"></div>
   </section>
 
-  <section id="refs">
-    <h2>Reference series</h2>
-    <p class="lede">Three series power the transforms everywhere: population (per-person), the GDP
-       deflator (real terms) and nominal GDP (%-of-GDP). If a transformed number looks wrong,
-       check these first.</p>
-    <div id="refstbl"></div>
-  </section>
-
-  <section id="verify" style="border-top:0;padding-top:14px;margin-top:20px">
-    <details class="fold">
-      <summary>How to verify a number</summary>
-      <div class="foldbody">
-        <ol>
-          <li>Find the indicator above and expand it, then open its <b>API endpoint</b> — that is
-              the same address the pipeline called, at the source, not a copy we host.</li>
-          <li>Find the year you care about and compare it with the raw values in the expanded row.
-              Monthly and quarterly sources are averaged to one value per year, so compare the
-              annual figure where the source publishes one.</li>
-          <li>Cross-check the <b>source release</b> link for context — definitions, revisions and
-              footnotes live there.</li>
-          <li>Or reproduce the whole bundle: clone the repo and run
-              <code>python ingest/ingest.py --dry-run</code>. It fetches everything fresh from the
-              sources and reports what it got. Nothing is computed at ingest beyond collapsing to
-              years — every transform happens in your browser, from the values on this page.</li>
-        </ol>
-        <p style="margin-top:14px">Found a mismatch? The bundle records when it was fetched — sources
-           revise their own history, which is normal for official statistics. If the current release
-           disagrees with the bundle, a weekly refresh will pick it up; anything else is a bug worth
-           reporting.</p>
-      </div>
-    </details>
-  </section>
 </div>
 
 <footer>
@@ -346,6 +382,57 @@ const pubOf=s=>s.publisher||s.source||"Unknown";
 const MEASURE={count:"Count",rate:"Rate",index:"Index",ratio:"Ratio",
   money_cash:"Money (cash)",money_real:"Money (real)"};
 const mlabel=k=>MEASURE[k]||cap(k||"—");
+
+/* Caveat tiers. The pipeline derives them (see derive_flags in ingest.py) and
+   orders them worst-first, so flags[0] is what the badge should say. */
+const FLAG_LABEL={discontinued:"Discontinued",definition:"Definition changed",
+  partial:"Partial period",provisional:"Provisional",geography:"Sub-UK coverage"};
+const FLAG_WHY={
+  discontinued:"This series stopped, or was replaced by a differently-defined one.",
+  definition:"The basis changed part-way through, so values either side are not strictly comparable.",
+  partial:"A period here covers less than a full year, so the last point sits low for that reason alone.",
+  provisional:"The most recent figures are provisional and will be revised.",
+  geography:"Not UK-wide. Comparing it with a UK series is not like for like.",
+};
+const flagsOf=s=>(s.flags||[]).filter(f=>FLAG_LABEL[f]);
+function flagBadges(s,all){
+  const f=flagsOf(s); if(!f.length) return "";
+  const show=all?f:f.slice(0,1);
+  return show.map(k=>`<span class="flag f-${k}" title="${esc(FLAG_WHY[k])}">${esc(FLAG_LABEL[k])}</span>`).join("")
+    + (!all&&f.length>1?`<span class="flag more" title="${esc(f.slice(1).map(k=>FLAG_LABEL[k]).join(" · "))}">+${f.length-1}</span>`:"");
+}
+
+/* A shape you can scan. Thirty-eight year/value pairs in a grid cannot be
+   eyeballed for an anomaly; a 120px line can. Break years are ticked. */
+function spark(s,w=132,h=30){
+  const v=s.values, idx=v.map((x,i)=>[i,x]).filter(q=>q[1]!=null);
+  if(idx.length<2) return "";
+  const ys=idx.map(q=>q[1]);
+  let mn=Math.min(...ys),mx=Math.max(...ys); if(mn===mx){mn-=1;mx+=1;}
+  const X=i=>2+(i/Math.max(1,v.length-1))*(w-4);
+  const Y=x=>2+(1-(x-mn)/(mx-mn))*(h-4);
+  let d="",pen=false;
+  v.forEach((x,i)=>{ if(x==null){pen=false;return;}
+    d+=(pen?"L":"M")+X(i).toFixed(1)+" "+Y(x).toFixed(1)+" "; pen=true; });
+  const brk=(s.discontinuities||[]).map(b=>b.year-s.start)
+    .filter(i=>i>=0&&i<v.length)
+    .map(i=>`<line x1="${X(i).toFixed(1)}" y1="1" x2="${X(i).toFixed(1)}" y2="${h-1}" stroke="var(--warm)" stroke-width="1" stroke-dasharray="2 2" opacity=".75"/>`).join("");
+  const last=idx[idx.length-1];
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" role="img" aria-label="Shape of the series">`+
+    `${brk}<path d="${d}" fill="none" stroke="var(--purple)" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>`+
+    `<circle cx="${X(last[0]).toFixed(1)}" cy="${Y(last[1]).toFixed(1)}" r="2.2" fill="var(--purple)"/></svg>`;
+}
+function statLine(s){
+  const idx=s.values.map((x,i)=>[s.start+i,x]).filter(q=>q[1]!=null);
+  if(!idx.length) return "";
+  const ys=idx.map(q=>q[1]);
+  const lo=idx[ys.indexOf(Math.min(...ys))], hi=idx[ys.indexOf(Math.max(...ys))], last=idx[idx.length-1];
+  return `<div class="sstats">
+    <span><i>Low</i><b>${fmt(lo[1])}</b><u>${lo[0]}</u></span>
+    <span><i>High</i><b>${fmt(hi[1])}</b><u>${hi[0]}</u></span>
+    <span><i>Latest</i><b>${fmt(last[1])}</b><u>${last[0]}</u></span>
+  </div>`;
+}
 
 function csvFor(s){
   const rows=[["year","value"]];
@@ -393,11 +480,15 @@ function detailHtml(s,isRef){
        ["Observations",`${obs} of ${s.values.length} years`],
        ["Topics",(s.topics||[]).map(t=>
           `<button class="tpill" data-facet-topic="${esc(t)}">${esc(cap(t))}</button>`).join("")||"—"]];
+  const badges=isRef?"":flagBadges(s,true);
   return `<div class="detail">
+    ${badges?`<div class="dflags">${badges}</div>`:""}
     ${notes.length?`<div class="dnote">${notes.join("<br>")}</div>`:""}
+    <div class="dshape">${spark(s)}${statLine(s)}</div>
     <div class="dgrid">${rows.map(([k,v])=>
       `<div><span class="dk">${esc(k)}</span><span class="dv">${v}</span></div>`).join("")}</div>
     <div class="dlinks">
+      ${!isRef&&s.id?`<a class="prim" href="explore.html#p=${esc(s.id)}~line~none~${s.start}~${end}~pm">Chart this in the explorer →</a>`:""}
       ${s.source_url?`<a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}
       ${s.source_api?`<a href="${esc(s.source_api)}" target="_blank" rel="noopener">API endpoint ↗</a>`:""}
       ${s.areas?`<a href="data/areas/${esc(s.id)}.json">Local figures ↗</a>`:""}
@@ -472,12 +563,11 @@ function mountTool(all){
   function rowsFor(list){
     return list.map(s=>{
       const end=s.start+s.values.length-1;
-      const brk=(s.discontinuities||[]).length||(s.notes||[]).length;
       const open=st.open.has(s.id);
       return `<tr class="irow${open?" open":""}" data-id="${esc(s.id)}">
         <td class="cx"><button class="exp" aria-expanded="${open}"
             aria-label="${open?"Collapse":"Expand"} ${esc(s.name)}">▶</button></td>
-        <td class="cname">${esc(s.name)}${brk?`<span class="flag" title="Has a series break or caveat">!</span>`:""}</td>
+        <td class="cname">${esc(s.name)}${flagBadges(s,false)}</td>
         <td>${esc(pubOf(s))}</td>
         <td>${esc(s.geography||"—")}</td>
         <td class="cunit" title="${esc(s.unit||"")}">${esc(s.unit||"—")}</td>
@@ -549,10 +639,25 @@ function mountTool(all){
     st[key]=val; draw();
     document.getElementById("catalogue").scrollIntoView({behavior:"smooth",block:"start"});
   };
+
+  /* Deep link. data.html#cpih opens that row expanded and scrolls to it, which
+     is what makes this page usable as a citation target from anywhere else —
+     the explorer links here per series. */
+  function openFromHash(){
+    const id=decodeURIComponent(location.hash.slice(1));
+    if(!id||!all.some(s=>s.id===id)) return;
+    st.open.add(id); draw();
+    const tr=tbl.querySelector(`tr.irow[data-id="${CSS.escape(id)}"]`);
+    if(tr) tr.scrollIntoView({block:"center",
+      behavior:matchMedia("(prefers-reduced-motion:reduce)").matches?"auto":"smooth"});
+  }
+  addEventListener("hashchange",openFromHash);
+
   draw();
+  openFromHash();
 }
 
-fetch("data/bundle.json").then(r=>r.ok?r.json():Promise.reject()).then(db=>{
+fetch("data/bundle.json",{cache:"no-cache"}).then(r=>r.ok?r.json():Promise.reject()).then(db=>{
   const m=db.meta||{}, prov=(m.provenance||"unknown");
   const stats=[
     ["Data",`<span class="dot${prov==="live"?"":" warn"}"></span>${esc(cap(prov))}`],

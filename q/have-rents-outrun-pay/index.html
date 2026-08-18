@@ -4,22 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Have rents outrun pay? — Polyoptic</title>
-<meta name="description" content="Private rents index and average weekly earnings, both rebased to the same starting year so the lines can be compared. 2015–2026, UK.">
-<link rel="canonical" href="https://polyoptic.co/q/rents-vs-pay/">
+<meta name="description" content="The ONS private rents index against average weekly earnings, both rebased to the same starting year. 2015–2026, UK.">
+<link rel="canonical" href="https://polyoptic.co/q/have-rents-outrun-pay/">
 <meta property="og:site_name" content="Polyoptic">
 <meta property="og:title" content="Have rents outrun pay?">
 <meta property="og:description" content="Private rents index × average weekly earnings, both rebased. 2015–2026, UK.">
-<meta property="og:image" content="https://polyoptic.co/og/rents-vs-pay.png">
+<meta property="og:image" content="https://polyoptic.co/og/have-rents-outrun-pay.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="Private rents index × average weekly earnings, both rebased, 2015 to 2026">
-<meta property="og:url" content="https://polyoptic.co/q/rents-vs-pay/">
+<meta property="og:url" content="https://polyoptic.co/q/have-rents-outrun-pay/">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebPage","name":"Have rents outrun pay?",
- "url":"https://polyoptic.co/q/rents-vs-pay/","description":"Private rents index and average weekly earnings, both rebased to the same starting year so the lines can be compared. 2015\u20132026, UK.","inLanguage":"en-GB",
- "primaryImageOfPage":{"@type":"ImageObject","url":"https://polyoptic.co/og/rents-vs-pay.png","width":1200,"height":630},
+ "url":"https://polyoptic.co/q/have-rents-outrun-pay/","description":"The ONS private rents index against average weekly earnings, both rebased to the same starting year. 2015\u20132026, UK.","inLanguage":"en-GB",
+ "primaryImageOfPage":{"@type":"ImageObject","url":"https://polyoptic.co/og/have-rents-outrun-pay.png","width":1200,"height":630},
  "license":"https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
  "isPartOf":{"@type":"WebSite","name":"Polyoptic","url":"https://polyoptic.co/"}}
 </script>
@@ -58,6 +58,10 @@ h1{font-family:Archivo,sans-serif;font-size:40px;font-weight:800;letter-spacing:
 .cols{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:48px;margin-top:44px;align-items:start}
 @media (max-width:900px){.cols{grid-template-columns:1fr;gap:30px}}
 h2{font-family:Archivo,sans-serif;font-size:19px;font-weight:700;margin:0 0 9px;letter-spacing:-0.015em}
+h2.step{margin-top:26px}
+h2.step:first-child{margin-top:0}
+h2.step i{display:block;font-family:"IBM Plex Mono";font-size:10.5px;font-style:normal;
+  font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--purple);margin-bottom:5px}
 p{max-width:66ch;margin:0 0 14px}
 a{color:var(--purple)}
 .care{background:var(--soft);border:1px solid var(--prule);border-radius:3px;padding:18px 20px}
@@ -113,22 +117,24 @@ footer p{max-width:52ch;margin:0}
 
   <div class="cols">
     <div>
-      <h2>Why this pairing</h2>
-      <p>Two series that get quoted against each other constantly, and almost never on the same axis. Rebasing both to 100 in the first year is what makes them comparable: it drops the levels, which are in different units, and keeps the growth, which is the thing under argument.</p>
-      <p>The explorer will show you the working behind any point on this chart — the
-        published figure, the figure being plotted, and the arithmetic between them, with a
-        link to the release it came from. Every value is also listed on
-        <a href="../../data.html">Explorer Verify</a>.</p>
+      <h2 class="step"><i>The claim</i>Rents are rising faster than wages.</h2>
+      <h2 class="step"><i>The number</i></h2>
+      <p>Both series rebased to 2015. Rents and earnings move together for most of the period, with rents accelerating from 2022. Rebasing is what makes the comparison possible at all: one is an index and the other is pounds per week, so only their growth rates are comparable, never their levels.</p>
+      <h2 class="step"><i>What it actually shows</i></h2>
+      <p>An index of rents on new and existing tenancies is not the same as what a mover pays. Advertised rents for new lets have risen faster than this index through the same period, because existing tenancies reprice slowly. So this understates the change facing someone moving today, and overstates it for someone who has not moved.</p>
+      <p>Click any point in the explorer and it shows the published figure, the figure
+        being plotted, and the arithmetic between them, with a link to the release it came
+        from. Every value is listed on <a href="../../data.html">Explorer Verify</a>.</p>
     </div>
     <aside class="care">
       <h2>Read it carefully</h2>
-      <p>The rents index was discontinued in March 2025 and replaced by the Price Index of Private Rents, so the final year is a partial one. Earnings are a whole-economy mean, not a median, and means are pulled up by the top.</p>
+      <p>The index was discontinued in March 2025 and replaced by the Price Index of Private Rents, so the last year is partial and the two are not a continuous series. UK-wide, which hides a wide spread between London and everywhere else — the explorer will break it down by local authority.</p>
     </aside>
   </div>
 
   <div class="more">
     <p class="eyebrow">Other comparisons</p>
-    <ul><li><a href="../debt-and-interest/">What does the debt cost to carry?</a></li><li><a href="../pay-vs-prices/">Has pay kept ahead of prices?</a></li><li><a href="../absence-and-attainment/">Did lost schooling widen the gap?</a></li></ul>
+    <ul><li><a href="../has-pay-kept-up-with-prices/">Has pay kept up with prices?</a></li><li><a href="../what-does-the-debt-cost-to-carry/">What does the debt cost to carry?</a></li><li><a href="../did-lost-schooling-widen-the-gap/">Did lost schooling widen the attainment gap?</a></li></ul>
   </div>
 </main>
 

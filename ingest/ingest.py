@@ -128,6 +128,55 @@ def resolve_publisher(spec: dict) -> tuple[str, str]:
 # Schema
 # ─────────────────────────────────────────────────────────────
 
+# ─────────────────────────────────────────────────────────────
+# Caveat flags
+#
+# The verify page used to mark any series that had a note. Since almost every
+# series has a note, that marked almost every row, and a warning that fires on
+# everything tells you nothing — it is wallpaper.
+#
+# These tiers are named, ordered by how badly they can mislead, and derived
+# from what the caveats actually say. A series with notes but nothing matching
+# gets no flag, which is the point: the badge should mean something.
+#
+# `flags:` in series.yaml overrides the derivation outright when the wording
+# defeats it.
+# ─────────────────────────────────────────────────────────────
+
+FLAG_LABELS = {
+    "discontinued": "Discontinued",
+    "definition":   "Definition changed",
+    "partial":      "Partial period",
+    "provisional":  "Provisional",
+    "geography":    "Sub-UK coverage",
+}
+# Most misleading first. The badge shows the first that applies.
+FLAG_ORDER = ["discontinued", "definition", "partial", "provisional", "geography"]
+
+FLAG_PATTERNS = {
+    "discontinued": r"discontinu|replaced by|no longer (?:published|collected)|final year",
+    "definition":   r"definition|basis chang|change[sd]? the basis|recording practice|"
+                    r"reclassif|method(?:olog\w+)? chang|changed collection|transformed lfs|"
+                    r"re-?stated|series break|break in the series|not comparable",
+    "partial":      r"partial|part[- ]year|incomplete year|to date",
+    "provisional":  r"provisional|subject to revision|early estimate|revised later|"
+                    r"outcome-assignment lag|assignment lag",
+}
+
+
+def derive_flags(spec: dict, notes: list[str], discontinuities: list[dict], geography: str) -> list[str]:
+    if spec.get("flags") is not None:
+        return [f for f in spec["flags"] if f in FLAG_LABELS]
+    text = " ".join(notes + [d.get("note", "") for d in discontinuities]).lower()
+    found = {k for k, pat in FLAG_PATTERNS.items() if re.search(pat, text)}
+    # A declared discontinuity is a break whether or not anyone wrote the word.
+    if discontinuities:
+        found.add("definition")
+    if geography and geography != "UK":
+        found.add("geography")
+    return [f for f in FLAG_ORDER if f in found]
+
+
 @dataclass
 class Series:
     id: str
@@ -146,6 +195,7 @@ class Series:
     publisher_full: str = ""   # corporate author, for citations
     published: str = ""        # edition year, where one is meaningful; else blank
     areas: bool = False         # true when data/areas/<id>.json exists alongside
+    flags: list[str] = field(default_factory=list)   # named caveat tiers, worst first
     discontinuities: list[dict] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     fetched: str = ""
@@ -1190,6 +1240,8 @@ def build_series(spec: dict) -> Series:
         published=str(spec.get("published", "")),
         discontinuities=spec.get("discontinuities", []),
         notes=spec.get("notes", []),
+        flags=derive_flags(spec, spec.get("notes", []), spec.get("discontinuities", []),
+                           spec["geography"]),
         fetched=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         source_api=spec["fetch"].get("_resolved_url", ""),
     )

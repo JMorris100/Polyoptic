@@ -238,8 +238,8 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
       <span class="wordmark">poly<span class="b">optic</span></span>
     </a>
     <nav class="topnav">
-      <a href="#topics">Topics</a>
       <a href="#questions">Questions</a>
+      <a href="#topics">Topics</a>
       <a href="#method">Method</a>
       <a href="about.html">About</a>
       <a class="btn-ghost" href="data.html">Verify</a>
@@ -298,6 +298,29 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
   </div>
 </div>
 
+<!-- Questions above topics, deliberately. People arrive searching "has pay kept
+     up with inflation uk", never "polyoptic" — and a question is a better door
+     into a statistics site than a taxonomy is. -->
+<section id="questions">
+  <div class="wrap">
+    <div class="slabel"><h2>Questions worth asking</h2></div>
+    <p class="lede">Each one is a claim you have heard, the number behind it, and what that
+      number does and does not show. Open any of them in the explorer and change the
+      assumptions yourself.</p>
+    <div class="pairs">
+      <!-- These point at /q/ pages rather than straight into the explorer.
+           Chart state lives in the URL fragment, which never reaches a server,
+           so an explorer link cannot unfurl as the chart it opens — every one
+           of them would preview identically. A real URL per question gets a
+           real card, and a slug someone might actually search for. -->
+      <a class="pair" href="q/has-pay-kept-up-with-prices/"><div class="pq">Has pay kept up with prices?</div><div class="pm"><b>Average weekly earnings</b> × <b>CPIH</b>, both rebased<br>2000–2026 · UK</div></a>
+      <a class="pair" href="q/have-rents-outrun-pay/"><div class="pq">Have rents outrun pay?</div><div class="pm"><b>Private rents index</b> × <b>average weekly earnings</b>, both rebased<br>2015–2026 · UK</div></a>
+      <a class="pair" href="q/what-does-the-debt-cost-to-carry/"><div class="pq">What does the debt cost to carry?</div><div class="pm"><b>Public sector net debt</b> × <b>debt interest</b>, both rebased<br>1993–2026 · UK</div></a>
+      <a class="pair" href="q/did-lost-schooling-widen-the-gap/"><div class="pq">Did lost schooling widen the attainment gap?</div><div class="pm"><b>Persistent absence</b> × <b>disadvantage gap index</b>, both rebased<br>2010–2026 · England</div></a>
+    </div>
+  </div>
+</section>
+
 <section id="topics">
   <div class="wrap">
     <div class="slabel"><h2>Topics</h2></div>
@@ -348,23 +371,6 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
   </div>
 </div>
 
-<section id="questions">
-  <div class="wrap">
-    <div class="slabel"><h2>Arguments worth having</h2></div>
-    <p class="lede">Pre-built comparisons, each one a permalink you can send to someone who disagrees with you.</p>
-    <div class="pairs">
-      <!-- These point at /q/ pages rather than straight into the explorer.
-           Chart state lives in the URL fragment, which never reaches a server,
-           so an explorer link cannot unfurl as the chart it opens — every one
-           of them would preview identically. A real URL per comparison gets a
-           real card. -->
-      <a class="pair" href="q/rents-vs-pay/"><div class="pq">Have rents outrun pay?</div><div class="pm"><b>Private rents index</b> × <b>average weekly earnings</b>, both rebased<br>2015–2026 · UK</div></a>
-      <a class="pair" href="q/debt-and-interest/"><div class="pq">What does the debt cost to carry?</div><div class="pm"><b>Public sector net debt</b> × <b>debt interest</b>, both rebased<br>1993–2026 · UK</div></a>
-      <a class="pair" href="q/pay-vs-prices/"><div class="pq">Has pay kept ahead of prices?</div><div class="pm"><b>Average weekly earnings</b> × <b>CPIH</b>, both rebased<br>2000–2026 · UK</div></a>
-      <a class="pair" href="q/absence-and-attainment/"><div class="pq">Did lost schooling widen the gap?</div><div class="pm"><b>Persistent absence</b> × <b>disadvantage gap index</b>, both rebased<br>2010–2026 · England</div></a>
-    </div>
-  </div>
-</section>
 
 <section>
   <div class="wrap">
