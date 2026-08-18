@@ -3,8 +3,27 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
 <title>Polyoptic — UK statistics, made comparable</title>
+<meta name="description" content="Official UK statistics, made comparable. 75 series from the ONS, the Home Office and seven other publishers, charted together — with the caveats the headlines leave out and a link back to every source.">
+<link rel="canonical" href="https://polyoptic.co/">
+<meta property="og:site_name" content="Polyoptic">
+<meta property="og:title" content="Polyoptic — UK statistics, made comparable">
+<meta property="og:description" content="75 official UK series, charted together. Every figure links back to the release it came from, and the explorer shows the arithmetic behind any point you click.">
+<meta property="og:image" content="https://polyoptic.co/og/home.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Polyoptic — 75 UK statistical series, made comparable">
+<meta property="og:url" content="https://polyoptic.co/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"Polyoptic",
+ "url":"https://polyoptic.co/",
+ "description":"Official UK statistics, made comparable — 75 series from the ONS and eight other publishers, each linking back to its original release.",
+ "inLanguage":"en-GB",
+ "creator":{"@type":"Person","name":"Josh Morris","url":"https://morrisjb.com"},
+ "license":"https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%226.5%204.5%2087%2087%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22c%22%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%20fill%3D%22none%22%20stroke%3D%22%234633A8%22%20stroke-width%3D%225%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cg%20clip-path%3D%22url%28%23c%29%22%20fill%3D%22%234633A8%22%3E%3Crect%20x%3D%2229.75%22%20y%3D%2246.56%22%20width%3D%226%22%20height%3D%2218.72%22%2F%3E%3Crect%20x%3D%2241.25%22%20y%3D%2236.48%22%20width%3D%226%22%20height%3D%2228.8%22%2F%3E%3Crect%20x%3D%2252.75%22%20y%3D%2242.6%22%20width%3D%226%22%20height%3D%2222.68%22%2F%3E%3Crect%20x%3D%2264.25%22%20y%3D%2230.72%22%20width%3D%226%22%20height%3D%2234.56%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -183,8 +202,20 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .pair .pm{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);line-height:1.7}
 .pair .pm b{color:var(--purple);font-weight:500}
 
-.srcs{display:flex;flex-wrap:wrap;gap:8px}
-.src{font-family:"IBM Plex Mono";font-size:11.5px;border:1px solid var(--rule);background:var(--surface);padding:7px 14px;color:var(--muted);border-radius:100px}
+/* Source tiles. Wordmarks in our own type rather than departmental logos:
+   OGL v3.0 licenses the information and specifically carves out the crests
+   and logos, so borrowing those would be the one thing on this site not
+   covered by the licence it leans on everywhere else. */
+.srcs{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:10px}
+.src{display:flex;flex-direction:column;gap:3px;text-decoration:none;
+  border:1px solid var(--rule);background:var(--surface);border-radius:3px;
+  padding:13px 15px 12px;transition:border-color .15s,transform .15s}
+.src:hover{border-color:var(--purple);transform:translateY(-1px)}
+.src .sabbr{font-family:Archivo,sans-serif;font-weight:700;font-size:15px;
+  letter-spacing:-0.01em;color:var(--purple)}
+.src .sfull{font-size:12px;color:var(--ink);line-height:1.35}
+.src .sn{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);margin-top:3px}
+.src .sn::after{content:" ↗";opacity:.6}
 
 footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px solid var(--rule)}
 .fgrid{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap}
@@ -210,6 +241,7 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
       <a href="#topics">Topics</a>
       <a href="#questions">Questions</a>
       <a href="#method">Method</a>
+      <a href="about.html">About</a>
       <a class="btn-ghost" href="data.html">Verify</a>
       <a class="btn-invert" href="explore.html">Open the explorer</a>
     </nav>
@@ -321,10 +353,15 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
     <div class="slabel"><h2>Arguments worth having</h2></div>
     <p class="lede">Pre-built comparisons, each one a permalink you can send to someone who disagrees with you.</p>
     <div class="pairs">
-      <a class="pair" href="explore.html#p=rents,pay~line~index~2015~2026~pm"><div class="pq">Have rents outrun pay?</div><div class="pm"><b>Private rents index</b> × <b>average weekly earnings</b>, both rebased<br>2015–2026 · UK</div></a>
-      <a class="pair" href="explore.html#p=psnd,debtint~line~index~1993~2026~pm"><div class="pq">What does the debt cost to carry?</div><div class="pm"><b>Public sector net debt</b> × <b>debt interest</b>, both rebased<br>1993–2026 · UK</div></a>
-      <a class="pair" href="explore.html#p=pay,cpih~line~index~2000~2026~pm"><div class="pq">Has pay kept ahead of prices?</div><div class="pm"><b>Average weekly earnings</b> × <b>CPIH</b>, both rebased<br>2000–2026 · UK</div></a>
-      <a class="pair" href="explore.html#p=absence,gap~line~index~2010~2026~pm"><div class="pq">Did lost schooling widen the gap?</div><div class="pm"><b>Persistent absence</b> × <b>disadvantage gap index</b>, both rebased<br>2010–2026 · England</div></a>
+      <!-- These point at /q/ pages rather than straight into the explorer.
+           Chart state lives in the URL fragment, which never reaches a server,
+           so an explorer link cannot unfurl as the chart it opens — every one
+           of them would preview identically. A real URL per comparison gets a
+           real card. -->
+      <a class="pair" href="q/rents-vs-pay/"><div class="pq">Have rents outrun pay?</div><div class="pm"><b>Private rents index</b> × <b>average weekly earnings</b>, both rebased<br>2015–2026 · UK</div></a>
+      <a class="pair" href="q/debt-and-interest/"><div class="pq">What does the debt cost to carry?</div><div class="pm"><b>Public sector net debt</b> × <b>debt interest</b>, both rebased<br>1993–2026 · UK</div></a>
+      <a class="pair" href="q/pay-vs-prices/"><div class="pq">Has pay kept ahead of prices?</div><div class="pm"><b>Average weekly earnings</b> × <b>CPIH</b>, both rebased<br>2000–2026 · UK</div></a>
+      <a class="pair" href="q/absence-and-attainment/"><div class="pq">Did lost schooling widen the gap?</div><div class="pm"><b>Persistent absence</b> × <b>disadvantage gap index</b>, both rebased<br>2010–2026 · England</div></a>
     </div>
   </div>
 </section>
@@ -333,19 +370,15 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
   <div class="wrap">
     <div class="slabel"><h2>Where it comes from</h2></div>
     <p class="lede">We publish no data of our own. Every series links back to its original release, with the licence and the date it was pulled — and every raw value is on <a href="data.html" style="color:var(--purple)">Explorer Verify</a>, searchable by topic and source, next to the exact endpoint it was fetched from.</p>
-    <div class="srcs">
-      <span class="src">ONS</span><span class="src">HM Land Registry</span><span class="src">Bank of England</span>
-      <span class="src">MHCLG</span><span class="src">DfE Explore Education Statistics</span><span class="src">HM Treasury PESA</span>
-      <span class="src">HMRC</span><span class="src">DWP Stat-Xplore</span><span class="src">Nomis</span>
-      <span class="src">OBR</span><span class="src">UCAS</span><span class="src">Institute for Government</span>
-    </div>
+    <div class="srcs" id="srcs"></div>
   </div>
 </section>
 
 <footer>
   <div class="wrap fgrid">
     <p>Contains public sector information licensed under the Open Government Licence v3.0. Ministerial and party data from the Institute for Government Ministers Database, CC-BY-4.0.</p>
-    <p style="font-family:'IBM Plex Mono';font-size:11.5px">polyoptic.co<br>Built in the UK</p>
+    <p style="font-family:'IBM Plex Mono';font-size:11.5px">polyoptic.co<br>
+      Built in the UK by <a href="about.html" style="color:var(--purple)">Josh Morris</a></p>
   </div>
 </footer>
 
@@ -696,8 +729,26 @@ function fail(){
   document.getElementById("chartB").innerHTML=msg;
 }
 
+/* Credits, counted from what actually built. The list this replaces was typed
+   into the page and had drifted to naming eight organisations the catalogue
+   does not draw on — the wrong thing to get wrong on a page about provenance. */
+function renderSources(){
+  const el=document.getElementById("srcs");
+  const pubs=DB.publishers||[];
+  if(!el||!pubs.length) return;
+  el.innerHTML=pubs.map(p=>{
+    const n=`${p.series} ${p.series===1?"series":"series"}`;
+    const inner=`<span class="sabbr">${esc(p.short)}</span>`+
+      `<span class="sfull">${esc(p.full)}</span><span class="sn">${n}</span>`;
+    return p.url
+      ? `<a class="src" href="${esc(p.url)}" target="_blank" rel="noopener">${inner}</a>`
+      : `<span class="src">${inner}</span>`;
+  }).join("");
+}
+
 function boot(){
   still=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  renderSources();
 
   /* only feature entries whose series actually exist in this build */
   entries=FEATURED.filter(e=>e.ids.every(id=>{
@@ -771,7 +822,11 @@ function frame(now){
   requestAnimationFrame(frame);
 }
 
-fetch("data/bundle.json").then(r=>r.ok?r.json():Promise.reject())
+/* no-cache means revalidate, not refetch — the browser still sends the ETag,
+   so this costs a 304 and stops a rebuilt bundle sitting invisible behind a
+   cached copy. The explorer has always done this; the homepage had not, which
+   is how it managed to show a 75-series build with no publishers block. */
+fetch("data/bundle.json",{cache:"no-cache"}).then(r=>r.ok?r.json():Promise.reject())
   .then(db=>{DB=db;boot();}).catch(fail);
 </script>
 </body>

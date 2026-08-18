@@ -82,6 +82,33 @@ PUBLISHERS: dict[str, str] = {
 }
 
 
+# Where each publisher's own statistics live. The homepage credits its sources
+# from this, rather than from a list typed into the HTML — that list had drifted
+# to naming eight organisations the catalogue does not actually use, which is a
+# bad look on a site whose whole argument is provenance.
+#
+# Verified 2026-08-18. Land Registry has no /about/statistics page; its
+# organisation page is the stable one.
+PUBLISHER_SITES: dict[str, str] = {
+    "ONS": "https://www.ons.gov.uk/",
+    "Home Office": "https://www.gov.uk/government/organisations/home-office/about/statistics",
+    "DfE": "https://explore-education-statistics.service.gov.uk/",
+    "MoJ": "https://www.gov.uk/government/organisations/ministry-of-justice/about/statistics",
+    "HMRC": "https://www.gov.uk/government/organisations/hm-revenue-customs/about/statistics",
+    "FCDO": "https://www.gov.uk/government/organisations/foreign-commonwealth-development-office/about/statistics",
+    "MHCLG": "https://www.gov.uk/government/organisations/ministry-of-housing-communities-and-local-government/about/statistics",
+    "HM Treasury": "https://www.gov.uk/government/organisations/hm-treasury/about/statistics",
+    "HM Land Registry": "https://www.gov.uk/government/organisations/land-registry",
+    "OBR": "https://obr.uk/data/",
+    "DWP": "https://www.gov.uk/government/organisations/department-for-work-pensions/about/statistics",
+    "DHSC": "https://www.gov.uk/government/organisations/department-of-health-and-social-care/about/statistics",
+    "DfT": "https://www.gov.uk/government/organisations/department-for-transport/about/statistics",
+    "DESNZ": "https://www.gov.uk/government/organisations/department-for-energy-security-and-net-zero/about/statistics",
+    "NHS England": "https://digital.nhs.uk/data-and-information",
+    "Institute for Government": "https://www.instituteforgovernment.org.uk/data",
+}
+
+
 def resolve_publisher(spec: dict) -> tuple[str, str]:
     """Short and full publisher for a series spec.
 
@@ -1229,6 +1256,11 @@ def main() -> int:
         areas = build_areas([s for s in specs if s["id"] in ok], args.only)
         for s in built:
             s.areas = s.id in areas
+    elif not args.dry_run:
+        # Skipping the area BUILD must not strip the area FLAGS: the files are
+        # still on disk and the explorer still offers them. Read what's there.
+        for s in built:
+            s.areas = (AREAS_DIR / f"{s.id}.json").exists()
 
     bundle = {
         "meta": {
@@ -1245,6 +1277,14 @@ def main() -> int:
             for key, mode in config.get("modes", {}).items()
         },
         "refs": refs,
+        # Who the catalogue actually draws on, counted from what built rather
+        # than from a list anyone has to remember to update.
+        "publishers": [
+            {"short": short, "full": full, "url": PUBLISHER_SITES.get(short, ""),
+             "series": sum(1 for s in built if s.publisher == short)}
+            for short, full in sorted({(s.publisher, s.publisher_full) for s in built},
+                                      key=lambda pf: -sum(1 for s in built if s.publisher == pf[0]))
+        ],
         "series": [asdict(s) for s in built],
     }
 

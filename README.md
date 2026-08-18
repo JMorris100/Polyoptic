@@ -11,8 +11,14 @@ polyoptic/
 ├── index.html                  home — tiles and featured charts
 ├── explore.html                the explorer — compare, transform, export
 ├── data.html                   provenance — every raw value, source and API endpoint
+├── about.html                  who builds it, and what it deliberately doesn't do
+├── q/<slug>/index.html         one landing page per featured comparison
+├── og/
+│   └── build.html              draws the 1200×630 share images (see below)
+├── sitemap.xml                 board.html is deliberately absent
 ├── data/
-│   └── bundle.json             written by the ingest, committed to git
+│   ├── bundle.json             written by the ingest, committed to git
+│   └── areas/                  per-series local figures, lazily fetched
 ├── ingest/
 │   ├── ingest.py               pipeline: fetch → normalise → validate → write
 │   ├── series.yaml             the whole catalogue, declarative
@@ -289,6 +295,34 @@ shows if `data/bundle.json` fails to load, and it is labelled as such.
   "where does this area sit" without one.
 - No sub-annual data. Everything collapses to years at ingest.
 - No tests.
+
+---
+
+## Sharing and search
+
+Every published page carries a description, canonical URL, Open Graph and
+`twitter:card` tags, and JSON-LD. `robots.txt` allows crawling and points at
+`sitemap.xml`; `board.html` is the one exception, excluded from both and
+carrying `noindex`.
+
+**Chart state lives in the URL fragment**, and fragments never reach a server,
+so an unfurler cannot tell one explorer link from another — every one of them
+previews with the same card. That is why the four featured comparisons have
+real URLs under `/q/<slug>/`, each with its own metadata and its own image.
+Making arbitrary explorer links unfurl as themselves would mean moving state
+into the query string and rendering images on demand, which needs a server this
+site does not have.
+
+**The share images are generated in a browser**, not by the build: open
+`og/build.html` from the dev server, click *Download all*, and drop the eight
+PNGs into `og/`. Filenames match the `og:image` tags — don't rename them. They
+are drawn on a canvas from `bundle.json`, so the comparison cards show the real
+current chart, and they need re-running when a chart changes materially.
+
+Source names on the homepage are set in Polyoptic's own type rather than
+reproduced as departmental logos: OGL v3.0 licenses the *information* and
+specifically excludes crests and logos, so the logos are the one thing on the
+site that the licence would not cover.
 
 ---
 
