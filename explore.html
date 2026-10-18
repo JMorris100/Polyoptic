@@ -80,7 +80,12 @@ header{position:sticky;top:0;z-index:40;background:#4633A8;color:#fff}
 body.side-collapsed .shell{grid-template-columns:0 minmax(0,1fr)}
 body.side-collapsed .side{visibility:hidden;pointer-events:none}
 body.side-collapsed .main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:22px;align-items:start;padding-left:40px}
-body.side-collapsed .srcpanel{margin-top:0;position:sticky;top:92px;max-height:calc(100vh - 110px);overflow-y:auto;scrollbar-width:thin}
+body.side-collapsed .rcol{position:sticky;top:92px;max-height:calc(100vh - 110px);overflow-y:auto;scrollbar-width:thin}
+body.side-collapsed .srcpanel{margin-top:0}
+/* the selected area's card, docked above the sources when they sit on the right */
+.dock:empty{display:none}
+.dock{margin-bottom:14px}
+.dock .working{margin:0;padding:14px 16px}
 .siderail{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:45;display:none}
 body.side-collapsed .siderail{display:block}
 .siderail button{width:26px;height:74px;border:1px solid var(--rule);border-left:0;background:var(--surface);
@@ -93,7 +98,8 @@ body.side-collapsed .siderail{display:block}
 @media(max-width:1040px){
   .shell,body.side-collapsed .shell{grid-template-columns:1fr}
   .main,body.side-collapsed .main{display:block;padding:18px 16px 60px}
-  body.side-collapsed .srcpanel{position:static;max-height:none;margin-top:16px}
+  body.side-collapsed .rcol{position:static;max-height:none}
+  body.side-collapsed .srcpanel{margin-top:16px}
 }
 
 /* ── the panel ── */
@@ -341,8 +347,8 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 /* the scale stays put while the areas scroll under it */
 .areahd{position:sticky;top:0;z-index:2;background:var(--surface)}
 /* the map */
-.mapwrap{display:flex;gap:22px;align-items:flex-start;padding:2px 0 6px}
-.mapsvg{display:block;flex:none;width:auto;max-width:62%}
+.mapwrap{display:flex;gap:40px;align-items:flex-start;justify-content:center;padding:6px 0 10px}
+.mapsvg{display:block;flex:none;width:auto;max-width:66%}
 .mapa{stroke:var(--surface);stroke-width:.6;vector-effect:non-scaling-stroke;cursor:pointer;transition:opacity .12s}
 .mapa:hover{stroke:var(--ink);stroke-width:1.5}
 .mapna{fill:var(--rule);opacity:.55;stroke:var(--surface);stroke-width:.6;vector-effect:non-scaling-stroke}
@@ -351,7 +357,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .mapring.halo{stroke:var(--surface);stroke-width:5}
 .mapbox{fill:none;stroke:var(--muted);stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:3 3}
 .maplbl{font-family:"IBM Plex Mono",ui-monospace,monospace;fill:var(--muted)}
-.mapside{flex:1;min-width:190px;max-width:320px;display:flex;flex-direction:column;gap:2px}
+.mapside{flex:1;min-width:220px;max-width:340px;display:flex;flex-direction:column;gap:2px;padding-top:4px}
 .msfind{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
 .msfind span,.mslbl{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .msfind select{font:inherit;font-size:12.5px;padding:7px 8px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:3px}
@@ -647,7 +653,10 @@ html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px col
         <button class="addbtn" id="addBottom">+ Add another chart</button>
       </div>
     </div>
-    <div class="srcpanel" id="srcs"></div>
+    <div class="rcol">
+      <div class="dock" id="dock"></div>
+      <div class="srcpanel" id="srcs"></div>
+    </div>
   </div>
 </div>
 
@@ -1719,7 +1728,7 @@ const MAP_CFG={
 };
 /* London, in the drawing's units, and where its enlargement sits: in the
    North Sea, clear of the coast */
-const LDN={x:2052,y:3436,w:236,h:184}, LDN_AT={x:1990,y:1500,s:3};
+const LDN={x:2052,y:3436,w:236,h:184}, LDN_AT={x:2440,y:1420,s:4}, MAP_W=3400, KEY_AT={x:2740,y:2420};
 /* the box round a path, read from its absolute start and relative steps */
 function pathBox(d){
   let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
@@ -1788,8 +1797,8 @@ function renderAreaMap(p,{set,ix,d,lvl}){
   }
   if(over) for(const [c,path] of Object.entries(over.areas)) if(c in all) shapes.push([c,path]);
 
-  const VW=base.w, VH=base.h;
-  const Hpx=Math.max(560,Math.min(780,p.h+300)), k=Hpx/VH, u=px=>(px/k).toFixed(0);
+  const VW=MAP_W, VH=base.h;
+  const Hpx=Math.max(600,Math.min(820,p.h+320)), k=Hpx/VH, u=px=>(px/k).toFixed(0);
   const pathEl=([code,dd])=> code
     ? `<path class="mapa" d="${dd}" fill="${colourOf(all[code])}" data-probe="${esc(set.id)}" data-area="${code}"><title>${esc(areaName(ix,code))}: ${fmt(all[code])}</title></path>`
     : `<path class="mapna" d="${dd}"/>`;
@@ -1814,13 +1823,13 @@ function renderAreaMap(p,{set,ix,d,lvl}){
     g.push(`<rect class="mapbox" x="${LDN_AT.x}" y="${LDN_AT.y}" width="${LDN.w*LDN_AT.s}" height="${LDN.h*LDN_AT.s}"/>`);
     g.push(`<g transform="${T}" clip-path="url(#ldn${p.key})">${inLdn.map(pathEl).join("")}${
       inLdn.filter(s=>s[0]&&s[0]===selCode).map(s=>`<path class="mapsel" d="${s[1]}"/>`).join("")}</g>`);
-    g.push(`<text class="maplbl" x="${LDN_AT.x}" y="${LDN_AT.y-u(6)}" font-size="${u(11)}">London</text>`);
+    g.push(`<text class="maplbl" x="${LDN_AT.x}" y="${LDN_AT.y-u(7)}" font-size="${u(11)}">London</text>`);
     g.push(`<rect class="mapbox" x="${LDN.x}" y="${LDN.y}" width="${LDN.w}" height="${LDN.h}"/>`);
   }
 
-  /* the key, down the open Atlantic south-west of Wales: one row per shade
-     with the range it covers, and the grey for areas with no figure */
-  const nb=B.cuts.length+1, rh=+u(16), kx=20, ky=3330;
+  /* the key, in the open sea east of England: one row per shade with the
+     range it covers, and the grey for areas with no figure */
+  const nb=B.cuts.length+1, rh=+u(17), kx=KEY_AT.x, ky=KEY_AT.y;
   const lows=[B.min,...B.cuts], rows=lows.map((lo,i)=>[ramp[Math.round(i*(ramp.length-1)/Math.max(1,nb-1))],
     `${fmtShort(lo)} – ${fmtShort(i<nb-1?lows[i+1]:B.max)}`]);
   g.push(`<text class="maplbl" x="${kx}" y="${ky-rh*0.6}" font-size="${u(10.5)}">${year}${set.meta.unit.length<=8?" · "+esc(set.meta.unit):""}</text>`);
@@ -2312,8 +2321,9 @@ function panelHtml(p,i){
 
   /* The working, or an invitation to open one. The hint sits in the same slot
      so the card does not jump when a point is clicked. */
-  const wh=sets.length?(AREA_CHARTS.has(p.chart)?workingHtml(p,sets):yearWorkingHtml(p,buildSets(p))):"";
-  const work = wh || (sets.length&&PROBEABLE.has(p.chart)
+  const wh=sets.length?(AREA_CHARTS.has(p.chart)?(dockOn()?"":workingHtml(p,sets)):yearWorkingHtml(p,buildSets(p))):"";
+  const docked = dockOn()&&AREA_CHARTS.has(p.chart)&&state.probe&&state.probe.key===p.key;
+  const work = wh || (!docked&&sets.length&&PROBEABLE.has(p.chart)
     ? `<div class="workhint">${AREA_CHARTS.has(p.chart)?"Click an area to show the working":"Click anywhere on the chart to show the working for that year"}</div>` : "");
 
   const warns=warningsFor(p,sets).map(w=>
@@ -2525,7 +2535,21 @@ function renderSources(){
   };
 }
 
-function render(){ renderPanels(); renderSidebar(); renderSources(); writeHash(); }
+/* With the side panel shut, the sources sit in a column on the right, and an
+   area's card goes there too: the map keeps its width, and the card sits
+   beside the sources it cites. */
+const dockOn=()=>document.body.classList.contains("side-collapsed")&&matchMedia("(min-width:1041px)").matches;
+function renderDock(){
+  const el=document.getElementById("dock"), pr=state.probe;
+  const p=pr&&state.panels.find(x=>x.key===pr.key);
+  el.innerHTML = dockOn()&&p&&AREA_CHARTS.has(p.chart) ? workingHtml(p,buildSets(p)) : "";
+}
+document.getElementById("dock").addEventListener("click",e=>{
+  if(e.target.closest('[data-act="unprobe"]')){ state.probe=null; render(); }
+});
+function render(){ renderPanels(); renderSidebar(); renderSources(); renderDock(); writeHash(); }
+/* crossing the width where the right column appears moves the card */
+matchMedia("(min-width:1041px)").addEventListener("change",()=>{ if(typeof DB!=="undefined"&&DB) render(); });
 
 /* ══════════════════════════════════════════════
    PANEL ACTIONS
@@ -3160,7 +3184,8 @@ function readHash(){
 (function(){
   try{ if(localStorage.getItem("polyoptic-side")==="collapsed") document.body.classList.add("side-collapsed"); }catch(e){}
   const set=c=>{ document.body.classList.toggle("side-collapsed",c);
-    try{ localStorage.setItem("polyoptic-side", c?"collapsed":"open"); }catch(e){} };
+    try{ localStorage.setItem("polyoptic-side", c?"collapsed":"open"); }catch(e){}
+    if(typeof DB!=="undefined"&&DB) render(); };
   document.getElementById("sideHideTop").onclick=()=>set(true);
   document.getElementById("sideOpen").onclick=()=>set(false);
 })();
