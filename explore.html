@@ -126,6 +126,8 @@ header{position:sticky;top:0;z-index:40;background:#4633A8;color:#fff}
 .wm .b{font-weight:500;color:rgba(255,255,255,.66)}
 .crumb{font-family:"IBM Plex Mono";font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;margin-left:6px}
 .hact{margin-left:auto;display:flex;gap:8px}
+/* on a phone the header has room for the brand and the three buttons only */
+@media(max-width:520px){.hrow{padding:0 16px;gap:10px}.crumb{display:none}.hb{padding:8px 11px}}
 .hb{font-family:"IBM Plex Mono";font-size:11.5px;padding:8px 16px;border:1px solid rgba(255,255,255,.34);border-radius:2px;background:transparent;color:#fff;cursor:pointer;transition:.15s}
 .hb:hover{background:#fff;color:var(--purple);border-color:#fff}
 .hb.solid{background:#fff;color:var(--purple);border-color:#fff;font-weight:500}
@@ -350,8 +352,9 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .pfoot{padding:10px 16px 12px;border-top:1px solid var(--rule);display:flex;
   flex-direction:column;gap:3px}
 .psrc{font-size:12px;line-height:1.45;color:var(--ink);overflow-wrap:anywhere}
-.pmeta{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);letter-spacing:.01em;
-  overflow-wrap:anywhere}
+.psrc b{font-weight:600}
+.pmeta{font-size:11.5px;color:var(--muted);overflow-wrap:anywhere}
+.phnote{font-size:12px;color:var(--warn);font-weight:600}
 
 /* resize grip along the bottom edge */
 .rgrip{height:16px;cursor:ns-resize;display:flex;align-items:center;justify-content:center;
@@ -375,14 +378,28 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .gridline{stroke:var(--rule);stroke-width:1;opacity:.7}
 .axlabel{font-family:"IBM Plex Mono";font-size:10px;fill:var(--muted)}
 .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-.ribbon-t{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:10px 0 5px}
-.era rect{opacity:.84}.era:hover rect{opacity:1}
-.era text{font-family:"IBM Plex Mono";font-size:9px;fill:#fff;font-weight:500}
-.pmtick{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2;opacity:.3}
-.etick{stroke:var(--ink);stroke-width:1.5}
-.pmlabel{font-family:"IBM Plex Mono";font-size:8.5px;fill:var(--muted)}
-.eralabel{font-family:"IBM Plex Mono";font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:var(--muted)}
-.disc{stroke:var(--warn);stroke-width:1;stroke-dasharray:3 3;opacity:.6}
+/* a stronger line at 100 on an index, or 0 when the data crosses it */
+.baseline{stroke:var(--muted);stroke-width:1;opacity:.75}
+.axunit{font-family:"IBM Plex Mono";font-size:10px;fill:var(--muted)}
+/* names at the line ends, and breaks drawn on the line */
+.endlbl{font-family:"Public Sans",system-ui,sans-serif;font-size:11px;font-weight:600}
+.endval{font-family:"IBM Plex Mono";font-size:10px;fill:var(--muted)}
+.brk{font-family:"Public Sans",system-ui,sans-serif;font-size:10px;fill:var(--warn)}
+.brkline{stroke:var(--warn);stroke-width:1;stroke-dasharray:2 2}
+.hollow{fill:var(--surface)}
+.enddot{stroke:var(--surface);stroke-width:1.5}
+.leader{fill:none;stroke-width:1;opacity:.45}
+/* government in power, shaded behind the data */
+.band{fill-opacity:.07}
+html[data-theme="dark"] .band,html[data-theme="brexit"] .band{fill-opacity:.09}
+.banddiv{stroke:var(--rule);stroke-width:1}
+.bandlbl{font-family:"IBM Plex Mono";font-size:9px;fill:var(--muted)}
+/* headline numbers on a gap chart */
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin:0 0 10px}
+.stat{display:flex;flex-direction:column}
+.stat b{font-family:Archivo,sans-serif;font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat span{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
+.stat .d{width:13px;height:3px;flex-shrink:0}
 .nodata{fill:var(--ink);opacity:.045}
 .nodatat{opacity:.75;letter-spacing:.04em}
 .sm-t{font-family:"IBM Plex Mono";font-size:10px;font-weight:500}
@@ -408,14 +425,24 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .addbtn:hover{background:var(--soft);border-color:var(--purple);border-style:solid}
 
 .srcpanel{background:var(--surface);border:1px solid var(--rule);padding:14px 16px;margin-top:16px}
-.srcrow{font-size:12.5px;color:var(--muted);padding:7px 0;border-bottom:1px solid var(--rule-soft);display:flex;gap:12px;flex-wrap:wrap}
-.srcrow:last-child{border-bottom:0}
-.srcrow b{color:var(--ink);font-weight:600}
-.srcrow .mono{font-family:"IBM Plex Mono";font-size:10.5px}
-.srcx{border:0;background:none;color:var(--muted);cursor:pointer;padding:0 3px;font-size:10px;
-  transition:transform .15s}
-.srcrow.open .srcx{transform:rotate(90deg);color:var(--purple)}
-.srcx:hover{color:var(--ink)}
+.srcitem{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px 28px;padding:12px 0;border-bottom:1px solid var(--rule-soft);align-items:start}
+.srcitem:last-child{border-bottom:0;padding-bottom:2px}
+.srcitem .srcdet{grid-column:1/-1}
+.srcname{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:var(--ink)}
+.srcname .d{width:13px;height:3px;flex-shrink:0}
+.srcfrom,.srcflags,.srcx{margin-left:21px}
+.srcfrom{font-size:12.5px;color:var(--muted);margin-top:3px}
+.srcflags{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
+.srclink{color:var(--purple);text-decoration:none;border-bottom:1px solid var(--prule)}
+.srclink:hover{border-bottom-color:var(--purple)}
+.srcx{display:block;border:0;background:none;color:var(--purple);cursor:pointer;padding:0;margin-top:7px;font:inherit;font-size:12px}
+.srcx:hover{text-decoration:underline}
+.srcfacts{display:grid;grid-template-columns:.8fr 1.3fr 1.1fr .8fr 1.2fr;gap:8px 20px;margin:0}
+.srcfacts dt{font-size:11px;color:var(--muted)}
+.srcfacts dd{margin:0;font-size:13px;color:var(--ink)}
+.srcoff{font-size:12.5px;color:var(--muted);margin:10px 0 0}
+@media (max-width:1000px){.srcitem{grid-template-columns:1fr}.srcfacts{margin-left:21px}}
+@media (max-width:560px){.srcfacts{grid-template-columns:1fr 1fr}}
 .fchip{font-family:"IBM Plex Mono";font-size:9px;letter-spacing:.05em;text-transform:uppercase;
   padding:1px 5px;border-radius:2px;border:1px solid var(--rule);color:var(--muted)}
 .fchip.f-discontinued{color:#9B1C1C;border-color:#E9B7B7;background:#FDF0F0}
@@ -424,10 +451,10 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 html[data-theme="dark"] .fchip.f-discontinued{color:#F0A0A0;border-color:#5A2323;background:#301414}
 html[data-theme="dark"] .fchip.f-definition{color:#EDBE86;border-color:#553C13;background:#2E2109}
 html[data-theme="dark"] .fchip.f-partial{color:#E4CE88;border-color:#4A3E14;background:#2A2308}
-.srcdet{padding:2px 0 14px 20px;border-bottom:1px solid var(--rule-soft)}
+.srcdet{padding:4px 0 2px 21px}
 .sdnote{padding:9px 12px;background:var(--warnbg);border-left:3px solid var(--warn);
   color:var(--warn-ink);font-size:12.5px;line-height:1.45;margin-bottom:11px}
-.sdmeta{display:flex;flex-wrap:wrap;gap:8px 26px;margin-bottom:10px;font-size:12.5px;color:var(--ink)}
+.sdmeta{display:flex;flex-wrap:wrap;gap:8px 26px;margin-bottom:8px;font-size:12px;color:var(--muted)}
 .sdmeta i{display:block;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.09em;
   text-transform:uppercase;color:var(--muted);font-style:normal}
 .sdvals{display:flex;flex-wrap:wrap;gap:3px 14px;font-family:"IBM Plex Mono";font-size:10.5px;
@@ -441,25 +468,54 @@ html[data-theme="dark"] .fchip.f-partial{color:#E4CE88;border-color:#4A3E14;back
 .sdlinks a{font-family:"IBM Plex Mono";font-size:10.5px;text-decoration:none;color:var(--purple);
   border:1px solid var(--prule);background:var(--soft);padding:4px 9px;border-radius:2px}
 .sdlinks a:hover{border-color:var(--purple)}
-.ph{display:inline-block;font-family:"IBM Plex Mono";font-size:9.5px;background:var(--warnbg);border:1px solid var(--warnrule);color:var(--warn);padding:1px 6px}
+.ph{display:inline-block;font-size:11px;font-weight:500;background:var(--warnbg);border:1px solid var(--warnrule);color:var(--warn);padding:0 6px;border-radius:2px}
 
-/* ── sourcing style ─────────────────────────────────────────── */
-.srchd{display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:space-between;
-  padding-bottom:10px;margin-bottom:4px;border-bottom:1px solid var(--rule)}
-.srcstyle{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
-.segs{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden}
-.segs button{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);background:var(--surface);
-  border:0;border-left:1px solid var(--rule);padding:5px 12px;cursor:pointer;transition:.14s}
-.segs button:first-child{border-left:0}
-.segs button:hover{color:var(--purple);background:var(--soft)}
-.segs button[aria-pressed="true"]{background:var(--purple);color:#fff}
-.copycite{font-family:"IBM Plex Mono";font-size:11px;color:var(--purple);background:var(--soft);
+.srchd{display:flex;align-items:center;gap:12px 16px;flex-wrap:wrap;justify-content:space-between;
+  padding-bottom:12px;margin-bottom:2px;border-bottom:1px solid var(--rule)}
+.srctitle{font-size:17px;font-weight:700;letter-spacing:-.01em}
+.srcsub{font-size:12.5px;color:var(--muted);margin-top:3px}
+.copycite{font-family:inherit;font-size:12px;color:var(--purple);background:var(--soft);
   border:1px solid var(--prule);padding:5px 11px;border-radius:100px;cursor:pointer}
 .copycite:hover{border-color:var(--purple)}
-/* a citation ends in a source URL, which is one unbreakable token and will
-   push out of its container unless it is allowed to break mid-word */
-.srcrow.cite{display:block;font-size:12.5px;line-height:1.5;color:var(--ink);
-  overflow-wrap:anywhere}
+/* check the numbers */
+.verify{margin:0 16px 14px;border:1px solid var(--rule);background:var(--surface-2)}
+.vhd{display:flex;justify-content:space-between;gap:16px;padding:12px 14px 8px}
+.vhd h3{font-size:15px;font-weight:700;letter-spacing:-.01em}
+.vhd p{font-size:12.5px;color:var(--muted);margin:3px 0 0;max-width:80ch}
+.vx{border:0;background:transparent;color:var(--muted);font-size:20px;line-height:1;cursor:pointer;padding:0 4px;align-self:flex-start}
+.vx:hover{color:var(--purple)}
+.vnote{font-size:12.5px;color:var(--muted);margin:-2px 14px 8px}
+.vwarn{color:var(--warn)}
+.vscroll{max-height:340px;overflow:auto;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);background:var(--surface)}
+.vtbl{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
+.vtbl th,.vtbl td{padding:6px 12px;text-align:right;border-bottom:1px solid var(--rule-soft);white-space:nowrap;vertical-align:top}
+.vtbl thead{position:sticky;top:0;z-index:2}
+.vtbl thead th{background:var(--surface);font-weight:600;color:var(--ink);font-size:12px}
+.vtbl thead tr:nth-child(2) th{font-weight:500;color:var(--muted)}
+.vtbl thead tr:last-child th{border-bottom:1px solid var(--rule)}
+.vtbl .vser{text-align:left;white-space:normal;min-width:140px}
+.vtbl .vser .d,.vsrc .d{display:inline-block;width:13px;height:3px;vertical-align:middle;margin-right:7px}
+.vu{display:block;font-family:"IBM Plex Mono";font-size:10px;font-weight:400;color:var(--muted);white-space:normal}
+.vtbl .vy{text-align:left;font-family:"IBM Plex Mono";font-weight:500;color:var(--ink);position:sticky;left:0;background:var(--surface)}
+.vtbl thead .vy{z-index:3}
+.vn{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;color:var(--ink)}
+.vout{background:var(--soft)}
+.vhow{display:block;font-size:10px;color:var(--muted);margin-top:1px}
+.vnone{color:var(--muted)}
+.vbrk{box-shadow:inset 3px 0 0 var(--warn)}
+.vtag{font-family:"Public Sans",sans-serif;font-size:10px;font-weight:600;color:var(--warn);border:1px solid var(--warnrule);padding:0 4px;margin-left:4px;cursor:help}
+.vtbl tr.sel th,.vtbl tr.sel td{background:var(--soft-hover)}
+.vtbl tr.sel .vy{box-shadow:inset 3px 0 0 var(--purple)}
+.vsrcs{padding:10px 14px 4px;display:flex;flex-direction:column;gap:6px}
+.vsrc{font-size:12.5px;color:var(--muted);display:flex;flex-wrap:wrap;align-items:center;gap:4px 14px}
+.vsrc b{color:var(--ink);font-weight:600;margin-right:2px}
+.vsrc a{color:var(--purple);text-decoration:none;border-bottom:1px solid var(--prule)}
+.vsrc a:hover{border-bottom-color:var(--purple)}
+.vfetch{font-size:11.5px}
+.vfoot{display:flex;justify-content:space-between;align-items:center;gap:10px 20px;flex-wrap:wrap;padding:8px 14px 12px;font-size:11.5px;color:var(--muted)}
+.vcsv{display:inline-flex;align-items:center;gap:6px;font-family:inherit;font-size:12px;color:var(--purple);background:var(--soft);border:1px solid var(--prule);padding:5px 11px;border-radius:2px;cursor:pointer;white-space:nowrap}
+.vcsv svg{width:13px;height:13px}
+.vcsv:hover{border-color:var(--purple)}
 .psrc .cite{display:block;margin-bottom:3px}
 .psrc .cite:last-child{margin-bottom:0}
 
@@ -692,7 +748,7 @@ const RAMP=()=>({dark:RAMP_DARK,brexit:RAMP_BREXIT}[document.documentElement.dat
    collapsed panel, which is a good way to ship a feature nobody finds. */
 const CHART_GROUPS = [
   ["Over time", [
-    ["line","Line"],["step","Step"],["dots","Dots"],["area","Area"],
+    ["line","Line"],["step","Step"],["dots","Dots"],["area","Area"],["gap","Gap"],
     ["bar","Columns"],["stack","Stacked area"],["colstack","Stacked columns"],
     ["slope","Slope"],["scatter","Scatter"],["small","Small multiples"]]],
   ["By area", [
@@ -711,6 +767,7 @@ const CHART_ICON={
   step:   CG(`<path d="M2 14 H8 V8 H13 V11 H18 V4 H24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`),
   dots:   CG(`<g fill="currentColor">${[[3,14],[9,8],[14,11],[19,4],[24,7]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.9"/>`).join("")}</g>`),
   area:   CG(`<path d="M2 15 L8 8 L13 11 L18 4 L24 7 V15 Z" fill="currentColor" opacity=".35"/><path d="M2 15 L8 8 L13 11 L18 4 L24 7" fill="none" stroke="currentColor" stroke-width="1.6"/>`),
+  gap:    CG(`<path d="M2 12 L8 9 L13 9 L18 6 L24 3 L24 10 L18 11 L13 12 L8 12 Z" fill="currentColor" opacity=".3"/><path d="M2 12 L8 9 L13 9 L18 6 L24 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2 12 L8 12 L13 12 L18 11 L24 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>`),
   bar:    CG(`<g fill="currentColor">${[[3,7],[8,4],[13,9],[18,2],[23,6]].map(([x,y])=>`<rect x="${x}" y="${y}" width="3" height="${15-y}" rx="1.2"/>`).join("")}</g>`),
   stack:  CG(`<path d="M2 15 L8 10 L14 12 L20 7 L24 9 V15 Z" fill="currentColor" opacity=".8"/><path d="M2 10 L8 6 L14 8 L20 3 L24 5 L24 9 L20 7 L14 12 L8 10 L2 15 Z" fill="currentColor" opacity=".35"/>`),
   colstack:CG(`<g fill="currentColor">${[3,9,15,21].map((x,i)=>`<rect x="${x}" y="${[8,5,9,4][i]}" width="3.4" height="${15-[8,5,9,4][i]}" rx="1.2"/><rect x="${x}" y="${[4,2,5,1][i]}" width="3.4" height="${[8,5,9,4][i]-[4,2,5,1][i]-1}" rx="1.2" opacity=".45"/>`).join("")}</g>`),
@@ -722,12 +779,12 @@ const CHART_ICON={
   range:  CG(`<g>${[[4,13,4],[8,20,9],[6,16,14]].map(([a,b,y])=>`<line x1="${a}" y1="${y}" x2="${b}" y2="${y}" stroke="currentColor" stroke-width="1.5" opacity=".5"/><circle cx="${a}" cy="${y}" r="2" fill="currentColor" opacity=".45"/><circle cx="${b}" cy="${y}" r="2" fill="currentColor"/>`).join("")}</g>`),
   heat:   CG(`<g fill="currentColor">${[0,1,2,3].flatMap(r=>[0,1,2,3,4].map(c=>`<rect x="${2+c*4.7}" y="${2+r*3.9}" width="3.7" height="2.9" rx=".7" opacity="${[.18,.34,.55,.8,1][(r+c)%5]}"/>`)).join("")}</g>`),
 };
-const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["yoy","Year-on-year %"],
+const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["rel","Relative to last series"],["yoy","Year-on-year %"],
                     ["roll3","3-year average"],["real","Real terms"],["percap","Per person"],["pctgdp","% of GDP"]];
-const ERA_MODES = [["off","Off"],["party","Party"],["pm","Party + PMs"],["elections","Elections"]];
+/* government in power: each premiership shaded behind the data, or off */
+const ERA_MODES = [["off","Off"],["bands","Shaded"]];
 const GRANS = [["years","Years"],["quarters","Quarters"],["months","Months"],["days","Days"]];
 const GRAN_PER = {years:1, quarters:4, months:12, days:365};
-const ELECTIONS = [1997,2001,2005,2010,2015,2017,2019,2024];
 const H_MIN=210, H_MAX=640, H_DEF=300;
 const WIDTHS=[[12,"Full width"],[9,"Three quarters"],[8,"Two thirds"],[6,"Half"],[4,"One third"]];
 const W_SNAPS=[4,6,8,9,12];
@@ -763,9 +820,15 @@ function currentLayout(){
   return hit?hit.k:"";
 }
 
+/* The default sourcing style for a new chart: whichever was picked last.
+   Each chart then carries its own, set in its settings. */
+const SRC_STYLES=[["short","Short"],["harvard","Harvard"],["off","Off"]];
+let SRCSTYLE=(()=>{ try{ const v=localStorage.getItem("polyoptic-srcstyle");
+  return v==="harvard"?v:"short"; }catch(e){ return "short"; } })();
+
 let uid=0;
 const mkPanel = (sel=[], over={}) =>
-  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"pm", eraPrev:"pm", gran:"years", h:H_DEF, w:12, title:null, lvl:"", asort:"desc", table:false, ...over});
+  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"bands", src:SRCSTYLE, gran:"years", h:H_DEF, w:12, title:null, lvl:"", asort:"desc", table:false, ...over});
 
 const state = { panels:[ mkPanel(["rents","pay"]) ], active:0, focus:null, q:"", topic:"all", openCfg:null, openMenu:null, renaming:null,
   /* the point whose working is open: {key, id, x} — one at a time, site-wide */
@@ -792,10 +855,10 @@ const yearsOf = s => s.values.map((_,i)=>s.start+i);
 const refAt = (ref,y) => { const r=DB.refs[ref]; if(!r) return null; const i=y-r.start; return (i>=0&&i<r.values.length)?r.values[i]:null; };
 
 /* ── sourcing style ─────────────────────────────────────────────
-   One setting for how attribution is rendered, applied in all four places
-   a source appears: the chart footer, the provenance panel, the CSV header
-   and the PNG credit. Keeping it in one place is the point — a chart whose
-   footer disagrees with its own export is worse than either.
+   Each chart has one setting for how attribution is rendered (p.src), applied
+   in every place that chart's sources appear: its footer, the provenance
+   panel while it is the active chart, its CSV header and its PNG credit. A
+   chart whose footer disagrees with its own export is worse than either.
 
    `off` strips attribution from the exports too, which is a deliberate
    choice by the site owner. OGL v3.0 asks for an attribution statement
@@ -805,9 +868,6 @@ const refAt = (ref,y) => { const r=DB.refs[ref]; if(!r) return null; const i=y-r
    The author is `publisher_full` from the bundle, not `source`: `source` is
    a release name, and "ONS Index of Private Housing Rental Prices (2026)"
    would be citing a title as if it were an author. */
-const SRC_STYLES=[["short","Short"],["harvard","Harvard"],["off","Off"]];
-let SRCSTYLE=(()=>{ try{ const v=localStorage.getItem("polyoptic-srcstyle");
-  return SRC_STYLES.some(s=>s[0]===v)?v:"short"; }catch(e){ return "short"; } })();
 
 const ukDate=iso=>{ const d=new Date(iso||""); return isNaN(d)?"" :
   d.toLocaleDateString("en-GB",{day:"numeric",month:"long",year:"numeric"}); };
@@ -828,12 +888,15 @@ function citeHarvard(m){
   return out;
 }
 
-/* The attribution lines for the current style: none when off, one compact
-   line when short, one full citation per series when Harvard. */
-function srcLines(sets){
-  if(SRCSTYLE==="off"||!sets.length) return [];
-  if(SRCSTYLE==="harvard") return sets.map(s=>citeHarvard(s.meta));
-  return [[...new Set(sets.map(s=>s.meta.source))].join(" · ")];
+/* The attribution lines for a style: none when off, one compact line when
+   short, one full citation per series when Harvard. Every series a chart draws
+   on counts, including the denominator of a "relative to" chart. */
+const metasOf=sets=>[...new Set(sets.flatMap(s=>s.metas||[s.meta]))];
+function srcLines(sets,style){
+  if(style==="off"||!sets.length) return [];
+  const ms=metasOf(sets);
+  if(style==="harvard") return ms.map(citeHarvard);
+  return [[...new Set(ms.map(m=>m.source))].join("; ")];
 }
 
 /* ── transforms ── */
@@ -871,7 +934,7 @@ function seriesPts(s, gran){
 }
 
 function transform(s,p){
-  const t=p.trans, per=GRAN_PER[p.gran]||1;
+  const t=p.trans==="rel"?"index":p.trans, per=GRAN_PER[p.gran]||1;
   let pts = seriesPts(s, p.gran);
   if(t==="real"&&applies(t,s)){const base=refAt("deflator",2024);
     pts=pts.map(([y,v])=>{const d=refAt("deflator",Math.floor(y));return [y,d?v*base/d:null];});}
@@ -910,7 +973,7 @@ function indexBase(p){
 
 function unitLabel(s,p){
   const t=p.trans;
-  if(t==="index"){ const b=indexBase(p); return `index, ${b==null?p.from:Math.floor(b)}=100`; }
+  if(t==="index"||t==="rel"){ const b=indexBase(p); return `index, ${b==null?p.from:Math.floor(b)}=100`; }
   if(t==="yoy") return "% change on year";
   if(t==="real"&&applies(t,s)) return s.unit.replace(/,?\s*cash/,"")+", 2024 prices";
   if(t==="percap"&&applies(t,s)) return s.unit+" per person";
@@ -943,6 +1006,7 @@ const refHref=k=>(((DB.refs||{})[k]||{}).source_api||"").replace(/\/data$/,"");
    null when the point is no longer on the chart, so a stale probe just
    disappears rather than describing a value nobody can see. */
 function working(p,set,xk){
+  if(set.metas) return null;    /* a ratio line — its working is in Check the numbers */
   const s=set.meta, t=p.trans, per=GRAN_PER[p.gran]||1;
   const raw=seriesPts(s,p.gran);
   const i=raw.findIndex(q=>q[0]===xk);
@@ -955,7 +1019,8 @@ function working(p,set,xk){
   const step={};
 
   if(t==="index"){
-    const b=raw.find(q=>q[0]>=p.from&&q[1]!=null);
+    const base=indexBase(p);
+    const b=raw.find(q=>q[0]>=(base??p.from)&&q[1]!=null);
     if(b&&pub!=null) step.op=`${fmt(pub)} ÷ ${fmt(b[1])} × 100`,
                      step.why=`rebased on the ${Math.floor(b[0])} figure`;
   } else if(t==="yoy"){
@@ -1047,9 +1112,10 @@ const HIT_MAX=200;
 /* ══════════════════════════════════════════════
    CHART ENGINE — height comes from the panel
    ══════════════════════════════════════════════ */
-/* Right margin carries the series name as well as its last value now, so it is
-   wider than a value alone would need. */
-const W=940, M={t:16,r:118,b:26,l:58};
+/* Margins depend on what the chart carries (see setLayout), so M is set per
+   panel before its chart is drawn. */
+const W=940, M={t:26,r:66,b:26,l:58};
+const M0={...M};
 const px=(p,y)=>M.l+((y-p.from)/Math.max(1,p.to-p.from))*(W-M.l-M.r);
 function scale(vals){
   const v=vals.filter(x=>x!=null);
@@ -1065,12 +1131,9 @@ const fmt=n=>n==null?"–":Math.abs(n)>=1000?n.toFixed(0).replace(/\B(?=(\d{3})+
              Math.abs(n)>=100?n.toFixed(0):Math.abs(n)>=10?n.toFixed(1):
              (n!==0&&Math.abs(n)<0.01)?(+n.toPrecision(3)).toString():n.toFixed(2);
 
-/* Ticks a person would have chosen. Dividing the padded range into four gives
-   83.2 / 127 / 170 / 213 / 257 — arithmetically fine and unreadable. This is
-   the standard 1-2-5 step: pick the round step nearest the ideal spacing, then
-   walk it across the domain. */
-/* A nice tick of 60 should read "60", not "60.0" — fmt's one-decimal rule is
-   right for data values and wrong for round axis steps. */
+/* Ticks a person would have chosen — the standard 1-2-5 step. Used by the
+   small multiples; the main charts use yAxis below, which also snaps the
+   domain to whole steps. */
 const fmtTick=v=>fmt(v).replace(/\.0+$/,"");
 function niceTicks(mn,mx,want=5){
   if(!(mx>mn)) return [mn];
@@ -1083,45 +1146,130 @@ function niceTicks(mn,mx,want=5){
   return out.length?out:[mn,mx];
 }
 
-function frame(p,g,mn,mx,label){
-  const H=p.h;
-  niceTicks(mn,mx,5).forEach(val=>{
-    const y=M.t+(1-(val-mn)/(mx-mn))*(H-M.t-M.b);
-    g.push(`<line class="gridline" x1="${M.l}" y1="${y.toFixed(1)}" x2="${W-M.r}" y2="${y.toFixed(1)}"/>`);
-    g.push(`<text class="axlabel" x="${M.l-9}" y="${(y+3.5).toFixed(1)}" text-anchor="end">${fmtTick(val)}</text>`);
+/* Line-type charts name each series at its end instead of in a legend */
+const LINEISH=["line","step","dots","area","gap"];
+const isLineish=p=>LINEISH.includes(p.chart);
+const BANDED=new Set(["line","step","dots","area","gap","bar","stack","colstack"]);
+const NAME_CH=24;
+const nameLines=s=>{const l=wrapText(s.name,NAME_CH); return l.length>3?[l[0],l[1],l[2].slice(0,NAME_CH-1)+"…"]:l;};
+
+/* End labels need a right gutter wide enough for the longest name; government
+   bands need room above the plot for prime ministers' names. Set once per
+   panel, before its chart is drawn. */
+function setLayout(p,sets){
+  Object.assign(M,M0);
+  if(isLineish(p)&&sets.length){
+    const ch=Math.max(...sets.flatMap(nameLines).map(l=>l.length));
+    M.r=Math.min(200,Math.max(M0.r,Math.round(ch*6.1)+22));
+  }
+  if(p.era==="bands"&&BANDED.has(p.chart)) M.t+=16;
+}
+
+/* The y axis: round 1-2-5 steps with the domain snapped out to whole steps, so
+   the ticks read 80 / 100 / 120 rather than 83.2 / 127 / 170. `incl` forces a
+   value into range — 100 on an index, 0 for columns. */
+function niceStep(raw){const e=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/e;
+  return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e;}
+function yAxis(vals,p,incl){
+  const v=vals.filter(x=>x!=null);
+  if(incl!=null) v.push(incl);
+  if(!v.length) return {mn:0,mx:1,ticks:[0,1],st:1};
+  let a=Math.min(...v),b=Math.max(...v);
+  if(a===b){a-=1;b+=1;}
+  const n=Math.max(3,Math.min(6,Math.round((p.h-M.t-M.b)/55)));
+  const st=niceStep((b-a)/n);
+  const mn=Math.floor(a/st+1e-9)*st, mx=Math.ceil(b/st-1e-9)*st, ticks=[];
+  for(let t=mn;t<=mx+st/2;t+=st) ticks.push(+t.toFixed(10));
+  return {mn,mx,ticks,st};
+}
+const tickFmt=(v,st)=>{let d=0; while(d<6&&Math.abs(st*10**d-Math.round(st*10**d))>1e-6) d++;
+  return Math.abs(v)>=1000?v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,","):v.toFixed(d);};
+const yOf=(p,ax)=>v=>M.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(p.h-M.t-M.b);
+
+/* Gridlines, y labels, year labels, and the unit as a line of text above the
+   plot rather than rotated up the side. `base` is drawn stronger: 100 on an
+   index ("up or down since the base year"), 0 when the data crosses zero. */
+function frame(p,g,ax,label,base){
+  const H=p.h, Y=yOf(p,ax);
+  ax.ticks.forEach(v=>{
+    const strong=base!=null&&Math.abs(v-base)<ax.st/1e6;
+    g.push(`<line class="${strong?"baseline":"gridline"}" x1="${M.l}" y1="${Y(v).toFixed(1)}" x2="${W-M.r}" y2="${Y(v).toFixed(1)}"/>`);
+    g.push(`<text class="axlabel" x="${M.l-9}" y="${(Y(v)+3.5).toFixed(1)}" text-anchor="end">${tickFmt(v,ax.st)}</text>`);
   });
+  if(base!=null&&base>ax.mn&&base<ax.mx&&!ax.ticks.some(v=>Math.abs(v-base)<ax.st/1e6))
+    g.push(`<line class="baseline" x1="${M.l}" y1="${Y(base)}" x2="${W-M.r}" y2="${Y(base)}"/>`);
   const span=p.to-p.from, step=span>24?5:span>12?2:1;
   for(let yr=Math.ceil(p.from/step)*step;yr<=p.to;yr+=step)
     g.push(`<text class="axlabel" x="${px(p,yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
-  if(label) g.push(`<text class="axlabel" transform="translate(13 ${(M.t+(H-M.b))/2}) rotate(-90)" text-anchor="middle">${label}</text>`);
+  if(label) g.push(`<text class="axunit" x="0" y="11">${esc(label)}</text>`);
 }
 const wrapSvg=(p,g)=>`<svg viewBox="0 0 ${W} ${p.h}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Chart">${g.join("")}</svg>`;
+
+/* Government as faint party-coloured bands behind the data, each prime
+   minister named along the top. A band too narrow for its name stays
+   unlabelled and names itself on hover instead. */
+function bandsLayer(p,g){
+  if(p.era!=="bands") return;
+  const top=M.t, bot=p.h-M.b;
+  DB.eras.forEach(e=>{
+    const f=Math.max(e.from,p.from), t=Math.min(e.to,p.to);
+    if(t<=f) return;
+    g.push(`<rect class="band" x="${px(p,f).toFixed(1)}" y="${top}" width="${(px(p,t)-px(p,f)).toFixed(1)}" height="${bot-top}" fill="${e.colour}"><title>${esc(e.party)} ${e.from}–${e.to}</title></rect>`);
+  });
+  DB.pms.forEach(([y,n],i)=>{
+    const end=i+1<DB.pms.length?DB.pms[i+1][0]:Infinity;
+    const f=Math.max(y,p.from), t=Math.min(end,p.to);
+    if(t<=f) return;
+    const x0=px(p,f), x1=px(p,t);
+    if(y>p.from) g.push(`<line class="banddiv" x1="${x0.toFixed(1)}" y1="${top-14}" x2="${x0.toFixed(1)}" y2="${bot}"/>`);
+    g.push(`<rect x="${x0.toFixed(1)}" y="${top-14}" width="${(x1-x0).toFixed(1)}" height="14" fill="transparent"><title>${esc(n)}, ${y}–${end===Infinity?"":end}</title></rect>`);
+    if(x1-x0>n.length*5.6+10) g.push(`<text class="bandlbl" x="${((x0+x1)/2).toFixed(1)}" y="${top-4}" text-anchor="middle">${esc(n)}</text>`);
+  });
+}
+
+const lastPt=s=>[...s.pts].reverse().find(q=>q[1]!=null);
 
 function renderLine(p,sets,mode){
   const g=[],H=p.h;
   const shared=sets.every(s=>s.unit===sets[0].unit);
-  let [mn,mx]=scale(sets.flatMap(s=>s.pts.map(q=>q[1])));
-  frame(p,g,mn,mx,shared?sets[0].unit:"");
-  /* Say that the data is missing rather than leaving white space that reads as
-     a rendering failure. This is the same fact the rebasing warning states in
-     words, drawn where the eye is already asking the question. */
-  const firstData=Math.min(...sets.map(s=>{
-    const f=s.pts.find(q=>q[1]!=null); return f?f[0]:Infinity; }));
+  const rel=p.trans==="rel", indexed=rel||p.trans==="index";
+  const ax=yAxis(sets.flatMap(s=>s.pts.map(q=>q[1])),p,indexed?100:null);
+  const base=indexed?100:(ax.mn<0&&ax.mx>0?0:null);
+  bandsLayer(p,g);
+  let unit=shared?sets[0].unit:"";
+  if(rel&&shared) unit+=` · above 100: rose faster than ${sets[0].den}`;
+  frame(p,g,ax,unit,base);
+  const Ys=sets.map(s=>shared?yOf(p,ax):yOf(p,yAxis(s.pts.map(q=>q[1]),p)));
+  const B=H-M.b;
+  /* Say that the data is missing rather than leaving white space that reads
+     as a rendering failure. */
+  const firstData=Math.min(...sets.map(s=>{const f=s.pts.find(q=>q[1]!=null); return f?f[0]:Infinity;}));
   if(isFinite(firstData)&&firstData>p.from+0.5){
     const x0=px(p,p.from), x1=px(p,firstData);
     g.push(`<rect class="nodata" x="${x0.toFixed(1)}" y="${M.t}" width="${(x1-x0).toFixed(1)}" height="${H-M.t-M.b}"/>`);
     if(x1-x0>108) g.push(`<text class="axlabel nodatat" x="${((x0+x1)/2).toFixed(1)}" y="${(M.t+14)}" text-anchor="middle">no data before ${Math.floor(firstData)}</text>`);
   }
-  sets.flatMap(s=>(s.meta.discontinuities||[])).forEach(d=>{
-    if(d.year>=p.from&&d.year<=p.to)
-      g.push(`<line class="disc" x1="${px(p,d.year)}" y1="${M.t}" x2="${px(p,d.year)}" y2="${H-M.b}"><title>${d.note}</title></line>`);});
-  sets.forEach(s=>{
-    let a=mn,b=mx;
-    if(!shared) [a,b]=scale(s.pts.map(q=>q[1]));
-    const Y=v=>M.t+(1-(v-a)/(b-a))*(H-M.t-M.b);
-    if(mode==="area"){
-      const seg=s.pts.filter(q=>q[1]!=null);
-      if(seg.length) g.push(`<path d="M${px(p,seg[0][0])} ${H-M.b} ${seg.map(q=>`L${px(p,q[0])} ${Y(q[1])}`).join("")} L${px(p,seg[seg.length-1][0])} ${H-M.b} Z" fill="${s.colour}" opacity="0.13"/>`);
+
+  /* Gap: shade between the two lines so the difference is the subject */
+  if(mode==="gap"&&sets.length===2){
+    const [a,b]=sets, bm=new Map(b.pts.map(q=>[q[0],q[1]]));
+    const both=a.pts.filter(q=>q[1]!=null&&bm.get(q[0])!=null);
+    if(both.length>1){
+      const lead=both[both.length-1][1]>=bm.get(both[both.length-1][0])?a:b;
+      const d="M"+both.map(q=>px(p,q[0]).toFixed(1)+" "+Ys[0](q[1]).toFixed(1)).join(" L")+" L"+
+        [...both].reverse().map(q=>px(p,q[0]).toFixed(1)+" "+Ys[1](bm.get(q[0])).toFixed(1)).join(" L")+" Z";
+      g.push(`<path d="${d}" fill="${lead.colour}" opacity=".14"/>`);
+    }
+  }
+  sets.forEach((s,si)=>{
+    const Y=Ys[si], seg=s.pts.filter(q=>q[1]!=null);
+    if(mode==="area"&&seg.length)
+      g.push(`<path d="M${px(p,seg[0][0])} ${B} ${seg.map(q=>`L${px(p,q[0])} ${Y(q[1])}`).join("")} L${px(p,seg[seg.length-1][0])} ${B} Z" fill="${s.colour}" opacity="0.13"/>`);
+    /* Relative: shade between the line and 100, so which side it is on reads
+       without the axis */
+    if(rel&&sets.length===1&&mode!=="area"&&seg.length){
+      const b0=Y(100).toFixed(1);
+      g.push(`<path d="M${px(p,seg[0][0]).toFixed(1)} ${b0} ${seg.map(q=>`L${px(p,q[0]).toFixed(1)} ${Y(q[1]).toFixed(1)}`).join(" ")} L${px(p,seg[seg.length-1][0]).toFixed(1)} ${b0} Z" fill="${s.colour}" opacity=".12"/>`);
     }
     if(mode==="dots"){
       s.pts.forEach(q=>{ if(q[1]==null) return;
@@ -1134,37 +1282,65 @@ function renderLine(p,sets,mode){
         d+=(pen?"L":"M")+x+" "+y+" "; pen=true; lastY=y; });
       g.push(`<path class="line" d="${d}" stroke="${s.colour}"/>`);
     }
-    if(s.pts.length<=HIT_MAX) s.pts.forEach(q=>{ if(q[1]!=null)
-      g.push(hit(s.id,q[0],px(p,q[0]),Y(q[1]))); });
   });
-  /* Names at the line ends, not in a legend underneath. The legend was the
-     only thing mapping colour to name, so it could not simply be deleted as
-     duplication — the label has to carry the name before the legend can go.
-     Decluttered, because two series ending on similar values is common. */
-  const ends=sets.map(s=>{
-    const last=[...s.pts].reverse().find(q=>q[1]!=null);
-    if(!last) return null;
-    let a=mn,b=mx;
-    if(!shared) [a,b]=scale(s.pts.map(q=>q[1]));
-    return {s,v:last[1],y:M.t+(1-(last[1]-a)/(b-a))*(H-M.t-M.b)};
-  }).filter(Boolean);
-  const order=ends.map((e,i)=>[i,e.y]).sort((x,y)=>x[1]-y[1]);
-  for(let k=1;k<order.length;k++)
-    if(order[k][1]-order[k-1][1]<13) order[k][1]=order[k-1][1]+13;
-  order.forEach(([i,y])=>{
-    const e=ends[i], nm=e.s.name.length>18?e.s.name.slice(0,17)+"…":e.s.name;
-    g.push(`<text class="sm-t" x="${W-M.r+7}" y="${(y-3).toFixed(1)}" fill="${e.s.colour}">${esc(nm)}</text>`);
-    g.push(`<text class="axlabel" x="${W-M.r+7}" y="${(y+8).toFixed(1)}">${fmt(e.v)}</text>`);
+
+  /* Breaks sit on the line they belong to. A series that stops at a break
+     gets a hollow end point and the reason beside its label; a break part
+     way along gets a marker at that year, with the full note on hover. */
+  const labels=[];
+  sets.forEach((s,si)=>{
+    const Y=Ys[si], last=lastPt(s); if(!last) return;
+    const ds=(s.metas||[s.meta]).flatMap(m=>m.discontinuities||[]).filter(d=>d.year>=p.from&&d.year<=p.to+1);
+    const endBreak=ds.find(d=>d.year>=Math.floor(last[0]));
+    ds.filter(d=>d!==endBreak).forEach(d=>{
+      const q=s.pts.find(q=>q[0]>=d.year&&q[1]!=null); if(!q) return;
+      const x=px(p,q[0]).toFixed(1), y=Y(q[1]);
+      g.push(`<g class="brkmark"><title>Break at ${d.year}: ${esc(d.note)}</title>`+
+        `<line class="brkline" x1="${x}" y1="${(y-16).toFixed(1)}" x2="${x}" y2="${(y+16).toFixed(1)}"/>`+
+        `<circle cx="${x}" cy="${y.toFixed(1)}" r="4" class="hollow" stroke="${s.colour}" stroke-width="2"/>`+
+        `<text class="brk" x="${x}" y="${(y-20).toFixed(1)}" text-anchor="middle">${esc(d.label||"Series break")}</text></g>`);
+    });
+    const cx=px(p,last[0]), cy=Y(last[1]);
+    g.push(endBreak
+      ? `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4.5" class="hollow" stroke="${s.colour}" stroke-width="2"><title>${esc(endBreak.note)}</title></circle>`
+      : `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.6" class="enddot" fill="${s.colour}"/>`);
+    const yr=Math.floor(last[0]);
+    labels.push({s,cx,cy,names:nameLines(s),val:fmt(last[1])+(yr<p.to?` in ${yr}`:""),
+      note:endBreak?wrapText(endBreak.label||"Series ends at a break",NAME_CH):[],full:endBreak&&endBreak.note});
+  });
+  /* Click targets go on top of everything, so a point is always clickable */
+  sets.forEach((s,si)=>{ if(s.pts.length<=HIT_MAX) s.pts.forEach(q=>{ if(q[1]!=null)
+    g.push(hit(s.id,q[0],px(p,q[0]),Ys[si](q[1]))); }); });
+  /* stack the labels in the right gutter, nudging apart where they'd collide,
+     then back up from the bottom edge so nothing spills under the chart */
+  labels.sort((a,b)=>a.cy-b.cy);
+  let floor=-1e9;
+  labels.forEach(L=>{
+    L.h=L.names.length*12+12+L.note.length*11;
+    L.top=Math.max(L.cy-9,floor+6); floor=L.top+L.h;
+  });
+  let ceil=H-M.b+4;
+  [...labels].reverse().forEach(L=>{ if(L.top+L.h>ceil) L.top=ceil-L.h; ceil=L.top-6; });
+  const lx=W-M.r+12;
+  labels.forEach(L=>{
+    const s=L.s; let y=L.top+9;
+    if(L.cx<lx-14||Math.abs(L.top+9-L.cy)>3)
+      g.push(`<path class="leader" d="M${(L.cx+6).toFixed(1)} ${L.cy.toFixed(1)} L${lx-6} ${(L.top+5).toFixed(1)}" stroke="${s.colour}"/>`);
+    g.push(`<g>${L.full?`<title>${esc(L.full)}</title>`:""}`);
+    L.names.forEach(n=>{ g.push(`<text class="endlbl" x="${lx}" y="${y}" fill="${s.colour}">${esc(n)}</text>`); y+=12; });
+    g.push(`<text class="endval" x="${lx}" y="${y}">${L.val}</text>`); y+=12;
+    L.note.forEach(n=>{ g.push(`<text class="brk" x="${lx}" y="${y}">${esc(n)}</text>`); y+=11; });
+    g.push(`</g>`);
   });
   return wrapSvg(p,g);
 }
 
 function renderBar(p,sets){
   const g=[],H=p.h;
-  const [mn0,mx]=scale(sets.flatMap(s=>s.pts.map(q=>q[1])));
-  const mn=Math.min(0,mn0);
-  frame(p,g,mn,mx,sets[0].unit);
-  const Y=v=>M.t+(1-(v-mn)/(mx-mn))*(H-M.t-M.b);
+  const ax=yAxis(sets.flatMap(s=>s.pts.map(q=>q[1])),p,0);
+  bandsLayer(p,g);
+  frame(p,g,ax,sets.every(s=>s.unit===sets[0].unit)?sets[0].unit:"",0);
+  const Y=yOf(p,ax);
   /* Placed by year, not by index. An index layout puts the first bar under the
      axis's first year even when the series doesn't start for another fifteen —
      the bar says 2015 in its tooltip while sitting above a tick reading 2000. */
@@ -1188,9 +1364,10 @@ function renderStack(p,sets){
     .filter(x=>sets.every(s=>{const q=s.pts.find(q=>q[0]===x);return q&&q[1]!=null;}));
   if(!xs.length) return `<div class="blank"><h3>Nothing to stack</h3><div>These series don't overlap in this range.</div></div>`;
   const tot=xs.map(x=>sets.reduce((a,s)=>a+s.pts.find(q=>q[0]===x)[1],0));
-  const [mn,mx]=[0, Math.max(...tot)*1.06];
-  frame(p,g,mn,mx,sets.every(s=>s.unit===sets[0].unit)?sets[0].unit:"");
-  const Y=v=>M.t+(1-(v-mn)/(mx-mn))*(H-M.t-M.b);
+  const ax=yAxis([...tot,0],p);
+  bandsLayer(p,g);
+  frame(p,g,ax,sets.every(s=>s.unit===sets[0].unit)?sets[0].unit:"",0);
+  const Y=yOf(p,ax);
   let below=xs.map(()=>0);
   sets.forEach(s=>{
     const top=xs.map((x,i)=>below[i]+s.pts.find(q=>q[0]===x)[1]);
@@ -1215,9 +1392,10 @@ function renderColStack(p,sets){
     .filter(x=>sets.every(s=>{const q=s.pts.find(q=>q[0]===x);return q&&q[1]!=null;}));
   if(!xs.length) return `<div class="blank"><h3>Nothing to stack</h3><div>These series don't overlap in this range.</div></div>`;
   const tot=xs.map(x=>sets.reduce((a,s)=>a+s.pts.find(q=>q[0]===x)[1],0));
-  const mx=Math.max(...tot)*1.06;
-  frame(p,g,0,mx,sets.every(s=>s.unit===sets[0].unit)?sets[0].unit:"");
-  const Y=v=>M.t+(1-v/mx)*(H-M.t-M.b);
+  const ax=yAxis([...tot,0],p);
+  bandsLayer(p,g);
+  frame(p,g,ax,sets.every(s=>s.unit===sets[0].unit)?sets[0].unit:"",0);
+  const Y=yOf(p,ax);
   const slot=(W-M.l-M.r)/Math.max(1,p.to-p.from+1), bw=Math.max(2,slot*0.7);
   xs.forEach(x=>{
     let below=0;
@@ -1598,52 +1776,6 @@ function renderAreaHeat(p,{set,ix,d,lvl}){
   return areaSvg(H,g,`${set.name} by area and year, ${lo} to ${hi}`);
 }
 
-function renderRibbon(p){
-  if(p.era==="off") return "";
-  const g=[];
-  if(p.era==="elections"){
-    g.push(`<line class="gridline" x1="${M.l}" y1="7" x2="${W-M.r}" y2="7"/>`);
-    ELECTIONS.forEach(y=>{ if(y>=p.from&&y<=p.to){
-      g.push(`<circle cx="${px(p,y)}" cy="7" r="3.4" fill="var(--purple)"/>`);
-      g.push(`<text class="pmlabel" x="${px(p,y)}" y="24" text-anchor="middle">${y}</text>`);
-    }});
-    return `<div class="ribbon-t">General elections</div><svg viewBox="0 0 ${W} 29" style="width:100%;height:auto" role="img" aria-label="General election years">${g.join("")}</svg>`;
-  }
-  /* a slim rounded band; party names sit beneath it rather than shouting
-     from inside coloured blocks, and PM names stagger onto a second row when
-     short premierships would otherwise collide */
-  const BAR_Y=3, BAR_H=8;
-  DB.eras.forEach(e=>{
-    const f=Math.max(e.from,p.from), tt=Math.min(e.to,p.to);
-    if(tt<=f) return;
-    const x=px(p,f), w=px(p,tt)-px(p,f);
-    g.push(`<g class="era"><title>${e.party} ${e.from}–${e.to}</title>`);
-    g.push(`<rect x="${x}" y="${BAR_Y}" width="${Math.max(1,w-1.5)}" height="${BAR_H}" rx="${BAR_H/2}" fill="${e.colour}"/>`);
-    g.push("</g>");
-  });
-  if(p.era==="party"){
-    DB.eras.forEach(e=>{
-      const f=Math.max(e.from,p.from), tt=Math.min(e.to,p.to);
-      if(tt<=f) return;
-      const x=px(p,f), w=px(p,tt)-px(p,f);
-      if(w>64) g.push(`<text class="eralabel" x="${x+w/2}" y="${BAR_Y+BAR_H+14}" text-anchor="middle">${e.party}</text>`);
-    });
-    return `<div class="ribbon-t">Government in power</div><svg viewBox="0 0 ${W} 30" style="width:100%;height:auto" role="img" aria-label="Governing party by year">${g.join("")}</svg>`;
-  }
-  const pms=DB.pms.filter(([y])=>y>=p.from&&y<=p.to);
-  const R1=BAR_Y+BAR_H+16, R2=R1+11;
-  let lastX=-1e9, lastRow=2;
-  pms.forEach(([y,n])=>{
-    const x=px(p,y);
-    const row = (x-lastX<58 && lastRow===1) ? 2 : 1;
-    lastX=x; lastRow=row;
-    const ty = row===1?R1:R2;
-    g.push(`<line class="pmtick" x1="${x}" y1="${BAR_Y+BAR_H}" x2="${x}" y2="${ty-8}"/>`);
-    g.push(`<text class="pmlabel" x="${x}" y="${ty}" text-anchor="${x>W-M.r-30?"end":"middle"}">${n}</text>`);
-  });
-  return `<div class="ribbon-t">Government in power</div><svg viewBox="0 0 ${W} ${R2+5}" style="width:100%;height:auto" role="img" aria-label="Governing party and prime ministers by year">${g.join("")}</svg>`;
-}
-
 /* icons — stroke follows currentColor so they theme themselves */
 const IC={
   sliders:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h9M17 7h3M4 12h3M11 12h9M4 17h9M17 17h3"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="15" cy="17" r="2"/></svg>',
@@ -1654,7 +1786,6 @@ const IC={
   png:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="5" width="16" height="14" rx="2"/><circle cx="9" cy="10" r="1.6"/><path d="M5 17l4.5-4.5L13 16l2.5-2.5L20 18"/></svg>',
   dup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 5H6a2 2 0 0 0-2 2v10"/></svg>',
   del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg>',
-  flag:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 21V4"/><path d="M6 4h11l-2.5 4L17 12H6"/></svg>',
   pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/></svg>',
   mvL:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg>',
   mvR:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6l6 6-6 6"/></svg>',
@@ -1671,10 +1802,76 @@ const IC={
    ══════════════════════════════════════════════ */
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 function buildSets(p){
-  return p.sel.map((id,i)=>{
+  const sets=p.sel.map((id,i)=>{
     const s=S(id); if(!s) return null;
     return {id,name:s.name,meta:s,colour:PAL(i),unit:unitLabel(s,p),pts:transform(s,p)};
   }).filter(Boolean);
+  return p.trans==="rel"&&!AREA_CHARTS.has(p.chart) ? relSets(p,sets) : sets;
+}
+
+/* "Relative to last series": every other series divided by the last one,
+   both rebased to the shared base year first, so 100 means "moved in step
+   since the base year". One line answers "has A outrun B" without the reader
+   comparing two slopes. Each derived set carries both series' metadata so
+   sources and breaks still credit the denominator. */
+function relSets(p,sets){
+  if(sets.length<2) return sets;
+  const den=sets[sets.length-1], dm=new Map(den.pts.map(q=>[q[0],q[1]]));
+  const b=indexBase(p);
+  return sets.slice(0,-1).map(s=>({
+    id:s.id, name:`${s.name} ÷ ${den.name}`, meta:s.meta, metas:[s.meta,den.meta], den:den.name, colour:s.colour,
+    unit:`index ÷ index, ${b==null?"first year":Math.floor(b)}=100`,
+    pts:s.pts.map(([y,v])=>{const d=dm.get(y);return [y,(v!=null&&d)?v/d*100:null];})
+  }));
+}
+
+/* auto titles join with "and" — "×" reads as multiplication */
+const autoTitle=sets=>{const n=sets.map(s=>s.name);
+  return n.length<2?(n[0]||""):n.slice(0,-1).join(", ")+" and "+n[n.length-1];};
+
+/* The x range actually drawn. It starts at the first year with data rather
+   than at an empty 1997, and on a rebased chart at the shared base year, so
+   every line starts from 100 together. A gap chart runs only over the years
+   both series cover. The area views keep the panel's own range. */
+function viewOf(p,sets){
+  if(!sets.length||p.chart==="scatter"||p.chart==="slope"||AREA_CHARTS.has(p.chart)) return p;
+  const yrs=s=>s.pts.filter(q=>q[1]!=null).map(q=>q[0]);
+  let x0=null,x1=null;
+  if(p.chart==="gap"&&sets.length===2){
+    const b=new Set(yrs(sets[1])), sh=yrs(sets[0]).filter(y=>b.has(y));
+    if(sh.length){x0=sh[0];x1=sh[sh.length-1];}
+  }
+  if(x0==null){
+    const all=sets.flatMap(yrs); if(!all.length) return p;
+    x0=Math.min(...all); x1=Math.max(...all);
+    if(p.trans==="index"||p.trans==="rel"){const b=indexBase(p); if(b!=null) x0=Math.max(x0,b);}
+  }
+  x0=Math.max(p.from,Math.floor(x0)); x1=Math.min(p.to,Math.ceil(x1));
+  return x1-x0>=1 ? {...p,from:x0,to:x1} : p;
+}
+const clipSets=(sets,v)=>sets.map(s=>({...s,pts:s.pts.filter(q=>q[0]>=v.from&&q[0]<=v.to)}));
+
+/* Headline numbers for a gap chart: how far each series moved over the
+   years drawn, so the reader doesn't have to work it out from the axis. */
+function statsData(p,sets){
+  if(p.chart!=="gap"||sets.length!==2||p.trans==="yoy") return [];
+  return sets.map(s=>{const ok=s.pts.filter(q=>q[1]!=null); if(ok.length<2||!ok[0][1]) return null;
+    const ch=(ok[ok.length-1][1]/ok[0][1]-1)*100;
+    return {s, pct:`${ch>=0?"+":"−"}${Math.abs(ch).toFixed(Math.abs(ch)<10?1:0)}%`,
+      span:`${Math.floor(ok[0][0])}–${Math.floor(ok[ok.length-1][0])}`};}).filter(Boolean);
+}
+function statsFor(p,sets){
+  const st=statsData(p,sets);
+  return st.length?`<div class="stats">${st.map(d=>`<div class="stat"><b>${d.pct}</b>
+      <span><span class="d" style="background:${d.s.colour}"></span>${esc(d.s.name)}, ${d.span}</span></div>`).join("")}</div>`:"";
+}
+
+/* Draw a panel's chart: trim to the view, size the margins, render. Used by
+   the panel and by live resizing, so both draw the same thing. */
+function drawChart(p,sets){
+  const v=viewOf(p,sets), vs=clipSets(sets,v);
+  setLayout(v,vs);
+  return statsFor(v,vs)+chartFor(v,vs);
 }
 
 function warningsFor(p,sets){
@@ -1707,9 +1904,9 @@ function warningsFor(p,sets){
   }
   if(p.gran!=="years"&&sets.length)
     w.push({html:`<b>Interpolated detail.</b> These series are published annually. The ${esc(p.gran)} view estimates points between the annual figures — the shape is real, the fine detail is not.`});
-  const geos=[...new Set(sets.map(s=>s.meta.geography))];
+  const geos=[...new Set(metasOf(sets).map(m=>m.geography))];
   if(geos.length>1) w.push({html:`<b>Different geographies.</b> Comparing ${esc(geos.join(" with "))}. These cover different populations and are not like for like.`});
-  const bases=[...new Set(sets.map(s=>s.meta.year_basis))];
+  const bases=[...new Set(metasOf(sets).map(m=>m.year_basis))];
   if(bases.length>1) w.push({html:`<b>Different year bases.</b> Mixing ${esc(bases.join(", "))} years. Academic and financial years plot at their starting calendar year, so a point can be up to twelve months out.`});
   const units=[...new Set(sets.map(s=>s.unit))];
   if(units.length>1&&p.trans!=="index"&&p.trans!=="yoy")
@@ -1717,7 +1914,7 @@ function warningsFor(p,sets){
   /* The base is a panel-wide fact and it is frequently not the year the reader
      typed into the range box, so say so. Silence here is what made two lines
      rebased a decade apart look like a like-for-like comparison. */
-  if(p.trans==="index"&&sets.length){
+  if((p.trans==="index"||p.trans==="rel")&&sets.length){
     const b=indexBase(p);
     if(b==null)
       w.push({html:`<b>Nothing to rebase on.</b> These series never overlap inside this range, so each one is set to 100 at its own first year and the two lines are not comparable. Narrow the selection or widen the range.`});
@@ -1728,8 +1925,8 @@ function warningsFor(p,sets){
   if(skipped.length) w.push({html:`<b>Transform skipped for ${esc(skipped.map(s=>s.name).join(", "))}.</b> Already a rate, ratio or index — deflating or dividing by population would be meaningless.`});
   /* A break warning that only states the problem leaves the reader holding it.
      Cutting the range at the break is the honest chart, and it is one click. */
-  sets.flatMap(s=>(s.meta.discontinuities||[])
-        .filter(d=>d.year>=p.from&&d.year<=p.to).map(d=>({s:s.name,id:s.id,...d})))
+  metasOf(sets).flatMap(m=>(m.discontinuities||[])
+        .filter(d=>d.year>=p.from&&d.year<=p.to).map(d=>({s:m.name,id:m.id,...d})))
       .forEach(d=>w.push({
         html:`<b>Break in ${esc(d.s)} at ${d.year}.</b> ${esc(d.note)}`,
         act:"cut", year:d.year, id:d.id, name:d.s}));
@@ -1744,15 +1941,15 @@ function chartFor(p,sets){
   if(p.chart==="scatter") return sets.length===2 ? renderScatter(p,sets)
     : `<div class="blank"><h3>Scatter needs exactly two</h3><div>Points are coloured by the government of the day.</div></div>`;
   if(p.chart==="small") return renderSmall(p,sets);
+  if(p.chart==="gap"&&sets.length!==2) return `<div class="blank"><h3>Gap needs exactly two</h3><div>The space between the two lines is shaded.</div></div>`;
   if(p.chart==="bar") return renderBar(p,sets);
   if(p.chart==="stack") return sets.length>=2 ? renderStack(p,sets)
     : `<div class="blank"><h3>Stacking needs at least two</h3><div>Add another indicator to stack them.</div></div>`;
   return renderLine(p,sets,p.chart);
 }
 
-/* The numbers behind the chart, exactly as plotted — same transform, same
-   granularity, same rounding as the axis. A table that quietly showed the
-   published values instead would be a different claim from the one on screen. */
+/* The area views' table: the published figure for every area, as ranked.
+   The time charts use Check the numbers (verifyHtml) instead. */
 function tableFor(p,sets){
   if(AREA_CHARTS.has(p.chart)){
     const a=areaPrep(p,sets);
@@ -1765,19 +1962,112 @@ function tableFor(p,sets){
       rows.map(r=>`<tr><td>${esc(r[1])}</td><td class="mono">${esc(r[0])}</td><td class="num">${fmt(r[2])}</td></tr>`).join("")
     }</tbody></table>`;
   }
-  const xs=[...new Set(sets.flatMap(s=>s.pts.map(q=>q[0])))].sort((a,b)=>a-b);
-  if(!xs.length) return `<div class="blank"><h3>Nothing to tabulate</h3><div>No values in this range.</div></div>`;
-  const brk=id=>new Set(((S(id)||{}).discontinuities||[]).map(d=>d.year));
-  const brks=sets.map(s=>brk(s.id));
-  return `<table class="ptable"><thead><tr><th>${p.gran==="years"?"Year":"Period"}</th>${
-    sets.map(s=>`<th class="num">${esc(s.name)}<i>${esc(s.unit)}</i></th>`).join("")
-  }</tr></thead><tbody>${xs.map(x=>{
-    const isBrk=brks.some(b=>b.has(Math.floor(x)));
-    return `<tr${isBrk?' class="brk" title="Series break in this year"':""}><td class="mono">${
-      p.gran==="years"?x:(+x).toFixed(2)}</td>${
-      sets.map(s=>{const q=s.pts.find(q=>q[0]===x);
-        return `<td class="num">${q&&q[1]!=null?fmt(q[1]):"–"}</td>`;}).join("")}</tr>`;
-  }).join("")}</tbody></table>`;
+  return "";
+}
+
+/* ══════════════════════════════════════════════
+   CHECK THE NUMBERS — Explorer Verify, inside a chart
+   Every year on the chart, from the figure as published to the number
+   plotted, with the arithmetic in between written out — the whole-chart
+   version of the working a single click shows. Values are worked from the
+   same transform() the chart uses, so the "On chart" column is the plotted
+   number, not a re-derivation that could drift from it.
+   ══════════════════════════════════════════════ */
+const REF_NAME={deflator:"GDP deflator",population:"Population",gdp:"GDP"};
+const TRANS_REF={real:"deflator",percap:"population",pctgdp:"gdp"};
+/* enough decimals that the sums can be checked by hand */
+const vfmt=n=>n==null?"–":n.toLocaleString("en-GB",{maximumFractionDigits:Math.abs(n)>=1000?1:Math.abs(n)>=1?2:4});
+const rawAt=(s,y)=>{const i=y-s.start;return (i>=0&&i<s.values.length)?s.values[i]:null;};
+
+const baseYr=p=>{const b=indexBase(p); return b==null?null:Math.floor(b);};
+function methodText(p,ids){
+  const by=baseYr(p)??p.from, t=p.trans, last=ids.length?S(ids[ids.length-1]).name:"";
+  return ({
+    none:"Values are plotted exactly as published.",
+    index:`Rebased: each value ÷ that series' ${by} value × 100. ${by} is the first year every series has data.`,
+    rel:`Each series is rebased to ${by} = 100, then divided by the rebased ${esc(last)} and × 100. Above 100 means it grew faster.`,
+    yoy:"Year-on-year: (this year ÷ last year − 1) × 100.",
+    roll3:"3-year average: the mean of this year and the two before it.",
+    real:"Real terms: value × 2024 GDP deflator ÷ that year's deflator, so every year is in 2024 prices.",
+    percap:"Per person: value ÷ UK population that year.",
+    pctgdp:"% of GDP: value ÷ nominal GDP that year × 100."
+  })[t]||"";
+}
+
+/* the arithmetic for one cell, using the same inputs transform() used */
+function howFor(s,p,y){
+  const t=p.trans==="rel"?"index":p.trans, r=rawAt(s,y);
+  if(r==null||t==="none") return "";
+  if(t==="index"){const by=baseYr(p)??p.from;
+    const b=yearsOf(s).find(x=>x>=by&&rawAt(s,x)!=null); if(b==null) return "";
+    return `${vfmt(r)} ÷ ${vfmt(rawAt(s,b))} × 100`;}
+  if(t==="yoy"){const q=rawAt(s,y-1); return q?`(${vfmt(r)} ÷ ${vfmt(q)} − 1) × 100`:"no previous year";}
+  if(t==="roll3"){const w=[y-2,y-1,y].map(x=>rawAt(s,x)).filter(v=>v!=null); return `mean of ${w.map(fmt).join(", ")}`;}
+  if(!applies(t,s)) return "not applied to a rate or index";
+  if(t==="real") return `${vfmt(r)} × ${vfmt(refAt("deflator",2024))} ÷ ${vfmt(refAt("deflator",y))}`;
+  if(t==="percap") return `${vfmt(r)} ÷ ${vfmt(refAt("population",y))}`;
+  if(t==="pctgdp") return `${vfmt(r)} ÷ ${vfmt(refAt("gdp",y))} × 100`;
+  return "";
+}
+
+function verifyHtml(p){
+  const yp={...p,gran:"years"};
+  const ids=p.sel.filter(id=>S(id)), ser=ids.map(S);
+  if(!ser.length) return "";
+  const plotted=buildSets(yp), view=viewOf(yp,plotted);
+  const rel=p.trans==="rel", transformed=p.trans!=="none";
+  /* each series transformed on its own — for rel this is the rebased index */
+  const own=ser.map(s=>new Map(transform(s,rel?{...yp,trans:"index"}:yp).map(q=>[q[0],q[1]])));
+  const ratio=rel?plotted.map(s=>new Map(s.pts.map(q=>[q[0],q[1]]))):[];
+  const ref=TRANS_REF[p.trans];
+  const brk=new Map(); ser.forEach(s=>(s.discontinuities||[]).forEach(d=>brk.set(s.id+"|"+d.year,d)));
+  const years=[]; for(let y=view.from;y<=view.to;y++) years.push(y);
+  const ownUnit=s=>rel?unitLabel(s,{...p,trans:"index"}):unitLabel(s,p);
+
+  const head1=`<th rowspan="2" class="vy">Year</th>${ref?`<th rowspan="2">${REF_NAME[ref]}</th>`:""}`+
+    ser.map((s,i)=>`<th colspan="${transformed?2:1}" class="vser"><span class="d" style="background:${PAL(i)}"></span>${esc(s.name)}</th>`).join("")+
+    (rel?plotted.map(s=>`<th rowspan="2" class="vser">${esc(s.name)}<span class="vu">on chart</span></th>`).join(""):"");
+  const head2=ser.map(s=>`<th>Published<span class="vu">${esc(s.unit)}</span></th>`+
+    (transformed?`<th>${rel?"Rebased":"On chart"}<span class="vu">${esc(ownUnit(s))}</span></th>`:"")).join("");
+
+  const rows=years.map(y=>{
+    const marks=ser.map(s=>brk.get(s.id+"|"+y)).filter(Boolean);
+    const cells=ser.map((s,i)=>{
+      const r=rawAt(s,y), v=own[i].get(y), b=brk.get(s.id+"|"+y);
+      const pub=`<td class="vn${b?" vbrk":""}"${b?` title="${esc(b.note)}"`:""}>${r==null?'<span class="vnone">no data</span>':vfmt(r)}</td>`;
+      if(!transformed) return pub;
+      const how=howFor(s,p,y);
+      return pub+`<td class="vn vout">${v==null?'<span class="vnone">–</span>':vfmt(v)}${how?`<span class="vhow">${esc(how)}</span>`:""}</td>`;
+    }).join("");
+    const den=own[own.length-1];
+    const rc=rel?ratio.map((m,k)=>{const v=m.get(y),a=own[k].get(y),d=den.get(y);
+      return `<td class="vn vout">${v==null?'<span class="vnone">–</span>':vfmt(v)}${v!=null?`<span class="vhow">${vfmt(a)} ÷ ${vfmt(d)} × 100</span>`:""}</td>`;}).join(""):"";
+    return `<tr data-y="${y}"${p.vy===y?' class="sel"':""}><th class="vy">${y}${marks.length?` <span class="vtag" title="${esc(marks.map(d=>d.note).join(" "))}">break</span>`:""}</th>`+
+      (ref?`<td class="vn">${vfmt(refAt(ref,y))}</td>`:"")+cells+rc+`</tr>`;
+  }).join("");
+
+  const srcs=ser.map((s,i)=>`<div class="vsrc"><span class="d" style="background:${PAL(i)}"></span><b>${esc(s.name)}</b>
+      ${s.source_url?`<a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}
+      ${s.source_api?`<a href="${esc(s.source_api)}" target="_blank" rel="noopener">API endpoint ↗</a>`:""}
+      <a href="data.html#${esc(s.id)}" target="_blank" rel="noopener">Every value in Explorer Verify ↗</a>
+      <span class="vfetch">checked ${esc(ukDate(s.fetched)||"—")}</span></div>`).join("");
+
+  const notes=[
+    DB.meta.provenance==="placeholder"?`<b>Placeholder data.</b> These are not real statistics.`:"",
+    p.gran!=="years"?`Checked against the published annual figures. The ${esc(p.gran)} detail on the chart is interpolated between them.`:"",
+    ref?`${REF_NAME[ref]} comes from the ONS reference series listed on Explorer Verify.`:""
+  ].filter(Boolean);
+
+  return `<div class="verify">
+    <div class="vhd"><div><h3>Check the numbers</h3>
+      <p>${methodText(p,ids)} Click a point on the chart to see its working and jump to its year.</p></div>
+      <button class="vx" data-act="tabletoggle" aria-label="Close">×</button></div>
+    ${notes.map(n=>`<p class="vnote">${n}</p>`).join("")}
+    <div class="vscroll"><table class="vtbl"><thead><tr>${head1}</tr>${transformed?`<tr>${head2}</tr>`:`<tr></tr>`}</thead><tbody>${rows}</tbody></table></div>
+    <div class="vsrcs">${srcs}</div>
+    <div class="vfoot">Published values are annual: where a source publishes monthly or quarterly, the pipeline averages to one value per year. Compare against the annual figure where the source gives one.
+      <button class="vcsv" data-act="csv">${IC.csv} Download chart data (CSV)</button></div>
+  </div>`;
 }
 
 function panelHtml(p,i){
@@ -1805,6 +2095,7 @@ function panelHtml(p,i){
      tile provokes. */
   const chartWhy = k =>
       k==="scatter" && p.sel.length!==2                      ? "Scatter needs exactly two indicators"
+    : k==="gap" && p.sel.length!==2                          ? "Gap needs exactly two indicators"
     : (k==="stack"||k==="colstack") && p.sel.length<2        ? "Stacking needs at least two indicators"
     : AREA_CHARTS.has(k) && p.sel.length && !areaSet(sets)   ? "No local figures for these indicators"
     : "";
@@ -1819,10 +2110,11 @@ function panelHtml(p,i){
   const ctrl=`<div class="cfgpanel" ${open?"":"hidden"}>
     ${picker}
     <div class="cfgrule"></div>
-    <span class="plabel">Transform</span>${sel("trans",TRANSFORMS,p.trans,k=>p.sel.length&&!anyApplies(k))}
+    <span class="plabel">Transform</span>${sel("trans",TRANSFORMS,p.trans,k=>(p.sel.length&&!anyApplies(k))||(k==="rel"&&p.sel.length<2))}
     ${areaCtrl}
     <div class="cfgrule"></div>
     <span class="plabel">Government</span>${sel("era",ERA_MODES,p.era)}
+    <span class="plabel">Sources</span>${sel("src",SRC_STYLES,p.src)}
     <span class="plabel">Time</span>${sel("gran",GRANS,p.gran)}
     <span class="plabel">Width</span>${sel("widthsel",WIDTHS.map(([k,l])=>[String(k),l]),String(p.w))}
     <span class="plabel">Range</span><div class="rng">
@@ -1840,19 +2132,17 @@ function panelHtml(p,i){
         <button class="sg" data-act="pair" data-v="psnd,debtint">Net debt × debt interest</button>
       </div></div>`;
   } else {
-    const chart=chartFor(p,sets);
-    const showRibbon = p.era!=="off" && p.chart!=="scatter" && p.chart!=="small"
-                       && p.chart!=="slope" && !AREA_CHARTS.has(p.chart);
+    const chart=drawChart(p,sets);
     /* A ranking is as tall as the number of areas, which at local-authority
        level is a few hundred rows. The panel's height becomes the window onto
        it rather than a cap on what is drawn — the PNG export still gets the
        whole thing, because it reads the SVG and not the scrolled view. */
     const tall=AREA_CHARTS.has(p.chart);
-    body = p.table
+    body = p.table&&tall
       ? `<div class="tbar"><span>Exactly the numbers plotted — same transform, same rounding as the axis.</span>
            <button data-act="csv">${IC.csv} Download CSV</button></div>
          <div class="pbody scrolls" style="max-height:${p.h}px">${tableFor(p,sets)}</div>`
-      : `<div class="pbody${tall?" scrolls":""}"${tall?` style="max-height:${p.h}px"`:""}>${chart}${showRibbon?renderRibbon(p):""}</div>`;
+      : `<div class="pbody${tall?" scrolls":""}"${tall?` style="max-height:${p.h}px"`:""}>${chart}</div>`;
     /* The area view draws one series and ignores the transform, so it gets a
        legend that says so. Left to the general one it would caption a chart of
        published pounds as "index, 1997=100" — the chart and its own key
@@ -1863,28 +2153,21 @@ function panelHtml(p,i){
     legend = AREA_CHARTS.has(p.chart)
       ? `<div class="legend">${lgSets.map(s=>`<span class="lg"><span class="d" style="background:${s.colour}"></span>${esc(s.name)} <span class="u">${esc(s.unit)}</span></span>`).join("")}</div>`
       : "";
-    /* Harvard citations are sentences, not chips — they get their own rows so
-       they stay readable, while short keeps the original single-line strip. */
-    /* Two lines with two jobs. The sources are prose and want reading, so they
-       are sentence case at readable weight; the licence, coverage and build
-       state are machine metadata and sit quieter underneath. The old strip put
-       a field label, two publisher names, a licence and a build state at one
-       size in one case separated by identical dots — nothing told the eye what
-       was a label and what was a value, on the component carrying the whole
-       trust claim. */
-    const lines=srcLines(sets);
-    const geos=[...new Set(sets.map(s=>s.meta.geography))].join(" · ");
-    const meta=[`OGL v3.0`, geos,
-                p.trans!=="none"?TRANSFORMS.find(t=>t[0]===p.trans)[1]:null,
-                `Data ${DB.meta.provenance}`,
-                DB.meta.generated?`built ${ukDate(DB.meta.generated)}`:null]
+    /* Two lines with two jobs: where the numbers come from, in plain
+       sentence case, then the facts about this view, quieter underneath. */
+    const lines=srcLines(sets,p.src);
+    const geos=[...new Set(metasOf(sets).map(m=>m.geography))].join(", ");
+    const meta=[`Open Government Licence v3.0`, geos,
+                p.trans!=="none"&&!AREA_CHARTS.has(p.chart)?TRANSFORMS.find(t=>t[0]===p.trans)[1]:null,
+                DB.meta.generated?`data updated ${ukDate(DB.meta.generated)}`:null]
                .filter(Boolean).join(" · ");
-    foot = SRCSTYLE==="off"
-      ? `<div class="pfoot"><span class="pmeta">${esc(meta)}</span></div>`
-      : `<div class="pfoot">
-          <div class="psrc">${SRCSTYLE==="harvard"
+    const ph = DB.meta.provenance==="placeholder" ? `<div class="phnote">Placeholder data, not real statistics</div>` : "";
+    foot = p.src==="off"
+      ? (ph?`<div class="pfoot">${ph}</div>`:"")
+      : `<div class="pfoot">${ph}
+          <div class="psrc">${p.src==="harvard"
             ? lines.map(c=>`<span class="cite">${esc(c)}</span>`).join("")
-            : esc(lines[0])}</div>
+            : `<b>Source:</b> ${esc(lines[0])}`}</div>
           <div class="pmeta">${esc(meta)}</div>
         </div>`;
   }
@@ -1908,12 +2191,11 @@ function panelHtml(p,i){
       <span class="grip" data-act="grip" title="${lk?"Locked — unlock to move":"Drag to reorder"}">⠿</span>
       <button class="pi ${open?"on":""}" data-act="cfg" aria-expanded="${open}" title="Chart settings" aria-label="Chart settings">${IC.sliders}</button>
       <button class="pi ${lk?"on":""}" data-act="lock" aria-pressed="${lk}" title="${lk?"Unlock — let this chart move":"Lock this chart in place"}" aria-label="${lk?"Unlock chart":"Lock chart"}">${lk?IC.lock:IC.unlock}</button>
-      <button class="pi ${p.table?"on":""}" data-act="tabletoggle" aria-pressed="${!!p.table}" title="${p.table?"Back to the chart":"Show the numbers behind this chart"}" aria-label="Toggle the numbers table">${IC.table}</button>
-      <button class="pi ${p.era!=="off"?"on":""}" data-act="eratoggle" aria-pressed="${p.era!=="off"}" title="${p.era!=="off"?"Hide the government-in-power ribbon":"Show the government-in-power ribbon"}" aria-label="Toggle government ribbon">${IC.flag}</button>
+      <button class="pi ${p.table?"on":""}" data-act="tabletoggle" aria-pressed="${!!p.table}" title="${p.table?"Hide the numbers":"Check the numbers behind this chart"}" aria-label="Check the numbers">${IC.table}</button>
       <span class="pnum">Chart ${i+1}</span>
       ${state.renaming===p.key
-        ? `<input class="ptitle-in" data-act="title" value="${esc(p.title??(sets.length?sets.map(s=>s.name).join(" × "):""))}" maxlength="90" aria-label="Chart title">`
-        : `<h2 class="ptitle" data-act="rename" title="Click to rename">${esc(p.title??(sets.length?sets.map(s=>s.name).join(" × "):"Empty chart"))}</h2>
+        ? `<input class="ptitle-in" data-act="title" value="${esc(p.title??autoTitle(sets))}" maxlength="90" aria-label="Chart title">`
+        : `<h2 class="ptitle" data-act="rename" title="Click to rename">${esc(p.title??(sets.length?autoTitle(sets):"Empty chart"))}</h2>
            <button class="pi pen" data-act="rename" title="Rename this chart" aria-label="Rename this chart">${IC.pen}</button>`}
       <div class="pacts">
         <button class="pi ${menuOpen?"on":""}" data-act="menu" aria-expanded="${menuOpen}" title="More actions" aria-label="More actions for this chart">${IC.kebab}</button>
@@ -1922,6 +2204,7 @@ function panelHtml(p,i){
     <div class="menupanel" ${menuOpen?"":"hidden"}>
       <button class="mi" data-act="csv">${IC.csv} Download CSV</button>
       <button class="mi" data-act="png">${IC.png} Download PNG</button>
+      <button class="mi" data-act="tabletoggle">${IC.table} ${p.table?"Hide the numbers":"Check the numbers"}</button>
       <div class="msep"></div>
       <!-- Reordering without a pointer. Drag is fine with a mouse and useless
            with a keyboard, and roughly nobody discovers it on a phone. -->
@@ -1931,7 +2214,7 @@ function panelHtml(p,i){
       <button class="mi" data-act="dup">${IC.dup} Duplicate chart</button>
       <button class="mi danger" data-act="del">${IC.del} Remove chart</button>
     </div>
-    ${ctrl}${warns}${body}${work}${legend}${foot}
+    ${ctrl}${warns}${body}${work}${legend}${p.table&&sets.length&&!AREA_CHARTS.has(p.chart)?verifyHtml(p):""}${foot}
     <div class="rgrip" data-act="rgrip" title="Drag to change height"></div>
     <span class="hpill">${p.h}px</span>
   </div>`;
@@ -2006,18 +2289,6 @@ function renderSidebar(){
     : `${inMode.length} indicators available`;
 }
 
-/* The style control lives here rather than in the header: this is the panel
-   about sourcing, and the setting governs how sourcing is written everywhere. */
-function srcStyleControl(){
-  return `<div class="srcstyle">
-    <span class="plabel">Sourcing</span>
-    <div class="segs" role="group" aria-label="Sourcing style">${
-      SRC_STYLES.map(([k,l])=>`<button data-src="${k}" aria-pressed="${SRCSTYLE===k}">${l}</button>`).join("")
-    }</div>
-    ${SRCSTYLE==="harvard"?`<button class="copycite" id="copyCite">Copy citations</button>`:""}
-  </div>`;
-}
-
 /* Provenance detail, inline. The verify page has all of this, but the moment
    someone doubts a number is while they are looking at the chart — sending
    them to another page to check is where the checking stops happening. Same
@@ -2028,8 +2299,8 @@ const FLAG_LABEL={discontinued:"Discontinued",definition:"Definition changed",
 const flagChips=m=>(m.flags||[]).filter(f=>FLAG_LABEL[f])
   .map(f=>`<span class="fchip f-${f}">${FLAG_LABEL[f]}</span>`).join("");
 
-function srcDetail(s){
-  const m=s.meta, end=m.start+m.values.length-1;
+function srcDetail(m){
+  const end=m.start+m.values.length-1;
   const obs=m.values.filter(v=>v!=null).length;
   const notes=[...(m.notes||[]).map(n=>esc(n)),
     ...(m.discontinuities||[]).map(d=>`<b>Break at ${d.year}.</b> ${esc(d.note)}`)];
@@ -2040,74 +2311,55 @@ function srcDetail(s){
   }).join("");
   return `<div class="srcdet">
     ${notes.length?`<div class="sdnote">${notes.join("<br>")}</div>`:""}
-    <div class="sdmeta">
-      <span><i>Publisher</i>${esc(m.publisher_full||m.source)}</span>
-      <span><i>Coverage</i>${m.start}–${end}</span>
-      <span><i>Observations</i>${obs} of ${m.values.length}</span>
-      <span><i>Fetched</i>${esc((m.fetched||"").slice(0,10))}</span>
-    </div>
+    <div class="sdmeta"><span>${m.start}–${end}</span><span>${obs} of ${m.values.length} years published</span></div>
     <div class="sdvals">${vals}</div>
     <div class="sdlinks">
-      <a href="data.html#${esc(s.id)}">Full record on Verify ↗</a>
-      ${m.source_url?`<a href="${esc(m.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}
+      <a href="data.html#${esc(m.id)}">Full record on Explorer Verify ↗</a>
       ${m.source_api?`<a href="${esc(m.source_api)}" target="_blank" rel="noopener">API endpoint ↗</a>`:""}
     </div>
   </div>`;
 }
 
+/* Where the active chart's numbers come from: one entry per series, the
+   release it's from (linked), then the facts a reader needs to judge it,
+   each labelled. "Published as" is the unit the publisher used, which can
+   differ from what the chart shows after a transform. How the chart credits
+   its sources is set in its own settings, not here. */
 function renderSources(){
   const p=P0(), el=document.getElementById("srcs");
-  const sets=p?buildSets(p):[];
+  const sets=p&&!AREA_CHARTS.has(p.chart)?buildSets(p):p?buildSets(p).slice(0,1):[];
+  const head=(sub,btn)=>`<div class="srchd"><div><h3 class="srctitle">Sources</h3>${sub?`<div class="srcsub">${sub}</div>`:""}</div>${btn||""}</div>`;
   if(!sets.length){
-    el.innerHTML=`<div class="srchd"><div class="plabel">Provenance</div>${srcStyleControl()}</div>
-      <div class="trayempty">Select something to see where it came from.</div>`;
-    bindSrcStyle(); return;
+    el.innerHTML=head("")+`<div class="trayempty">Pick an indicator to see where its numbers come from.</div>`;
+    return;
   }
-  /* The expander is on both visible styles. Only `off` goes without, because
-     an expander there would contradict the setting it is sitting under. */
-  const body = SRCSTYLE==="harvard"
-    ? sets.map(s=>{
-        const open=srcOpen.has(s.id);
-        return `<div class="srcrow cite${open?" open":""}">
-          <button class="srcx" data-srcx="${esc(s.id)}" aria-expanded="${open}"
-            aria-label="${open?"Hide":"Show"} the detail for ${esc(s.name)}">▶</button>
-          ${esc(citeHarvard(s.meta))}${flagChips(s.meta)}
-          ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}</div>${
-          open?srcDetail(s):""}`;
-      }).join("")
-    : SRCSTYLE==="off"
-    ? `<div class="trayempty">Attribution is switched off — including on CSV and PNG exports.
-        The data is still OGL v3.0, which asks for a source statement when you republish it.</div>`
-    : sets.map(s=>{
-      const open=srcOpen.has(s.id);
-      return `<div class="srcrow${open?" open":""}">
-        <button class="srcx" data-srcx="${esc(s.id)}" aria-expanded="${open}"
-          aria-label="${open?"Hide":"Show"} the detail for ${esc(s.name)}">▶</button>
-        <b>${esc(s.name)}</b>${flagChips(s.meta)}
-        <span class="mono">${esc(s.meta.source)}</span><span class="mono">${esc(s.meta.geography)}</span>
-        <span class="mono">${esc(s.meta.year_basis)} years</span><span class="mono">${esc(s.meta.unit)}</span>
-        <span class="mono">${esc(s.meta.licence)}</span>
-        ${DB.meta.provenance==="placeholder"?'<span class="ph">PLACEHOLDER</span>':''}
-      </div>${open?srcDetail(s):""}`;
-    }).join("");
-  el.innerHTML=`<div class="srchd"><div class="plabel">Provenance · Chart ${state.active+1}</div>${srcStyleControl()}</div>${body}`;
-  bindSrcStyle(sets);
-}
-
-function bindSrcStyle(sets){
+  const ms=metasOf(sets);
+  const dot=m=>{const i=p.sel.indexOf(m.id); return `<span class="d" style="background:${i>=0?PAL(i):"var(--muted)"}"></span>`;};
+  const ph=DB.meta.provenance==="placeholder"?'<span class="ph">Placeholder</span>':'';
+  const yb={calendar:"Calendar years",financial:"Financial years (Apr–Mar)",academic:"Academic years (Sep–Aug)"};
+  const fact=(k,v)=>v?`<div><dt>${k}</dt><dd>${esc(v)}</dd></div>`:"";
+  const body=ms.map(m=>{
+    const open=srcOpen.has(m.id), url=m.source_url||m.source_api||"";
+    const src=url?`<a class="srclink" href="${esc(url)}" target="_blank" rel="noopener">${esc(m.source)}</a>`:esc(m.source);
+    return `<div class="srcitem${open?" open":""}">
+      <div class="srcwho"><div class="srcname">${dot(m)}${esc(m.name)} ${ph}</div>
+        <div class="srcfrom">${src}${m.publisher_full?` · ${esc(m.publisher_full)}`:""}</div>
+        ${(m.flags||[]).some(f=>FLAG_LABEL[f])?`<div class="srcflags">${flagChips(m)}</div>`:""}
+        <button class="srcx" data-srcx="${esc(m.id)}" aria-expanded="${open}">${open?"Hide":"Show"} every published value</button></div>
+      <dl class="srcfacts">${fact("Coverage",m.geography)}${fact("Published as",m.unit)}${fact("Years",yb[m.year_basis]||m.year_basis)}${fact("Licence",m.licence)}${fact("Checked",ukDate(m.fetched))}</dl>
+      ${open?srcDetail(m):""}
+    </div>`;}).join("");
+  const off=p.src==="off"?`<p class="srcoff">This chart's source line is switched off, on screen and in its exports. The data is still under the Open Government Licence v3.0, which asks for a source statement when you republish it.</p>`:"";
+  el.innerHTML=head(`For chart ${state.active+1}: ${esc(p.title??autoTitle(sets))}`,
+    `<button class="copycite" id="copyCite">Copy citations</button>`)+off+body;
   document.querySelectorAll("[data-srcx]").forEach(b=>b.onclick=()=>{
     const id=b.dataset.srcx;
     srcOpen.has(id)?srcOpen.delete(id):srcOpen.add(id);
     renderSources();
   });
-  document.querySelectorAll("[data-src]").forEach(b=>b.onclick=()=>{
-    SRCSTYLE=b.dataset.src;
-    try{ localStorage.setItem("polyoptic-srcstyle",SRCSTYLE); }catch(e){}
-    render();
-  });
   const cp=document.getElementById("copyCite");
   if(cp) cp.onclick=()=>{
-    const text=srcLines(sets||[]).join("\n");
+    const text=srcLines(sets,"harvard").join("\n");
     if(!text) return;
     navigator.clipboard?.writeText(text).then(()=>{
       cp.textContent="Copied"; setTimeout(()=>{cp.textContent="Copy citations";},1400);
@@ -2129,6 +2381,15 @@ function render(){ renderPanels(); renderSidebar(); renderSources(); renderLayou
 /* ══════════════════════════════════════════════
    PANEL ACTIONS
    ══════════════════════════════════════════════ */
+/* bring a year's row into the middle of the numbers table */
+function scrollToYear(p){
+  const box=document.querySelector(`.pcard[data-key="${p.key}"] .vscroll`);
+  const row=box&&box.querySelector(`tr[data-y="${p.vy}"]`);
+  if(!row) return;
+  const head=box.querySelector("thead").offsetHeight;
+  box.scrollTop=row.offsetTop-head-(box.clientHeight-head)/2+row.offsetHeight/2;
+}
+
 function addPanel(sel=[]){
   state.panels.push(mkPanel(sel));
   state.active=state.panels.length-1;
@@ -2149,7 +2410,11 @@ document.getElementById("stack").addEventListener("click",e=>{
     const same = state.probe && state.probe.key===p.key && state.probe.id===id &&
                  (code ? state.probe.code===code : state.probe.x===+x);
     state.probe = same ? null : (code ? {key:p.key,id,code} : {key:p.key,id,x:+x});
-    state.active=i; state.focus=i; render(); return;
+    /* with the numbers table open, the click also finds that year in it */
+    if(!code) p.vy = same ? null : Math.floor(+x);
+    state.active=i; state.focus=i; render();
+    if(!code&&p.table&&p.vy!=null) scrollToYear(p);
+    return;
   }
 
   /* clicks land on the SVG inside icon buttons, so resolve to the button */
@@ -2160,16 +2425,13 @@ document.getElementById("stack").addEventListener("click",e=>{
   state.active=i; state.focus=i;
 
   /* selects and inputs inside the settings popover are handled on change */
-  if(["chart","trans","era","gran","from","to","title","widthsel"].includes(act)) return;
+  if(["chart","trans","era","src","gran","from","to","title","widthsel"].includes(act)) return;
 
   if(act==="cfg"){ state.openCfg = state.openCfg===p.key ? null : p.key; state.openMenu=null; }
   else if(act==="menu"){ state.openMenu = state.openMenu===p.key ? null : p.key; state.openCfg=null; }
   else if(act==="lock"){ lockedKeys.has(p.key) ? lockedKeys.delete(p.key) : lockedKeys.add(p.key); }
-  else if(act==="tabletoggle"){ p.table=!p.table; state.probe=null; }
-  else if(act==="eratoggle"){
-    if(p.era==="off") p.era = p.eraPrev||"pm";
-    else { p.eraPrev=p.era; p.era="off"; }
-  }
+  else if(act==="tabletoggle"){ p.table=!p.table; state.openMenu=null;
+    if(AREA_CHARTS.has(p.chart)) state.probe=null; }
   else if(act==="rename"){
     state.renaming=p.key; state.openCfg=null; state.openMenu=null;
     render();
@@ -2190,7 +2452,7 @@ document.getElementById("stack").addEventListener("click",e=>{
     state.panels.splice(j,0,state.panels.splice(i,1)[0]);
     state.active=j; state.focus=j; state.openMenu=null;
   }
-  else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,gran:p.gran,h:p.h,w:p.w,lvl:p.lvl,asort:p.asort,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
+  else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,src:p.src,gran:p.gran,h:p.h,w:p.w,lvl:p.lvl,asort:p.asort,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
   else if(act==="del"){ state.openMenu=null; state.panels.splice(i,1); lockedKeys.delete(p.key); if(state.openCfg===p.key) state.openCfg=null; state.active=Math.max(0,Math.min(state.active,state.panels.length-1)); state.focus=null; }
   else if(act==="csv"){ state.openMenu=null; exportCsv(i); render(); return; }
   else if(act==="png"){ state.openMenu=null; exportPng(i); render(); return; }
@@ -2202,7 +2464,7 @@ document.getElementById("stack").addEventListener("focusout",e=>{
   if(e.target.dataset.cancel==="1"){ state.renaming=null; render(); return; }
   const p=state.panels[+card.dataset.i];
   const v=e.target.value.trim();
-  const auto=buildSets(p).map(s=>s.name).join(" × ");
+  const auto=autoTitle(buildSets(p));
   p.title = (v && v!==auto) ? v : null;   /* typing the auto title back clears the override */
   state.renaming=null; render();
 });
@@ -2220,7 +2482,12 @@ document.getElementById("stack").addEventListener("change",e=>{
   else if(act==="trans") p.trans=e.target.value;
   else if(act==="lvl") p.lvl=e.target.value;
   else if(act==="asort") p.asort=e.target.value;
-  else if(act==="era"){ p.era=e.target.value; if(p.era!=="off") p.eraPrev=p.era; }
+  else if(act==="era"){ p.era=e.target.value; }
+  else if(act==="src"){ p.src=e.target.value;
+    /* remembered as the default for the next new chart */
+    /* remembered as the default for the next new chart — except "off", which
+       should be a choice made per chart, never one inherited by accident */
+    if(p.src!=="off"){ SRCSTYLE=p.src; try{ localStorage.setItem("polyoptic-srcstyle",SRCSTYLE); }catch(e){} } }
   else if(act==="widthsel"){ p.w=+e.target.value; }
   else if(act==="gran"){
     p.gran=e.target.value;
@@ -2409,8 +2676,8 @@ document.addEventListener("pointermove",e=>{
   const sets=buildSets(p);
   if(sets.length){
     const holder=card.querySelector(".pbody");
-    const chart=chartFor(p,sets);
-    if(chart&&holder) holder.innerHTML=chart+((p.era!=="off"&&p.chart!=="scatter"&&p.chart!=="small")?renderRibbon(p):"");
+    const chart=drawChart(p,sets);
+    if(chart&&holder) holder.innerHTML=chart;
   }
   const pill=card.querySelector(".hpill"); if(pill) pill.textContent=p.h+"px";
 });
@@ -2459,9 +2726,9 @@ function exportAreaCsv(p,sets){
   if(!set||!ix||ix==="error"||!d||d==="error") return;
   const lvl=areaLevel(p,set.id);
   const q=s=>`"${String(s).replace(/"/g,'""')}"`;
-  const lines=srcLines([set]);
+  const lines=srcLines([set],p.src);
   const attrib = lines.length
-    ? lines.map(c=>`# ${SRCSTYLE==="harvard"?"":"Sources: "}${c}\n`).join("")+
+    ? lines.map(c=>`# ${p.src==="harvard"?"":"Sources: "}${c}\n`).join("")+
       `# Licence: OGL v3.0 — contains public sector information\n`
     : "";
   const head=(what)=>`# Polyoptic — ${set.name} by area, ${what}\n`+attrib+
@@ -2514,13 +2781,13 @@ function exportCsv(i){
   const warn=DB.meta.provenance==="placeholder"?"# WARNING: placeholder data, not real statistics\n":"";
   /* off strips the source and licence lines from the file as well as the
      screen — see the note on SRC_STYLES. */
-  const lines=srcLines(sets);
+  const lines=srcLines(sets,p.src);
   const attrib = lines.length
-    ? lines.map(c=>`# ${SRCSTYLE==="harvard"?"":"Sources: "}${c}\n`).join("")+
+    ? lines.map(c=>`# ${p.src==="harvard"?"":"Sources: "}${c}\n`).join("")+
       `# Licence: OGL v3.0 — contains public sector information\n`
     : "";
-  const csv=warn+`# Polyoptic — ${sets.map(s=>s.name).join(" x ")}\n`+attrib+
-    `# Geography: ${[...new Set(sets.map(s=>s.meta.geography))].join("; ")}\n`+
+  const csv=warn+`# Polyoptic — ${autoTitle(sets)}\n`+attrib+
+    `# Geography: ${[...new Set(metasOf(sets).map(m=>m.geography))].join("; ")}\n`+
     head+"\n"+rows.join("\n");
   dl(new Blob([csv],{type:"text/csv"}), slug(sets.map(s=>s.name).join("-"))+".csv");
 }
@@ -2541,15 +2808,23 @@ const exportCss=th=>`
   .gridline{stroke:${th.grid};stroke-width:1;opacity:.7}
   .axlabel{font-size:10px;fill:${th.muted}}
   .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-  .disc{stroke:${th.warn};stroke-width:1;stroke-dasharray:3 3;opacity:.6}
   .nodata{fill:${th.ink};opacity:.045}
   .nodatat{opacity:.75;letter-spacing:.04em}
   .sm-t{font-size:10px;font-weight:500}
-  .era text{font-size:9px;fill:#fff;font-weight:500}
-  .pmtick{stroke:${th.ink};stroke-width:1;stroke-dasharray:2 2;opacity:.3}
-  .etick{stroke:${th.ink};stroke-width:1.5}
-  .pmlabel{font-size:8.5px;fill:${th.muted}}
-  .eralabel{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:${th.muted}}
+  .hit{fill:transparent}
+  .baseline{stroke:${th.muted};stroke-width:1;opacity:.75}
+  .axunit{font-size:10px;fill:${th.muted}}
+  .endlbl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:11px;font-weight:600}
+  .endval{font-size:10px;fill:${th.muted}}
+  .brk{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:10px;fill:${th.warn}}
+  .brkline{stroke:${th.warn};stroke-width:1;stroke-dasharray:2 2}
+  .hollow{fill:${th.bg}}
+  .enddot{stroke:${th.bg};stroke-width:1.5}
+  .leader{fill:none;stroke-width:1;opacity:.45}
+  .band{fill-opacity:${th.bg==="#ffffff"?.07:.09}}
+  .banddiv{stroke:${th.grid};stroke-width:1}
+  .bandlbl{font-size:9px;fill:${th.muted}}
+  .stat{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:24px}
   .ttl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:19px;fill:${th.ink}}
   .sub{font-size:11px;fill:${th.muted}}
   .cred{font-size:10px;fill:${th.muted}}`;
@@ -2562,7 +2837,8 @@ function exportPng(i){
   if(!svgs.length) return;
   const TH = EXPORT_THEMES[document.documentElement.dataset.theme] || EXPORT_THEMES.light;
 
-  const PAD=26, TOP=74, LEGEND=26, SCALE=2, CRED_LH=13;
+  const view=viewOf(p,sets), stats=statsData(view,clipSets(sets,view));
+  const PAD=26, TOP=74+(stats.length?40:0), LEGEND=26, SCALE=2, CRED_LH=13;
   const inner=svgs.map(s=>{
     const vb=s.getAttribute("viewBox").split(/\s+/).map(Number);
     return {markup:s.innerHTML, w:vb[2], h:vb[3]};
@@ -2572,9 +2848,9 @@ function exportPng(i){
   /* The credit block is measured before the canvas is sized: Harvard puts a
      full citation per series down there, so the image has to grow to fit it
      rather than clipping it. */
-  const attribLines = SRCSTYLE==="off" ? ["polyoptic.co"]
-    : SRCSTYLE==="harvard" ? [...srcLines(sets), "OGL v3.0 · polyoptic.co"]
-    : [`Source: ${srcLines(sets)[0]} · OGL v3.0 · polyoptic.co`];
+  const attribLines = p.src==="off" ? ["polyoptic.co"]
+    : p.src==="harvard" ? [...srcLines(sets,p.src), "OGL v3.0 · polyoptic.co"]
+    : [`Source: ${srcLines(sets,p.src)[0]} · OGL v3.0 · polyoptic.co`];
   const credit = (DB.meta.provenance==="placeholder"
       ? ["PLACEHOLDER DATA — NOT REAL STATISTICS"] : [])
     .concat(attribLines.flatMap(t=>wrapText(t, Math.max(40,Math.floor(W/6.3)))));
@@ -2596,8 +2872,11 @@ function exportPng(i){
   const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${totalH}" viewBox="0 0 ${totalW} ${totalH}">
     <style>${exportCss(TH)}</style>
     <rect width="100%" height="100%" fill="${TH.bg}"/>
-    <text class="ttl" x="${PAD}" y="${PAD+14}">${esc(p.title??sets.map(s=>s.name).join(" × "))}</text>
-    <text class="sub" x="${PAD}" y="${PAD+34}">${p.from}–${p.to} · ${esc(TRANSFORMS.find(x=>x[0]===p.trans)[1])} · ${esc([...new Set(sets.map(s=>s.meta.geography))].join(", "))}</text>
+    <text class="ttl" x="${PAD}" y="${PAD+14}">${esc(p.title??autoTitle(sets))}</text>
+    <text class="sub" x="${PAD}" y="${PAD+34}">${view.from}–${view.to} · ${esc(TRANSFORMS.find(x=>x[0]===p.trans)[1])} · ${esc([...new Set(metasOf(sets).map(m=>m.geography))].join(", "))}</text>
+    ${stats.map((d,k)=>{const x=PAD+k*Math.min(320,W/2);
+      return `<text class="stat" x="${x}" y="${PAD+64}" fill="${d.s.colour}">${d.pct}</text>`+
+             `<text class="cred" x="${x}" y="${PAD+80}">${esc(d.s.name)}, ${d.span}</text>`;}).join("")}
     ${parts}${legend}
     ${credit.map((ln,k)=>`<text class="cred" x="${PAD}" y="${totalH-PAD+4-(credit.length-1-k)*CRED_LH}">${esc(ln)}</text>`).join("")}
   </svg>`;
@@ -2610,7 +2889,7 @@ function exportPng(i){
     ctx.fillStyle=TH.bg; ctx.fillRect(0,0,c.width,c.height);
     ctx.setTransform(SCALE,0,0,SCALE,0,0);
     ctx.drawImage(img,0,0);
-    c.toBlob(b=>{ if(b) dl(b, slug(sets.map(s=>s.name).join("-"))+".png"); },"image/png");
+    c.toBlob(b=>{ if(b) dl(b, slug(autoTitle(sets))+".png"); },"image/png");
   };
   img.onerror=()=>alert("Couldn't render the image in this browser.");
   img.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent(svg);
@@ -2623,24 +2902,26 @@ function writeHash(){
   /* Fields are positional and append-only: lvl and asort go on the end so a
      link made before the area view existed still reads, and gets the
      defaults for the two it does not carry. */
-  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||""),p.lvl,p.asort,p.table?1:0].join("~")).join(";");
-  history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active+
-    (SRCSTYLE!=="short"?"&src="+SRCSTYLE:""));
+  /* sourcing is per chart now, so it rides on the end of each panel */
+  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||""),p.lvl,p.asort,p.table?1:0,p.src].join("~")).join(";");
+  history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active);
 }
 function readHash(){
   if(!location.hash) return;
   const q=new URLSearchParams(location.hash.slice(1));
   /* a shared link carries the citation style, so the recipient sees the chart
-     credited the way the person who sent it credited it */
-  if(SRC_STYLES.some(s=>s[0]===q.get("src"))) SRCSTYLE=q.get("src");
+     credited the way the person who sent it credited it. Older links carried
+     one style for the whole page as &src=. */
+  const pageSrc=SRC_STYLES.some(s=>s[0]===q.get("src"))?q.get("src"):SRCSTYLE;
   if(q.get("p")){
     const panels=decodeURIComponent(q.get("p")).split(";").map(chunk=>{
-      const [sel,chart,trans,from,to,era,h,w,gran,ttl,lvl,asort,tbl]=chunk.split("~");
-      /* old links stored the ribbon as 1/0 — map those onto the era modes */
-      const eraMode = era==="1"?"pm" : era==="0"?"off" : (ERA_MODES.some(m=>m[0]===era)?era:"pm");
+      const [sel,chart,trans,from,to,era,h,w,gran,ttl,lvl,asort,tbl,src]=chunk.split("~");
+      /* older links stored a ribbon mode (1/0, party, pm, elections); anything
+         but off now means shaded */
+      const eraMode = (era==="0"||era==="off") ? "off" : "bands";
       return mkPanel((sel||"").split(",").filter(id=>S(id)),
         {chart:chart||"line",trans:trans||"index",from:+from||1997,to:+to||2026,
-         era:eraMode,eraPrev:eraMode==="off"?"pm":eraMode,gran:(GRANS.some(g=>g[0]===gran)?gran:"years"),
+         era:eraMode,src:SRC_STYLES.some(x=>x[0]===src)?src:pageSrc,gran:(GRANS.some(g=>g[0]===gran)?gran:"years"),
          title:ttl?decodeURIComponent(ttl):null,
          lvl:lvl||"", asort:(AREA_SORTS.some(a=>a[0]===asort)?asort:"desc"), table:tbl==="1",
          h:Math.max(H_MIN,Math.min(H_MAX,+h||H_DEF)),w:(W_SNAPS.includes(+w)?+w:12)});
@@ -2739,13 +3020,17 @@ const GUIDE=[
   {t:"What's on this chart", sel:["#tray"],
    li:[["",`The indicators on the chart you're editing right now. The <span class="kbd">×</span> on each one removes it.`]]},
   {t:"Chart settings", sel:['.pcard [data-act="cfg"]'], setup:()=>{state.openCfg=null;},
-   li:[[gi(IC.sliders),`Everything about how this chart looks lives behind this button — chart type, transforms, the year range and the width.`]]},
+   li:[[gi(IC.sliders),`Everything about this chart lives behind this button — chart type, transforms, who was in power, how its sources are credited, the year range and the width.`]]},
   {t:"Fourteen ways to draw it", sel:['.cfgpanel .ctgrid','.cfgpanel'],
    setup:()=>{const p=P0(); if(p) state.openCfg=p.key;},
    li:[["",`Lines, columns, slopes and small multiples under <b>Over time</b>. Under <b>By area</b>, the same indicator broken down to local authorities — a ranking, the change between two years, or a heatmap.`],
        ["",`Below these: transforms that rebase to 100, show year-on-year change, real terms, per person or % of GDP.`]]},
-  {t:"Who was in power", sel:['.pcard [data-act="eratoggle"]'], setup:()=>{state.openCfg=null;},
-   li:[[gi(IC.flag),`Puts a ribbon under the chart showing the governing party, with prime ministers or elections marked.`]]},
+  {t:"Who was in power, and sources", sel:['.cfgpanel select[data-act="era"]','.cfgpanel'],
+   setup:()=>{const p=P0(); if(p) state.openCfg=p.key;},
+   li:[["",`<b>Government</b> shades each prime minister behind the chart in their party's colour, or switches it off.`],
+       ["",`<b>Sources</b> sets how this chart credits its data — a short line, full Harvard citations, or off. It applies to the chart's PNG and CSV as well.`]]},
+  {t:"Check the numbers", sel:['.pcard [data-act="tabletoggle"]'], setup:()=>{state.openCfg=null;},
+   li:[[gi(IC.table),`Opens a table under the chart: every year's published figure, the value plotted, and the sum in between — with links to the source.`]]},
   {t:"Show the working", sel:['.pcard .workhint','.pcard .working','.pcard .hit'],
    li:[["",`Click any point on a chart and it shows you the published figure, the figure being plotted, and the arithmetic in between — with a link to the release it came from.`]]},
   {t:"Export and duplicate", sel:['.pcard [data-act="menu"]'], setup:()=>{const p=P0(); if(p) state.openMenu=p.key;},
@@ -2759,7 +3044,7 @@ const GUIDE=[
   {t:"Room to work", sel:["#sideHide"],
    li:[["",`Collapses the indicator panel and gives the charts the full width. The rail on the left edge brings it back.`]]},
   {t:"Where it all came from", sel:["#srcs"],
-   li:[["",`Every source on the page, and a <b>Sourcing</b> setting that switches attribution between short, full Harvard citations, or off. It applies to the exports as well as the screen.`]]},
+   li:[["",`Every source behind the chart you're editing: the release it came from, what it covers, how it was published, and every published value.`]]},
   {t:"Take it with you", sel:["#copyLink"],
    li:[["",`<b>Copy link</b> puts your whole layout in the URL — every chart, transform and year range. The eye beside it switches light and dark, and <span class="kbd">?</span> reopens this tour.`]]},
 ];

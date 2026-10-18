@@ -101,12 +101,23 @@ power per-person, real-terms and %-of-GDP everywhere.
 ## What the explorer does
 
 - Up to four series on one chart, from any topics
-- **Line · Bars · Area · Scatter · Small multiples**
-- **Rebase to 100 · Year-on-year % · 3-year average · Real terms · Per person · % of GDP**
-- Era ribbon showing governing party and PM, on every time-series chart
+- **Over time:** line, step, dots, area, gap between two, columns, stacked
+  area, stacked columns, slope, scatter, small multiples. **By area:** ranking,
+  change, range, heatmap
+- **Rebase to 100 · Relative to last series · Year-on-year % · 3-year average · Real terms · Per person · % of GDP**
+- Rebasing uses the first year every series on the chart has a value, so all
+  the lines start together at 100; the chart starts at that year
+- Each prime minister shaded behind the chart in their party's colour
+- Line charts name each series at its end and draw breaks on the line itself;
+  give a discontinuity a short `label` in `series.yaml` for the on-chart text
 - Scatter colours each point by the government of the day
+- Click any point for its working; **Check the numbers** tables every year's
+  published figure, the plotted value and the sum between them
+- Everything about a chart — type, transform, government shading, how its
+  sources are credited (short, Harvard or off), range, width — is in its
+  settings
 - Every view is a permalink — the URL hash carries the whole state
-- CSV export with sources and licence in the header
+- CSV and PNG export with sources and licence, following the chart's setting
 
 ### The warnings are the product
 

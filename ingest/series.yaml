@@ -133,7 +133,7 @@ series:
         administrative-geography: K02000001
         index-and-year-change: index
     discontinuities:
-      - {year: 2025, note: "IPHRP was discontinued in March 2025 and replaced by the Price Index of Private Rents (PIPR); the final year is a partial one"}
+      - {year: 2025, label: "IPHRP ends Mar 2025, replaced by PIPR", note: "IPHRP was discontinued in March 2025 and replaced by the Price Index of Private Rents (PIPR); the final year is a partial one"}
 
   # ── ECONOMY ──────────────────────────────────────────────
   - id: cpih
@@ -160,7 +160,7 @@ series:
     source_type: ons_timeseries
     fetch: {path: employmentandlabourmarket/peoplenotinwork/unemployment, cdid: MGSX, dataset: lms, granularity: months}
     discontinuities:
-      - {year: 2024, note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
+      - {year: 2024, label: "Switch to Transformed LFS", note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
 
   - id: pay
     name: Average weekly earnings (total pay)
@@ -227,7 +227,7 @@ series:
           - {filters: {eq: X5Vmf}}       # school type: total
           - {geographicLevels: {eq: NAT}}
     discontinuities:
-      - {year: 2020, note: "Attendance recording rules and school opening changed; the series is not comparable across this point"}
+      - {year: 2020, label: "Recording rules changed", note: "Attendance recording rules and school opening changed; the series is not comparable across this point"}
 
   - id: gap
     name: Disadvantage attainment gap index (KS2)
@@ -246,7 +246,7 @@ series:
         and:
           - {geographicLevels: {eq: NAT}}
     discontinuities:
-      - {year: 2020, note: "No KS2 assessments in 2019/20 and 2020/21; the gap on either side is not measured on identical cohorts"}
+      - {year: 2020, label: "No KS2 tests 2020, 2021", note: "No KS2 assessments in 2019/20 and 2020/21; the gap on either side is not measured on identical cohorts"}
 
   - id: pupils
     name: Pupils in schools
@@ -300,7 +300,7 @@ series:
       - "Each point is the year ending December, taken from a rolling four-quarter series"
       - "The most recent years are provisional and have been revised substantially in the past — YE June 2024 was first published at 906,000 and now stands well below that"
     discontinuities:
-      - {year: 2020, note: "ONS moved from the International Passenger Survey to an administrative-data method; estimates before and after are not produced the same way, and the series only starts in 2012 on the current basis"}
+      - {year: 2020, label: "New ONS method", note: "ONS moved from the International Passenger Survey to an administrative-data method; estimates before and after are not produced the same way, and the series only starts in 2012 on the current basis"}
 
   - id: smallboats
     name: Small boat arrivals
@@ -669,7 +669,7 @@ series:
       - "Asks people what happened to them, so it counts crime whether or not it was reported. This is the series that shows crime falling by around two thirds since the mid-1990s"
       - "Excludes fraud and computer misuse, which would otherwise dominate the total"
     discontinuities:
-      - {year: 2020, note: "Face-to-face interviewing stopped during the pandemic; the telephone survey that replaced it is not comparable, so there is a genuine hole here rather than a zero"}
+      - {year: 2020, label: "Survey paused in pandemic", note: "Face-to-face interviewing stopped during the pandemic; the telephone survey that replaced it is not comparable, so there is a genuine hole here rather than a zero"}
 
   - id: prc
     name: Police recorded crime
@@ -692,7 +692,7 @@ series:
       - "Counts what the police wrote down. It rose sharply from 2014 largely because forces were told to record crime properly after being found not to be, which is why it moves opposite to the survey"
       - "Not accredited as official statistics, on those grounds"
     discontinuities:
-      - {year: 2014, note: "A change in recording practice following HMIC inspections; the rise from here on is substantially a recording effect rather than a change in crime"}
+      - {year: 2014, label: "Recording practice changed", note: "A change in recording practice following HMIC inspections; the rise from here on is substantially a recording effect rather than a change in crime"}
 
   - id: chargerate
     name: Charge rate, all offences
