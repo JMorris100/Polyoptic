@@ -376,6 +376,9 @@ function stamp(iso,withTime){
   return (withTime&&m[4])?`${d}, ${m[4]}:${m[5]} UTC`:d;
 }
 const cap=s=>String(s).charAt(0).toUpperCase()+String(s).slice(1);
+/* topic keys to the names the homepage uses */
+const TOPIC_NAME={crime:"Crime & justice",environment:"Environment & energy",migration:"Population & migration"};
+const topicLabel=t=>TOPIC_NAME[t]||cap(t);
 /* publisher is the derived agency; fall back to the release name for any series
    built before the pipeline started emitting it */
 const pubOf=s=>s.publisher||s.source||"Unknown";
@@ -479,7 +482,7 @@ function detailHtml(s,isRef){
        ["Last fetched",esc(stamp(s.fetched))],
        ["Observations",`${obs} of ${s.values.length} years`],
        ["Topics",(s.topics||[]).map(t=>
-          `<button class="tpill" data-facet-topic="${esc(t)}">${esc(cap(t))}</button>`).join("")||"—"]];
+          `<button class="tpill" data-facet-topic="${esc(t)}">${esc(topicLabel(t))}</button>`).join("")||"—"]];
   const badges=isRef?"":flagBadges(s,true);
   return `<div class="detail">
     ${badges?`<div class="dflags">${badges}</div>`:""}
@@ -507,7 +510,7 @@ function detailHtml(s,isRef){
 /* `all` is spelled out per facet rather than built by adding an s — English
    does not pluralise "geography" that way */
 const FACETS=[
-  {key:"topic",     label:"Topic",     all:"All topics",      vals:s=>s.topics||[],  fmt:cap},
+  {key:"topic",     label:"Topic",     all:"All topics",      vals:s=>s.topics||[],  fmt:topicLabel},
   {key:"source",    label:"Source",    all:"All sources",     vals:s=>[pubOf(s)]},
   {key:"geography", label:"Geography", all:"All geographies", vals:s=>[s.geography||"—"]},
   {key:"unit",      label:"Unit",      all:"All units",       vals:s=>[s.unit||"—"]},

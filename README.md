@@ -240,8 +240,10 @@ to parse, so the first build of those series is slow and every later one isn't.
 against the live catalogues on 2026-08-05, and the spreadsheet sources on
 2026-08-06. `data/bundle.json` is built from real releases: the original
 9 series (housing, economy, education), borders and migration, money, crime
-and justice, transport, environment, local statistics, and the three
-reference series — all in the one catalogue.
+and justice, transport, environment, local statistics, headline ONS economic
+and labour-market series (GDP, inflation, employment, productivity, public
+finances, trade), and the three reference series — 92 indicators in one
+catalogue, filed under the homepage's eight topics.
 The placeholder data embedded in `explore.html` is still invented — it only
 shows if `data/bundle.json` fails to load, and it is labelled as such.
 

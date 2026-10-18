@@ -728,6 +728,9 @@ const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["rel","Re
 /* government in power: shaded behind the data, a ribbon under it, or off */
 const ERA_MODES = [["bands","Shaded behind chart"],["party","Ribbon: party"],["pm","Ribbon: party and PMs"],["elections","Ribbon: elections"],["off","Off"]];
 const RIBBONS = new Set(["party","pm","elections"]);
+const TOPICS = [["economy","Economy"],["housing","Housing"],["education","Education"],["health","Health"],
+  ["crime","Crime & justice"],["transport","Transport"],["environment","Environment & energy"],["migration","Population & migration"]];
+const topicName=t=>t==="all"?"All":((TOPICS.find(x=>x[0]===t)||[])[1]||t.charAt(0).toUpperCase()+t.slice(1));
 const GRANS = [["years","Years"],["quarters","Quarters"],["months","Months"],["days","Days"]];
 const GRAN_PER = {years:1, quarters:4, months:12, days:365};
 const H_MIN=210, H_MAX=640, H_DEF=300;
@@ -2133,7 +2136,9 @@ function renderSidebar(){
   const okQ=s=>!q||[s.name,s.source,s.unit,s.geography].join(" ").toLowerCase().includes(q);
   const okTopic=(s,t)=>t==="all"||s.topics.includes(t);
   const okGeo=(s,g)=>g==="all"||(g==="local"?!!s.areas:s.geography===g);
-  const topics=["all",...new Set(inMode.flatMap(s=>s.topics))];
+  /* the eight topics the homepage names, in its order */
+  const topics=["all",...TOPICS.map(t=>t[0]).filter(k=>inMode.some(s=>s.topics.includes(k))),
+    ...[...new Set(inMode.flatMap(s=>s.topics))].filter(k=>!TOPICS.some(t=>t[0]===k))];
   /* broadest first */
   const GEO_ORDER=["UK","Great Britain","England and Wales","England & Wales","England","Wales","Scotland","Northern Ireland"];
   const geos=[...new Set(inMode.map(s=>s.geography))].sort((a,b)=>
@@ -2141,7 +2146,7 @@ function renderSidebar(){
   const geoOpts=[["all","All"],...geos.map(g=>[g,g])].concat(inMode.some(s=>s.areas)?[["local","Local areas"]]:[]);
   const chip=(attr,k,label,on,n)=>`<button class="f" data-${attr}="${esc(k)}" aria-pressed="${on}"${n===0&&!on?" disabled":""}>${esc(label)}${k!=="all"?` <i>${n}</i>`:""}</button>`;
   document.getElementById("filters").innerHTML=
-    `<div class="frow"><span class="flabel">Topic</span>${topics.map(t=>chip("topic",t,t.charAt(0).toUpperCase()+t.slice(1),state.topic===t,
+    `<div class="frow"><span class="flabel">Topic</span>${topics.map(t=>chip("topic",t,topicName(t),state.topic===t,
         inMode.filter(s=>okQ(s)&&okGeo(s,state.geo)&&okTopic(s,t)).length)).join("")}</div>`+
     `<div class="frow"><span class="flabel">Covers</span>${geoOpts.map(([k,l])=>chip("geo",k,l,state.geo===k,
         inMode.filter(s=>okQ(s)&&okTopic(s,state.topic)&&okGeo(s,k)).length)).join("")}</div>`;

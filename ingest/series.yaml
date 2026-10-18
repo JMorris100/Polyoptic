@@ -464,7 +464,7 @@ series:
 
   - id: oda
     name: Overseas aid as a share of national income
-    topics: [economy, aid]
+    topics: [economy]
     unit: "% of GNI"
     kind: ratio
     geography: UK
@@ -484,7 +484,7 @@ series:
 
   - id: odarefugee
     name: Aid spent on refugees inside the UK
-    topics: [economy, aid, migration]
+    topics: [economy, migration]
     unit: "£m, cash"
     kind: money_cash
     geography: UK
@@ -505,7 +505,7 @@ series:
 
   - id: eugross
     name: Payments to EU institutions, gross
-    topics: [economy, europe]
+    topics: [economy]
     unit: "£m, cash"
     kind: money_cash
     geography: UK
@@ -519,7 +519,7 @@ series:
 
   - id: eureceipts
     name: Receipts from EU institutions
-    topics: [economy, europe]
+    topics: [economy]
     unit: "£m, cash"
     kind: money_cash
     geography: UK
@@ -533,7 +533,7 @@ series:
 
   - id: eunet
     name: Net position with EU institutions
-    topics: [economy, europe]
+    topics: [economy]
     unit: "£m, cash"
     kind: money_cash
     geography: UK
@@ -547,7 +547,7 @@ series:
 
   - id: nondoms
     name: Non-domiciled taxpayers
-    topics: [economy, tax]
+    topics: [economy]
     unit: individuals
     kind: count
     geography: UK
@@ -568,7 +568,7 @@ series:
 
   - id: nondomtax
     name: Tax and NICs paid by non-domiciled taxpayers
-    topics: [economy, tax]
+    topics: [economy]
     unit: "£m, cash"
     kind: money_cash
     geography: UK
@@ -1385,7 +1385,7 @@ series:
 
   - id: popchange5
     name: Five-year population change
-    topics: [population]
+    topics: [migration]
     unit: "%"
     kind: rate
     geography: UK
@@ -1401,7 +1401,7 @@ series:
 
   - id: medianage
     name: Median age
-    topics: [population]
+    topics: [migration]
     unit: "years"
     kind: ratio
     geography: UK
@@ -1418,7 +1418,7 @@ series:
 
   - id: pop015
     name: Population aged 0 to 15
-    topics: [population]
+    topics: [migration]
     unit: "%"
     kind: rate
     geography: UK
@@ -1434,7 +1434,7 @@ series:
 
   - id: pop1664
     name: Population aged 16 to 64
-    topics: [population]
+    topics: [migration]
     unit: "%"
     kind: rate
     geography: UK
@@ -1450,7 +1450,7 @@ series:
 
   - id: pop65
     name: Population aged 65 and over
-    topics: [population]
+    topics: [migration]
     unit: "%"
     kind: rate
     geography: UK
@@ -1466,7 +1466,7 @@ series:
 
   - id: poptotal
     name: Total population
-    topics: [population]
+    topics: [migration]
     unit: "people"
     kind: count
     geography: UK
@@ -1483,7 +1483,7 @@ series:
 
   - id: popdensity
     name: Population density
-    topics: [population]
+    topics: [migration]
     unit: "persons per square kilometre"
     kind: ratio
     geography: UK
@@ -1497,3 +1497,251 @@ series:
       - "[Standard Area Measurements (December 2024) in the UK](https://geoportal.statistics.gov.uk/datasets/ons::standard-area-measurements-for-the-local-authority-districts-december-2024-in-the-uk/about) was used to calculate population density by dividing the total population by the area in square kilometres."
       - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
       - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  # ── Added 2026-10-18: headline ONS series, each checked against the live
+  #    timeseries JSON (title, unit and an annual run) before being added ──
+
+  - id: gdpreal
+    name: Gross domestic product (real)
+    topics: [economy]
+    unit: "£m, chained volume measures"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS National Accounts
+    source_url: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/abmi/ukea
+    source_type: ons_timeseries
+    fetch: {path: economy/grossdomesticproductgdp, cdid: ABMI, dataset: ukea, granularity: years}
+    notes:
+      - "Chained volume measures: output with price changes taken out, so years are comparable in real terms"
+
+  - id: bizinv
+    name: Business investment (real)
+    topics: [economy]
+    unit: "£m, chained volume measures"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS National Accounts
+    source_url: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/npel/cxnv
+    source_type: ons_timeseries
+    fetch: {path: economy/grossdomesticproductgdp, cdid: NPEL, dataset: cxnv, granularity: years}
+
+  - id: saving
+    name: Household saving ratio
+    topics: [economy]
+    unit: "% of household disposable income"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS National Accounts
+    source_url: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/nrjs/ukea
+    source_type: ons_timeseries
+    fetch: {path: economy/grossdomesticproductgdp, cdid: NRJS, dataset: ukea, granularity: years}
+
+  - id: cpi
+    name: CPI inflation rate
+    topics: [economy]
+    unit: "% change on a year earlier"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Consumer price inflation
+    source_url: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23
+    source_type: ons_timeseries
+    fetch: {path: economy/inflationandpriceindices, cdid: D7G7, dataset: mm23, granularity: years}
+    notes:
+      - "The annual figure is the average of the twelve monthly 12-month rates"
+
+  - id: rpi
+    name: RPI inflation rate
+    topics: [economy]
+    unit: "% change on a year earlier"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Consumer price inflation
+    source_url: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/czbh/mm23
+    source_type: ons_timeseries
+    fetch: {path: economy/inflationandpriceindices, cdid: CZBH, dataset: mm23, granularity: years}
+    notes:
+      - "RPI is no longer a National Statistic; ONS publishes it for continuity and recommends CPIH"
+      - "The annual figure is the average of the twelve monthly 12-month rates"
+
+  - id: oohcosts
+    name: Owner occupiers' housing costs
+    topics: [housing, economy]
+    unit: "index, 2015=100"
+    kind: index
+    geography: UK
+    year_basis: calendar
+    source: ONS Consumer price inflation
+    source_url: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/l5p5/mm23
+    source_type: ons_timeseries
+    fetch: {path: economy/inflationandpriceindices, cdid: L5P5, dataset: mm23, granularity: years}
+    notes:
+      - "The housing-costs component of CPIH, measured as the rent an owner occupier would pay for an equivalent home"
+
+  - id: emplfs
+    name: Employment rate, 16 to 64 (LFS)
+    topics: [economy]
+    unit: "% of people aged 16 to 64"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Labour Force Survey
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/lf24/lms
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peopleinwork/employmentandemployeetypes, cdid: LF24, dataset: lms, granularity: years}
+    notes:
+      - "The headline Labour Force Survey rate, back to 1971. The other Employment rate in the catalogue comes from the Annual Population Survey, starts in 2004 and has figures for local areas"
+    discontinuities:
+      - {year: 2024, label: "Switch to Transformed LFS", note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
+
+  - id: inactivity
+    name: Economic inactivity rate, 16 to 64 (LFS)
+    topics: [economy, health]
+    unit: "% of people aged 16 to 64"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Labour Force Survey
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/economicinactivity/timeseries/lf2s/lms
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peoplenotinwork/economicinactivity, cdid: LF2S, dataset: lms, granularity: years}
+    notes:
+      - "People neither in work nor looking for work: students, carers, the retired and the long-term sick among them"
+      - "The headline Labour Force Survey rate, back to 1971. The other Economic inactivity rate comes from the Annual Population Survey, starts in 2004 and has figures for local areas"
+    discontinuities:
+      - {year: 2024, label: "Switch to Transformed LFS", note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
+
+  - id: youthunemp
+    name: Youth unemployment rate
+    topics: [economy, education]
+    unit: "% of economically active 16 to 24 year olds"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Labour Force Survey
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgwy/lms
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peoplenotinwork/unemployment, cdid: MGWY, dataset: lms, granularity: years}
+    discontinuities:
+      - {year: 2024, label: "Switch to Transformed LFS", note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
+
+  - id: vacancies
+    name: Job vacancies
+    topics: [economy]
+    unit: "thousands"
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: ONS Vacancy Survey
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/lms
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peopleinwork/employmentandemployeetypes, cdid: AP2Y, dataset: lms, granularity: years, aggregate: mean}
+
+  - id: realpay
+    name: Average weekly earnings (real)
+    topics: [economy]
+    unit: "£ per week, constant prices"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS Average Weekly Earnings
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/a3wx/lms
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peopleinwork/earningsandworkinghours, cdid: A3WX, dataset: lms, granularity: years}
+    notes:
+      - "Total pay deflated by ONS with CPI, so a pound means the same in every year"
+
+  - id: productivity
+    name: Labour productivity
+    topics: [economy]
+    unit: "index, 2023=100"
+    kind: index
+    geography: UK
+    year_basis: calendar
+    source: ONS Labour Productivity
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/labourproductivity/timeseries/lzvb/prdy
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peopleinwork/labourproductivity, cdid: LZVB, dataset: prdy, granularity: years}
+    notes:
+      - "Output per hour worked across the whole economy"
+
+  - id: psnb
+    name: Public sector net borrowing
+    topics: [economy]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Public Sector Finances
+    source_url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf
+    source_type: ons_timeseries
+    fetch: {path: economy/governmentpublicsectorandtaxes/publicsectorfinance, cdid: J5II, dataset: pusf, granularity: years}
+    notes:
+      - "Excludes public sector banks. Calendar-year totals; the Budget is set on financial years"
+      - "ONS publishes this as net lending, so borrowing shows as a negative number: -150,000 means £150bn borrowed"
+
+  - id: taxreceipts
+    name: Government current receipts
+    topics: [economy]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Public Sector Finances
+    source_url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/anby/pusf
+    source_type: ons_timeseries
+    fetch: {path: economy/governmentpublicsectorandtaxes/publicsectorfinance, cdid: ANBY, dataset: pusf, granularity: years}
+    notes:
+      - "General government total current receipts: taxes, National Insurance and other income"
+
+  - id: tradebal
+    name: Trade balance
+    topics: [economy]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Balance of Payments
+    source_url: https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/timeseries/ikbj/ukea
+    source_type: ons_timeseries
+    fetch: {path: economy/nationalaccounts/balanceofpayments, cdid: IKBJ, dataset: ukea, granularity: years}
+    notes:
+      - "Exports minus imports of goods and services; negative is a deficit"
+
+  - id: lefemale
+    name: Female life expectancy
+    topics: [health]
+    unit: "years"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/bulletins/lifeexpectancyforlocalareasoftheuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: life-expectancy-female}
+    notes:
+      - "Life expectancy at birth, the total — chart it beside healthy life expectancy to see how many of those years are spent in good health"
+      - "Pooled 2-year estimates, plotted at the first year of each band — a point here summarises 2 years, not one"
+      - "Life expectancy at birth is a period measure based on mortality rates observed in the given reference period. It does not predict how long babies born during this period will actually live."
+
+  - id: lemale
+    name: Male life expectancy
+    topics: [health]
+    unit: "years"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/bulletins/lifeexpectancyforlocalareasoftheuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: life-expectancy-male}
+    notes:
+      - "Life expectancy at birth, the total — chart it beside healthy life expectancy to see how many of those years are spent in good health"
+      - "Pooled 2-year estimates, plotted at the first year of each band — a point here summarises 2 years, not one"
+      - "Life expectancy at birth is a period measure based on mortality rates observed in the given reference period. It does not predict how long babies born during this period will actually live."
