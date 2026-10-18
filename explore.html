@@ -167,6 +167,7 @@ body.side-collapsed .siderail{display:block}
   .pmain.has-work .wsum{gap:2px 6px;align-items:baseline}
   .pmain.has-work .wc b{font-size:14px}
   .pmain.has-work .wc span{display:none}
+  .pmain.has-work .warea .wc span{display:block}
   .pmain.has-work .wc.wout{padding:2px 7px}
   .pmain.has-work .wo{font-size:13px;padding:0}
   .pmain.has-work .wcap{display:block}
@@ -321,7 +322,12 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .tbar button svg{width:13px;height:13px}
 .ptable{width:100%;border-collapse:collapse;font-size:12.5px}
 .ptable th{position:sticky;top:0;background:var(--surface);text-align:left;font-weight:600;
-  padding:7px 10px;border-bottom:1px solid var(--rule);white-space:nowrap;z-index:1}
+  padding:7px 10px;box-shadow:inset 0 -1px 0 var(--rule);white-space:nowrap;z-index:1}
+/* the header is a solid strip: nothing scrolling under it shows above it */
+.pbody.scrolls .ptable{margin-top:0}
+.thsort{font:inherit;font-weight:600;color:inherit;background:transparent;border:0;padding:0;cursor:pointer}
+.thsort:hover{color:var(--purple)}
+.thsort.on{color:var(--purple)}
 .ptable th i{display:block;font-family:"IBM Plex Mono";font-size:9.5px;font-style:normal;
   color:var(--muted);font-weight:400;letter-spacing:.04em}
 .ptable td{padding:5px 10px;border-bottom:1px solid var(--rule-soft)}
@@ -334,6 +340,31 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .areasvg{width:100%;min-width:720px;max-width:940px;height:auto;display:block}
 /* the scale stays put while the areas scroll under it */
 .areahd{position:sticky;top:0;z-index:2;background:var(--surface)}
+/* the map */
+.mapwrap{display:flex;gap:22px;align-items:flex-start;padding:2px 0 6px}
+.mapsvg{display:block;flex:none;width:auto;max-width:62%}
+.mapa{stroke:var(--surface);stroke-width:.6;vector-effect:non-scaling-stroke;cursor:pointer;transition:opacity .12s}
+.mapa:hover{stroke:var(--ink);stroke-width:1.5}
+.mapna{fill:var(--rule);opacity:.55;stroke:var(--surface);stroke-width:.6;vector-effect:non-scaling-stroke}
+.mapsel{fill:none;stroke:var(--purple);stroke-width:2;vector-effect:non-scaling-stroke;pointer-events:none}
+.mapring{fill:none;stroke:var(--purple);stroke-width:2;vector-effect:non-scaling-stroke;pointer-events:none}
+.mapring.halo{stroke:var(--surface);stroke-width:5}
+.mapbox{fill:none;stroke:var(--muted);stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:3 3}
+.maplbl{font-family:"IBM Plex Mono",ui-monospace,monospace;fill:var(--muted)}
+.mapside{flex:1;min-width:190px;max-width:320px;display:flex;flex-direction:column;gap:2px}
+.msfind{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
+.msfind span,.mslbl{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.msfind select{font:inherit;font-size:12.5px;padding:7px 8px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:3px}
+.mslbl{margin:10px 0 4px}
+.msrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:12.5px;
+  text-align:left;cursor:pointer;border-radius:3px;border-left:3px solid transparent}
+.msrow:hover{background:var(--hover)}
+.msrow.on{background:var(--soft);border-left-color:var(--purple)}
+.msw{width:11px;height:11px;border-radius:2px;flex-shrink:0}
+.msn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.msv{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted)}
+.msnote{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:12px}
+@container (max-width:620px){.mapwrap{flex-direction:column}.mapsvg{max-width:100%;margin:0 auto}.mapside{max-width:none;width:100%}}
 /* the area views: names in the text face, values in mono, faint stripes */
 .arealbl{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:12px;fill:var(--ink)}
 .areaval{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;fill:var(--muted)}
@@ -707,11 +738,11 @@ const CHART_GROUPS = [
     ["bar","Columns"],["stack","Stacked area"],["colstack","Stacked columns"],
     ["slope","Slope"],["scatter","Scatter"],["small","Small multiples"]]],
   ["By area", [
-    ["areas","Ranking"],["arrow","Change"],["range","Range"],["heat","Heatmap"]]],
+    ["map","Map"],["areas","Ranking"],["arrow","Change"],["range","Range"],["heat","Heatmap"]]],
 ];
 const CHART_TYPES = CHART_GROUPS.flatMap(([,xs])=>xs);
 /* The views that read data/areas rather than the series' own values. */
-const AREA_CHARTS = new Set(["areas","arrow","range","heat"]);
+const AREA_CHARTS = new Set(["map","areas","arrow","range","heat"]);
 const AREA_SORTS = [["desc","Highest first"],["asc","Lowest first"],["name","A to Z"],["change","Biggest change"]];
 
 /* Glyphs for the picker. Deliberately crude — at 26px a tile reads as a
@@ -732,6 +763,7 @@ const CHART_ICON={
   areas:  CG(`<g><line x1="9" y1="3" x2="9" y2="16" stroke="currentColor" stroke-width="1" opacity=".45" stroke-dasharray="2 2"/><g fill="currentColor">${[[20,4],[16,8],[6,12],[13,16]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2"/>`).join("")}</g></g>`),
   arrow:  CG(`<g stroke="currentColor" stroke-width="1.6" fill="none" stroke-linecap="round">${[[4,4,18],[9,9,22],[6,14,13]].map(([x1,y,x2])=>`<line x1="${x1}" y1="${y}" x2="${x2-3}" y2="${y}"/><path d="M${x2-5} ${y-2.6} L${x2} ${y} L${x2-5} ${y+2.6}"/>`).join("")}</g>`),
   range:  CG(`<g>${[[4,13,4],[8,20,9],[6,16,14]].map(([a,b,y])=>`<line x1="${a}" y1="${y}" x2="${b}" y2="${y}" stroke="currentColor" stroke-width="1.5" opacity=".5"/><circle cx="${a}" cy="${y}" r="2" fill="currentColor" opacity=".45"/><circle cx="${b}" cy="${y}" r="2" fill="currentColor"/>`).join("")}</g>`),
+  map:    CG(`<path d="M10 2 L14 3 L13 6 L16 8 L17 12 L20 15 L12 16 L8 15 L10 12 L7 9 L9 6 Z" fill="currentColor" opacity=".55"/><path d="M5 9 L7 8 L7 11 L5 11 Z" fill="currentColor" opacity=".35"/><path d="M13 6 L16 8 L17 12 L13 12 Z" fill="currentColor"/>`),
   heat:   CG(`<g fill="currentColor">${[0,1,2,3].flatMap(r=>[0,1,2,3,4].map(c=>`<rect x="${2+c*4.7}" y="${2+r*3.9}" width="3.7" height="2.9" rx=".7" opacity="${[.18,.34,.55,.8,1][(r+c)%5]}"/>`)).join("")}</g>`),
 };
 const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["rel","Relative to last series"],["yoy","Year-on-year %"],
@@ -979,22 +1011,41 @@ function workingHtml(p,sets){
   if(AREA_CHARTS.has(p.chart)){
     const code=pr.code, ix=AREAIX, d=AREADATA.get(set.id);
     if(!code||!ix||ix==="error"||!d||d==="error"||!d.values[code]) return "";
-    const lvl=areaLevel(p,set.id);
-    /* Read the years back out of the data rather than carrying them on the
-       mark, so the panel follows the chart when the range or level moves. */
-    const shown = p.chart!=="areas"
-      ? (()=>{const {y0,y1}=areaPair(p,d,ix,lvl);
-              return [y0,y1].map(y=>[y,d.values[code][y-d.start]]);})()
-      : [[areaYear(d,ix,lvl,p.to).year, null]].map(([y])=>[y,d.values[code][y-d.start]]);
-    const s=set.meta;
-    const delta = shown.length===2 && shown[0][1]!=null && shown[1][1]!=null
-      ? `<span class="wop">${fmt(shown[1][1])} − ${fmt(shown[0][1])} = ${shown[1][1]-shown[0][1]>=0?"+":"−"}${fmt(Math.abs(shown[1][1]-shown[0][1]))}</span>` : "";
-    return `<div class="working"><button class="wx" data-act="unprobe" title="Close" aria-label="Close working">×</button>
-      <span class="wtop">${esc(areaName(ix,code))} · ${shown.map(([y,v])=>`${y} ${fmt(v)}`).join(" → ")} ${esc(s.unit)}</span>
-      ${delta}
-      <span class="wop wmut">As published — the area views apply no transform. ${esc((ix.levelNames||{})[lvl]||lvl)}, area code ${esc(code)}.</span>
-      <span class="wop wmut">${esc(s.source)}${s.source_url?` · <a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}${
-        d.source_api?` · <a href="${esc(d.source_api)}" target="_blank" rel="noopener">API ↗</a>`:""} · <a href="data/areas/${esc(set.id)}.json">Local figures ↗</a></span>
+    /* the area's own level: on the council map a shire county sits beside
+       the unitaries, and is ranked against the other counties */
+    const lvl=(ix.areas[code]||{}).l||areaLevel(p,set.id);
+    const s=set.meta, lvlName=((ix.levelNames||{})[lvl]||lvl);
+    const src=`As published — the area views apply no transform. ${esc(s.source)}${s.source_url?` · <a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}${
+        d.source_api?` · <a href="${esc(d.source_api)}" target="_blank" rel="noopener">API ↗</a>`:""} · <a href="data/areas/${esc(set.id)}.json">Local figures ↗</a>`;
+    let sum, cap;
+    if(p.chart==="arrow"||p.chart==="range"){
+      /* Read the years back out of the data rather than carrying them on the
+         mark, so the card follows the chart when the range or level moves. */
+      const {y0,y1}=areaPair(p,d,ix,lvl), a=d.values[code][y0-d.start], b=d.values[code][y1-d.start];
+      if(a==null||b==null) return "";
+      const ch=b-a, pc=a?ch/Math.abs(a)*100:null;
+      sum=cell(vfmt(a),String(y0))+opc("→")+cell(vfmt(b),String(y1))+opc("=")+
+          cell(`${ch>=0?"+":"−"}${vfmt(Math.abs(ch))}`,pc==null?"change":`change, ${pc>=0?"+":"−"}${Math.abs(pc).toFixed(1)}%`,"wout");
+      cap=esc(s.unit);
+    } else {
+      const {year,map}=areaYear(d,ix,lvl,p.to), v=map[code];
+      if(v==null) return "";
+      const ranked=Object.entries(map).sort((x,y)=>y[1]-x[1]), n=ranked.length;
+      const rank=ranked.findIndex(r=>r[0]===code)+1;
+      const vals=ranked.map(r=>r[1]), count=areaIsCount(set,d,year,vals);
+      const natCode=["K02000001","E92000001","K03000001"].find(c=>d.values[c]&&d.values[c][year-d.start]!=null);
+      const ref=count?median(vals):natCode?d.values[natCode][year-d.start]:null;
+      const refName=count?"the typical area":(ix.areas[natCode]||{}).n||"national";
+      const ord=k=>k+(["th","st","nd","rd"][((k%100)-20)%10]||["th","st","nd","rd"][k%100]||"th");
+      sum=cell(vfmt(v),`${year}, ${esc(s.unit)}`,"wout")+
+          cell(ord(rank),`of ${n} ${esc(lvlName.toLowerCase())}, highest first`)+
+          (ref!=null?cell(`${v-ref>=0?"+":"−"}${vfmt(Math.abs(v-ref))}`,`against ${esc(refName)}, ${vfmt(ref)}`):"");
+      cap="";
+    }
+    return `<div class="working warea"><button class="wx" data-act="unprobe" title="Close" aria-label="Close working">×</button>
+      <div class="wyear">${esc(areaName(ix,code))}<span>${esc(lvlName)} · ${esc(code)}</span></div>
+      <div class="wblk"><div class="wname"><span class="wdot" style="background:${set.colour}"></span>${esc(set.name)}</div>
+      <div class="wsum">${sum}</div>${cap?`<div class="wcap">${cap}</div>`:""}<div class="wsrc">${src}</div></div>
     </div>`;
   }
 
@@ -1063,7 +1114,7 @@ function yearWorkingHtml(p,sets){
    pick the nearest period, drawing a line down the chart there; the area
    views take a click on a row. */
 const YEARPICK=new Set(["line","step","dots","area","gap","bar","stack","colstack"]);
-const PROBEABLE=new Set([...YEARPICK,"areas","arrow","range","heat"]);
+const PROBEABLE=new Set([...YEARPICK,"map","areas","arrow","range","heat"]);
 
 /* ══════════════════════════════════════════════
    CHART ENGINE — height comes from the panel
@@ -1485,6 +1536,7 @@ function renderAreaChart(p,sets){
   return p.chart==="arrow" ? renderAreaArrow(p,a)
        : p.chart==="range" ? renderAreaRange(p,a)
        : p.chart==="heat"  ? renderAreaHeat(p,a)
+       : p.chart==="map"   ? renderAreaMap(p,a)
        :                     renderAreaRanking(p,a);
 }
 
@@ -1634,6 +1686,176 @@ function renderAreaRange(p,{set,ix,d,lvl}){
     areaHit(g,set,r[0],y);
   });
   return areaSvg(H,g,`${set.name} by area, ${y0} and ${y1}`,f.gh);
+}
+
+/* ── the map ───────────────────────────────────────────────────────
+   One indicator, one year, every area coloured by where it falls. Shapes are
+   ONS "ultra generalised" boundaries (ingest/geo.py), fetched the first time
+   a map is asked for. Colours are in seven bins of equal count rather than
+   equal width: local figures are skewed — Westminster has eight times the
+   businesses of a typical council — and equal-width bins would paint almost
+   every area the same pale shade. The legend prints each bin's range, so the
+   reader is never left guessing what a shade means. */
+const GEO=new Map();
+function geoData(name){
+  if(GEO.has(name)) return GEO.get(name);
+  areaGet(`data/geo/${name}.json`,d=>GEO.set(name,d));
+  return null;
+}
+const ITL1_RGN={TLC:"E12000001",TLD:"E12000002",TLE:"E12000003",TLF:"E12000004",TLG:"E12000005",
+                TLH:"E12000006",TLI:"E12000007",TLJ:"E12000008",TLK:"E12000009"};
+const ITL1_CTRY={TLL:"W92000004",TLM:"S92000003",TLN:"N92000002"};
+/* per level: the shapes that give the whole UK outline (base), any shapes
+   drawn on top (over), and how a shape's code maps to a code in the data */
+const MAP_CFG={
+  la:      {base:"lad", over:"cty"},
+  district:{base:"lad"},
+  county:  {base:"lad", over:"cty"},
+  cauth:   {base:"lad", over:"cauth"},
+  region:  {base:"itl1", key:c=>ITL1_RGN[c]},
+  country: {base:"itl1", key:c=>ITL1_CTRY[c]||"E92000001"},
+  itl2:    {base:"itl2"},
+  itl3:    {base:"itl3"}
+};
+/* London, in the drawing's units, and where its enlargement sits: in the
+   North Sea, clear of the coast */
+const LDN={x:2052,y:3436,w:236,h:184}, LDN_AT={x:1990,y:1500,s:3};
+/* the box round a path, read from its absolute start and relative steps */
+function pathBox(d){
+  let x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  for(const ring of d.split("M").slice(1)){
+    const n=ring.replace(/[lz]/g," ").trim().split(/\s+|(?=-)/).map(Number);
+    let x=n[0],y=n[1];
+    for(let i=0;i<n.length;i+=2){ if(i){x+=n[i];y+=n[i+1];}
+      if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; }
+  }
+  return {x0,y0,x1,y1};
+}
+const firstPt=d=>{const m=/^M(-?\d+) (-?\d+)/.exec(d); return m?[+m[1],+m[2]]:[0,0];};
+
+/* A count of things (businesses, people) is not comparable between areas of
+   different sizes. Reads the bundle's own "kind" first, and falls back to the
+   shape of the data: a national figure far above every area is a total. */
+function areaIsCount(set,d,year,vals){
+  if(set.meta.kind==="count") return true;
+  const nat=["K02000001","E92000001","K03000001"].map(c=>d.values[c]&&d.values[c][year-d.start]).find(v=>v!=null);
+  return nat!=null && vals.length>0 && nat>Math.max(...vals)*1.5;
+}
+
+function mapBins(vals){
+  const s=[...vals].sort((a,b)=>a-b), n=s.length, k=Math.min(7,new Set(s).size);
+  const cuts=[];
+  for(let i=1;i<k;i++){ const c=s[Math.floor(i*n/k)]; if(!cuts.length||c>cuts[cuts.length-1]) cuts.push(c); }
+  return {cuts, min:s[0], max:s[n-1], bin:v=>{let i=0; while(i<cuts.length&&v>=cuts[i]) i++; return i;}};
+}
+
+function renderAreaMap(p,{set,ix,d,lvl}){
+  const cfg=MAP_CFG[lvl];
+  if(!cfg) return areaBlank("Nothing to map at this level",
+    "The UK totals are a single figure each. Pick countries, regions or a local level in the chart's settings.");
+  const base=geoData(cfg.base), over=cfg.over?geoData(cfg.over):null;
+  if(base==="error"||over==="error") return areaBlank("Map unavailable","The boundary files could not be loaded. The other area views are unaffected.");
+  if(!base||(cfg.over&&!over)) return areaBlank("Loading the map…","Boundaries for this level, fetched the first time you ask for them.");
+
+  const {year,map}=areaYear(d,ix,lvl,p.to);
+  if(!Object.keys(map).length) return areaBlank("Nothing at this level","No areas at this level carry a figure for this indicator.");
+  const count=areaIsCount(set,d,year,Object.values(map));
+  /* Councils: two-tier England is run by counties as well as districts, so a
+     map of unitary councils alone has holes across the shires. Rates fill
+     them with the county's figure, which compares fairly; counts do not,
+     since a county's total dwarfs any single council's. */
+  let extra={};
+  if(lvl==="la"&&!count){
+    const c=areaYear(d,ix,"county",year);
+    if(c.year===year) for(const [k,v] of Object.entries(c.map)) if(k.startsWith("E10")) extra[k]=v;
+  }
+  /* only what is drawn: Inner and Outer London are filed as regions but sit
+     inside the London region, and areas with no current boundary have no shape */
+  const drawn=new Set();
+  for(const c of Object.keys(base.areas)) drawn.add(cfg.key?cfg.key(c):c);
+  if(over) for(const c of Object.keys(over.areas)) drawn.add(c);
+  for(const m of [map,extra]) for(const c of Object.keys(m)) if(!drawn.has(c)) delete m[c];
+  if(!Object.keys(map).length) return areaBlank("Nothing to map","None of the areas with a figure at this level have a current boundary to draw.");
+  const all={...map,...extra};
+  const B=mapBins(Object.values(all)), ramp=RAMP();
+  const colourOf=v=>ramp[Math.round(B.bin(v)*(ramp.length-1)/Math.max(1,B.cuts.length))];
+
+  const pr=state.probe, selCode=pr&&pr.key===p.key&&pr.code;
+  const shapes=[];   /* [dataCode|null, path, layer] */
+  for(const [c,path] of Object.entries(base.areas)){
+    const k=cfg.key?cfg.key(c):c;
+    shapes.push([k in all && (!cfg.over||lvl==="la"&&k in map)?k:null, path]);
+  }
+  if(over) for(const [c,path] of Object.entries(over.areas)) if(c in all) shapes.push([c,path]);
+
+  const VW=base.w, VH=base.h;
+  const Hpx=Math.max(560,Math.min(780,p.h+300)), k=Hpx/VH, u=px=>(px/k).toFixed(0);
+  const pathEl=([code,dd])=> code
+    ? `<path class="mapa" d="${dd}" fill="${colourOf(all[code])}" data-probe="${esc(set.id)}" data-area="${code}"><title>${esc(areaName(ix,code))}: ${fmt(all[code])}</title></path>`
+    : `<path class="mapna" d="${dd}"/>`;
+  const g=[];
+  g.push(`<g class="mapg">${shapes.map(pathEl).join("")}</g>`);
+  const selPaths=shapes.filter(s=>s[0]&&s[0]===selCode);
+  if(selPaths.length){
+    g.push(selPaths.map(s=>`<path class="mapsel" d="${s[1]}"/>`).join(""));
+    /* a small area is a speck at this scale, so a ring says where it is */
+    const bx=selPaths.map(s=>pathBox(s[1])).reduce((a,b)=>({x0:Math.min(a.x0,b.x0),y0:Math.min(a.y0,b.y0),x1:Math.max(a.x1,b.x1),y1:Math.max(a.y1,b.y1)}));
+    if(Math.max(bx.x1-bx.x0,bx.y1-bx.y0)<+u(16)){
+      const cx=((bx.x0+bx.x1)/2).toFixed(0), cy=((bx.y0+bx.y1)/2).toFixed(0);
+      g.push(`<circle class="mapring halo" cx="${cx}" cy="${cy}" r="${u(10)}"/><circle class="mapring" cx="${cx}" cy="${cy}" r="${u(10)}"/>`);
+    }
+  }
+
+  /* London, enlarged, where the boroughs can be clicked */
+  const inLdn=shapes.filter(([code,dd])=>{const [x,y]=firstPt(dd); return x>=LDN.x-20&&x<=LDN.x+LDN.w+20&&y>=LDN.y-20&&y<=LDN.y+LDN.h+20;});
+  if(inLdn.some(s=>s[0])&&["la","itl2","itl3"].includes(lvl)){
+    const T=`translate(${LDN_AT.x} ${LDN_AT.y}) scale(${LDN_AT.s}) translate(${-LDN.x} ${-LDN.y})`;
+    g.push(`<clipPath id="ldn${p.key}"><rect x="${LDN.x}" y="${LDN.y}" width="${LDN.w}" height="${LDN.h}"/></clipPath>`);
+    g.push(`<rect class="mapbox" x="${LDN_AT.x}" y="${LDN_AT.y}" width="${LDN.w*LDN_AT.s}" height="${LDN.h*LDN_AT.s}"/>`);
+    g.push(`<g transform="${T}" clip-path="url(#ldn${p.key})">${inLdn.map(pathEl).join("")}${
+      inLdn.filter(s=>s[0]&&s[0]===selCode).map(s=>`<path class="mapsel" d="${s[1]}"/>`).join("")}</g>`);
+    g.push(`<text class="maplbl" x="${LDN_AT.x}" y="${LDN_AT.y-u(6)}" font-size="${u(11)}">London</text>`);
+    g.push(`<rect class="mapbox" x="${LDN.x}" y="${LDN.y}" width="${LDN.w}" height="${LDN.h}"/>`);
+  }
+
+  /* the key, down the open Atlantic south-west of Wales: one row per shade
+     with the range it covers, and the grey for areas with no figure */
+  const nb=B.cuts.length+1, rh=+u(16), kx=20, ky=3330;
+  const lows=[B.min,...B.cuts], rows=lows.map((lo,i)=>[ramp[Math.round(i*(ramp.length-1)/Math.max(1,nb-1))],
+    `${fmtShort(lo)} – ${fmtShort(i<nb-1?lows[i+1]:B.max)}`]);
+  g.push(`<text class="maplbl" x="${kx}" y="${ky-rh*0.6}" font-size="${u(10.5)}">${year}${set.meta.unit.length<=8?" · "+esc(set.meta.unit):""}</text>`);
+  [...rows,[null,"No figure"]].forEach(([c,t],i)=>{
+    const y=ky+i*rh;
+    g.push(`<rect ${c?`fill="${c}"`:`class="mapna"`} x="${kx}" y="${y}" width="${u(11)}" height="${u(11)}" rx="${u(2)}"/>`);
+    g.push(`<text class="maplbl" x="${kx+ +u(17)}" y="${(y+ +u(9.5)).toFixed(0)}" font-size="${u(10.5)}">${esc(t)}</text>`);
+  });
+
+  const svg=`<svg class="mapsvg" viewBox="0 0 ${VW} ${VH}" style="height:${Hpx}px" role="img" aria-label="${esc(set.name)} by area, ${year}, map">${g.join("")}</svg>`;
+
+  /* beside the map: find an area, and the top and bottom five */
+  const ranked=Object.entries(map).sort((a,b)=>b[1]-a[1]);
+  const row=([c,v])=>`<button class="msrow${c===selCode?" on":""}" data-probe="${esc(set.id)}" data-area="${c}">
+      <span class="msw" style="background:${colourOf(v)}"></span><span class="msn">${esc(areaName(ix,c))}</span><span class="msv">${fmt(v)}</span></button>`;
+  const opts=Object.keys(all).map(c=>[c,areaName(ix,c)]).sort((a,b)=>a[1].localeCompare(b[1]))
+    .map(([c,n])=>`<option value="${c}"${c===selCode?" selected":""}>${esc(n)}</option>`).join("");
+  const lvlName=((ix.levelNames||{})[lvl]||lvl).toLowerCase();
+  const notes=[];
+  if(Object.keys(extra).length) notes.push("Shire counties are shown as a whole, with the county's figure.");
+  else if(lvl==="la") notes.push("Grey areas are two-tier counties: their councils are under Districts and Counties.");
+  if(lvl==="region"||lvl==="cauth"||lvl==="county"||lvl==="district") notes.push(`Grey areas are not ${lvlName}.`);
+  const side=`<div class="mapside">
+    <label class="msfind"><span>Find an area</span><select data-act="mapfind" data-probe-id="${esc(set.id)}"><option value="">Choose…</option>${opts}</select></label>
+    ${ranked.length<=12 ? `<div class="mslbl">Highest first</div>${ranked.map(row).join("")}`
+      : `<div class="mslbl">Highest</div>${ranked.slice(0,5).map(row).join("")}
+         <div class="mslbl">Lowest</div>${ranked.slice(-5).reverse().map(row).join("")}`}
+    <div class="msnote">${["Click an area to see its figure, its rank and how it compares.",...notes].map(esc).join(" ")}</div>
+  </div>`;
+  return `<div class="mapwrap">${svg}${side}</div>`;
+}
+/* short numbers for the key, where space is tight */
+function fmtShort(v){
+  const a=Math.abs(v);
+  return a>=1e6?(v/1e6).toFixed(a>=1e7?0:1)+"m" : a>=1e4?(v/1e3).toFixed(0)+"k" : a>=1000?(v/1e3).toFixed(1)+"k" : fmt(v);
 }
 
 function renderAreaHeat(p,{set,ix,d,lvl}){
@@ -1870,9 +2092,11 @@ function tableFor(p,sets){
     if(a.err) return a.err;
     const {rows,year}=areaRows(p,a.d,a.ix,a.lvl);
     if(!rows.length) return `<div class="blank"><h3>Nothing at this level</h3><div>No areas here carry a figure.</div></div>`;
-    rows.sort((x,y)=>y[2]-x[2]);
-    return `<table class="ptable"><thead><tr><th>Area</th><th>Code</th>
-      <th class="num">${year} · ${esc(a.set.meta.unit)}</th></tr></thead><tbody>${
+    const o=p.asort==="name"||p.asort==="asc"?p.asort:"desc";
+    rows.sort(o==="name"?(x,y)=>x[1].localeCompare(y[1]):o==="asc"?(x,y)=>x[2]-y[2]:(x,y)=>y[2]-x[2]);
+    const sb=(k,label,on)=>`<button class="thsort${on?" on":""}" data-act="tsort" data-k="${k}">${label}</button>`;
+    return `<table class="ptable"><thead><tr><th>${sb("name","Area"+(o==="name"?" ↓ A–Z":""),o==="name")}</th><th>Code</th>
+      <th class="num">${sb(o==="desc"?"asc":"desc",`${year} · ${esc(a.set.meta.unit)} ${o==="asc"?"↑":o==="desc"?"↓":""}`,o!=="name")}</th></tr></thead><tbody>${
       rows.map(r=>`<tr><td>${esc(r[1])}</td><td class="mono">${esc(r[0])}</td><td class="num">${fmt(r[2])}</td></tr>`).join("")
     }</tbody></table>`;
   }
@@ -2054,6 +2278,7 @@ function panelHtml(p,i){
       ? `<div class="tbar"><span>Exactly the numbers plotted — same transform, same rounding as the axis.</span>
            <button data-act="csv">${IC.csv} Download CSV</button></div>
          <div class="pbody scrolls" style="max-height:${p.h}px">${tableFor(p,sets)}</div>`
+      : p.chart==="map" ? `<div class="pbody">${chart}</div>`
       : `<div class="pbody${tall?" scrolls":""}"${tall?` style="max-height:${p.h}px"`:""}>${chart}</div>`;
     /* The area view draws one series and ignores the transform, so it gets a
        legend that says so. Left to the general one it would caption a chart of
@@ -2382,6 +2607,7 @@ document.getElementById("stack").addEventListener("click",e=>{
   else if(act==="cutbefore"){ p.to=Math.max(p.from, +actEl.dataset.v-1); state.probe=null; }
   else if(act==="cutafter"){ p.from=Math.min(p.to, +actEl.dataset.v); state.probe=null; }
   else if(act==="unprobe") state.probe=null;
+  else if(act==="tsort") p.asort=actEl.dataset.k;
   else if(act==="charttile") p.chart=actEl.dataset.v;
   else if(act==="pair") p.sel=actEl.dataset.v.split(",");
   else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,src:p.src,gran:p.gran,h:p.h,w:p.w,lvl:p.lvl,asort:p.asort,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
@@ -2432,6 +2658,7 @@ document.getElementById("stack").addEventListener("change",e=>{
   else if(act==="trans") p.trans=e.target.value;
   else if(act==="lvl") p.lvl=e.target.value;
   else if(act==="asort") p.asort=e.target.value;
+  else if(act==="mapfind") state.probe=e.target.value?{key:p.key,id:e.target.dataset.probeId,code:e.target.value}:null;
   else if(act==="era"){ p.era=e.target.value; }
   else if(act==="src"){ p.src=e.target.value;
     /* remembered as the default for the next new chart — except "off", which
@@ -2808,7 +3035,13 @@ const exportCss=th=>`
   .stat{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:24px}
   .ttl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:19px;fill:${th.ink}}
   .sub{font-size:11px;fill:${th.muted}}
-  .cred{font-size:10px;fill:${th.muted}}`;
+  .cred{font-size:10px;fill:${th.muted}}
+  .mapa{stroke:${th.bg};stroke-width:.6}
+  .mapna{fill:${th.grid};opacity:.55;stroke:${th.bg};stroke-width:.6}
+  .mapsel,.mapring{fill:none;stroke:#7355E8;stroke-width:6}
+  .mapring.halo{stroke:${th.bg};stroke-width:14}
+  .mapbox{fill:none;stroke:${th.muted};stroke-width:3;stroke-dasharray:9 9}
+  .maplbl{fill:${th.muted}}`;
 
 function exportPng(i){
   const p=state.panels[i], sets=buildSets(p);
@@ -2825,9 +3058,12 @@ function exportPng(i){
   const PAD=26, TOP=74+(stats.length?40:0), LEGEND=keyed?26:0, SCALE=2, CRED_LH=13;
   const inner=svgs.map(s=>{
     const vb=s.getAttribute("viewBox").split(/\s+/).map(Number);
+    /* the map is drawn in boundary units; it goes into the image at a fixed
+       height and its own width, rather than stretched to the chart width */
+    if(s.classList.contains("mapsvg")) return {markup:s.innerHTML, w:vb[2], h:vb[3], dh:620, dw:620*vb[2]/vb[3], gap:8};
     return {markup:s.innerHTML, w:vb[2], h:vb[3], gap:s.classList.contains("areahd")?0:8};
   });
-  const bodyH=inner.reduce((a,s)=>a+s.h+s.gap,0);
+  const bodyH=inner.reduce((a,s)=>a+(s.dh||s.h)+s.gap,0);
 
   /* The credit block is measured before the canvas is sized: Harvard puts a
      full citation per series down there, so the image has to grow to fit it
@@ -2844,8 +3080,8 @@ function exportPng(i){
 
   let y=TOP, parts="";
   inner.forEach(s=>{
-    parts+=`<svg x="${PAD}" y="${y}" width="${W}" height="${s.h}" viewBox="0 0 ${s.w} ${s.h}">${s.markup}</svg>`;
-    y+=s.h+s.gap;
+    parts+=`<svg x="${PAD}" y="${y}" width="${s.dw||W}" height="${s.dh||s.h}" viewBox="0 0 ${s.w} ${s.h}">${s.markup}</svg>`;
+    y+=(s.dh||s.h)+s.gap;
   });
   const legend=!keyed?"":sets.map((s,k)=>{
     const x=PAD+k*Math.min(300,(W)/sets.length);

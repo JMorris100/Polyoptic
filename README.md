@@ -104,8 +104,8 @@ power per-person, real-terms and %-of-GDP everywhere.
 - Up to four series on one chart, from any topics; filter the catalogue by topic and by what it
   covers (UK, Great Britain, England…, or series with local-area figures)
 - **Over time:** line, step, dots, area, gap between two, columns, stacked
-  area, stacked columns, slope, scatter, small multiples. **By area:** ranking,
-  change, range, heatmap
+  area, stacked columns, slope, scatter, small multiples. **By area:** map,
+  ranking, change, range, heatmap
 - **Rebase to 100 · Relative to last series · Year-on-year % · 3-year average · Real terms · Per person · % of GDP**
 - Rebasing uses the first year every series on the chart has a value, so all
   the lines start together at 100; the chart starts at that year
@@ -298,9 +298,10 @@ shows if `data/bundle.json` fails to load, and it is labelled as such.
   a single national figure per id, and the schema still has no general
   `geography` dimension — the area files sit beside the bundle rather than
   inside the series objects.
-- The area view is a ranking, not a map. Boundary polygons are a much larger
-  download than the figures they would colour, and a ranked list answers
-  "where does this area sit" without one.
+- The map uses ONS ultra-generalised boundaries (`data/geo/`, built by
+  `python ingest/geo.py`), fetched only when a map is opened — about 200 KB
+  per level. They are current boundaries, so areas abolished in past
+  reorganisations have a figure but no shape and are left off the map.
 - No sub-annual data. Everything collapses to years at ingest.
 - No tests.
 
