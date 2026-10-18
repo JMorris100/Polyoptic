@@ -82,7 +82,11 @@ function frame(o){
   });
   if(o.base!=null&&o.base>ax.mn&&o.base<ax.mx&&!ax.ticks.some(v=>same(v,o.base)))
     g.push(`<line class="baseline" x1="${l}" y1="${Y(o.base).toFixed(1)}" x2="${r}" y2="${Y(o.base).toFixed(1)}"/>`);
-  const span=o.x1-o.x0, step=span>24?5:span>12?2:1;
+  const span=o.x1-o.x0;
+  let step=span>24?5:span>12?2:1;
+  /* on a narrow chart, fewer years rather than years printed over each other */
+  const per=(o.r-o.l)/Math.max(1,span);
+  while(step*per<38&&step<span) step=step<2?2:step<5?5:step*2;
   for(let yr=Math.ceil(o.x0/step)*step;yr<=o.x1;yr+=step)
     g.push(`<text class="axlabel" x="${o.sx(yr).toFixed(1)}" y="${o.H-6}" text-anchor="middle">${yr}</text>`);
   if(o.label) g.push(`<text class="axunit" x="0" y="11">${esc(o.label)}</text>`);

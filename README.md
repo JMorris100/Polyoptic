@@ -8,7 +8,7 @@ GitHub repo.
 
 ```
 polyoptic/
-├── index.html                  home — tiles and featured charts
+├── index.html                  home — explorer walkthrough, tiles and charts
 ├── explore.html                the explorer — compare, transform, export
 ├── chartkit.js, chart.css      the chart drawing rules every page shares
 ├── data.html                   provenance — every raw value, source and API endpoint
