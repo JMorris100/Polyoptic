@@ -113,6 +113,39 @@ svg{display:block}
 section{padding:60px 0;border-top:1px solid var(--rule)}
 .slabel{display:flex;align-items:baseline;gap:13px;margin-bottom:24px;flex-wrap:wrap}
 section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
+.lede.mono{font-family:"IBM Plex Mono";font-size:12px;letter-spacing:.02em;margin-top:-14px}
+/* the process: six steps left to right, the checks beneath the middle three */
+.flow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));column-gap:30px;row-gap:0;margin-top:8px}
+.fstep{position:relative;background:var(--surface);border:1px solid var(--prule);border-radius:12px;padding:16px 15px 16px;
+  box-shadow:0 1px 0 rgba(70,51,168,.04)}
+.fstep:not(.fshare)::after{content:"";position:absolute;top:50%;right:-30px;width:30px;height:2px;background:var(--prule)}
+.fstep:not(.fshare)::before{content:"";position:absolute;top:calc(50% - 4px);right:-31px;border:5px solid transparent;border-left:7px solid var(--purple);
+  border-right:0;z-index:1}
+.fnum{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.12em;color:var(--purple);margin-bottom:6px}
+.fstep h3{font-size:17px;font-weight:700;margin:0 0 8px;letter-spacing:-.01em}
+.fstep p{font-size:13px;color:var(--muted);margin:0;line-height:1.5}
+.fstep ul{list-style:none;margin:0;padding:0;font-size:13px;color:var(--ink);line-height:1.55}
+.fstep li a{color:inherit;text-decoration:none;border-bottom:1px solid var(--prule)}
+.fstep li a:hover{color:var(--purple)}
+.fstep li::before{content:"–";color:var(--purple);margin-right:6px}
+.fsub{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:6px 0 2px}
+.fsub:first-of-type{margin-top:0}
+.fnote{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);margin-top:8px}
+.fshare{background:var(--purple);border-color:var(--purple);color:#fff}
+.fshare .fnum{color:rgba(255,255,255,.7)}
+.fshare p{color:rgba(255,255,255,.88)}
+.fconn{grid-row:2;height:40px;justify-self:center;border-left:1.5px dashed var(--prule)}
+.fchecks{grid-row:3;grid-column:2 / 5;background:var(--soft);border:1px solid var(--prule);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.5}
+.fprov{grid-row:4;grid-column:1 / -1;margin-top:22px;background:var(--hover);border:1px solid var(--rule);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.5}
+.fprov a{color:var(--purple)}
+.flabel{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);margin-bottom:4px}
+@media(max-width:980px){
+  .flow{grid-template-columns:1fr;row-gap:26px}
+  .fstep:not(.fshare)::after{top:auto;bottom:-26px;right:auto;left:28px;width:2px;height:26px}
+  .fstep:not(.fshare)::before{top:auto;bottom:-27px;right:auto;left:24px;border:5px solid transparent;border-top:7px solid var(--purple);border-bottom:0}
+  .fconn{display:none}
+  .fchecks,.fprov{grid-row:auto;grid-column:1;margin-top:0}
+}
 .lede{color:var(--muted);max-width:62ch;margin:-14px 0 30px}
 
 /* chart card */
@@ -121,10 +154,6 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .card-hd h3{font-size:18px;font-weight:700}
 .card-hd .sub{font-size:13px;color:var(--muted);margin-top:5px}
 .tagpill{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--purple);background:var(--soft);border:1px solid var(--prule);padding:4px 10px;border-radius:100px;height:fit-content;white-space:nowrap}
-.chips{display:flex;flex-wrap:wrap;gap:6px;padding:14px 22px 2px}
-.chip{font-family:"IBM Plex Mono";font-size:11.5px;padding:5px 12px;border:1px solid var(--rule);background:transparent;color:var(--muted);border-radius:100px;cursor:pointer;transition:.14s}
-.chip:hover{border-color:var(--ink);color:var(--ink)}
-.chip[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
 .card-bd{padding:16px 22px 6px}
 /* the explorer's chart footer: the sources, then the facts about this view */
 .card-ft{padding:11px 22px 14px;border-top:1px solid var(--rule);display:flex;flex-direction:column;gap:3px}
@@ -260,19 +289,9 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .tico{display:inline-flex;width:30px;height:30px;border-radius:100px;background:var(--soft);color:var(--purple);align-items:center;justify-content:center;flex-shrink:0}
 .tico svg{width:17px;height:17px}
 .tn{font-family:"IBM Plex Sans";font-weight:700;font-size:17.5px;letter-spacing:-0.025em}
-.badge{font-family:"IBM Plex Mono";font-size:9px;letter-spacing:.1em;color:var(--purple);border:1px solid var(--prule);background:var(--soft);padding:2px 6px}
 .tc{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);margin-top:6px}
 .td{font-size:13.5px;color:var(--muted);margin-top:12px;line-height:1.45}
 .tile.soon{opacity:.66}
-
-/* transforms */
-.tf{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
-@media(max-width:900px){.tf{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:480px){.tf{grid-template-columns:1fr}}
-.tfc{background:var(--surface);padding:20px}
-.tfc h4{font-size:15.5px;font-weight:700;margin-bottom:7px}
-.tfc p{font-size:13.5px;color:var(--muted);margin:0}
-.tfc .ic{font-family:"IBM Plex Mono";font-size:10px;color:var(--purple);letter-spacing:.12em;margin-bottom:10px}
 
 /* pairings */
 .pairs{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
@@ -282,21 +301,6 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .pair .pq{font-family:"IBM Plex Sans";font-weight:700;font-size:17px;letter-spacing:-0.025em;margin-bottom:8px}
 .pair .pm{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);line-height:1.7}
 .pair .pm b{color:var(--purple);font-weight:500}
-
-/* Source tiles. Wordmarks in our own type rather than departmental logos:
-   OGL v3.0 licenses the information and specifically carves out the crests
-   and logos, so borrowing those would be the one thing on this site not
-   covered by the licence it leans on everywhere else. */
-.srcs{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:10px}
-.src{display:flex;flex-direction:column;gap:3px;text-decoration:none;
-  border:1px solid var(--rule);background:var(--surface);border-radius:3px;
-  padding:13px 15px 12px;transition:border-color .15s,transform .15s}
-.src:hover{border-color:var(--purple);transform:translateY(-1px)}
-.src .sabbr{font-family:"IBM Plex Sans",sans-serif;font-weight:700;font-size:15px;
-  letter-spacing:-0.01em;color:var(--purple)}
-.src .sfull{font-size:12px;color:var(--ink);line-height:1.35}
-.src .sn{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);margin-top:3px}
-.src .sn::after{content:" ↗";opacity:.6}
 
 footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px solid var(--rule)}
 .fgrid{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap}
@@ -401,6 +405,37 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
   </div>
 </div>
 
+<!-- What the explorer does to a number, in order. The lists are the
+     explorer's own options and the publishers actually in the catalogue,
+     so this cannot promise a feature the tool does not have. -->
+<section id="process">
+  <div class="wrap">
+    <div class="slabel"><h2>From published figure to a chart you can defend</h2></div>
+    <p class="lede mono">What the explorer does, in order, every time</p>
+    <div class="flow">
+      <div class="fstep"><div class="fnum">01</div><h3>Source</h3>
+        <ul id="flowSrc"></ul><div class="fnote" id="flowSrcNote">Refreshed every Monday from each release</div></div>
+      <div class="fstep"><div class="fnum">02</div><h3>Pick</h3>
+        <p id="flowPick">Choose up to four indicators from the catalogue and put them on one chart.</p></div>
+      <div class="fstep"><div class="fnum">03</div><h3>Transform</h3>
+        <ul><li>As published</li><li>Rebase to 100</li><li>Real terms</li><li>Per person</li><li>% of GDP</li><li>Year-on-year %</li><li>3-year average</li><li>Relative to another series</li></ul></div>
+      <div class="fstep"><div class="fnum">04</div><h3>Chart</h3>
+        <div class="fsub">Over time</div><ul><li>Line, step, dots</li><li>Area and columns</li><li>Stacked, slope</li><li>Scatter</li><li>Small multiples</li></ul>
+        <div class="fsub">By area</div><ul><li>Map</li><li>Ranking, change, range</li><li>Heatmap</li></ul></div>
+      <div class="fstep"><div class="fnum">05</div><h3>Context</h3>
+        <ul><li>Government in power, shaded</li><li>Or a ribbon by party, PM or election</li><li>Series breaks marked on the line</li><li>Click any year for the working</li></ul></div>
+      <div class="fstep fshare"><div class="fnum">06</div><h3>Share</h3>
+        <p>Copy a link, download CSV or PNG, or cite it — short or Harvard.</p></div>
+      <div class="fconn" style="grid-column:2"></div><div class="fconn" style="grid-column:3"></div><div class="fconn" style="grid-column:4"></div>
+      <div class="fchecks"><div class="flabel">Comparability checks</div>
+        Warns when geographies, year bases or units don’t match, or a series breaks — and offers the fix: rebase, cut at the break, or show it on a map.</div>
+      <div class="fprov"><div class="flabel">Provenance, the whole way</div>
+        Source, licence, geography and years travel with the number into every link, CSV, PNG and citation. Every raw value is on
+        <a href="data.html">Explorer Verify</a>, next to the exact address it was fetched from.</div>
+    </div>
+  </div>
+</section>
+
 <!-- Questions above topics, deliberately. People arrive searching "has pay kept
      up with inflation uk", never "polyoptic" — and a question is a better door
      into a statistics site than a taxonomy is. -->
@@ -437,47 +472,6 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
       <a class="tile" data-topic="environment" href="#"><div class="trow"><span class="tico" data-icon="environment"></span><span class="tn">Environment &amp; Energy</span></div><div class="tc"></div><div class="td">Emissions, the electricity mix, energy use, recycling and sewage spills.</div></a>
       <a class="tile" data-topic="migration" href="#"><div class="trow"><span class="tico" data-icon="migration"></span><span class="tn">Population &amp; Migration</span></div><div class="tc"></div><div class="td">Population, births, deaths and fertility, migration, visas and asylum.</div></a>
     </div>
-  </div>
-</section>
-
-<section id="method">
-  <div class="wrap">
-    <div class="slabel"><h2>Every chart is editable</h2></div>
-    <p class="lede">On the chart itself, not buried in a settings panel. These four change what a number actually means.</p>
-    <div class="tf">
-      <div class="tfc"><div class="ic">REBASE</div><h4>Index to 100</h4><p>Pick any year as the baseline and compare things measured in completely different units.</p></div>
-      <div class="tfc"><div class="ic">DEFLATE</div><h4>Real terms</h4><p>GDP deflator for spending, CPI for household figures. Cash terms is never the default.</p></div>
-      <div class="tfc"><div class="ic">NORMALISE</div><h4>Per person, % of GDP</h4><p>Population and GDP live centrally, so any series can be re-expressed on demand.</p></div>
-      <div class="tfc"><div class="ic">SMOOTH</div><h4>Rolling average</h4><p>Strip seasonality without hiding it — the raw series stays visible underneath.</p></div>
-    </div>
-  </div>
-</section>
-
-<div class="wrap" style="padding-bottom:60px">
-  <div class="card">
-    <div class="card-hd">
-      <div><h3 id="titleB">&nbsp;</h3><div class="sub">The same published number, four ways &mdash; each one changes what it means</div></div>
-      <span class="tagpill">Normalisation</span>
-    </div>
-    <div class="chips" role="group" aria-label="Normalisation">
-      <button class="chip n" aria-pressed="true"  data-n="cash">Cash terms</button>
-      <button class="chip n" aria-pressed="false" data-n="real">Real terms</button>
-      <button class="chip n" aria-pressed="false" data-n="head">Per person</button>
-      <button class="chip n" aria-pressed="false" data-n="gdp">% of GDP</button>
-    </div>
-    <div class="card-bd">
-      <div id="chartB"></div>
-    </div>
-    <div class="card-ft" id="ftB"></div>
-  </div>
-</div>
-
-
-<section>
-  <div class="wrap">
-    <div class="slabel"><h2>Where it comes from</h2></div>
-    <p class="lede">We publish no data of our own. Every series links back to its original release, with the licence and the date it was pulled — and every raw value is on <a href="data.html" style="color:var(--purple)">Explorer Verify</a>, searchable by topic and source, next to the exact endpoint it was fetched from.</p>
-    <div class="srcs" id="srcs"></div>
   </div>
 </section>
 
@@ -862,43 +856,6 @@ function demoBoot(){
   demoState(0); demoRender(); demoPlay(0);
 }
 
-/* ── normalisation card ─────────────────────────────────────────
-   One real series, four ways. This one does tween: every frame is the
-   same published number re-expressed, so nothing invented appears. */
-const NORM={
-  cash:{label:"Cash terms",  f:(v,x0,s)=>({vals:v,unit:s.unit})},
-  real:{label:"Real terms",  f:VIEW.real},
-  head:{label:"Per person",  f:(v,x0,s)=>({vals:v.map((x,i)=>{const p=refAt("population",x0+i);
-          return (x==null||!p)?null:x*1e6/p;}),unit:"£ per person, cash"})},
-  gdp: {label:"% of GDP",    f:(v,x0,s)=>({vals:v.map((x,i)=>{const g=refAt("gdp",x0+i);
-          return (x==null||!g)?null:x/g*100;}),unit:"% of GDP"})}
-};
-const NORM_ID="debtint";
-let normB={},bx0=1997,bx1=2025,bFrom=null,bTo=null,bT=1;
-
-function snapB(k){
-  const o=normB[k];
-  return {vals:o.vals.slice(),unit:o.unit};
-}
-/* every frame is the same published numbers re-expressed, so blending them
-   invents nothing; the axis is worked out afresh for each frame */
-function blendB(a,b,t){
-  const L=(x,y)=>x+(y-x)*t;
-  return {vals:a.vals.map((v,i)=>(v==null||b.vals[i]==null)?null:L(v,b.vals[i])),
-          unit:t>0.5?b.unit:a.unit};
-}
-function paintB(s){
-  const ser=S(NORM_ID);
-  drawChart(document.getElementById("chartB"),{x0:bx0,x1:bx1,type:"area",label:s.unit,
-    aria:"Public sector debt interest",
-    series:[{name:ser.name,vals:s.vals,colour:COL(0),ds:ser.discontinuities||[]}]});
-}
-function footB(k){
-  const s=S(NORM_ID);
-  const REF={real:"divided by the GDP deflator",head:"divided by UK population",gdp:"divided by nominal GDP"};
-  foot(document.getElementById("ftB"),[s],[s.geography,`${bx0}–${bx1}`,NORM[k].label,REF[k]]);
-}
-
 /* ── topic tiles ────────────────────────────────────────────────
    Counted from the bundle, so a tile can't claim indicators we don't have. */
 function fillTiles(){
@@ -912,17 +869,8 @@ function fillTiles(){
     el.querySelector(".tc").textContent=n?`${n} indicator${n===1?"":"s"}`:"In the roadmap";
     el.classList.toggle("live",n>0);
     el.classList.toggle("soon",n===0);
-    if(n>0){
-      el.setAttribute("href","explore.html#t="+el.dataset.topic);
-      if(!el.querySelector(".badge")){
-        const b=document.createElement("span");
-        b.className="badge";b.textContent="LIVE";
-        el.querySelector(".trow").appendChild(b);
-      }
-    } else {
-      el.removeAttribute("href");        /* nothing to open yet */
-      el.querySelector(".badge")?.remove();
-    }
+    if(n>0) el.setAttribute("href","explore.html#t="+el.dataset.topic);
+    else el.removeAttribute("href");        /* nothing to open yet */
   });
 }
 
@@ -931,24 +879,17 @@ function fail(){
   const msg=`<div class="chartfail"><b>Couldn't load the catalogue.</b><br>
     data/bundle.json isn't being served — the charts on this page are drawn from it.</div>`;
   document.getElementById("chartA").innerHTML=msg;
-  document.getElementById("chartB").innerHTML=msg;
 }
 
-/* Credits, counted from what actually built. The list this replaces was typed
-   into the page and had drifted to naming eight organisations the catalogue
-   does not draw on — the wrong thing to get wrong on a page about provenance. */
-function renderSources(){
-  const el=document.getElementById("srcs");
-  const pubs=DB.publishers||[];
-  if(!el||!pubs.length) return;
-  el.innerHTML=pubs.map(p=>{
-    const n=`${p.series} ${p.series===1?"series":"series"}`;
-    const inner=`<span class="sabbr">${esc(p.short)}</span>`+
-      `<span class="sfull">${esc(p.full)}</span><span class="sn">${n}</span>`;
-    return p.url
-      ? `<a class="src" href="${esc(p.url)}" target="_blank" rel="noopener">${inner}</a>`
-      : `<span class="src">${inner}</span>`;
-  }).join("");
+/* The Source step lists the publishers actually in the catalogue, counted
+   from what built, and the Pick step says how many indicators there are. */
+function fillFlow(){
+  const pubs=DB.publishers||[], el=document.getElementById("flowSrc");
+  const top=pubs.slice(0,6);
+  el.innerHTML=top.map(p=>`<li title="${esc(p.full)} · ${p.series} series">${p.url?`<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.short)}</a>`:esc(p.short)}</li>`).join("")+
+    (pubs.length>top.length?`<li>and ${pubs.length-top.length} more</li>`:"");
+  const n=DB.series.length, t=new Set(DB.series.flatMap(x=>x.topics||[])).size;
+  document.getElementById("flowPick").textContent=`Choose up to four of ${n} indicators across ${t} topics, from ${pubs.length} publishers, and put them on one chart.`;
 }
 
 /* light/dark, shared with the explorer through the same stored choice */
@@ -967,51 +908,19 @@ themeBtn.onclick=()=>{
   try{ localStorage.setItem("polyoptic-theme",dark?"light":"dark"); }catch(e){}
   syncTheme();
   /* the line colours are stepped per theme, so the charts redraw */
-  if(DB){ demoRender(); if(bTo) paintB(bT>=1?bTo:blendB(bFrom,bTo,bT)); }
+  if(DB) demoRender();
 };
 syncTheme();
 
 function boot(){
   still=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  renderSources();
-
+  fillFlow();
   demoBoot();
 
-  /* normalisation card */
-  const s=S(NORM_ID);
-  if(s){
-    const [a,b]=realSpan(s);
-    bx0=Math.max(1997,a);
-    bx1=Math.min(b,refEnd("population"),refEnd("gdp"),refEnd("deflator"));
-    const raw=valsIn(s,bx0,bx1);
-    Object.keys(NORM).forEach(k=>{normB[k]=NORM[k].f(raw,bx0,s);});
-    document.getElementById("titleB").textContent=s.name;
-    bFrom=bTo=snapB("cash");
-    paintB(bTo);footB("cash");
-    document.querySelectorAll(".chip.n").forEach(c=>c.addEventListener("click",()=>{
-      document.querySelectorAll(".chip.n").forEach(o=>o.setAttribute("aria-pressed","false"));
-      c.setAttribute("aria-pressed","true");
-      const k=c.dataset.n;
-      bFrom=bT>=1?bTo:blendB(bFrom,bTo,bT);
-      bTo=snapB(k);bT=still?1:0;
-      if(still)paintB(bTo);
-      footB(k);
-    }));
-  }
-
   fillTiles();
-  if(!still)requestAnimationFrame(frame);
 }
 
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-let last=0;
-function frame(now){
-  const dt=last?now-last:0;last=now;
-
-  if(bT<1){bT=Math.min(1,bT+dt/760);paintB(blendB(bFrom,bTo,ease(bT)));}
-
-  requestAnimationFrame(frame);
-}
 
 /* no-cache means revalidate, not refetch — the browser still sends the ETag,
    so this costs a 304 and stops a rebuilt bundle sitting invisible behind a
