@@ -310,7 +310,8 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .warn button,.warn .wlink{margin-left:8px;font-family:"IBM Plex Mono";font-size:10.5px;background:transparent;border:1px solid var(--warnrule);padding:3px 8px;cursor:pointer;color:var(--warn-ink);border-radius:2px;text-decoration:none;display:inline-block;white-space:nowrap}
 .warn button:hover,.warn .wlink:hover{background:var(--warnrule);color:var(--warn-ink-b)}
 .pbody{padding:14px 16px 6px}
-.pbody.scrolls{overflow:auto;scrollbar-width:thin}
+.pbody.scrolls{overflow:auto;scrollbar-width:thin;padding-top:0}
+.pbody.scrolls .areahd{padding-top:14px;box-sizing:content-box}
 .tbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:9px 16px 0;
   font-size:12px;color:var(--muted)}
 .tbar button{margin-left:auto;display:inline-flex;align-items:center;gap:6px;
@@ -328,9 +329,19 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .ptable td.mono{font-family:"IBM Plex Mono";color:var(--muted)}
 .ptable tr.brk td{border-bottom:1px dashed var(--warn)}
 .ptable tr:hover td{background:var(--hover)}
-/* width fixed at the viewBox's own scale so the rows keep their height; the
-   panel scrolls rather than the labels shrinking. */
-.areasvg{width:940px;max-width:none;height:auto;display:block}
+/* the area views scale with the card down to a floor, below which the panel
+   scrolls sideways rather than the names shrinking past reading size */
+.areasvg{width:100%;min-width:720px;max-width:940px;height:auto;display:block}
+/* the scale stays put while the areas scroll under it */
+.areahd{position:sticky;top:0;z-index:2;background:var(--surface)}
+/* the area views: names in the text face, values in mono, faint stripes */
+.arealbl{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:12px;fill:var(--ink)}
+.areaval{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;fill:var(--muted)}
+.areahead{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;fill:var(--muted)}
+.azebra{fill:var(--ink);opacity:.025}
+.asel{fill:var(--purple);opacity:.12}
+.aref{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:4 3;opacity:.55}
+.arefl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;fill:var(--ink)}
 .legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 12px}
 .lg{display:flex;align-items:center;gap:7px;font-size:12.5px}
 .lg .d{width:13px;height:3px;flex-shrink:0}
@@ -1394,7 +1405,7 @@ function renderSmall(p,sets){
    whose axis does not start at zero — and an employment rate between 68 and
    82 per cent cannot start at zero and stay readable — makes length mean
    nothing while still looking like it means something. */
-const AREA_ROW=15, AREA_ML=196, AREA_MR=70, AREA_TOP=26;
+const AREA_ROW=22, AREA_ML=220, AREA_MR=86, AREA_HEAD=54, AREA_PAD=4;
 let AREAIX=null;
 const AREADATA=new Map();
 const areaPending=new Set();
@@ -1477,63 +1488,90 @@ function renderAreaChart(p,sets){
        :                     renderAreaRanking(p,a);
 }
 
-/* The frame every row-per-area view draws into: a left gutter of names, a
-   value scale across the top, and as many rows as the level has areas. */
-function areaFrame(rows,mn,mx,head){
-  const H=AREA_TOP+rows.length*AREA_ROW+8;
-  const x=v=>AREA_ML+((v-mn)/Math.max(1e-9,mx-mn))*(W-AREA_ML-AREA_MR);
-  const g=[];
-  niceTicks(mn,mx,5).forEach(v=>{
-    const gx=x(v);
-    g.push(`<line class="gridline" x1="${gx.toFixed(1)}" y1="${AREA_TOP-8}" x2="${gx.toFixed(1)}" y2="${H-4}"/>`);
-    g.push(`<text class="axlabel" x="${gx.toFixed(1)}" y="${AREA_TOP-13}" text-anchor="middle">${fmtTick(v)}</text>`);
+/* The frame every row-per-area view draws into: a gutter of names on the
+   left, a value scale with round-number ticks, faint striping so a row can be
+   followed across, and a highlight on the area last clicked. The scale, the
+   units and the reference label live in a separate header strip (`gh`) that
+   stays pinned while the list of areas scrolls under it. `zero` pins the
+   scale to 0, for bars. */
+function areaFrame(p,set,rows,lo,hi,head,zero){
+  const H=AREA_PAD+rows.length*AREA_ROW+6;
+  const ax=CK.yAxis([lo,hi],5*55,zero?0:null);
+  const x=v=>AREA_ML+((v-ax.mn)/Math.max(1e-9,ax.mx-ax.mn))*(W-AREA_ML-AREA_MR);
+  const g=[], gh=[];
+  const pr=state.probe, sel=pr&&pr.key===p.key&&pr.code;
+  rows.forEach((r,i)=>{
+    const y=AREA_PAD+i*AREA_ROW;
+    if(r[0]===sel) g.push(`<rect class="asel" x="0" y="${y}" width="${W}" height="${AREA_ROW}"/>`);
+    else if(i%2) g.push(`<rect class="azebra" x="0" y="${y}" width="${W}" height="${AREA_ROW}"/>`);
   });
-  if(head) g.push(`<text class="axlabel" x="${AREA_ML-10}" y="${AREA_TOP-13}" text-anchor="end">${esc(head)}</text>`);
-  return {g,H,x,rowY:i=>AREA_TOP+i*AREA_ROW+AREA_ROW/2};
+  ax.ticks.forEach(v=>{
+    const gx=x(v).toFixed(1), cls=Math.abs(v)<ax.st/1e6&&zero?"baseline":"gridline";
+    g.push(`<line class="${cls}" x1="${gx}" y1="0" x2="${gx}" y2="${H}"/>`);
+    gh.push(`<line class="${cls}" x1="${gx}" y1="${AREA_HEAD-5}" x2="${gx}" y2="${AREA_HEAD}"/>`);
+    gh.push(`<text class="axlabel" x="${gx}" y="${AREA_HEAD-9}" text-anchor="middle">${CK.tickFmt(v,ax.st)}</text>`);
+  });
+  if(head) gh.push(`<text class="areahead" x="0" y="13">${esc(head)}</text>`);
+  gh.push(`<line class="gridline" x1="0" y1="${AREA_HEAD-0.5}" x2="${W}" y2="${AREA_HEAD-0.5}"/>`);
+  return {g,gh,H,x,ax,rowY:i=>AREA_PAD+i*AREA_ROW+AREA_ROW/2};
+}
+/* the line every row is read against, labelled in the pinned header so the
+   label is there wherever the list is scrolled to */
+function areaRef(f,v,name){
+  const rx=f.x(v), left=rx<W*0.62, t=rx.toFixed(1);
+  f.g.push(`<line class="aref" x1="${t}" y1="0" x2="${t}" y2="${f.H}"/>`);
+  f.gh.push(`<line class="aref" x1="${t}" y1="25" x2="${t}" y2="${AREA_HEAD}"/>`);
+  f.gh.push(`<text class="arefl" x="${(left?rx+6:rx-6).toFixed(1)}" y="29" text-anchor="${left?"start":"end"}">${esc(name)}: ${fmt(v)}</text>`);
 }
 const areaLabel=(g,y,name)=>g.push(
-  `<text class="axlabel" x="${AREA_ML-10}" y="${y+3.5}" text-anchor="end">${esc(name.length>30?name.slice(0,29)+"…":name)}</text>`);
-const areaSvg=(H,g,label)=>
-  `<svg class="areasvg" viewBox="0 0 ${W} ${H+8}" role="img" aria-label="${esc(label)}">${g.join("")}</svg>`;
+  `<text class="arealbl" x="${AREA_ML-12}" y="${(y+4).toFixed(1)}" text-anchor="end">${esc(name.length>32?name.slice(0,31)+"…":name)}</text>`);
+const areaVal=(g,y,txt)=>g.push(`<text class="areaval" x="${W-AREA_MR+12}" y="${(y+4).toFixed(1)}">${txt}</text>`);
+const areaHit=(g,set,code,y)=>g.push(`<rect class="hit" data-probe="${esc(set.id)}" data-area="${code}" x="0" y="${(y-AREA_ROW/2).toFixed(1)}" width="${W}" height="${AREA_ROW}"/>`);
+const areaSvg=(H,g,label,gh)=>
+  `<svg class="areasvg areahd" viewBox="0 0 ${W} ${AREA_HEAD}" aria-hidden="true">${gh.join("")}</svg>`+
+  `<svg class="areasvg" viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(label)}">${g.join("")}</svg>`;
+const median=a=>{const s=[...a].sort((x,y)=>x-y), m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2;};
 
 function renderAreaRanking(p,{set,ix,d,lvl}){
   const {rows,year}=areaRows(p,d,ix,lvl);
   if(!rows.length) return areaBlank("Nothing at this level","No areas at this level carry a figure for this indicator.");
-
   rows.sort(p.asort==="name" ? (a,b)=>a[1].localeCompare(b[1])
           : p.asort==="asc"  ? (a,b)=>a[2]-b[2]
           :                    (a,b)=>b[2]-a[2]);
+  const vals=rows.map(r=>r[2]);
 
-  /* The national figure, drawn as the reference the ranking is read against.
-     Prefer the UK row; fall back to whatever aggregate the indicator has. */
+  /* What each area is read against. For a rate or an average the national
+     figure is the natural reference. For a count it is not — the UK total of
+     active businesses is three million, every council is under sixty
+     thousand, and drawing both on one scale squashes every area into the
+     corner. Counts get the typical area, the median, instead. */
   const natCode=["K02000001","E92000001","K03000001"].find(c=>d.values[c]&&d.values[c][year-d.start]!=null);
   const nat=natCode?d.values[natCode][year-d.start]:null;
-  const natName=natCode?(ix.areas[natCode]||{}).n||"National":"";
+  const isCount=set.meta.kind==="count" || (nat!=null && nat>Math.max(...vals)*1.5);
+  const ref = isCount ? median(vals) : nat;
+  const refName = isCount ? "Typical area (median)" : (natCode?(ix.areas[natCode]||{}).n||"National":"");
+  /* counts are amounts, so they are bars from zero; rates and averages are
+     dots, because their scale need not start at zero to be honest */
+  const bars = isCount && Math.min(...vals)>=0;
 
-  const [mn,mx]=scale(rows.map(r=>r[2]).concat(nat!=null?[nat]:[]));
-  const {g,H,x,rowY}=areaFrame(rows,mn,mx,String(year));
+  const lo=Math.min(...vals, ref??Infinity), hi=Math.max(...vals, ref??-Infinity);
+  const f=areaFrame(p,set,rows,bars?0:lo,hi,`${year} · ${set.meta.unit}`,bars), {g,H,x,rowY}=f;
 
-  if(nat!=null){
-    g.push(`<line class="disc" x1="${x(nat).toFixed(1)}" y1="${AREA_TOP-8}" x2="${x(nat).toFixed(1)}" y2="${H-4}"/>`);
-    g.push(`<text class="axlabel" x="${x(nat).toFixed(1)}" y="${H+2}" text-anchor="middle">${esc(natName)} ${fmt(nat)}</text>`);
-  }
   rows.forEach((r,i)=>{
     const y=rowY(i);
     areaLabel(g,y,r[1]);
-    /* a hairline from the reference to the dot: it reads as distance from the
-       national figure, which is the comparison the eye should be making */
-    if(nat!=null) g.push(`<line x1="${x(nat).toFixed(1)}" y1="${y.toFixed(1)}" x2="${x(r[2]).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${set.colour}" stroke-width="1" opacity=".35"/>`);
-    g.push(`<circle cx="${x(r[2]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${set.colour}"><title>${esc(r[1])}: ${fmt(r[2])}</title></circle>`);
-    g.push(`<text class="axlabel" x="${W-AREA_MR+10}" y="${y+3.5}">${fmt(r[2])}</text>`);
-    /* Row-wide hit target: the dot is 7px across on a 940px row, so anything
-       smaller than the whole row is a game of skill. */
-    g.push(`<rect class="hit" data-probe="${esc(set.id)}" data-area="${r[0]}" x="0" y="${(y-AREA_ROW/2).toFixed(1)}" width="${W}" height="${AREA_ROW}"/>`);
+    if(bars){
+      g.push(`<rect x="${x(0).toFixed(1)}" y="${(y-5).toFixed(1)}" width="${Math.max(1,x(r[2])-x(0)).toFixed(1)}" height="10" rx="2" fill="${set.colour}" opacity=".85"><title>${esc(r[1])}: ${fmt(r[2])}</title></rect>`);
+    } else {
+      /* a stalk from the reference to the dot reads as distance from it */
+      if(ref!=null) g.push(`<line x1="${x(ref).toFixed(1)}" y1="${y.toFixed(1)}" x2="${x(r[2]).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${set.colour}" stroke-width="2" opacity=".28" stroke-linecap="round"/>`);
+      g.push(`<circle cx="${x(r[2]).toFixed(1)}" cy="${y.toFixed(1)}" r="4.2" fill="${set.colour}" class="enddot"><title>${esc(r[1])}: ${fmt(r[2])}</title></circle>`);
+    }
+    areaVal(g,y,fmt(r[2]));
+    areaHit(g,set,r[0],y);
   });
-  /* Unlike the time charts, this one must not scale with the panel. Row height
-     is a legibility floor, not a proportion — squeezed into a third-width
-     panel the labels would overlap into a smear — so it keeps its natural
-     size and the panel scrolls to it. */
-  return areaSvg(H,g,`${set.name} by area, ${year}`);
+  if(ref!=null) areaRef(f,ref,refName);
+  return areaSvg(H,g,`${set.name} by area, ${year}`,f.gh);
 }
 
 /* Both two-year views read the same pair of snapshots; only the mark differs.
@@ -1559,24 +1597,22 @@ function renderAreaArrow(p,{set,ix,d,lvl}){
     `Not enough areas carry a figure for both ${Math.min(p.from,p.to)} and ${Math.max(p.from,p.to)} at this level. Widen the range.`);
   if(y0===y1) return areaBlank("One year on both ends","Widen the chart's range so the arrows have two different years to span.");
   rows.sort(areaSortPair(p.asort==="desc"?"change":p.asort));
-
-  const [mn,mx]=scale(rows.flatMap(r=>[r[2],r[3]]));
-  const {g,H,x,rowY}=areaFrame(rows,mn,mx,`${y0} → ${y1}`);
+  const all=rows.flatMap(r=>[r[2],r[3]]);
+  const f=areaFrame(p,set,rows,Math.min(...all),Math.max(...all),`${y0} → ${y1} · ${set.meta.unit}`), {g,H,x,rowY}=f;
   rows.forEach((r,i)=>{
     const y=rowY(i), x0=x(r[2]), x1=x(r[3]);
     areaLabel(g,y,r[1]);
     /* One colour, and direction carried by the arrowhead. Colouring rises green
        and falls red would be this site taking a view: a fall in emissions and a
-       fall in life expectancy are not the same news, and the chart does not
-       know which indicator it is drawing. */
-    const dir=x1>=x0?1:-1, tip=x1-dir*0.5;
-    g.push(`<line x1="${x0.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(tip-dir*4).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${set.colour}" stroke-width="1.8" opacity=".55" stroke-linecap="round"/>`);
-    g.push(`<path d="M${(tip-dir*5).toFixed(1)} ${(y-3).toFixed(1)} L${tip.toFixed(1)} ${y.toFixed(1)} L${(tip-dir*5).toFixed(1)} ${(y+3).toFixed(1)}" fill="none" stroke="${set.colour}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`);
-    g.push(`<circle cx="${x0.toFixed(1)}" cy="${y.toFixed(1)}" r="2.4" fill="${set.colour}" opacity=".4"><title>${esc(r[1])}: ${fmt(r[2])} in ${y0}, ${fmt(r[3])} in ${y1}</title></circle>`);
-    g.push(`<text class="axlabel" x="${W-AREA_MR+10}" y="${y+3.5}">${r[4]>=0?"+":"−"}${fmt(Math.abs(r[4]))}</text>`);
-    g.push(`<rect class="hit" data-probe="${esc(set.id)}" data-area="${r[0]}" x="0" y="${(y-AREA_ROW/2).toFixed(1)}" width="${W}" height="${AREA_ROW}"/>`);
+       fall in life expectancy are not the same news. */
+    const dir=x1>=x0?1:-1, tip=x1;
+    if(Math.abs(x1-x0)>6) g.push(`<line x1="${x0.toFixed(1)}" y1="${y.toFixed(1)}" x2="${(tip-dir*5).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${set.colour}" stroke-width="2" opacity=".6" stroke-linecap="round"/>`);
+    g.push(`<path d="M${(tip-dir*6).toFixed(1)} ${(y-4).toFixed(1)} L${tip.toFixed(1)} ${y.toFixed(1)} L${(tip-dir*6).toFixed(1)} ${(y+4).toFixed(1)}" fill="none" stroke="${set.colour}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>`);
+    g.push(`<circle cx="${x0.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${set.colour}" opacity=".45"><title>${esc(r[1])}: ${fmt(r[2])} in ${y0}, ${fmt(r[3])} in ${y1}</title></circle>`);
+    areaVal(g,y,`${r[4]>=0?"+":"−"}${fmt(Math.abs(r[4]))}`);
+    areaHit(g,set,r[0],y);
   });
-  return areaSvg(H,g,`${set.name} by area, change ${y0} to ${y1}`);
+  return areaSvg(H,g,`${set.name} by area, change ${y0} to ${y1}`,f.gh);
 }
 
 function renderAreaRange(p,{set,ix,d,lvl}){
@@ -1584,21 +1620,20 @@ function renderAreaRange(p,{set,ix,d,lvl}){
   if(!rows.length) return areaBlank("Nothing to span",
     `Not enough areas carry a figure for both ${Math.min(p.from,p.to)} and ${Math.max(p.from,p.to)} at this level. Widen the range.`);
   rows.sort(areaSortPair(p.asort));
-
-  const [mn,mx]=scale(rows.flatMap(r=>[r[2],r[3]]));
-  const {g,H,x,rowY}=areaFrame(rows,mn,mx,`${y0} → ${y1}`);
+  const all=rows.flatMap(r=>[r[2],r[3]]);
+  const f=areaFrame(p,set,rows,Math.min(...all),Math.max(...all),`${y0} ○  ● ${y1} · ${set.meta.unit}`), {g,H,x,rowY}=f;
   rows.forEach((r,i)=>{
     const y=rowY(i);
     areaLabel(g,y,r[1]);
-    g.push(`<line x1="${x(r[2]).toFixed(1)}" y1="${y.toFixed(1)}" x2="${x(r[3]).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${set.colour}" stroke-width="2" opacity=".35" stroke-linecap="round"/>`);
-    /* Hollow for the earlier year, solid for the later: shape carries which is
-       which, so the pair does not rely on the reader remembering an opacity. */
-    g.push(`<circle cx="${x(r[2]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.2" fill="var(--surface)" stroke="${set.colour}" stroke-width="1.6"><title>${y0}: ${fmt(r[2])}</title></circle>`);
-    g.push(`<circle cx="${x(r[3]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.4" fill="${set.colour}"><title>${y1}: ${fmt(r[3])}</title></circle>`);
-    g.push(`<text class="axlabel" x="${W-AREA_MR+10}" y="${y+3.5}">${fmt(r[3])}</text>`);
-    g.push(`<rect class="hit" data-probe="${esc(set.id)}" data-area="${r[0]}" x="0" y="${(y-AREA_ROW/2).toFixed(1)}" width="${W}" height="${AREA_ROW}"/>`);
+    g.push(`<line x1="${x(r[2]).toFixed(1)}" y1="${y.toFixed(1)}" x2="${x(r[3]).toFixed(1)}" y2="${y.toFixed(1)}" stroke="${set.colour}" stroke-width="3" opacity=".25" stroke-linecap="round"/>`);
+    /* hollow for the earlier year, solid for the later: shape carries which
+       is which, not an opacity the reader has to remember */
+    g.push(`<circle cx="${x(r[2]).toFixed(1)}" cy="${y.toFixed(1)}" r="3.6" class="hollow" stroke="${set.colour}" stroke-width="1.8"><title>${y0}: ${fmt(r[2])}</title></circle>`);
+    g.push(`<circle cx="${x(r[3]).toFixed(1)}" cy="${y.toFixed(1)}" r="4" fill="${set.colour}"><title>${y1}: ${fmt(r[3])}</title></circle>`);
+    areaVal(g,y,fmt(r[3]));
+    areaHit(g,set,r[0],y);
   });
-  return areaSvg(H,g,`${set.name} by area, ${y0} and ${y1}`);
+  return areaSvg(H,g,`${set.name} by area, ${y0} and ${y1}`,f.gh);
 }
 
 function renderAreaHeat(p,{set,ix,d,lvl}){
@@ -1627,19 +1662,21 @@ function renderAreaHeat(p,{set,ix,d,lvl}){
   const fill=v=>v==null?"none":ramp[Math.max(0,Math.min(ramp.length-1,
     Math.round(((v-mn)/Math.max(1e-9,mx-mn))*(ramp.length-1))))];
 
-  const ROW=12, TOP=AREA_TOP+12;
+  const ROW=16, TOP=AREA_PAD;
   const cw=(W-AREA_ML-AREA_MR)/years.length;
-  const H=TOP+rows.length*ROW+8;
-  const g=[];
+  const H=TOP+rows.length*ROW+6;
+  const g=[], gh=[];
   /* Legend first — a value scale with no key is a picture, not a chart. */
-  ramp.forEach((c,i)=>g.push(`<rect x="${(AREA_ML+i*16).toFixed(1)}" y="4" width="15" height="7" fill="${c}"/>`));
-  g.push(`<text class="axlabel" x="${(AREA_ML-10)}" y="10.5" text-anchor="end">${fmt(mn)}</text>`);
-  g.push(`<text class="axlabel" x="${(AREA_ML+ramp.length*16+6)}" y="10.5">${fmt(mx)}</text>`);
+  gh.push(`<text class="areahead" x="0" y="13">${esc(set.meta.unit)}</text>`);
+  ramp.forEach((c,i)=>gh.push(`<rect x="${(AREA_ML+i*16).toFixed(1)}" y="20" width="15" height="7" fill="${c}"/>`));
+  gh.push(`<text class="axlabel" x="${(AREA_ML-10)}" y="26.5" text-anchor="end">${fmt(mn)}</text>`);
+  gh.push(`<text class="axlabel" x="${(AREA_ML+ramp.length*16+6)}" y="26.5">${fmt(mx)}</text>`);
   years.forEach((y,i)=>{ if(years.length<=14 || i%Math.ceil(years.length/12)===0)
-    g.push(`<text class="axlabel" x="${(AREA_ML+i*cw+cw/2).toFixed(1)}" y="${TOP-5}" text-anchor="middle">${String(y).slice(2)}</text>`); });
+    gh.push(`<text class="axlabel" x="${(AREA_ML+i*cw+cw/2).toFixed(1)}" y="${AREA_HEAD-9}" text-anchor="middle">${String(y).slice(2)}</text>`); });
+  gh.push(`<line class="gridline" x1="0" y1="${AREA_HEAD-0.5}" x2="${W}" y2="${AREA_HEAD-0.5}"/>`);
   rows.forEach((r,i)=>{
     const y=TOP+i*ROW;
-    areaLabel(g,y+ROW/2-3.5,r[1]);
+    areaLabel(g,y+ROW/2-2,r[1]);
     r[2].forEach((v,j)=>{
       if(v==null) return;
       /* 2px surface gap between cells, so adjacent tones read as separate
@@ -1648,7 +1685,7 @@ function renderAreaHeat(p,{set,ix,d,lvl}){
     });
     g.push(`<rect class="hit" data-probe="${esc(set.id)}" data-area="${r[0]}" x="0" y="${y.toFixed(1)}" width="${W}" height="${ROW-2}"/>`);
   });
-  return areaSvg(H,g,`${set.name} by area and year, ${lo} to ${hi}`);
+  return areaSvg(H,g,`${set.name} by area and year, ${lo} to ${hi}`,gh);
 }
 
 /* icons — stroke follows currentColor so they theme themselves */
@@ -2093,10 +2130,17 @@ function panelHtml(p,i){
 
 function renderPanels(){
   const stack=document.getElementById("stack");
+  /* a long list of areas keeps its place when a click redraws it */
+  const keep=new Map([...stack.querySelectorAll(".pcard")].map(c=>{
+    const b=c.querySelector(".pbody.scrolls"); return [c.dataset.key, b?[b.scrollTop,b.scrollLeft]:null];}));
   stack.innerHTML = state.panels.length
     ? state.panels.map(panelHtml).join("")
     : `<div class="stackempty"><h3>No charts</h3>
        <div>Add one below, or pick an indicator on the left and we'll start a chart for you.</div></div>`;
+  stack.querySelectorAll(".pcard").forEach(c=>{
+    const k=keep.get(c.dataset.key), b=c.querySelector(".pbody.scrolls");
+    if(k&&b){ b.scrollTop=k[0]; b.scrollLeft=k[1]; }
+  });
 }
 
 function renderSidebar(){
@@ -2736,6 +2780,12 @@ const exportCss=th=>`
   .nodatat{opacity:.75;letter-spacing:.04em}
   .sm-t{font-size:10px;font-weight:500}
   .hit{fill:transparent}
+  .arealbl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:12px;fill:${th.ink}}
+  .areaval,.areahead{font-size:10.5px;fill:${th.muted}}
+  .azebra{fill:${th.ink};opacity:.025}
+  .asel{fill:none}
+  .aref{stroke:${th.ink};stroke-width:1.2;stroke-dasharray:4 3;opacity:.55}
+  .arefl{font-size:10px;fill:${th.ink}}
   .hovline,.probeline{display:none}
   .era rect{opacity:.7}
   .pmtick{stroke:${th.ink};stroke-width:1;stroke-dasharray:2 2;opacity:.3}
@@ -2775,9 +2825,9 @@ function exportPng(i){
   const PAD=26, TOP=74+(stats.length?40:0), LEGEND=keyed?26:0, SCALE=2, CRED_LH=13;
   const inner=svgs.map(s=>{
     const vb=s.getAttribute("viewBox").split(/\s+/).map(Number);
-    return {markup:s.innerHTML, w:vb[2], h:vb[3]};
+    return {markup:s.innerHTML, w:vb[2], h:vb[3], gap:s.classList.contains("areahd")?0:8};
   });
-  const bodyH=inner.reduce((a,s)=>a+s.h+8,0);
+  const bodyH=inner.reduce((a,s)=>a+s.h+s.gap,0);
 
   /* The credit block is measured before the canvas is sized: Harvard puts a
      full citation per series down there, so the image has to grow to fit it
@@ -2795,7 +2845,7 @@ function exportPng(i){
   let y=TOP, parts="";
   inner.forEach(s=>{
     parts+=`<svg x="${PAD}" y="${y}" width="${W}" height="${s.h}" viewBox="0 0 ${s.w} ${s.h}">${s.markup}</svg>`;
-    y+=s.h+8;
+    y+=s.h+s.gap;
   });
   const legend=!keyed?"":sets.map((s,k)=>{
     const x=PAD+k*Math.min(300,(W)/sets.length);
