@@ -44,7 +44,9 @@ CONFIG = ROOT / "ingest" / "series.yaml"
 OUT = ROOT / "data" / "bundle.json"
 CACHE = ROOT / "ingest" / ".cache"
 
-UA = {"User-Agent": "polyoptic-ingest/0.1 (+https://polyoptic.co)"}
+# The usual form for an automated client: some servers (the Bank of England
+# database) refuse anything that does not start "Mozilla/5.0".
+UA = {"User-Agent": "Mozilla/5.0 (compatible; polyoptic-ingest/0.1; +https://polyoptic.co)"}
 TIMEOUT = 45
 
 
@@ -79,6 +81,10 @@ PUBLISHERS: dict[str, str] = {
     "DESNZ": "Department for Energy Security and Net Zero",
     "NHS England": "NHS England",
     "Institute for Government": "Institute for Government",
+    "Defra": "Department for Environment, Food & Rural Affairs",
+    "Environment Agency": "Environment Agency",
+    "Bank of England": "Bank of England",
+    "ORR": "Office of Rail and Road",
 }
 
 
@@ -106,6 +112,10 @@ PUBLISHER_SITES: dict[str, str] = {
     "DESNZ": "https://www.gov.uk/government/organisations/department-for-energy-security-and-net-zero/about/statistics",
     "NHS England": "https://digital.nhs.uk/data-and-information",
     "Institute for Government": "https://www.instituteforgovernment.org.uk/data",
+    "Defra": "https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs/about/statistics",
+    "Environment Agency": "https://www.gov.uk/government/organisations/environment-agency",
+    "Bank of England": "https://www.bankofengland.co.uk/boeapps/database/",
+    "ORR": "https://dataportal.orr.gov.uk/",
 }
 
 
@@ -195,6 +205,9 @@ class Series:
     publisher_full: str = ""   # corporate author, for citations
     published: str = ""        # edition year, where one is meaningful; else blank
     areas: bool = False         # true when data/areas/<id>.json exists alongside
+    # One or two years only: a cross-section for the area views, not a trend.
+    # The explorer opens these on a map and says so on the time charts.
+    snapshot: bool = False
     flags: list[str] = field(default_factory=list)   # named caveat tiers, worst first
     discontinuities: list[dict] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
@@ -209,7 +222,7 @@ class Series:
         if not self.values:
             raise ValueError(f"{self.id}: no observations")
         real = [v for v in self.values if v is not None]
-        if len(real) < 3:
+        if len(real) < (1 if self.snapshot else 3):
             raise ValueError(f"{self.id}: only {len(real)} usable observations")
 
 
@@ -660,6 +673,18 @@ def _pick_sheet(names: list[str], sheet: str) -> str:
 
 
 def _parse_sheet(path: Path, sheet: str | None) -> list[list]:
+    # Old binary Excel, which NHS England still publishes some time series in.
+    # Dates come back as serial numbers unless converted here.
+    if path.suffix == ".xls":
+        import xlrd
+
+        book = xlrd.open_workbook(str(path))
+        names = book.sheet_names()
+        sh = book.sheet_by_name(_pick_sheet(names, sheet)) if sheet else book.sheet_by_index(0)
+        return [[xlrd.xldate.xldate_as_datetime(c.value, book.datemode) if c.ctype == xlrd.XL_CELL_DATE
+                 else (None if c.ctype == xlrd.XL_CELL_EMPTY else c.value)
+                 for c in sh.row(i)] for i in range(sh.nrows)]
+
     if path.suffix == ".ods":
         from odf.opendocument import load
         from odf.table import Table, TableRow, TableCell
@@ -764,7 +789,19 @@ def fetch_spreadsheet(cfg: dict) -> dict[int, float]:
 
     merged: dict[int, float] = {}
     for url in urls:
-        rows = _read_sheet(get_file(url), cfg.get("sheet"))
+        path = get_file(url)
+        # A workbook shipped inside a zip (the Environment Agency does this):
+        # `member` names the file to read from it.
+        if cfg.get("member"):
+            import zipfile
+            out = path.with_name(path.stem + "-" + Path(cfg["member"]).name)
+            if not out.exists():
+                with zipfile.ZipFile(path) as z:
+                    # matched on the file name, wherever it sits in the zip's folders
+                    name = next(n for n in z.namelist() if Path(n).name == Path(cfg["member"]).name)
+                    out.write_bytes(z.read(name))
+            path = out
+        rows = _read_sheet(path, cfg.get("sheet"))
         merged.update(_wide(cfg, rows) if cfg.get("layout", "long") == "wide"
                       else _long(cfg, rows))
 
@@ -783,7 +820,10 @@ def _long(cfg: dict, rows: list[list]) -> dict[int, float]:
     header_row = header_row - 1 if header_row else _find_header(rows, [year_col, value_col])
     header = [_clean(c) for c in rows[header_row]]
 
-    def index_of(name: str) -> int:
+    def index_of(name) -> int:
+        # a column number, for files whose headers are split across rows
+        if isinstance(name, int):
+            return name
         try:
             return header.index(_clean(name))
         except ValueError:
@@ -1244,6 +1284,7 @@ def build_series(spec: dict) -> Series:
                            spec["geography"]),
         fetched=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         source_api=spec["fetch"].get("_resolved_url", ""),
+        snapshot=bool(spec.get("snapshot", False)),
     )
     s.validate()
     return s
