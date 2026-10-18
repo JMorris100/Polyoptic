@@ -25,7 +25,7 @@
 
 /* government in power, shaded behind the data */
 .band{fill-opacity:.07}
-html[data-theme="dark"] .band,html[data-theme="brexit"] .band{fill-opacity:.09}
+html[data-theme="dark"] .band{fill-opacity:.09}
 .banddiv{stroke:var(--rule);stroke-width:1}
 .bandlbl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9px;fill:var(--muted)}
 

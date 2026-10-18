@@ -28,46 +28,6 @@
 # wrong. `published` is never derived.
 # ══════════════════════════════════════════════════════════════
 
-# ──────────────────────────────────────────────────────────────
-# Modes. A mode is a named subset of the catalogue that the explorer
-# can swap to wholesale. Series not claimed by any mode make up the
-# default catalogue; a series listed in a mode appears only there.
-#
-# Keeping the membership here rather than in the front end means a mode
-# is still just data — same as the series themselves.
-# ──────────────────────────────────────────────────────────────
-modes:
-  brexit:
-    name: Brexit mode
-    blurb: The numbers that get argued about most, and the denominators that usually go missing.
-    series:
-      - netmig
-      - smallboats
-      - asylumbacklog
-      - asylumgrant
-      - hotels
-      - returns
-      - returnsall
-      - visastudy
-      - visastudydep
-      - visawork
-      - visahcw
-      - oda
-      - odarefugee
-      - eugross
-      - eureceipts
-      - eunet
-      - nondoms
-      - nondomtax
-      - fno
-      - csew
-      - prc
-      - chargerate
-      - chargeviolence
-      - chargesexual
-      - chargetheft
-      - chargedamage
-
 eras:
   - {from: 1997, to: 2010, party: Labour,       colour: "#E4003B"}
   - {from: 2010, to: 2015, party: Coalition,    colour: "#7E6FA8"}

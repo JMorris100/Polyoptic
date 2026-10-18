@@ -232,14 +232,6 @@ Downloads and parsed sheets are both cached under `ingest/.cache`. The Home
 Office crime-outcomes workbooks are 700,000 rows and take about 90 seconds each
 to parse, so the first build of those series is slow and every later one isn't.
 
-### Modes
-
-A **mode** is a named subset of the catalogue that the explorer swaps to
-wholesale, defined at the top of `series.yaml`. Series listed in a mode appear
-only in that mode; everything unclaimed is the default catalogue. `brexit` is
-the one that exists — reachable from a deliberately unlabelled strip down the
-far right edge of the explorer.
-
 ---
 
 ## Status — read this before trusting anything
@@ -247,8 +239,9 @@ far right edge of the explorer.
 **The pipeline is live.** Every identifier in `series.yaml` was verified
 against the live catalogues on 2026-08-05, and the spreadsheet sources on
 2026-08-06. `data/bundle.json` is built from real releases: the original
-9 series (housing, economy, education) plus the Brexit-mode set — borders
-and migration, money, crime and justice — and the three reference series.
+9 series (housing, economy, education), borders and migration, money, crime
+and justice, transport, environment, local statistics, and the three
+reference series — all in the one catalogue.
 The placeholder data embedded in `explore.html` is still invented — it only
 shows if `data/bundle.json` fails to load, and it is labelled as such.
 

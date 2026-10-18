@@ -1322,12 +1322,6 @@ def main() -> int:
         },
         "eras": config["eras"],
         "pms": config["pms"],
-        # Modes are emitted with only the series that actually built, so a
-        # failed fetch can never leave the front end asking for a missing id.
-        "modes": {
-            key: {**mode, "series": [sid for sid in mode.get("series", []) if sid in ok]}
-            for key, mode in config.get("modes", {}).items()
-        },
         "refs": refs,
         # Who the catalogue actually draws on, counted from what built rather
         # than from a list anyone has to remember to update.

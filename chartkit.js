@@ -13,13 +13,11 @@
    ══════════════════════════════════════════════════════════════════ */
 (function(){
 
-/* Categorical slots, violet-led so a chart reads as this site's. The two
-   modes are the same four hues stepped for their own surface; Brexit mode
-   has its own set because one of its line colours is white. */
+/* Categorical slots, violet-led so a chart reads as this site's. Light and
+   dark are the same four hues stepped for their own surface. */
 const PAL={
   light: ["#6D4AE0","#0E9384","#D97706","#DB2777"],
   dark:  ["#8367E8","#17A394","#C58207","#DE5A96"],
-  brexit:["#E4344F","#FFFFFF","#7FB2FF","#F0C24B"],
 };
 const theme=()=>document.documentElement.dataset.theme||"light";
 const pal=i=>(PAL[theme()]||PAL.light)[i%4];
