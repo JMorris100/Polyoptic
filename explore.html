@@ -1849,6 +1849,7 @@ function renderAreaMap(p,{set,ix,d,lvl}){
       : `<div class="mslbl">Highest</div>${ranked.slice(0,5).map(row).join("")}
          <div class="mslbl">Lowest</div>${ranked.slice(-5).reverse().map(row).join("")}`}
     <div class="msnote">${["Click an area to see its figure, its rank and how it compares.",...notes].map(esc).join(" ")}</div>
+    <div class="msnote">Boundaries: Office for National Statistics, OGL v3.0. Contains OS data © Crown copyright and database right ${new Date().getFullYear()}.</div>
   </div>`;
   return `<div class="mapwrap">${svg}${side}</div>`;
 }
