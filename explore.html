@@ -2613,7 +2613,7 @@ document.getElementById("stack").addEventListener("click",e=>{
   state.active=i; state.focus=i;
 
   /* selects and inputs inside the settings popover are handled on change */
-  if(["chart","trans","era","src","from","to","title"].includes(act)) return;
+  if(["chart","trans","era","src","from","to","title","mapfind"].includes(act)) return;
 
   if(act==="cfg"){ state.openCfg = state.openCfg===p.key ? null : p.key; state.openMenu=null; }
   else if(act==="menu"){ state.openMenu = state.openMenu===p.key ? null : p.key; state.openCfg=null; }
