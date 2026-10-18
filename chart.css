@@ -15,9 +15,9 @@
 .sm-t{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;font-weight:500}
 
 /* names at the line ends, and breaks drawn on the line */
-.endlbl{font-family:"Public Sans",system-ui,sans-serif;font-size:11px;font-weight:600}
+.endlbl{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11px;font-weight:600}
 .endval{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;fill:var(--muted)}
-.brk{font-family:"Public Sans",system-ui,sans-serif;font-size:10px;fill:var(--warn)}
+.brk{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:10px;fill:var(--warn)}
 .brkline{stroke:var(--warn);stroke-width:1;stroke-dasharray:2 2}
 .hollow{fill:var(--surface)}
 .enddot{stroke:var(--surface);stroke-width:1.5}

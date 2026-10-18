@@ -7,12 +7,12 @@
 <title>Build the share images — Polyoptic</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-body{margin:0;background:#EDEFF1;color:#0F1419;font-family:"Public Sans",system-ui,sans-serif;
+body{margin:0;background:#EDEFF1;color:#0F1419;font-family:"IBM Plex Sans",system-ui,sans-serif;
   font-size:15px;line-height:1.6}
 .wrap{max-width:1000px;margin:0 auto;padding:34px 26px 70px}
-h1{font-family:Archivo,sans-serif;font-size:27px;margin:0 0 6px;letter-spacing:-0.02em}
+h1{font-family:"IBM Plex Sans",sans-serif;font-size:27px;margin:0 0 6px;letter-spacing:-0.02em}
 p{max-width:70ch;color:#5C6672}
 code{font-family:"IBM Plex Mono";font-size:13px;background:#F4F2FA;border:1px solid #D8D2EC;
   padding:1px 6px;border-radius:2px;color:#4633A8}
@@ -81,10 +81,10 @@ function mark(ctx,x,y,scale,colour){
   ctx.restore(); ctx.restore();
 }
 function wordmark(ctx,x,y,colour,size){
-  ctx.font=`800 ${size}px Archivo, sans-serif`; ctx.fillStyle=colour;
+  ctx.font=`700 ${size}px "IBM Plex Sans", sans-serif`; ctx.fillStyle=colour;
   ctx.fillText("poly",x,y);
   const w=ctx.measureText("poly").width;
-  ctx.font=`500 ${size}px Archivo, sans-serif`;
+  ctx.font=`500 ${size}px "IBM Plex Sans", sans-serif`;
   ctx.globalAlpha=.85; ctx.fillText("optic",x+w,y); ctx.globalAlpha=1;
 }
 
@@ -92,10 +92,10 @@ function drawBrand(ctx,c){
   ctx.fillStyle=PURPLE; ctx.fillRect(0,0,W,H);
   mark(ctx,74,60,0.66,"#fff");
   wordmark(ctx,148,116,"#fff",34);
-  ctx.font="800 68px Archivo, sans-serif"; ctx.fillStyle="#fff";
+  ctx.font="700 68px 'IBM Plex Sans', sans-serif"; ctx.fillStyle="#fff";
   const lines=wrap(ctx,c.t,W-148);
   lines.forEach((l,i)=>ctx.fillText(l,74,290+i*76));
-  ctx.font="400 27px 'Public Sans', system-ui, sans-serif";
+  ctx.font="400 27px 'IBM Plex Sans', system-ui, sans-serif";
   ctx.globalAlpha=.82;
   wrap(ctx,c.s,W-190).forEach((l,i)=>ctx.fillText(l,74,300+lines.length*76+i*38));
   ctx.globalAlpha=1;
@@ -109,7 +109,7 @@ function drawQ(ctx,c,db){
   mark(ctx,74,44,0.42,PURPLE);
   wordmark(ctx,122,80,PURPLE,22);
 
-  ctx.font="800 52px Archivo, sans-serif"; ctx.fillStyle=INK;
+  ctx.font="700 52px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=INK;
   const lines=wrap(ctx,c.q,W-148);
   lines.forEach((l,i)=>ctx.fillText(l,74,168+i*58));
 
@@ -124,7 +124,7 @@ function drawQ(ctx,c,db){
 
   const top=190+lines.length*58, bot=H-104, L=74, R=W-74;
   if(sets.length<2){
-    ctx.font="400 24px 'Public Sans', system-ui, sans-serif"; ctx.fillStyle=MUTED;
+    ctx.font="400 24px 'IBM Plex Sans', system-ui, sans-serif"; ctx.fillStyle=MUTED;
     ctx.fillText("Rebuild data/bundle.json to draw this card.",L,top+40);
   } else {
     const vals=sets.flatMap(s=>s.pts.map(q=>q[1]));
@@ -150,7 +150,7 @@ function drawQ(ctx,c,db){
     ctx.fillText(x0,L,bot+30); ctx.textAlign="right"; ctx.fillText(x1,R-70,bot+30);
     ctx.textAlign="left";
     let lx=L;
-    ctx.font="500 20px 'Public Sans', system-ui, sans-serif";
+    ctx.font="500 20px 'IBM Plex Sans', system-ui, sans-serif";
     sets.forEach(s=>{
       ctx.fillStyle=s.colour; ctx.fillRect(lx,H-72,13,13);
       ctx.fillStyle=INK; ctx.fillText(s.name,lx+21,H-60);

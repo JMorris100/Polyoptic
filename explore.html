@@ -28,7 +28,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%226.5%204.5%2087%2087%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22c%22%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%20fill%3D%22none%22%20stroke%3D%22%234633A8%22%20stroke-width%3D%225%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cg%20clip-path%3D%22url%28%23c%29%22%20fill%3D%22%234633A8%22%3E%3Crect%20x%3D%2229.75%22%20y%3D%2246.56%22%20width%3D%226%22%20height%3D%2218.72%22%2F%3E%3Crect%20x%3D%2241.25%22%20y%3D%2236.48%22%20width%3D%226%22%20height%3D%2228.8%22%2F%3E%3Crect%20x%3D%2252.75%22%20y%3D%2242.6%22%20width%3D%226%22%20height%3D%2222.68%22%2F%3E%3Crect%20x%3D%2264.25%22%20y%3D%2230.72%22%20width%3D%226%22%20height%3D%2234.56%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="chart.css">
 <script src="chartkit.js"></script>
 <style>
@@ -46,8 +46,8 @@ html[data-theme="dark"] input{color-scheme:dark}
 
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--paper);color:var(--ink);font-family:"Public Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;transition:background-color .2s}
-h1,h2,h3,h4{font-family:"Archivo";margin:0;letter-spacing:-0.03em;line-height:1.05}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;transition:background-color .2s}
+h1,h2,h3,h4{font-family:"IBM Plex Sans";margin:0;letter-spacing:-0.015em;line-height:1.05}
 svg{display:block}
 button{font-family:inherit}
 body.dragging{user-select:none;cursor:grabbing}
@@ -58,7 +58,7 @@ header{position:sticky;top:0;z-index:40;background:#4633A8;color:#fff}
 .hrow{padding:0 24px 0 20px;height:70px;display:flex;align-items:center;gap:14px}
 .brand{display:flex;align-items:center;gap:9px;text-decoration:none}
 .brand svg{width:36px;height:26px}
-.wm{font-family:"Archivo";font-weight:800;font-size:21px;letter-spacing:-0.05em;color:#fff}
+.wm{font-family:"IBM Plex Sans";font-weight:800;font-size:21px;letter-spacing:-0.03em;color:#fff}
 .wm .b{font-weight:500;color:rgba(255,255,255,.66)}
 .crumb{font-family:"IBM Plex Mono";font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;margin-left:6px}
 .hact{margin-left:auto;display:flex;gap:8px}
@@ -286,9 +286,9 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .hovline{stroke:var(--muted);stroke-width:1;opacity:0;pointer-events:none}
 .hovline.on{opacity:.45}
 /* the year working: a sum per series, numbers large, labels small */
-.working:has(.wyear){font-family:"Public Sans",system-ui,sans-serif;line-height:1.4;padding:12px 14px}
-.working .wyear{font-family:Archivo,sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;margin-bottom:8px}
-.working .wyear span{font-family:"Public Sans",sans-serif;font-weight:400;font-size:12.5px;color:var(--muted);letter-spacing:0;margin-left:6px}
+.working:has(.wyear){font-family:"IBM Plex Sans",system-ui,sans-serif;line-height:1.4;padding:12px 14px}
+.working .wyear{font-family:"IBM Plex Sans",sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;margin-bottom:8px}
+.working .wyear span{font-family:"IBM Plex Sans",sans-serif;font-weight:400;font-size:12.5px;color:var(--muted);letter-spacing:0;margin-left:6px}
 .working .wblk{padding:10px 0;border-top:1px solid var(--prule)}
 .working .wblk:last-child{padding-bottom:0}
 .working .wname{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:8px}
@@ -363,7 +363,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 /* headline numbers on a gap chart */
 .stats{display:flex;gap:28px;flex-wrap:wrap;margin:0 0 10px}
 .stat{display:flex;flex-direction:column}
-.stat b{font-family:Archivo,sans-serif;font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
+.stat b{font-family:"IBM Plex Sans",sans-serif;font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
 .stat span{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
 .stat .d{width:13px;height:3px;flex-shrink:0}
 
@@ -373,16 +373,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .sg{font-family:"IBM Plex Mono";font-size:11.5px;padding:8px 13px;border:1px solid var(--prule);background:var(--soft);color:var(--purple);cursor:pointer;border-radius:2px}
 .sg:hover{background:var(--soft-hover)}
 
-.addbar{display:flex;justify-content:center;align-items:center;gap:14px;padding:4px 0 0;flex-wrap:wrap}
-.layoutpick{display:flex;gap:4px;align-items:center}
-.layoutpick .lb{display:flex;align-items:center;justify-content:center;padding:7px 8px;
-  border:1px solid var(--rule);background:var(--surface);color:var(--muted);border-radius:3px;
-  cursor:pointer;line-height:0}
-.layoutpick .lb svg{width:26px;height:16px;fill:currentColor;opacity:.8}
-.layoutpick .lb:hover{border-color:var(--purple);color:var(--ink)}
-.layoutpick .lb.on{background:var(--purple);border-color:var(--purple);color:#fff}
-.layoutpick .lb.on svg{opacity:1}
-.layoutpick .lb:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
+.addbar{display:flex;justify-content:center;align-items:center;gap:14px;padding:16px 0 0;flex-wrap:wrap}
 .addbtn{font-family:"IBM Plex Mono";font-size:12px;padding:11px 24px;border:1px dashed var(--prule);
   background:var(--surface);color:var(--purple);cursor:pointer;border-radius:2px;width:100%;transition:.14s}
 .addbtn:hover{background:var(--soft);border-color:var(--purple);border-style:solid}
@@ -468,7 +459,7 @@ html[data-theme="dark"] .fchip.f-partial{color:#E4CE88;border-color:#4A3E14;back
 .vhow{display:block;font-size:10px;color:var(--muted);margin-top:1px}
 .vnone{color:var(--muted)}
 .vbrk{box-shadow:inset 3px 0 0 var(--warn)}
-.vtag{font-family:"Public Sans",sans-serif;font-size:10px;font-weight:600;color:var(--warn);border:1px solid var(--warnrule);padding:0 4px;margin-left:4px;cursor:help}
+.vtag{font-family:"IBM Plex Sans",sans-serif;font-size:10px;font-weight:600;color:var(--warn);border:1px solid var(--warnrule);padding:0 4px;margin-left:4px;cursor:help}
 .vtbl tr.sel th,.vtbl tr.sel td{background:var(--soft-hover)}
 .vtbl tr.sel .vy{box-shadow:inset 3px 0 0 var(--purple)}
 .vsrcs{padding:10px 14px 4px;display:flex;flex-direction:column;gap:6px}
@@ -513,14 +504,14 @@ html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px col
 #garrow path{fill:none;stroke:var(--purple);stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
 .ghd{display:flex;align-items:center;gap:10px;padding:12px 14px;background:var(--surface-2);
   border-bottom:1px solid var(--rule)}
-.ghd h2{font-family:Archivo,sans-serif;font-size:14.5px;font-weight:700;margin:0;color:var(--ink);
+.ghd h2{font-family:"IBM Plex Sans",sans-serif;font-size:14.5px;font-weight:700;margin:0;color:var(--ink);
   letter-spacing:-0.01em}
 .gstep{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);margin-left:auto}
 .gx{border:0;background:none;color:var(--muted);font-size:19px;line-height:1;cursor:pointer;
   padding:0 2px}
 .gx:hover{color:var(--ink)}
 .gbody{padding:15px 16px 4px}
-.gbody h3{font-family:Archivo,sans-serif;font-size:15.5px;font-weight:700;margin:0 0 9px;
+.gbody h3{font-family:"IBM Plex Sans",sans-serif;font-size:15.5px;font-weight:700;margin:0 0 9px;
   color:var(--ink);letter-spacing:-0.012em}
 .gbody ul{margin:0;padding:0;list-style:none}
 .gbody li{display:flex;gap:9px;align-items:flex-start;font-size:13.5px;color:var(--ink);
@@ -611,7 +602,6 @@ html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px col
     <div class="charts">
       <div class="stack" id="stack"></div>
       <div class="addbar">
-        <div class="layoutpick" id="layoutpick" role="group" aria-label="Chart layout"></div>
         <button class="addbtn" id="addBottom">+ Add another chart</button>
       </div>
     </div>
@@ -744,36 +734,6 @@ const H_MIN=210, H_MAX=640, H_DEF=300;
 const WIDTHS=[[12,"Full width"],[9,"Three quarters"],[8,"Two thirds"],[6,"Half"],[4,"One third"]];
 const W_SNAPS=[4,6,8,9,12];
 const wLabel=w=>({12:"full",9:"3/4",8:"2/3",6:"1/2",4:"1/3"}[w]||w+"/12");
-
-/* Layouts, chosen from a short list rather than dragged out of a corner.
-   `w` is a width in twelfths applied by position, so "Lead + pair" gives the
-   first chart the full row and pairs everything after it. */
-const LAYOUTS=[
-  {k:"full",  label:"Full width", w:()=>12},
-  {k:"two",   label:"Two across", w:()=>6},
-  {k:"three", label:"Three across", w:()=>4},
-  {k:"lead",  label:"Lead + pairs", w:i=>i===0?12:6},
-];
-const LAYOUT_ICON={
-  full:'<svg viewBox="0 0 26 16"><rect x="1" y="1" width="24" height="6" rx="1"/><rect x="1" y="9" width="24" height="6" rx="1"/></svg>',
-  two:'<svg viewBox="0 0 26 16"><rect x="1" y="1" width="11.5" height="14" rx="1"/><rect x="13.5" y="1" width="11.5" height="14" rx="1"/></svg>',
-  three:'<svg viewBox="0 0 26 16"><rect x="1" y="1" width="7.3" height="14" rx="1"/><rect x="9.3" y="1" width="7.3" height="14" rx="1"/><rect x="17.6" y="1" width="7.4" height="14" rx="1"/></svg>',
-  lead:'<svg viewBox="0 0 26 16"><rect x="1" y="1" width="24" height="6" rx="1"/><rect x="1" y="9" width="11.5" height="6" rx="1"/><rect x="13.5" y="9" width="11.5" height="6" rx="1"/></svg>',
-};
-function applyLayout(k){
-  const L=LAYOUTS.find(l=>l.k===k); if(!L) return;
-  state.layout=k;
-  state.panels.forEach((p,i)=>{ p.w=L.w(i); });
-  render();
-}
-/* Which preset the current widths correspond to, so the control can show the
-   active one — and show none when someone has arrived on an older permalink
-   with a bespoke arrangement. */
-function currentLayout(){
-  if(!state.panels.length) return state.layout||"full";
-  const hit=LAYOUTS.find(L=>state.panels.every((p,i)=>p.w===L.w(i)));
-  return hit?hit.k:"";
-}
 
 /* The default sourcing style for a new chart: whichever was picked last.
    Each chart then carries its own, set in its settings. */
@@ -2293,16 +2253,7 @@ function renderSources(){
   };
 }
 
-function renderLayoutPick(){
-  const el=document.getElementById("layoutpick"); if(!el) return;
-  const cur=currentLayout();
-  el.innerHTML=LAYOUTS.map(L=>
-    `<button class="lb${cur===L.k?" on":""}" data-layout="${L.k}" aria-pressed="${cur===L.k}"
-      title="${L.label}" aria-label="${L.label}">${LAYOUT_ICON[L.k]}</button>`).join("");
-  el.querySelectorAll("[data-layout]").forEach(b=>b.onclick=()=>applyLayout(b.dataset.layout));
-}
-
-function render(){ renderPanels(); renderSidebar(); renderSources(); renderLayoutPick(); writeHash(); }
+function render(){ renderPanels(); renderSidebar(); renderSources(); writeHash(); }
 
 /* ══════════════════════════════════════════════
    PANEL ACTIONS
