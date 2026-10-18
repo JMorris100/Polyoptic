@@ -1989,7 +1989,6 @@ function panelHtml(p,i){
     <div class="cfgrule"></div>
     <span class="plabel">Government</span>${sel("era",ERA_MODES,p.era)}
     <span class="plabel">Sources</span>${sel("src",SRC_STYLES,p.src)}
-    <span class="plabel">Time</span>${sel("gran",GRANS,p.gran)}
     <span class="plabel">Range</span><div class="rng">
       <input type="number" data-act="from" value="${p.from}" min="1980" max="2026" aria-label="From year"> — <input type="number" data-act="to" value="${p.to}" min="1980" max="2026" aria-label="To year">
     </div>
@@ -2315,7 +2314,7 @@ document.getElementById("stack").addEventListener("click",e=>{
   state.active=i; state.focus=i;
 
   /* selects and inputs inside the settings popover are handled on change */
-  if(["chart","trans","era","src","gran","from","to","title"].includes(act)) return;
+  if(["chart","trans","era","src","from","to","title"].includes(act)) return;
 
   if(act==="cfg"){ state.openCfg = state.openCfg===p.key ? null : p.key; state.openMenu=null; }
   else if(act==="menu"){ state.openMenu = state.openMenu===p.key ? null : p.key; state.openCfg=null; }
@@ -2386,16 +2385,9 @@ document.getElementById("stack").addEventListener("change",e=>{
   else if(act==="asort") p.asort=e.target.value;
   else if(act==="era"){ p.era=e.target.value; }
   else if(act==="src"){ p.src=e.target.value;
-    /* remembered as the default for the next new chart */
     /* remembered as the default for the next new chart — except "off", which
        should be a choice made per chart, never one inherited by accident */
     if(p.src!=="off"){ SRCSTYLE=p.src; try{ localStorage.setItem("polyoptic-srcstyle",SRCSTYLE); }catch(e){} } }
-  else if(act==="gran"){
-    p.gran=e.target.value;
-    /* fine detail over a long window is unreadable and slow — pull the window in */
-    if(p.gran==="days"   && p.to-p.from>3)  p.from=p.to-3;
-    if(p.gran==="months" && p.to-p.from>12) p.from=p.to-12;
-  }
   else return;
   render();
 });
@@ -2857,7 +2849,9 @@ function readHash(){
       const eraMode = era==="0" ? "off" : ERA_MODES.some(m=>m[0]===era) ? era : "bands";
       return mkPanel((sel||"").split(",").filter(id=>S(id)),
         {chart:chart||"line",trans:trans||"index",from:+from||1997,to:+to||2026,
-         era:eraMode,src:SRC_STYLES.some(x=>x[0]===src)?src:pageSrc,gran:(GRANS.some(g=>g[0]===gran)?gran:"years"),
+         era:eraMode,src:SRC_STYLES.some(x=>x[0]===src)?src:pageSrc,/* every series is published annually, so charts are always drawn in
+            years; older links that asked for finer steps open in years */
+         gran:"years",
          title:ttl?decodeURIComponent(ttl):null,
          lvl:lvl||"", asort:(AREA_SORTS.some(a=>a[0]===asort)?asort:"desc"), table:tbl==="1",
          h:Math.max(H_MIN,Math.min(H_MAX,+h||H_DEF)),w:(W_SNAPS.includes(+w)?+w:12)});
