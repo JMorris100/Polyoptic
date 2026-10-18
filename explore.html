@@ -359,8 +359,19 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .maplbl{font-family:"IBM Plex Mono",ui-monospace,monospace;fill:var(--muted)}
 .mapside{flex:1;min-width:220px;max-width:340px;display:flex;flex-direction:column;gap:2px;padding-top:4px}
 .msfind{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
-.msfind span,.mslbl{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-.msfind select{font:inherit;font-size:12.5px;padding:7px 8px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:3px}
+.mslbl{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.msfind{position:relative}
+.msfind label{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mfq{font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:3px;width:100%}
+.mfq:focus{outline:2px solid var(--purple);outline-offset:-1px}
+.mfq::placeholder{color:var(--muted)}
+.mfres{position:absolute;left:0;right:0;top:100%;margin-top:4px;z-index:20;background:var(--surface);border:1px solid var(--rule);
+  border-radius:3px;box-shadow:0 8px 24px rgba(0,0,0,.14);max-height:280px;overflow-y:auto;padding:4px}
+.mfhit{display:flex;justify-content:space-between;gap:10px;width:100%;padding:7px 9px;border:0;background:transparent;color:var(--ink);
+  font:inherit;font-size:12.5px;text-align:left;cursor:pointer;border-radius:2px}
+.mfhit b{font-family:"IBM Plex Mono";font-weight:400;font-size:11px;color:var(--muted)}
+.mfhit:hover,.mfhit.on{background:var(--soft)}
+.mfnone{padding:8px 9px;font-size:12.5px;color:var(--muted)}
 .mslbl{margin:10px 0 4px}
 .msrow{display:flex;align-items:center;gap:8px;padding:6px 8px;border:0;background:transparent;color:var(--ink);font:inherit;font-size:12.5px;
   text-align:left;cursor:pointer;border-radius:3px;border-left:3px solid transparent}
@@ -1706,6 +1717,21 @@ function renderAreaRange(p,{set,ix,d,lvl}){
    every area the same pale shade. The legend prints each bin's range, so the
    reader is never left guessing what a shade means. */
 const GEO=new Map();
+/* each map's searchable list of areas, kept outside the markup so typing in
+   the search box never redraws the chart (a redraw would drop the focus) */
+const MAPFIND=new Map();
+function mapFindShow(input){
+  const card=input.closest(".pcard"), p=state.panels[+card.dataset.i], f=MAPFIND.get(p.key), box=input.nextElementSibling;
+  if(!f){ box.hidden=true; return; }
+  const q=input.value.trim().toLowerCase();
+  const hits=(q?f.list.filter(r=>r[1].toLowerCase().includes(q)).sort((a,b)=>
+    (b[1].toLowerCase().startsWith(q))-(a[1].toLowerCase().startsWith(q))):f.list).slice(0,8);
+  box.innerHTML=hits.length
+    ? hits.map((r,i)=>`<button type="button" class="mfhit${i===0?" on":""}" role="option" data-probe="${esc(f.id)}" data-area="${r[0]}">
+        <span>${esc(r[1])}</span><b>${fmt(r[2])}</b></button>`).join("")
+    : `<div class="mfnone">No area matches “${esc(input.value.trim())}”</div>`;
+  box.hidden=false;
+}
 function geoData(name){
   if(GEO.has(name)) return GEO.get(name);
   areaGet(`data/geo/${name}.json`,d=>GEO.set(name,d));
@@ -1845,15 +1871,17 @@ function renderAreaMap(p,{set,ix,d,lvl}){
   const ranked=Object.entries(map).sort((a,b)=>b[1]-a[1]);
   const row=([c,v])=>`<button class="msrow${c===selCode?" on":""}" data-probe="${esc(set.id)}" data-area="${c}">
       <span class="msw" style="background:${colourOf(v)}"></span><span class="msn">${esc(areaName(ix,c))}</span><span class="msv">${fmt(v)}</span></button>`;
-  const opts=Object.keys(all).map(c=>[c,areaName(ix,c)]).sort((a,b)=>a[1].localeCompare(b[1]))
-    .map(([c,n])=>`<option value="${c}"${c===selCode?" selected":""}>${esc(n)}</option>`).join("");
+  MAPFIND.set(p.key,{id:set.id, list:Object.keys(all).map(c=>[c,areaName(ix,c),all[c]]).sort((a,b)=>a[1].localeCompare(b[1]))});
   const lvlName=((ix.levelNames||{})[lvl]||lvl).toLowerCase();
   const notes=[];
   if(Object.keys(extra).length) notes.push("Shire counties are shown as a whole, with the county's figure.");
   else if(lvl==="la") notes.push("Grey areas are two-tier counties: their councils are under Districts and Counties.");
   if(lvl==="region"||lvl==="cauth"||lvl==="county"||lvl==="district") notes.push(`Grey areas are not ${lvlName}.`);
   const side=`<div class="mapside">
-    <label class="msfind"><span>Find an area</span><select data-act="mapfind" data-probe-id="${esc(set.id)}"><option value="">Choose…</option>${opts}</select></label>
+    <div class="msfind"><label for="mfq${p.key}">Find an area</label>
+      <input id="mfq${p.key}" class="mfq" type="search" data-act="mapq" autocomplete="off" spellcheck="false"
+        placeholder="${selCode?esc(areaName(ix,selCode)):"Type an area name"}" aria-controls="mfr${p.key}">
+      <div class="mfres" id="mfr${p.key}" role="listbox" hidden></div></div>
     ${ranked.length<=12 ? `<div class="mslbl">Highest first</div>${ranked.map(row).join("")}`
       : `<div class="mslbl">Highest</div>${ranked.slice(0,5).map(row).join("")}
          <div class="mslbl">Lowest</div>${ranked.slice(-5).reverse().map(row).join("")}`}
@@ -2580,7 +2608,8 @@ document.getElementById("stack").addEventListener("click",e=>{
   const mark=e.target.closest("[data-probe]");
   if(mark){
     const id=mark.dataset.probe, code=mark.dataset.area, x=mark.dataset.x;
-    const same = state.probe && state.probe.key===p.key && state.probe.id===id &&
+    /* a search result always selects; clicking a selected mark again clears it */
+    const same = !mark.classList.contains("mfhit") && state.probe && state.probe.key===p.key && state.probe.id===id &&
                  (code ? state.probe.code===code : state.probe.x===+x);
     state.probe = same ? null : (code ? {key:p.key,id,code} : {key:p.key,id,x:+x});
     /* with the numbers table open, the click also finds that year in it */
@@ -2613,7 +2642,7 @@ document.getElementById("stack").addEventListener("click",e=>{
   state.active=i; state.focus=i;
 
   /* selects and inputs inside the settings popover are handled on change */
-  if(["chart","trans","era","src","from","to","title","mapfind"].includes(act)) return;
+  if(["chart","trans","era","src","from","to","title","mapq"].includes(act)) return;
 
   if(act==="cfg"){ state.openCfg = state.openCfg===p.key ? null : p.key; state.openMenu=null; }
   else if(act==="menu"){ state.openMenu = state.openMenu===p.key ? null : p.key; state.openCfg=null; }
@@ -2669,6 +2698,32 @@ document.getElementById("stack").addEventListener("focusout",e=>{
   p.title = (v && v!==auto) ? v : null;   /* typing the auto title back clears the override */
   state.renaming=null; render();
 });
+document.getElementById("stack").addEventListener("input",e=>{
+  if(e.target.dataset.act==="mapq") mapFindShow(e.target);
+});
+document.getElementById("stack").addEventListener("focusin",e=>{
+  if(e.target.dataset.act==="mapq") mapFindShow(e.target);
+});
+document.getElementById("stack").addEventListener("focusout",e=>{
+  if(e.target.dataset.act!=="mapq") return;
+  const box=e.target.nextElementSibling;
+  /* leave time for a click on a result to land before the list goes */
+  setTimeout(()=>{ if(!box.contains(document.activeElement)) box.hidden=true; },180);
+});
+document.getElementById("stack").addEventListener("keydown",e=>{
+  if(e.target.dataset.act!=="mapq") return;
+  const box=e.target.nextElementSibling, hits=[...box.querySelectorAll(".mfhit")];
+  let k=hits.findIndex(h=>h.classList.contains("on"));
+  if(e.key==="ArrowDown"||e.key==="ArrowUp"){
+    e.preventDefault(); if(box.hidden) mapFindShow(e.target);
+    if(!hits.length) return;
+    hits[k]?.classList.remove("on");
+    k=(k+(e.key==="ArrowDown"?1:-1)+hits.length)%hits.length;
+    hits[k].classList.add("on"); hits[k].scrollIntoView({block:"nearest"});
+  } else if(e.key==="Enter"){
+    e.preventDefault(); if(hits[k]) hits[k].click();
+  } else if(e.key==="Escape"){ box.hidden=true; }
+});
 document.getElementById("stack").addEventListener("keydown",e=>{
   if(e.target.dataset.act!=="title") return;
   if(e.key==="Enter") e.target.blur();
@@ -2683,7 +2738,6 @@ document.getElementById("stack").addEventListener("change",e=>{
   else if(act==="trans") p.trans=e.target.value;
   else if(act==="lvl") p.lvl=e.target.value;
   else if(act==="asort") p.asort=e.target.value;
-  else if(act==="mapfind") state.probe=e.target.value?{key:p.key,id:e.target.dataset.probeId,code:e.target.value}:null;
   else if(act==="era"){ p.era=e.target.value; }
   else if(act==="src"){ p.src=e.target.value;
     /* remembered as the default for the next new chart — except "off", which
