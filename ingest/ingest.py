@@ -833,6 +833,9 @@ def _long(cfg: dict, rows: list[list]) -> dict[int, float]:
     pi = index_of(cfg["period_column"]) if cfg.get("period_column") else None
     keep = {index_of(k): v for k, v in (cfg.get("filter") or {}).items()}
     numer = {index_of(k): v for k, v in (cfg.get("rate") or {}).items()}
+    # `denominator_column`: a share of two columns on the same row (battery
+    # electric over all new cars), where `rate` divides rows by rows
+    di = index_of(cfg["denominator_column"]) if cfg.get("denominator_column") else None
 
     # (year, period) -> [denominator total, numerator total]
     buckets: dict[tuple[int, str], list[float]] = {}
@@ -846,6 +849,13 @@ def _long(cfg: dict, rows: list[list]) -> dict[int, float]:
         if year is None or value is None:
             continue
         slot = buckets.setdefault((year, _clean(row[pi]) if pi is not None else ""), [0.0, 0.0])
+        if di is not None:
+            den = _to_number(row[di])
+            if den is None:
+                continue
+            slot[0] += den
+            slot[1] += value
+            continue
         slot[0] += value
         if numer and all(_matches(row[i], want) for i, want in numer.items()):
             slot[1] += value
@@ -855,7 +865,7 @@ def _long(cfg: dict, rows: list[list]) -> dict[int, float]:
 
     ordered = sorted(buckets.items(), key=lambda kv: (kv[0][0], _period_key(kv[0][1])))
     how = cfg.get("aggregate", "sum")
-    if numer:
+    if numer or di is not None:
         # Collapse numerator and denominator to the year SEPARATELY, then
         # divide. Averaging four quarterly rates instead would weight a quiet
         # quarter the same as a busy one and quietly misstate the year.

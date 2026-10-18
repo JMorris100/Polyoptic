@@ -2267,6 +2267,175 @@ series:
       - "Calculated here from ONS's five-year age-specific fertility rates, because ONS no longer publishes the headline rate as a time series. It matches ONS's own figure to within about 0.01 in most years (1.39 for 2025), but can differ by up to 0.05 in a few wartime years"
       - "Rates from 2012 to 2020 were revised in 2023 after the 2021 Census showed more women of childbearing age than previously estimated, so older publications show slightly higher figures for those years"
 
+  # National education and transport indicators. Verified 2026-10-18; every
+  # entry below builds with ingest.build_series().
+  #
+  # Two new publisher facts worth adding to ingest.py when these are merged
+  # (the rail entries set publisher / publisher_full explicitly meanwhile):
+  #   PUBLISHERS["ORR"] = "Office of Rail and Road"
+  #   PUBLISHER_SITES["ORR"] = "https://dataportal.orr.gov.uk/"
+
+  # ── EDUCATION ────────────────────────────────────────────
+  - id: teachers
+    name: Teachers in state-funded schools
+    topics: [education]
+    unit: full-time equivalent teachers
+    kind: count
+    geography: England
+    year_basis: academic
+    source: DfE School workforce in England
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/school-workforce-in-england
+    source_type: csv
+    fetch:
+      url: https://content.explore-education-statistics.service.gov.uk/api/data-set-files/47006239-5f46-4c97-8ae0-38fd288d1c1e/download
+      year_column: time_period
+      value_column: fte_all_teachers
+      year_basis: academic
+      filter:
+        geographic_level: National
+        establishment_type_group: Total state-funded schools
+    notes:
+      - "Full-time equivalent, not headcount: two half-time teachers count as one. Headcount runs roughly 5% higher"
+      - "Counted in the November census each year, so 2025/26 is the workforce as at November 2025"
+      - "Covers state-funded nursery, primary, secondary, special schools and pupil referral units. Independent schools are not included"
+      - "This dataset is not exposed through the EES API, so it is read from the release's CSV download (a 20 MB file covering every local authority)"
+
+  - id: neet
+    name: Young people not in education, employment or training (NEET)
+    topics: [education]
+    unit: "% of 16 to 24 year olds"
+    kind: rate
+    geography: England
+    year_basis: calendar
+    source: DfE NEET age 16 to 24
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/neet-statistics-annual-brief
+    source_type: dfe_ees
+    fetch:
+      data_set_id: 019cc380-4628-71be-bdc2-a01a95b64c89
+      indicator: 6DPUr
+      criteria:
+        and:
+          - {filters: {eq: S4uEV}}       # age: 16 to 24
+          - {filters: {eq: o2yPm}}       # sex: total
+          - {filters: {eq: TyUpP}}       # quarter: Q4 (October to December)
+          - {geographicLevels: {eq: NAT}}
+    notes:
+      - "A Labour Force Survey estimate, not a count. Each point is the October to December quarter, which is the figure DfE leads its annual brief with. The data are not seasonally adjusted, so quarters should not be mixed: July to September always runs highest as school and college leavers are between courses"
+      - "Age is academic age (age at the start of the school year), so this is not identical to the ONS UK NEET figure, which is seasonally adjusted and uses age on the survey date. DfE puts the gap at about half a point"
+      - "Sampling error is around half a percentage point either way, so year-to-year moves smaller than that are not reliably real"
+      - "The LFS response rate fell sharply from 2020 and ONS has reweighted the survey since; estimates from 2020 on are less certain than earlier ones"
+
+  # ── TRANSPORT ────────────────────────────────────────────
+  - id: railjourneys
+    name: Rail passenger journeys
+    topics: [transport]
+    unit: million journeys per year
+    kind: count
+    geography: Great Britain
+    year_basis: financial
+    source: ORR passenger rail usage
+    source_url: https://dataportal.orr.gov.uk/statistics/usage/passenger-rail-usage/table-1220-passenger-journeys/
+    publisher: ORR
+    publisher_full: Office of Rail and Road
+    source_type: spreadsheet
+    fetch:
+      url: https://dataportal.orr.gov.uk/media/1652/table-1220-passenger-journeys.ods
+      sheet: 1220_Passenger_journeys
+      year_column: Time period
+      value_column: Passenger journeys (million)
+    notes:
+      - "National Rail only: Eurostar, the London Underground and light rail are not included"
+      - "Financial years (April to March) from 1984-85. Before that ORR only has calendar years, back to 1872, and there are no figures for 1939 to 1945"
+      - "Everything from 2020-21 onwards is provisional. ORR has not yet adjusted for split ticketing (one trip bought as several tickets, which inflates the count), and plans revisions back to April 2020. Elizabeth line journeys from 2022-23 have also been corrected once for overcounting and may be adjusted again"
+      - "The year labelled 2020 is April 2020 to March 2021, when journeys fell to under a quarter of the pre-pandemic level"
+    discontinuities:
+      - {year: 1938, label: "DfT data from 1938", note: "Figures from 1938 come from the Department for Transport; earlier years are historical railway returns compiled by the National Infrastructure Commission"}
+      - {year: 1984, label: "Calendar to financial years", note: "Figures to 1983 are calendar years; from 1984 they are April to March financial years, so January to March 1984 is not counted in either"}
+      - {year: 1986, label: "Ticket-system data from 1986", note: "From April 1986 journeys are estimated from the CAPRI ticket-sales system, which missed some operator-specific and multi-modal tickets until 1999. From April 2003 they come from its successor, LENNON"}
+      - {year: 1999, label: "PTE tickets included", note: "From April 1999 journeys on Passenger Transport Executive tickets are included, which they were not before"}
+      - {year: 2020, label: "Pandemic estimation", note: "Mass season-ticket refunds in 2020-21 meant ORR had to estimate season and other ticket use by a different method; it marks a break for 2020-21 and 2021-22 and says these years are more uncertain than others"}
+
+  - id: railontime
+    name: Rail punctuality (trains on time)
+    topics: [transport]
+    unit: "% of station stops"
+    kind: rate
+    geography: Great Britain
+    year_basis: calendar
+    source: ORR passenger rail performance
+    source_url: https://dataportal.orr.gov.uk/statistics/performance/passenger-rail-performance/table-3133-train-punctuality-at-recorded-station-stops-by-operator/
+    publisher: ORR
+    publisher_full: Office of Rail and Road
+    source_type: spreadsheet
+    fetch:
+      url: https://dataportal.orr.gov.uk/media/1425/table-3133-train-punctuality-at-recorded-station-stops-by-operator.ods
+      sheet: 3133_Punctuality_(quarterly)
+      year_column: Time period
+      period_column: Time period
+      value_column: Trains arriving within 59 seconds (percentage)
+      filter: {National or Operator: Great Britain}
+      aggregate: mean
+    notes:
+      - "The industry's 'On Time' measure: the share of recorded station stops a train reached within 59 seconds of the timetable. It is much stricter than the old Public Performance Measure, which allowed five minutes (ten for long-distance) at the final destination only, so On Time reads some 20 points lower for the same railway"
+      - "Each year is the simple average of ORR's four quarterly figures for that calendar year"
+      - "The first year (2014) is partial — April to December only — and the latest year is partial too, covering only the quarters published so far. Because October to December is always the worst quarter (leaf fall), a partial year will read differently from a full one"
+      - "Punctuality jumped in 2020 and 2021 because far fewer trains ran during the pandemic, not because the railway got better"
+      - "PPM is still published, but ORR's national PPM table only starts in 2019-20, so On Time gives the longer consistent series"
+
+  - id: newbevcars
+    name: New battery electric cars registered
+    topics: [transport]
+    unit: thousand cars per year
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: DfT vehicle licensing statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/vehicle-licensing-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6aad561f3f8e4e96a6a66a38/veh1153.ods
+      sheet: VEH1153a_RoadUsing
+      year_column: Date
+      value_column: Battery Electric
+      filter:
+        Geography: United Kingdom
+        Date Interval: Annual
+        BodyType: Cars
+        Keepership: Total
+    notes:
+      - "Cars registered for the first time in the UK that run on battery power alone. Plug-in hybrids and range-extended electric cars are counted separately and are not included"
+      - "UK figures start in 2015; DfT only has Great Britain before July 2014"
+      - "A count, not a share. Total new car registrations fell by almost 30% in 2020 and have not fully recovered, so the count understates how fast the mix has shifted: battery electric cars were under 0.5% of new cars in 2015 and about 23% in 2025"
+      - "Around three quarters of new battery electric cars are registered to companies rather than private keepers, largely because of company-car tax rates"
+      - "The workbook is a 6 MB .ods; the first parse takes several minutes before the sheet cache kicks in"
+
+  # Battery electric share of new cars: VEH1153 puts fuel types in columns,
+  # so the share is one column over another (`denominator_column`).
+  - id: bevshare
+    name: Battery electric share of new cars
+    topics: [transport]
+    unit: "% of new car registrations"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: DfT vehicle licensing statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/vehicle-licensing-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6aad561f3f8e4e96a6a66a38/veh1153.ods
+      sheet: VEH1153a_RoadUsing
+      year_column: Date
+      value_column: Battery Electric
+      denominator_column: Total
+      filter:
+        Geography: United Kingdom
+        Date Interval: Annual
+        BodyType: Cars
+        Keepership: Total
+    notes:
+      - "Battery-only cars as a share of all cars registered for the first time. Plug-in hybrids are not counted"
+      - "UK figures start in 2015; DfT only has Great Britain before July 2014"
+
   # ══════════════════════════════════════════════════════════════
   # MORE FROM ONS EXPLORE LOCAL STATISTICS
   # Every indicator the service publishes that the catalogue did not yet

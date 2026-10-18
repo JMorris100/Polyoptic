@@ -242,8 +242,15 @@ against the live catalogues on 2026-08-05, and the spreadsheet sources on
 9 series (housing, economy, education), borders and migration, money, crime
 and justice, transport, environment, local statistics, headline ONS economic
 and labour-market series (GDP, inflation, employment, productivity, public
-finances, trade), and the three reference series — 92 indicators in one
-catalogue, filed under the homepage's eight topics.
+finances, trade), and the three reference series — 198 indicators in one
+catalogue, filed under the homepage's eight topics. Of those, 116 come from
+ONS Explore Local Statistics with figures for every local area, and 27 of
+those are `snapshot` series, published for one or two years only, which the
+explorer opens as a map rather than a trend. National series added in
+October 2026 (NHS performance, homelessness, housebuilding, prisons and
+police, emissions, Bank Rate, births and deaths, teachers, NEET, rail,
+electric cars) were verified against their published headline figures on
+2026-10-18.
 The placeholder data embedded in `explore.html` is still invented — it only
 shows if `data/bundle.json` fails to load, and it is labelled as such.
 
