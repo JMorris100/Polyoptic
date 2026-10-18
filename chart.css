@@ -1,0 +1,36 @@
+/* Polyoptic chart styles — shared by every page that draws a chart, so a
+   chart looks the same wherever it appears. Colours come from each page's
+   theme variables: --rule, --muted, --ink, --surface, --warn. The drawing
+   rules that produce these classes are in chartkit.js. */
+
+/* Grid recedes: it is scaffolding for reading a value, not a mark. */
+.gridline{stroke:var(--rule);stroke-width:1;opacity:.7}
+.axlabel{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;fill:var(--muted)}
+.line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+/* a stronger line at 100 on an index, or 0 when the data crosses it */
+.baseline{stroke:var(--muted);stroke-width:1;opacity:.75}
+.axunit{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;fill:var(--muted)}
+.nodata{fill:var(--ink);opacity:.045}
+.nodatat{opacity:.75;letter-spacing:.04em}
+.sm-t{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;font-weight:500}
+
+/* names at the line ends, and breaks drawn on the line */
+.endlbl{font-family:"Public Sans",system-ui,sans-serif;font-size:11px;font-weight:600}
+.endval{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;fill:var(--muted)}
+.brk{font-family:"Public Sans",system-ui,sans-serif;font-size:10px;fill:var(--warn)}
+.brkline{stroke:var(--warn);stroke-width:1;stroke-dasharray:2 2}
+.hollow{fill:var(--surface)}
+.enddot{stroke:var(--surface);stroke-width:1.5}
+.leader{fill:none;stroke-width:1;opacity:.45}
+
+/* government in power, shaded behind the data */
+.band{fill-opacity:.07}
+html[data-theme="dark"] .band,html[data-theme="brexit"] .band{fill-opacity:.09}
+.banddiv{stroke:var(--rule);stroke-width:1}
+.bandlbl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9px;fill:var(--muted)}
+
+/* the source line under a chart: where the numbers come from in plain
+   sentence case, then the facts about this view, quieter underneath */
+.psrc{font-size:12px;line-height:1.45;color:var(--ink);overflow-wrap:anywhere}
+.psrc b{font-weight:600}
+.pmeta{font-size:11.5px;color:var(--muted);overflow-wrap:anywhere}

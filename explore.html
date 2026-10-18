@@ -29,6 +29,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="chart.css">
+<script src="chartkit.js"></script>
 <style>
 :root{--paper:#EDEFF1;--surface:#fff;--surface-2:#FCFCFD;--hover:#F8F8FA;--ink:#0F1419;--muted:#5C6672;
 --rule:#D3D8DD;--rule-soft:#EEF0F2;
@@ -377,9 +379,6 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
    component carrying the site's entire trust claim. */
 .pfoot{padding:10px 16px 12px;border-top:1px solid var(--rule);display:flex;
   flex-direction:column;gap:3px}
-.psrc{font-size:12px;line-height:1.45;color:var(--ink);overflow-wrap:anywhere}
-.psrc b{font-weight:600}
-.pmeta{font-size:11.5px;color:var(--muted);overflow-wrap:anywhere}
 .phnote{font-size:12px;color:var(--warn);font-weight:600}
 
 /* resize grip along the bottom edge */
@@ -400,35 +399,12 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   background:var(--ink);color:var(--paper);padding:3px 7px;border-radius:2px;opacity:0;transition:opacity .15s;pointer-events:none}
 .pcard.is-resizing .hpill{opacity:1;background:var(--purple);color:#fff;font-size:12px;padding:5px 11px;bottom:22px;right:16px}
 
-/* Grid recedes: it is scaffolding for reading a value, not a mark. */
-.gridline{stroke:var(--rule);stroke-width:1;opacity:.7}
-.axlabel{font-family:"IBM Plex Mono";font-size:10px;fill:var(--muted)}
-.line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
-/* a stronger line at 100 on an index, or 0 when the data crosses it */
-.baseline{stroke:var(--muted);stroke-width:1;opacity:.75}
-.axunit{font-family:"IBM Plex Mono";font-size:10px;fill:var(--muted)}
-/* names at the line ends, and breaks drawn on the line */
-.endlbl{font-family:"Public Sans",system-ui,sans-serif;font-size:11px;font-weight:600}
-.endval{font-family:"IBM Plex Mono";font-size:10px;fill:var(--muted)}
-.brk{font-family:"Public Sans",system-ui,sans-serif;font-size:10px;fill:var(--warn)}
-.brkline{stroke:var(--warn);stroke-width:1;stroke-dasharray:2 2}
-.hollow{fill:var(--surface)}
-.enddot{stroke:var(--surface);stroke-width:1.5}
-.leader{fill:none;stroke-width:1;opacity:.45}
-/* government in power, shaded behind the data */
-.band{fill-opacity:.07}
-html[data-theme="dark"] .band,html[data-theme="brexit"] .band{fill-opacity:.09}
-.banddiv{stroke:var(--rule);stroke-width:1}
-.bandlbl{font-family:"IBM Plex Mono";font-size:9px;fill:var(--muted)}
 /* headline numbers on a gap chart */
 .stats{display:flex;gap:28px;flex-wrap:wrap;margin:0 0 10px}
 .stat{display:flex;flex-direction:column}
 .stat b{font-family:Archivo,sans-serif;font-size:26px;font-weight:700;letter-spacing:-.02em;line-height:1.1;font-variant-numeric:tabular-nums}
 .stat span{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--muted)}
 .stat .d{width:13px;height:3px;flex-shrink:0}
-.nodata{fill:var(--ink);opacity:.045}
-.nodatat{opacity:.75;letter-spacing:.04em}
-.sm-t{font-family:"IBM Plex Mono";font-size:10px;font-weight:500}
 
 .blank{padding:56px 24px;text-align:center;color:var(--muted)}
 .blank h3{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
@@ -754,11 +730,7 @@ let DB = PLACEHOLDER;
    #151823. The set these replace failed two checks — the brand purple sat
    below the light band, and the teal was under the chroma floor, which means
    it was rendering as grey. */
-const PAL_LIGHT=["#6D4AE0","#0E9384","#D97706","#DB2777"];
-const PAL_DARK =["#8367E8","#17A394","#C58207","#DE5A96"];
-/* red, white, and two blues light enough to read on the navy ground */
-const PAL_BREXIT=["#E4344F","#FFFFFF","#7FB2FF","#F0C24B"];
-const PAL=i=>({dark:PAL_DARK,brexit:PAL_BREXIT}[document.documentElement.dataset.theme]||PAL_LIGHT)[i%4];
+const PAL=CK.pal;   /* the categorical palette lives in chartkit.js */
 
 /* Sequential ramp for magnitude — the heatmap. One hue, light to dark, built
    from slot 1 so a value scale is visibly the same family as the categorical
@@ -1212,59 +1184,23 @@ function niceTicks(mn,mx,want=5){
 const LINEISH=["line","step","dots","area","gap"];
 const isLineish=p=>LINEISH.includes(p.chart);
 const BANDED=new Set(["line","step","dots","area","gap","bar","stack","colstack"]);
-const NAME_CH=24;
-const nameLines=s=>{const l=wrapText(s.name,NAME_CH); return l.length>3?[l[0],l[1],l[2].slice(0,NAME_CH-1)+"…"]:l;};
 
 /* End labels need a right gutter wide enough for the longest name; government
    bands need room above the plot for prime ministers' names. Set once per
    panel, before its chart is drawn. */
 function setLayout(p,sets){
   Object.assign(M,M0);
-  if(isLineish(p)&&sets.length){
-    const ch=Math.max(...sets.flatMap(nameLines).map(l=>l.length));
-    M.r=Math.min(200,Math.max(M0.r,Math.round(ch*6.1)+22));
-  }
-  if(p.era==="bands"&&BANDED.has(p.chart)) M.t+=16;
+  if(isLineish(p)&&sets.length) M.r=CK.gutterFor(sets.map(s=>s.name),M0.r);
+  if(p.era==="bands"&&BANDED.has(p.chart)) M.t+=CK.BANDS_TOP;
 }
 
-/* The y axis: round 1-2-5 steps with the domain snapped out to whole steps, so
-   the ticks read 80 / 100 / 120 rather than 83.2 / 127 / 170. `incl` forces a
-   value into range — 100 on an index, 0 for columns. */
-function niceStep(raw){const e=Math.pow(10,Math.floor(Math.log10(raw))),f=raw/e;
-  return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e;}
-function yAxis(vals,p,incl){
-  const v=vals.filter(x=>x!=null);
-  if(incl!=null) v.push(incl);
-  if(!v.length) return {mn:0,mx:1,ticks:[0,1],st:1};
-  let a=Math.min(...v),b=Math.max(...v);
-  if(a===b){a-=1;b+=1;}
-  const n=Math.max(3,Math.min(6,Math.round((p.h-M.t-M.b)/55)));
-  const st=niceStep((b-a)/n);
-  const mn=Math.floor(a/st+1e-9)*st, mx=Math.ceil(b/st-1e-9)*st, ticks=[];
-  for(let t=mn;t<=mx+st/2;t+=st) ticks.push(+t.toFixed(10));
-  return {mn,mx,ticks,st};
-}
-const tickFmt=(v,st)=>{let d=0; while(d<6&&Math.abs(st*10**d-Math.round(st*10**d))>1e-6) d++;
-  return Math.abs(v)>=1000?v.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,","):v.toFixed(d);};
+/* The drawing rules are shared with the homepage — see chartkit.js. These
+   wrappers give them the panel's own scale. */
+const yAxis=(vals,p,incl)=>CK.yAxis(vals,p.h-M.t-M.b,incl);
 const yOf=(p,ax)=>v=>M.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(p.h-M.t-M.b);
 
-/* Gridlines, y labels, year labels, and the unit as a line of text above the
-   plot rather than rotated up the side. `base` is drawn stronger: 100 on an
-   index ("up or down since the base year"), 0 when the data crosses zero. */
-function frame(p,g,ax,label,base){
-  const H=p.h, Y=yOf(p,ax);
-  ax.ticks.forEach(v=>{
-    const strong=base!=null&&Math.abs(v-base)<ax.st/1e6;
-    g.push(`<line class="${strong?"baseline":"gridline"}" x1="${M.l}" y1="${Y(v).toFixed(1)}" x2="${W-M.r}" y2="${Y(v).toFixed(1)}"/>`);
-    g.push(`<text class="axlabel" x="${M.l-9}" y="${(Y(v)+3.5).toFixed(1)}" text-anchor="end">${tickFmt(v,ax.st)}</text>`);
-  });
-  if(base!=null&&base>ax.mn&&base<ax.mx&&!ax.ticks.some(v=>Math.abs(v-base)<ax.st/1e6))
-    g.push(`<line class="baseline" x1="${M.l}" y1="${Y(base)}" x2="${W-M.r}" y2="${Y(base)}"/>`);
-  const span=p.to-p.from, step=span>24?5:span>12?2:1;
-  for(let yr=Math.ceil(p.from/step)*step;yr<=p.to;yr+=step)
-    g.push(`<text class="axlabel" x="${px(p,yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
-  if(label) g.push(`<text class="axunit" x="0" y="11">${esc(label)}</text>`);
-}
+const frame=(p,g,ax,label,base)=>CK.frame({g,ax,Y:yOf(p,ax),x0:p.from,x1:p.to,sx:y=>px(p,y),
+  l:M.l,r:W-M.r,H:p.h,label,base});
 /* The time charts carry their x scale on the element, so a click anywhere can
    be turned back into a period. The chosen period gets a line down the chart
    and a marker on each series (drawn by the chart); a fainter line follows the
@@ -1283,26 +1219,9 @@ const wrapSvg=(p,g)=>{
     viewBox="0 0 ${W} ${p.h}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Chart">${g.join("")}</svg>`;
 };
 
-/* Government as faint party-coloured bands behind the data, each prime
-   minister named along the top. A band too narrow for its name stays
-   unlabelled and names itself on hover instead. */
 function bandsLayer(p,g){
   if(p.era!=="bands") return;
-  const top=M.t, bot=p.h-M.b;
-  DB.eras.forEach(e=>{
-    const f=Math.max(e.from,p.from), t=Math.min(e.to,p.to);
-    if(t<=f) return;
-    g.push(`<rect class="band" x="${px(p,f).toFixed(1)}" y="${top}" width="${(px(p,t)-px(p,f)).toFixed(1)}" height="${bot-top}" fill="${e.colour}"><title>${esc(e.party)} ${e.from}–${e.to}</title></rect>`);
-  });
-  DB.pms.forEach(([y,n],i)=>{
-    const end=i+1<DB.pms.length?DB.pms[i+1][0]:Infinity;
-    const f=Math.max(y,p.from), t=Math.min(end,p.to);
-    if(t<=f) return;
-    const x0=px(p,f), x1=px(p,t);
-    if(y>p.from) g.push(`<line class="banddiv" x1="${x0.toFixed(1)}" y1="${top-14}" x2="${x0.toFixed(1)}" y2="${bot}"/>`);
-    g.push(`<rect x="${x0.toFixed(1)}" y="${top-14}" width="${(x1-x0).toFixed(1)}" height="14" fill="transparent"><title>${esc(n)}, ${y}–${end===Infinity?"":end}</title></rect>`);
-    if(x1-x0>n.length*5.6+10) g.push(`<text class="bandlbl" x="${((x0+x1)/2).toFixed(1)}" y="${top-4}" text-anchor="middle">${esc(n)}</text>`);
-  });
+  CK.bands({g,x0:p.from,x1:p.to,sx:y=>px(p,y),top:M.t,bot:p.h-M.b,eras:DB.eras,pms:DB.pms});
 }
 
 const lastPt=s=>[...s.pts].reverse().find(q=>q[1]!=null);
@@ -1353,12 +1272,7 @@ function renderLine(p,sets,mode){
       s.pts.forEach(q=>{ if(q[1]==null) return;
         g.push(`<circle cx="${px(p,q[0]).toFixed(1)}" cy="${Y(q[1]).toFixed(1)}" r="2.6" fill="${s.colour}" opacity=".85"><title>${(+q[0].toFixed(2))}: ${fmt(q[1])}</title></circle>`); });
     } else {
-      let d="",pen=false,lastY=null;
-      s.pts.forEach(q=>{ if(q[1]==null){pen=false;lastY=null;return;}
-        const x=px(p,q[0]).toFixed(1), y=Y(q[1]).toFixed(1);
-        if(mode==="step"&&pen&&lastY!=null) d+="L"+x+" "+lastY+" ";
-        d+=(pen?"L":"M")+x+" "+y+" "; pen=true; lastY=y; });
-      g.push(`<path class="line" d="${d}" stroke="${s.colour}"/>`);
+      g.push(`<path class="line" d="${CK.linePath(s.pts,y=>px(p,y),Y,mode==="step")}" stroke="${s.colour}"/>`);
     }
   });
 
@@ -1368,23 +1282,12 @@ function renderLine(p,sets,mode){
   const labels=[];
   sets.forEach((s,si)=>{
     const Y=Ys[si], last=lastPt(s); if(!last) return;
-    const ds=(s.metas||[s.meta]).flatMap(m=>m.discontinuities||[]).filter(d=>d.year>=p.from&&d.year<=p.to+1);
-    const endBreak=ds.find(d=>d.year>=Math.floor(last[0]));
-    ds.filter(d=>d!==endBreak).forEach(d=>{
-      const q=s.pts.find(q=>q[0]>=d.year&&q[1]!=null); if(!q) return;
-      const x=px(p,q[0]).toFixed(1), y=Y(q[1]);
-      g.push(`<g class="brkmark"><title>Break at ${d.year}: ${esc(d.note)}</title>`+
-        `<line class="brkline" x1="${x}" y1="${(y-16).toFixed(1)}" x2="${x}" y2="${(y+16).toFixed(1)}"/>`+
-        `<circle cx="${x}" cy="${y.toFixed(1)}" r="4" class="hollow" stroke="${s.colour}" stroke-width="2"/>`+
-        `<text class="brk" x="${x}" y="${(y-20).toFixed(1)}" text-anchor="middle">${esc(d.label||"Series break")}</text></g>`);
-    });
+    const endBreak=CK.breaks({g,ds:(s.metas||[s.meta]).flatMap(m=>m.discontinuities||[]),pts:s.pts,
+      sx:y=>px(p,y),Y,colour:s.colour,x0:p.from,x1:p.to});
     const cx=px(p,last[0]), cy=Y(last[1]);
-    g.push(endBreak
-      ? `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="4.5" class="hollow" stroke="${s.colour}" stroke-width="2"><title>${esc(endBreak.note)}</title></circle>`
-      : `<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="3.6" class="enddot" fill="${s.colour}"/>`);
+    CK.endPoint(g,cx,cy,s.colour,endBreak);
     const yr=Math.floor(last[0]);
-    labels.push({s,cx,cy,names:nameLines(s),val:fmt(last[1])+(yr<p.to?` in ${yr}`:""),
-      note:endBreak?wrapText(endBreak.label||"Series ends at a break",NAME_CH):[],full:endBreak&&endBreak.note});
+    labels.push({colour:s.colour,cx,cy,name:s.name,val:fmt(last[1])+(yr<p.to?` in ${yr}`:""),endBreak});
   });
   /* the chosen period: a marker where each series crosses it */
   const pr=state.probe;
@@ -1392,27 +1295,7 @@ function renderLine(p,sets,mode){
     const q=s.pts.find(q=>q[0]===pr.x);
     if(q&&q[1]!=null) g.push(`<circle class="probedot" cx="${px(p,q[0]).toFixed(1)}" cy="${Ys[si](q[1]).toFixed(1)}" r="5" fill="${s.colour}"/>`);
   });
-  /* stack the labels in the right gutter, nudging apart where they'd collide,
-     then back up from the bottom edge so nothing spills under the chart */
-  labels.sort((a,b)=>a.cy-b.cy);
-  let floor=-1e9;
-  labels.forEach(L=>{
-    L.h=L.names.length*12+12+L.note.length*11;
-    L.top=Math.max(L.cy-9,floor+6); floor=L.top+L.h;
-  });
-  let ceil=H-M.b+4;
-  [...labels].reverse().forEach(L=>{ if(L.top+L.h>ceil) L.top=ceil-L.h; ceil=L.top-6; });
-  const lx=W-M.r+12;
-  labels.forEach(L=>{
-    const s=L.s; let y=L.top+9;
-    if(L.cx<lx-14||Math.abs(L.top+9-L.cy)>3)
-      g.push(`<path class="leader" d="M${(L.cx+6).toFixed(1)} ${L.cy.toFixed(1)} L${lx-6} ${(L.top+5).toFixed(1)}" stroke="${s.colour}"/>`);
-    g.push(`<g>${L.full?`<title>${esc(L.full)}</title>`:""}`);
-    L.names.forEach(n=>{ g.push(`<text class="endlbl" x="${lx}" y="${y}" fill="${s.colour}">${esc(n)}</text>`); y+=12; });
-    g.push(`<text class="endval" x="${lx}" y="${y}">${L.val}</text>`); y+=12;
-    L.note.forEach(n=>{ g.push(`<text class="brk" x="${lx}" y="${y}">${esc(n)}</text>`); y+=11; });
-    g.push(`</g>`);
-  });
+  CK.endLabels({g,labels,lx:W-M.r+12,floorY:H-M.b+4});
   return wrapSvg(p,g);
 }
 

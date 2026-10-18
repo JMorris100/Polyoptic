@@ -10,6 +10,7 @@ GitHub repo.
 polyoptic/
 ├── index.html                  home — tiles and featured charts
 ├── explore.html                the explorer — compare, transform, export
+├── chartkit.js, chart.css      the chart drawing rules every page shares
 ├── data.html                   provenance — every raw value, source and API endpoint
 ├── about.html                  who builds it, and what it deliberately doesn't do
 ├── q/<slug>/index.html         one landing page per featured comparison
