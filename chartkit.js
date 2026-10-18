@@ -224,5 +224,35 @@ function linePath(pts,sx,Y,step){
   return d.trim();
 }
 
-window.CK={PAL,pal,esc,wrapText,nameLines,gutterFor,niceStep,yAxis,tickFmt,frame,BANDS_TOP,bands,ribbon,ELECTIONS,breaks,endPoint,endLabels,linePath};
+
+/* Small line icons for the eight topics, drawn on a 16-unit grid in
+   currentColor so they take the colour of whatever they sit in. */
+const TOPIC_ICONS={
+  economy:'<path d="M2.5 12.5l3.5-4 3 2.5 4.5-6"/><path d="M10.5 5h3v3"/>',
+  housing:'<path d="M2.5 7.5L8 3l5.5 4.5"/><path d="M4 6.5v7h8v-7"/><path d="M6.8 13.5v-3.5h2.4v3.5"/>',
+  education:'<path d="M1.5 6.5L8 3.5l6.5 3L8 9.5z"/><path d="M4.5 8v3.2c1 .9 2.2 1.3 3.5 1.3s2.5-.4 3.5-1.3V8"/>',
+  health:'<path d="M8 13.5S2.5 10.2 2.5 6.4A2.8 2.8 0 0 1 8 5.2a2.8 2.8 0 0 1 5.5 1.2C13.5 10.2 8 13.5 8 13.5z"/>',
+  crime:'<path d="M8 2.5v11M5.5 13.5h5M3.5 4.5h9"/><path d="M3.5 4.5L1.8 8.8a1.9 1.9 0 0 0 3.4 0z"/><path d="M12.5 4.5l-1.7 4.3a1.9 1.9 0 0 0 3.4 0z"/>',
+  transport:'<rect x="3.5" y="2.5" width="9" height="9" rx="2"/><path d="M3.5 7.5h9M6 14l.8-2.5M10 14l-.8-2.5"/><circle cx="6" cy="9.5" r=".4"/><circle cx="10" cy="9.5" r=".4"/>',
+  environment:'<path d="M3 13c0-6 4-10 10.5-10.5C13 9 9 13 3 13z"/><path d="M3 13l6.5-6.5"/>',
+  migration:'<circle cx="6" cy="5" r="2"/><path d="M2 13.5c0-2.3 1.8-4 4-4s4 1.7 4 4"/><path d="M10.5 3.3a1.8 1.8 0 0 1 0 3.4M11.8 9.7c1.4.5 2.4 1.9 2.4 3.8"/>',
+  local:'<path d="M8 14s4.5-4.1 4.5-7.5a4.5 4.5 0 0 0-9 0C3.5 9.9 8 14 8 14z"/><circle cx="8" cy="6.5" r="1.6"/>',
+  all:'<rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/>'
+};
+const topicIcon=(k,cls="ticon")=>TOPIC_ICONS[k]
+  ?`<svg class="${cls}" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${TOPIC_ICONS[k]}</svg>`:"";
+
+/* The UK in four pieces, small enough for a 16px badge: ONS ITL1 boundaries
+   simplified (ingest/geo.py has the full ones). A geography's badge fills the
+   nations it covers and leaves the rest faint. */
+const NATIONS={"w":109,"h":170,"p":{"E":"M66 63 73 77 69 77 73 79 74 85 79 87 64 87 60 80 60 72 66 63ZM60 75 65 87 60 93 66 98 67 110 57 114 53 107 59 107 54 104 58 100 55 100 57 95 58 91 54 94 49 86 53 78 60 75ZM80 86 87 93 90 103 79 101 88 103 87 106 85 103 70 108 60 93 64 87 80 86ZM86 103 90 105 93 112 89 116 92 118 84 122 79 132 75 133 76 126 66 107 68 104 75 109 86 103ZM74 130 71 134 69 131 58 136 54 131 55 122 54 115 67 110 76 126 74 130ZM100 114 107 117 109 123 107 130 101 133 104 135 98 137 100 139 96 139 99 140 93 142 89 138 83 140 81 136 83 136 83 121 100 114ZM92 142 89 142 92 142 88 146 84 139 89 138 92 142ZM82 129 83 136 81 136 86 145 95 142 106 143 101 152 81 156 72 153 74 155 72 157 67 151 71 152 72 145 70 133 82 129ZM69 131 72 145 71 152 67 151 70 156 66 159 59 158 61 160 57 156 49 157 47 165 40 161 40 164 35 162 30 167 28 170 22 166 33 159 37 150 41 151 42 147 54 148 62 137 58 139 61 132 69 131Z","W":"M52 107 58 114 54 116 55 122 52 124 59 140 50 144 45 139 40 140 43 138 40 136 33 137 30 138 28 134 41 128 45 122 44 115 36 116 46 108 52 107ZM38 108 40 106 43 108 40 111 38 108Z","S":"M23 58 24 63 21 65 21 62 23 58ZM24 45 29 50 21 51 25 50 22 47 24 45ZM23 26 24 33 30 34 26 38 28 35 23 34 18 31 20 27 23 30 23 26ZM19 16 26 11 22 21 20 19 20 23 16 23 19 22 16 16 19 16ZM30 51 35 47 31 49 35 42 29 48 25 45 30 45 23 44 27 44 28 39 31 39 28 38 32 37 29 36 32 33 29 34 32 31 28 32 28 28 31 29 29 23 36 24 32 19 33 16 38 17 37 9 42 13 56 9 55 15 46 24 43 23 49 24 42 28 47 27 44 31 53 26 68 29 61 48 52 51 58 50 60 54 52 58 47 56 65 60 65 68 55 77 49 76 45 81 40 78 41 82 36 79 35 83 32 77 39 67 36 60 41 60 37 58 38 54 35 60 34 58 32 61 35 53 26 70 30 51ZM53 2 55 0 59 5 57 8 53 2Z","N":"M27 90 22 94 16 93 12 86 6 91 0 84 5 82 3 80 7 79 9 74 22 72 27 80 24 82 29 86 27 90Z"}};
+const COVERS={"UK":"EWSN","Great Britain":"EWS","England and Wales":"EW","England & Wales":"EW",
+  "England":"E","Wales":"W","Scotland":"S","Northern Ireland":"N"};
+const geoIcon=(geo,cls="gicon")=>{
+  const on=COVERS[geo]; if(!on) return "";
+  return `<svg class="${cls}" viewBox="-2 -2 ${NATIONS.w+4} ${NATIONS.h+4}" aria-hidden="true">${
+    Object.entries(NATIONS.p).map(([n,d])=>`<path d="${d}" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" opacity="${on.includes(n)?1:.22}"/>`).join("")}</svg>`;
+};
+
+window.CK={PAL,pal,esc,wrapText,nameLines,gutterFor,niceStep,yAxis,tickFmt,frame,BANDS_TOP,bands,ribbon,ELECTIONS,breaks,endPoint,endLabels,linePath,topicIcon,geoIcon};
 })();

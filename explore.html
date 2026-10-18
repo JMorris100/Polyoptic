@@ -136,7 +136,11 @@ body.side-collapsed .siderail{display:block}
 .filters{display:flex;flex-direction:column;gap:9px;margin-top:12px}
 .frow{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
 .flabel{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);width:100%;margin-bottom:1px}
-.f{font-family:"IBM Plex Mono";font-size:10.5px;padding:5px 9px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:3px;transition:.13s}
+.f{font-family:"IBM Plex Mono";font-size:10.5px;padding:5px 11px 5px 8px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:100px;transition:.13s;
+  display:inline-flex;align-items:center;gap:6px}
+.f .fic{width:14px;height:14px;flex-shrink:0}
+.f .fic.geo{width:11px;height:15px}
+.f[aria-pressed="true"] .fic{color:#fff}
 .f:hover{border-color:var(--ink);color:var(--ink)}
 .f i{font-style:normal;opacity:.6;margin-left:2px}
 .f:disabled{opacity:.35;cursor:default}
@@ -2460,7 +2464,8 @@ function renderSidebar(){
   const geos=[...new Set(inMode.map(s=>s.geography))].sort((a,b)=>
     (GEO_ORDER.indexOf(a)+1||99)-(GEO_ORDER.indexOf(b)+1||99));
   const geoOpts=[["all","All"],...geos.map(g=>[g,g])].concat(inMode.some(s=>s.areas)?[["local","Local areas"]]:[]);
-  const chip=(attr,k,label,on,n)=>`<button class="f" data-${attr}="${esc(k)}" aria-pressed="${on}"${n===0&&!on?" disabled":""}>${esc(label)}${k!=="all"?` <i>${n}</i>`:""}</button>`;
+  const icon=(attr,k)=>attr==="topic"?CK.topicIcon(k,"fic"):k==="all"?CK.topicIcon("all","fic"):k==="local"?CK.topicIcon("local","fic"):CK.geoIcon(k,"fic geo");
+  const chip=(attr,k,label,on,n)=>`<button class="f" data-${attr}="${esc(k)}" aria-pressed="${on}"${n===0&&!on?" disabled":""}>${icon(attr,k)}${esc(label)}${k!=="all"?` <i>${n}</i>`:""}</button>`;
   document.getElementById("filters").innerHTML=
     `<div class="frow"><span class="flabel">Topic</span>${topics.map(t=>chip("topic",t,topicName(t),state.topic===t,
         inMode.filter(s=>okQ(s)&&okGeo(s,state.geo)&&okTopic(s,t)).length)).join("")}</div>`+

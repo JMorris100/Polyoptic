@@ -257,6 +257,8 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .tile:hover{background:var(--hover)}
 .tile.live:hover{background:var(--soft)}
 .trow{display:flex;align-items:center;gap:9px}
+.tico{display:inline-flex;width:30px;height:30px;border-radius:100px;background:var(--soft);color:var(--purple);align-items:center;justify-content:center;flex-shrink:0}
+.tico svg{width:17px;height:17px}
 .tn{font-family:"IBM Plex Sans";font-weight:700;font-size:17.5px;letter-spacing:-0.025em}
 .badge{font-family:"IBM Plex Mono";font-size:9px;letter-spacing:.1em;color:var(--purple);border:1px solid var(--prule);background:var(--soft);padding:2px 6px}
 .tc{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);margin-top:6px}
@@ -426,14 +428,14 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
   <div class="wrap">
     <div class="slabel"><h2>Topics</h2></div>
     <div class="tiles">
-      <a class="tile" data-topic="economy" href="explore.html#t=economy"><div class="trow"><span class="tn">Economy</span></div><div class="tc"></div><div class="td">Prices, pay, employment, rents and the public finances.</div></a>
-      <a class="tile" data-topic="housing" href="explore.html#t=housing"><div class="trow"><span class="tn">Housing</span></div><div class="tc"></div><div class="td">Private rents now; prices, supply and homelessness to follow.</div></a>
-      <a class="tile" data-topic="education" href="explore.html#t=education"><div class="trow"><span class="tn">Education</span></div><div class="tc"></div><div class="td">Pupil numbers, absence and the disadvantage attainment gap.</div></a>
-      <a class="tile" data-topic="health" href="#"><div class="trow"><span class="tn">Health</span></div><div class="tc"></div><div class="td">Waiting lists, urgent care, workforce, life expectancy and mortality.</div></a>
-      <a class="tile" data-topic="crime" href="#"><div class="trow"><span class="tn">Crime &amp; Justice</span></div><div class="tc"></div><div class="td">Survey and recorded crime, charge rates, courts and prisons.</div></a>
-      <a class="tile" data-topic="transport" href="#"><div class="trow"><span class="tn">Transport</span></div><div class="tc"></div><div class="td">Rail, bus, road traffic, casualties and the switch to electric.</div></a>
-      <a class="tile" data-topic="environment" href="#"><div class="trow"><span class="tn">Environment &amp; Energy</span></div><div class="tc"></div><div class="td">Emissions, generation mix, energy prices, air and water quality.</div></a>
-      <a class="tile" data-topic="migration" href="#"><div class="trow"><span class="tn">Population &amp; Migration</span></div><div class="tc"></div><div class="td">Population, migration, births and deaths, visas and asylum.</div></a>
+      <a class="tile" data-topic="economy" href="explore.html#t=economy"><div class="trow"><span class="tico" data-icon="economy"></span><span class="tn">Economy</span></div><div class="tc"></div><div class="td">Prices, pay, jobs, productivity, business, trade and the public finances.</div></a>
+      <a class="tile" data-topic="housing" href="explore.html#t=housing"><div class="trow"><span class="tico" data-icon="housing"></span><span class="tn">Housing</span></div><div class="tc"></div><div class="td">Prices, rents, affordability, housebuilding, homelessness and waiting lists.</div></a>
+      <a class="tile" data-topic="education" href="explore.html#t=education"><div class="trow"><span class="tico" data-icon="education"></span><span class="tn">Education</span></div><div class="tc"></div><div class="td">Pupils, teachers, absence, GCSEs, early years, apprenticeships and NEET.</div></a>
+      <a class="tile" data-topic="health" href="#"><div class="trow"><span class="tico" data-icon="health"></span><span class="tn">Health</span></div><div class="tc"></div><div class="td">NHS waiting lists, A&amp;E, GPs, obesity, smoking, life expectancy and wellbeing.</div></a>
+      <a class="tile" data-topic="crime" href="#"><div class="trow"><span class="tico" data-icon="crime"></span><span class="tn">Crime &amp; Justice</span></div><div class="tc"></div><div class="td">Survey and recorded crime, charge rates, homicide, courts, prisons and police.</div></a>
+      <a class="tile" data-topic="transport" href="#"><div class="trow"><span class="tico" data-icon="transport"></span><span class="tn">Transport</span></div><div class="tc"></div><div class="td">Rail, buses, road traffic and casualties, travel times and electric cars.</div></a>
+      <a class="tile" data-topic="environment" href="#"><div class="trow"><span class="tico" data-icon="environment"></span><span class="tn">Environment &amp; Energy</span></div><div class="tc"></div><div class="td">Emissions, the electricity mix, energy use, recycling and sewage spills.</div></a>
+      <a class="tile" data-topic="migration" href="#"><div class="trow"><span class="tico" data-icon="migration"></span><span class="tn">Population &amp; Migration</span></div><div class="tc"></div><div class="td">Population, births, deaths and fertility, migration, visas and asylum.</div></a>
     </div>
   </div>
 </section>
@@ -900,6 +902,7 @@ function footB(k){
 /* ── topic tiles ────────────────────────────────────────────────
    Counted from the bundle, so a tile can't claim indicators we don't have. */
 function fillTiles(){
+  document.querySelectorAll(".tico").forEach(el=>el.innerHTML=CK.topicIcon(el.dataset.icon));
   const c={};
   DB.series.forEach(s=>(s.topics||[]).forEach(t=>c[t]=(c[t]||0)+1));
   /* every tile, not just the ones with a topic — a tile with no topic yet is a
