@@ -4,22 +4,22 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Polyoptic — UK statistics, made comparable</title>
-<meta name="description" content="Official UK statistics, made comparable. 75 series from the ONS, the Home Office and seven other publishers, charted together — with the caveats the headlines leave out and a link back to every source.">
+<meta name="description" content="Official UK statistics, made comparable. Nearly 200 series from the ONS, NHS England, the Home Office and a dozen other publishers, charted together — with maps of every local area, the caveats the headlines leave out and a link back to every source.">
 <link rel="canonical" href="https://polyoptic.co/">
 <meta property="og:site_name" content="Polyoptic">
 <meta property="og:title" content="Polyoptic — UK statistics, made comparable">
-<meta property="og:description" content="75 official UK series, charted together. Every figure links back to the release it came from, and the explorer shows the arithmetic behind any point you click.">
+<meta property="og:description" content="Nearly 200 official UK series, charted together. Every figure links back to the release it came from, and the explorer shows the arithmetic behind any point you click.">
 <meta property="og:image" content="https://polyoptic.co/og/home.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Polyoptic — 75 UK statistical series, made comparable">
+<meta property="og:image:alt" content="Polyoptic — UK statistics, made comparable">
 <meta property="og:url" content="https://polyoptic.co/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebSite","name":"Polyoptic",
  "url":"https://polyoptic.co/",
- "description":"Official UK statistics, made comparable — 75 series from the ONS and eight other publishers, each linking back to its original release.",
+ "description":"Official UK statistics, made comparable — nearly 200 series from the ONS and a dozen other publishers, each linking back to its original release.",
  "inLanguage":"en-GB",
  "creator":{"@type":"Person","name":"Josh Morris","url":"https://morrisjb.com"},
  "license":"https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"}
@@ -113,6 +113,8 @@ svg{display:block}
 section{padding:60px 0;border-top:1px solid var(--rule)}
 .slabel{display:flex;align-items:baseline;gap:13px;margin-bottom:24px;flex-wrap:wrap}
 section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
+.topiclinks{font-size:13.5px;color:var(--muted);margin:16px 0 0;line-height:1.7}
+.topiclinks a{color:var(--purple)}
 .lede.mono{font-family:"IBM Plex Mono";font-size:12px;letter-spacing:.02em;margin-top:-14px}
 /* the process: six steps left to right, the checks beneath the middle three */
 .flow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));column-gap:30px;row-gap:0;margin-top:8px}
@@ -325,7 +327,8 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
     <nav class="topnav">
       <a href="#questions">Questions</a>
       <a href="#topics">Topics</a>
-      <a href="#method">Method</a>
+      <a href="#process">How it works</a>
+      <a href="indicator/">Indicators</a>
       <a href="about.html">About</a>
       <a class="btn-ghost" href="data.html">Verify</a>
       <a class="btn-invert" href="explore.html">Open the explorer</a>
@@ -472,6 +475,7 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
       <a class="tile" data-topic="environment" href="#"><div class="trow"><span class="tico" data-icon="environment"></span><span class="tn">Environment &amp; Energy</span></div><div class="tc"></div><div class="td">Emissions, the electricity mix, energy use, recycling and sewage spills.</div></a>
       <a class="tile" data-topic="migration" href="#"><div class="trow"><span class="tico" data-icon="migration"></span><span class="tn">Population &amp; Migration</span></div><div class="tc"></div><div class="td">Population, births, deaths and fertility, migration, visas and asylum.</div></a>
     </div>
+    <p class="topiclinks">Read about each indicator, with every published year and its source: <a href="topic/economy/">Economy</a> · <a href="topic/housing/">Housing</a> · <a href="topic/education/">Education</a> · <a href="topic/health/">Health</a> · <a href="topic/crime/">Crime &amp; justice</a> · <a href="topic/transport/">Transport</a> · <a href="topic/environment/">Environment &amp; energy</a> · <a href="topic/migration/">Population &amp; migration</a> · <a href="indicator/">all of them, A–Z</a></p>
   </div>
 </section>
 

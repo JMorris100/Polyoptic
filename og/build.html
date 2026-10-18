@@ -29,7 +29,7 @@ canvas{width:100%;height:auto;display:block;border:1px solid #D3D8DD}
 <body>
 <div class="wrap">
   <h1>Share images</h1>
-  <p>Eight 1200×630 cards, drawn here because this machine has no image tooling.
+  <p>Sixteen 1200×630 cards, drawn here because this machine has no image tooling.
     Click <b>Download all</b>, then move the files into <code>og/</code> next to this page.
     The filenames already match the <code>og:image</code> tags on each page — don't rename them.</p>
   <p><button id="all">Download all</button>
@@ -46,13 +46,22 @@ const W=1200,H=630,PURPLE="#4633A8",INK="#0F1419",MUTED="#5C6672",RULE="#D3D8DD"
    summary_large_image only helps if there is something worth enlarging. */
 const BRAND=[
   {file:"home",   t:"UK statistics, made comparable",
-   s:"75 official series, charted together — with the caveats the headlines leave out."},
+   s:"Nearly 200 official series, charted together — with the caveats the headlines leave out."},
   {file:"explore",t:"Build the chart yourself",
-   s:"Fourteen chart types, local-authority detail, and the working behind every figure."},
+   s:"Sixteen chart types, a map of every local area, and the working behind every figure."},
   {file:"verify", t:"Check every figure",
    s:"Each series with its release, licence, fetch date and the endpoint it came from."},
   {file:"about",  t:"An honesty layer over official statistics",
    s:"Built by Josh Morris. Polyoptic publishes no data of its own."},
+  /* one per topic, for the topic pages and the indicator pages under them */
+  {file:"topic-economy",     t:"Economy statistics",     s:"Prices, pay, jobs, productivity, business, trade and the public finances."},
+  {file:"topic-housing",     t:"Housing statistics",     s:"Prices, rents, affordability, housebuilding, homelessness and waiting lists."},
+  {file:"topic-education",   t:"Education statistics",   s:"Pupils, teachers, absence, GCSEs, early years, apprenticeships and NEET."},
+  {file:"topic-health",      t:"Health statistics",      s:"NHS waiting lists, A&E, GPs, obesity, smoking, life expectancy and wellbeing."},
+  {file:"topic-crime",       t:"Crime & justice statistics", s:"Survey and recorded crime, charge rates, homicide, courts, prisons and police."},
+  {file:"topic-transport",   t:"Transport statistics",   s:"Rail, buses, road traffic and casualties, travel times and electric cars."},
+  {file:"topic-environment", t:"Environment & energy statistics", s:"Emissions, the electricity mix, energy use, recycling and sewage spills."},
+  {file:"topic-migration",   t:"Population & migration statistics", s:"Population, births, deaths and fertility, migration, visas and asylum."},
 ];
 const QS=[
   {file:"have-rents-outrun-pay",       q:"Have rents outrun pay?",                   ids:["rents","pay"],   from:2015,to:2026,geo:"UK"},

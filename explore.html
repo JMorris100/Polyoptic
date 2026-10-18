@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Explorer — Polyoptic</title>
-<meta name="description" content="Build charts from 75 official UK series. Compare up to four at once, rebase or deflate them, break any of them down to local authorities, and click a point to see the arithmetic behind the figure.">
+<meta name="description" content="Build charts from nearly 200 official UK series. Compare up to four at once, rebase or adjust for inflation, map any of them across local areas, and click a point to see the arithmetic behind the figure.">
 <link rel="canonical" href="https://polyoptic.co/explore.html">
 <meta property="og:site_name" content="Polyoptic">
 <meta property="og:title" content="Polyoptic Explorer — build the chart yourself">
-<meta property="og:description" content="75 UK series, fourteen chart types, local-authority detail, and the working shown behind every figure.">
+<meta property="og:description" content="Nearly 200 UK series, sixteen chart types, a map of every local area, and the working shown behind every figure.">
 <meta property="og:image" content="https://polyoptic.co/og/explore.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -3401,7 +3401,7 @@ const GUIDE=[
    li:[["",`The indicators on the chart you're editing right now. The <span class="kbd">×</span> on each one removes it.`]]},
   {t:"Chart settings", sel:['.pcard [data-act="cfg"]'], setup:()=>{state.openCfg=null;},
    li:[[gi(IC.sliders),`Everything about this chart lives behind this button — chart type, transforms, who was in power, how its sources are credited and the year range. Width is set by dragging the chart's corner.`]]},
-  {t:"Fourteen ways to draw it", sel:['.cfgpanel .ctgrid','.cfgpanel'],
+  {t:"Sixteen ways to draw it", sel:['.cfgpanel .ctgrid','.cfgpanel'],
    setup:()=>{const p=P0(); if(p) state.openCfg=p.key;},
    li:[["",`Lines, columns, slopes and small multiples under <b>Over time</b>. Under <b>By area</b>, the same indicator broken down to local authorities — a ranking, the change between two years, or a heatmap.`],
        ["",`Below these: transforms that rebase to 100, show year-on-year change, real terms, per person or % of GDP.`]]},

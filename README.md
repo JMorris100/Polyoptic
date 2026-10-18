@@ -8,7 +8,8 @@ GitHub repo.
 
 ```
 polyoptic/
-├── index.html                  home — explorer walkthrough, tiles and charts
+├── index.html                  home — explorer walkthrough, process, questions, topics
+├── indicator/, topic/          plain pages for search, written by ingest/pages.py
 ├── explore.html                the explorer — compare, transform, export
 ├── chartkit.js, chart.css      the chart drawing rules every page shares
 ├── data.html                   provenance — every raw value, source and API endpoint
@@ -329,9 +330,21 @@ Making arbitrary explorer links unfurl as themselves would mean moving state
 into the query string and rendering images on demand, which needs a server this
 site does not have.
 
+**A plain page for every indicator.** The explorer is an app and its HTML is
+nearly empty until the script runs, so `ingest/pages.py` writes pages a search
+engine can read without running anything: `indicator/<slug>/` for every series
+(latest figure, a chart drawn as SVG, every published year, the source, notes
+and breaks, the highest and lowest local areas where there are any, and a
+`data.csv`), `topic/<topic>/` for each of the eight topics, an A–Z at
+`indicator/`, and `sitemap.xml` with all of them. Indicator pages carry
+schema.org `Dataset` markup, so they can appear in Google Dataset Search. The
+weekly refresh runs it after `ingest.py`; run it by hand after a manual
+rebuild. Slugs come from the series name and are written to `data/pages.json`.
+
 **The share images are generated in a browser**, not by the build: open
-`og/build.html` from the dev server, click *Download all*, and drop the eight
-PNGs into `og/`. Filenames match the `og:image` tags — don't rename them. They
+`og/build.html` from the dev server, click *Download all*, and drop the sixteen
+PNGs into `og/` (four for the main pages, eight for the topics, four for the
+questions). Filenames match the `og:image` tags — don't rename them. They
 are drawn on a canvas from `bundle.json`, so the comparison cards show the real
 current chart, and they need re-running when a chart changes materially.
 
