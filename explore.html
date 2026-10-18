@@ -731,7 +731,6 @@ const RIBBONS = new Set(["party","pm","elections"]);
 const GRANS = [["years","Years"],["quarters","Quarters"],["months","Months"],["days","Days"]];
 const GRAN_PER = {years:1, quarters:4, months:12, days:365};
 const H_MIN=210, H_MAX=640, H_DEF=300;
-const WIDTHS=[[12,"Full width"],[9,"Three quarters"],[8,"Two thirds"],[6,"Half"],[4,"One third"]];
 const W_SNAPS=[4,6,8,9,12];
 const wLabel=w=>({12:"full",9:"3/4",8:"2/3",6:"1/2",4:"1/3"}[w]||w+"/12");
 
@@ -1991,7 +1990,6 @@ function panelHtml(p,i){
     <span class="plabel">Government</span>${sel("era",ERA_MODES,p.era)}
     <span class="plabel">Sources</span>${sel("src",SRC_STYLES,p.src)}
     <span class="plabel">Time</span>${sel("gran",GRANS,p.gran)}
-    <span class="plabel">Width</span>${sel("widthsel",WIDTHS.map(([k,l])=>[String(k),l]),String(p.w))}
     <span class="plabel">Range</span><div class="rng">
       <input type="number" data-act="from" value="${p.from}" min="1980" max="2026" aria-label="From year"> — <input type="number" data-act="to" value="${p.to}" min="1980" max="2026" aria-label="To year">
     </div>
@@ -2317,7 +2315,7 @@ document.getElementById("stack").addEventListener("click",e=>{
   state.active=i; state.focus=i;
 
   /* selects and inputs inside the settings popover are handled on change */
-  if(["chart","trans","era","src","gran","from","to","title","widthsel"].includes(act)) return;
+  if(["chart","trans","era","src","gran","from","to","title"].includes(act)) return;
 
   if(act==="cfg"){ state.openCfg = state.openCfg===p.key ? null : p.key; state.openMenu=null; }
   else if(act==="menu"){ state.openMenu = state.openMenu===p.key ? null : p.key; state.openCfg=null; }
@@ -2392,7 +2390,6 @@ document.getElementById("stack").addEventListener("change",e=>{
     /* remembered as the default for the next new chart — except "off", which
        should be a choice made per chart, never one inherited by accident */
     if(p.src!=="off"){ SRCSTYLE=p.src; try{ localStorage.setItem("polyoptic-srcstyle",SRCSTYLE); }catch(e){} } }
-  else if(act==="widthsel"){ p.w=+e.target.value; }
   else if(act==="gran"){
     p.gran=e.target.value;
     /* fine detail over a long window is unreadable and slow — pull the window in */
@@ -2919,7 +2916,7 @@ const GUIDE=[
   {t:"What's on this chart", sel:["#tray"],
    li:[["",`The indicators on the chart you're editing right now. The <span class="kbd">×</span> on each one removes it.`]]},
   {t:"Chart settings", sel:['.pcard [data-act="cfg"]'], setup:()=>{state.openCfg=null;},
-   li:[[gi(IC.sliders),`Everything about this chart lives behind this button — chart type, transforms, who was in power, how its sources are credited, the year range and the width.`]]},
+   li:[[gi(IC.sliders),`Everything about this chart lives behind this button — chart type, transforms, who was in power, how its sources are credited and the year range. Width is set by dragging the chart's corner.`]]},
   {t:"Fourteen ways to draw it", sel:['.cfgpanel .ctgrid','.cfgpanel'],
    setup:()=>{const p=P0(); if(p) state.openCfg=p.key;},
    li:[["",`Lines, columns, slopes and small multiples under <b>Over time</b>. Under <b>By area</b>, the same indicator broken down to local authorities — a ranking, the change between two years, or a heatmap.`],
