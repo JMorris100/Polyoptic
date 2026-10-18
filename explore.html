@@ -315,6 +315,15 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .working .wx{position:absolute;top:5px;right:6px;border:0;background:transparent;
   color:var(--muted);cursor:pointer;font:inherit;font-size:14px;line-height:1;padding:3px 5px}
 .working .wx:hover{color:var(--ink)}
+.pickable{cursor:crosshair}
+.probeline{stroke:var(--purple);stroke-width:1.5;stroke-dasharray:4 3}
+.probedot{stroke:var(--surface);stroke-width:2}
+.hovline{stroke:var(--muted);stroke-width:1;opacity:0;pointer-events:none}
+.hovline.on{opacity:.45}
+.working .wyear{display:block;font-weight:600;font-size:13px;margin-bottom:4px}
+.working .wblk{display:block;padding:5px 0 5px;border-top:1px solid var(--prule)}
+.working .wblk:first-of-type{border-top:0;padding-top:0}
+.working .wdot{display:inline-block;width:12px;height:3px;vertical-align:middle;margin-right:7px}
 .workhint{margin:0 16px 10px;font-family:"IBM Plex Mono";font-size:10px;
   letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .warn b{color:var(--warn-ink-b)}
@@ -1021,25 +1030,25 @@ function working(p,set,xk){
   if(t==="index"){
     const base=indexBase(p);
     const b=raw.find(q=>q[0]>=(base??p.from)&&q[1]!=null);
-    if(b&&pub!=null) step.op=`${fmt(pub)} ÷ ${fmt(b[1])} × 100`,
+    if(b&&pub!=null) step.op=`${vfmt(pub)} ÷ ${vfmt(b[1])} × 100`,
                      step.why=`rebased on the ${Math.floor(b[0])} figure`;
   } else if(t==="yoy"){
     const prev=raw[i-per];
     if(prev&&prev[1]!=null&&pub!=null)
-      step.op=`(${fmt(pub)} − ${fmt(prev[1])}) ÷ ${fmt(prev[1])} × 100`,
+      step.op=`(${vfmt(pub)} − ${vfmt(prev[1])}) ÷ ${vfmt(prev[1])} × 100`,
       step.why=`against ${Math.floor(prev[0])}`;
   } else if(t==="roll3"){
     const w=raw.slice(Math.max(0,i-(3*per-1)),i+1).filter(q=>q[1]!=null);
     if(w.length) step.op=`mean of ${w.length} ${w.length===1?"point":"points"}, ${Math.floor(w[0][0])}–${year}`;
   } else if(!skipped&&t==="real"){
     const b=refAt("deflator",2024), d=refAt("deflator",year);
-    if(b&&d&&pub!=null) step.op=`${fmt(pub)} × (${fmt(b)} ÷ ${fmt(d)})`, step.ref="deflator";
+    if(b&&d&&pub!=null) step.op=`${vfmt(pub)} × (${vfmt(b)} ÷ ${vfmt(d)})`, step.ref="deflator";
   } else if(!skipped&&t==="percap"){
     const q=refAt("population",year);
-    if(q&&pub!=null) step.op=`${fmt(pub)} ÷ ${fmt(q)}`, step.ref="population";
+    if(q&&pub!=null) step.op=`${vfmt(pub)} ÷ ${vfmt(q)}`, step.ref="population";
   } else if(!skipped&&t==="pctgdp"){
     const gv=refAt("gdp",year);
-    if(gv&&pub!=null) step.op=`${fmt(pub)} ÷ ${fmt(gv)} × 100`, step.ref="gdp";
+    if(gv&&pub!=null) step.op=`${vfmt(pub)} ÷ ${vfmt(gv)} × 100`, step.ref="gdp";
   }
   return {year, xk, pub, shown, step, skipped,
           interpolated: per!==1 && Math.abs(xk-year)>1e-9,
@@ -1076,38 +1085,58 @@ function workingHtml(p,sets){
     </div>`;
   }
 
-  const w=working(p,set,pr.x);
-  if(!w) return "";
-  const s=set.meta;
-  const refBit=w.step.ref
-    ? ` <span class="wmut">(${esc(REF_META[w.step.ref].name)}${refCdid(w.step.ref)?", "+refCdid(w.step.ref):""}` +
-      `${refHref(w.step.ref)?` · <a href="${esc(refHref(w.step.ref))}" target="_blank" rel="noopener">↗</a>`:""})</span>`
-    : "";
-  const notes=[];
-  if(w.skipped) notes.push(`Transform not applied — ${esc(s.name)} is a ${esc(s.kind.replace("_"," "))}, so deflating or dividing it would be meaningless. The figure shown is as published.`);
-  if(w.interpolated) notes.push(`This point sits between two annual figures. It is interpolated for the ${esc(p.gran)} view, not published.`);
-
-  return `<div class="working"><button class="wx" data-act="unprobe" title="Close" aria-label="Close working">×</button>
-    <span class="wtop">${w.year} · ${fmt(w.shown)} ${esc(w.unitShown)}</span>
-    ${w.step.op
-      ? `<span class="wop">${esc(w.step.op)}${refBit}${w.step.why?` <span class="wmut">— ${esc(w.step.why)}</span>`:""}</span>`
-      : `<span class="wop wmut">As published — no transform applied.</span>`}
-    <span class="wop wmut">As published: ${fmt(w.pub)} ${esc(w.unitPub)} · ${esc(s.source)}${
-      s.source_url?` · <a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}${
-      s.source_api?` · <a href="${esc(s.source_api)}" target="_blank" rel="noopener">API ↗</a>`:""}</span>
-    ${notes.map(n=>`<span class="wnote">${n}</span>`).join("")}
-  </div>`;
+  return "";
 }
 
-/* Chart types that carry hit targets. The rest draw no probe rather than a
-   half-working one. */
-const PROBEABLE=new Set(["line","step","dots","area","bar","colstack","areas","arrow","range","heat"]);
-/* Transparent, generous, and only worth drawing while the points are countable
-   — a day-granularity chart has thousands, and a hit target per point would
-   cost more than the feature is worth. */
-const hit=(sid,xk,cx,cy,r)=>
-  `<circle class="hit" data-probe="${esc(sid)}" data-x="${xk}" cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r||7}"/>`;
-const HIT_MAX=200;
+/* The working for a whole year: one block per series, so lines that are
+   being compared are checked together. A "relative to" line shows the two
+   rebased figures it divides. */
+function yearWorkingHtml(p,sets){
+  const pr=state.probe;
+  if(!pr||pr.key!==p.key||pr.code||pr.x==null) return "";
+  const year=Math.floor(pr.x);
+  const blocks=sets.map(set=>{
+    const dot=`<span class="wdot" style="background:${set.colour}"></span>`;
+    if(set.metas){
+      const [m0,m1]=set.metas, ip={...p,trans:"index"};
+      const at=m=>{const q=transform(m,ip).find(q=>q[0]===pr.x); return q?q[1]:null;};
+      const v=(set.pts.find(q=>q[0]===pr.x)||[])[1], a=at(m0), b=at(m1);
+      if(v==null) return "";
+      const by=indexBase(p);
+      return `<div class="wblk"><span class="wtop">${dot}${esc(set.name)} · ${fmt(v)}</span>
+        <span class="wop">${vfmt(a)} ÷ ${vfmt(b)} × 100 <span class="wmut">— both rebased to ${by==null?"their first year":Math.floor(by)} = 100</span></span>
+        <span class="wop wmut">As published: ${esc(m0.name)} ${vfmt(rawAt(m0,year))} ${esc(m0.unit)}; ${esc(m1.name)} ${vfmt(rawAt(m1,year))} ${esc(m1.unit)}</span></div>`;
+    }
+    const w=working(p,set,pr.x);
+    if(!w) return "";
+    const s=set.meta;
+    const refBit=w.step.ref
+      ? ` <span class="wmut">(${esc(REF_META[w.step.ref].name)}${refCdid(w.step.ref)?", "+refCdid(w.step.ref):""}` +
+        `${refHref(w.step.ref)?` · <a href="${esc(refHref(w.step.ref))}" target="_blank" rel="noopener">↗</a>`:""})</span>`
+      : "";
+    const notes=[];
+    if(w.skipped) notes.push(`Transform not applied — ${esc(s.name)} is a ${esc(s.kind.replace("_"," "))}, so deflating or dividing it would be meaningless. The figure shown is as published.`);
+    if(w.interpolated) notes.push(`This point sits between two annual figures. It is interpolated for the ${esc(p.gran)} view, not published.`);
+    return `<div class="wblk"><span class="wtop">${dot}${esc(s.name)} · ${fmt(w.shown)} ${esc(w.unitShown)}</span>
+      ${w.step.op
+        ? `<span class="wop">${esc(w.step.op)}${refBit}${w.step.why?` <span class="wmut">— ${esc(w.step.why)}</span>`:""}</span>`
+        : `<span class="wop wmut">As published — no transform applied.</span>`}
+      <span class="wop wmut">As published: ${vfmt(w.pub)} ${esc(w.unitPub)} · ${esc(s.source)}${
+        s.source_url?` · <a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}${
+        s.source_api?` · <a href="${esc(s.source_api)}" target="_blank" rel="noopener">API ↗</a>`:""}</span>
+      ${notes.map(n=>`<span class="wnote">${n}</span>`).join("")}</div>`;
+  }).filter(Boolean);
+  if(!blocks.length) return "";
+  const label=p.gran==="years"?String(year):(+pr.x).toFixed(2);
+  return `<div class="working"><button class="wx" data-act="unprobe" title="Close" aria-label="Close working">×</button>
+    <span class="wyear">${label}</span>${blocks.join("")}</div>`;
+}
+
+/* Charts that show the working. The time charts take a click anywhere and
+   pick the nearest period, drawing a line down the chart there; the area
+   views take a click on a row. */
+const YEARPICK=new Set(["line","step","dots","area","gap","bar","stack","colstack"]);
+const PROBEABLE=new Set([...YEARPICK,"areas","arrow","range","heat"]);
 
 /* ══════════════════════════════════════════════
    CHART ENGINE — height comes from the panel
@@ -1203,7 +1232,23 @@ function frame(p,g,ax,label,base){
     g.push(`<text class="axlabel" x="${px(p,yr)}" y="${H-6}" text-anchor="middle">${yr}</text>`);
   if(label) g.push(`<text class="axunit" x="0" y="11">${esc(label)}</text>`);
 }
-const wrapSvg=(p,g)=>`<svg viewBox="0 0 ${W} ${p.h}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Chart">${g.join("")}</svg>`;
+/* The time charts carry their x scale on the element, so a click anywhere can
+   be turned back into a period. The chosen period gets a line down the chart
+   and a marker on each series (drawn by the chart); a fainter line follows the
+   pointer so it is clear which period a click will pick. */
+const wrapSvg=(p,g)=>{
+  const pick=YEARPICK.has(p.chart);
+  if(!pick) return `<svg viewBox="0 0 ${W} ${p.h}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Chart">${g.join("")}</svg>`;
+  const pr=state.probe;
+  if(pr&&pr.key===p.key&&pr.x!=null&&!pr.code&&pr.x>=p.from&&pr.x<=p.to){
+    const x=px(p,pr.x).toFixed(1);
+    /* under the series, so the markers the chart drew sit on top of it */
+    g.unshift(`<line class="probeline" x1="${x}" y1="${M.t-2}" x2="${x}" y2="${p.h-M.b}"/>`);
+  }
+  g.unshift(`<line class="hovline" x1="0" y1="${M.t}" x2="0" y2="${p.h-M.b}"/>`);
+  return `<svg class="pickable" data-act="pick" data-l="${M.l}" data-r="${M.r}" data-from="${p.from}" data-to="${p.to}" data-per="${GRAN_PER[p.gran]||1}"
+    viewBox="0 0 ${W} ${p.h}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Chart">${g.join("")}</svg>`;
+};
 
 /* Government as faint party-coloured bands behind the data, each prime
    minister named along the top. A band too narrow for its name stays
@@ -1308,9 +1353,12 @@ function renderLine(p,sets,mode){
     labels.push({s,cx,cy,names:nameLines(s),val:fmt(last[1])+(yr<p.to?` in ${yr}`:""),
       note:endBreak?wrapText(endBreak.label||"Series ends at a break",NAME_CH):[],full:endBreak&&endBreak.note});
   });
-  /* Click targets go on top of everything, so a point is always clickable */
-  sets.forEach((s,si)=>{ if(s.pts.length<=HIT_MAX) s.pts.forEach(q=>{ if(q[1]!=null)
-    g.push(hit(s.id,q[0],px(p,q[0]),Ys[si](q[1]))); }); });
+  /* the chosen period: a marker where each series crosses it */
+  const pr=state.probe;
+  if(pr&&pr.key===p.key&&pr.x!=null&&!pr.code) sets.forEach((s,si)=>{
+    const q=s.pts.find(q=>q[0]===pr.x);
+    if(q&&q[1]!=null) g.push(`<circle class="probedot" cx="${px(p,q[0]).toFixed(1)}" cy="${Ys[si](q[1]).toFixed(1)}" r="5" fill="${s.colour}"/>`);
+  });
   /* stack the labels in the right gutter, nudging apart where they'd collide,
      then back up from the bottom edge so nothing spills under the chart */
   labels.sort((a,b)=>a.cy-b.cy);
@@ -1352,7 +1400,7 @@ function renderBar(p,sets){
     const x=px(p,yr)-(bw*sets.length)/2+si*bw, y0=Y(Math.max(0,v)), y1=Y(Math.min(0,v));
     /* Rounded at the data end, full-strength fill, and a hair of surface
        between neighbours so adjacent columns stay separate marks. */
-    g.push(`<rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${Math.max(1,bw-1).toFixed(1)}" height="${Math.max(0.5,y1-y0).toFixed(1)}" rx="1.5" fill="${s.colour}" data-probe="${esc(s.id)}" data-x="${yr}" style="cursor:pointer"><title>${yr}: ${fmt(v)}</title></rect>`);
+    g.push(`<rect x="${x.toFixed(1)}" y="${y0.toFixed(1)}" width="${Math.max(1,bw-1).toFixed(1)}" height="${Math.max(0.5,y1-y0).toFixed(1)}" rx="1.5" fill="${s.colour}"><title>${yr}: ${fmt(v)}</title></rect>`);
   }));
   return wrapSvg(p,g);
 }
@@ -1402,7 +1450,7 @@ function renderColStack(p,sets){
     sets.forEach(s=>{
       const v=s.pts.find(q=>q[0]===x)[1];
       const y0=Y(below+v), y1=Y(below), h=Math.max(0.5,y1-y0-2);
-      g.push(`<rect x="${(px(p,x)-bw/2).toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1.5" fill="${s.colour}" data-probe="${esc(s.id)}" data-x="${x}" style="cursor:pointer"><title>${x} ${esc(s.name)}: ${fmt(v)}</title></rect>`);
+      g.push(`<rect x="${(px(p,x)-bw/2).toFixed(1)}" y="${y0.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="1.5" fill="${s.colour}"><title>${x} ${esc(s.name)}: ${fmt(v)}</title></rect>`);
       below+=v;
     });
   });
@@ -2174,9 +2222,9 @@ function panelHtml(p,i){
 
   /* The working, or an invitation to open one. The hint sits in the same slot
      so the card does not jump when a point is clicked. */
-  const wh=sets.length?workingHtml(p,sets):"";
+  const wh=sets.length?(AREA_CHARTS.has(p.chart)?workingHtml(p,sets):yearWorkingHtml(p,buildSets(p))):"";
   const work = wh || (sets.length&&PROBEABLE.has(p.chart)
-    ? `<div class="workhint">Click a point to show the working</div>` : "");
+    ? `<div class="workhint">${AREA_CHARTS.has(p.chart)?"Click an area to show the working":"Click anywhere on the chart to show the working for that year"}</div>` : "");
 
   const warns=warningsFor(p,sets).map(w=>
     `<div class="warn">${w.html}${
@@ -2421,6 +2469,21 @@ document.getElementById("stack").addEventListener("click",e=>{
   const actEl=e.target.closest("[data-act]");
   const act=actEl?actEl.dataset.act:undefined;
 
+  if(act==="pick"){
+    /* nearest period to the click, snapped to the chart's granularity */
+    const r=actEl.getBoundingClientRect(), d=actEl.dataset;
+    const x=(e.clientX-r.left)*(W/r.width), per=+d.per||1;
+    const raw=+d.from+(x-(+d.l))/(W-(+d.l)-(+d.r))*(+d.to-(+d.from));
+    const xk=+(Math.round(raw*per)/per).toFixed(4);
+    state.active=i; state.focus=i;
+    if(xk<+d.from||xk>+d.to){ render(); return; }
+    const same=state.probe&&state.probe.key===p.key&&state.probe.x===xk;
+    state.probe=same?null:{key:p.key,x:xk};
+    p.vy=same?null:Math.floor(xk);
+    render();
+    if(!same&&p.table) scrollToYear(p);
+    return;
+  }
   if(!act){ state.active=i; state.focus=i; render(); return; }
   state.active=i; state.focus=i;
 
@@ -2457,6 +2520,24 @@ document.getElementById("stack").addEventListener("click",e=>{
   else if(act==="csv"){ state.openMenu=null; exportCsv(i); render(); return; }
   else if(act==="png"){ state.openMenu=null; exportPng(i); render(); return; }
   render();
+});
+/* a faint line follows the pointer across a time chart, snapped to the period
+   a click there would pick */
+document.getElementById("stack").addEventListener("pointermove",e=>{
+  const svg=e.target.closest&&e.target.closest("svg.pickable"); if(!svg) return;
+  const ln=svg.querySelector(".hovline"); if(!ln) return;
+  const r=svg.getBoundingClientRect(), d=svg.dataset, per=+d.per||1;
+  const x=(e.clientX-r.left)*(W/r.width);
+  const span=+d.to-(+d.from), pw=W-(+d.l)-(+d.r);
+  const xk=Math.round((+d.from+(x-(+d.l))/pw*span)*per)/per;
+  if(xk<+d.from||xk>+d.to){ ln.style.opacity=0; return; }
+  const sx=(+d.l)+(xk-(+d.from))/Math.max(1,span)*pw;
+  ln.setAttribute("x1",sx); ln.setAttribute("x2",sx); ln.style.opacity="";
+  ln.classList.add("on");
+});
+document.getElementById("stack").addEventListener("pointerout",e=>{
+  const svg=e.target.closest&&e.target.closest("svg.pickable");
+  if(svg&&!svg.contains(e.relatedTarget)) svg.querySelector(".hovline")?.classList.remove("on");
 });
 document.getElementById("stack").addEventListener("focusout",e=>{
   if(e.target.dataset.act!=="title") return;
@@ -2812,6 +2893,8 @@ const exportCss=th=>`
   .nodatat{opacity:.75;letter-spacing:.04em}
   .sm-t{font-size:10px;font-weight:500}
   .hit{fill:transparent}
+  .hovline,.probeline{display:none}
+  .probedot{display:none}
   .baseline{stroke:${th.muted};stroke-width:1;opacity:.75}
   .axunit{font-size:10px;fill:${th.muted}}
   .endlbl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:11px;font-weight:600}
@@ -3031,8 +3114,8 @@ const GUIDE=[
        ["",`<b>Sources</b> sets how this chart credits its data — a short line, full Harvard citations, or off. It applies to the chart's PNG and CSV as well.`]]},
   {t:"Check the numbers", sel:['.pcard [data-act="tabletoggle"]'], setup:()=>{state.openCfg=null;},
    li:[[gi(IC.table),`Opens a table under the chart: every year's published figure, the value plotted, and the sum in between — with links to the source.`]]},
-  {t:"Show the working", sel:['.pcard .workhint','.pcard .working','.pcard .hit'],
-   li:[["",`Click any point on a chart and it shows you the published figure, the figure being plotted, and the arithmetic in between — with a link to the release it came from.`]]},
+  {t:"Show the working", sel:['.pcard .workhint','.pcard .working','.pcard svg.pickable'],
+   li:[["",`Click anywhere on a chart and a line drops at that year. Underneath, every series shows its published figure, the figure being plotted, and the arithmetic in between — with a link to the release it came from.`]]},
   {t:"Export and duplicate", sel:['.pcard [data-act="menu"]'], setup:()=>{const p=P0(); if(p) state.openMenu=p.key;},
    li:[[gi(IC.png),`Download the chart as a <b>PNG</b> or its numbers as a <b>CSV</b> — both carry their source attribution. Duplicate and remove live here too.`]]},
   {t:"Rename it", sel:['.pcard .ptitle'], setup:()=>{state.openMenu=null;},
