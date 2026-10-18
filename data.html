@@ -162,6 +162,9 @@ td.cx{width:30px;padding:0 0 0 10px}
   line-height:1;transition:transform .15s}
 tr.irow.open .exp{transform:rotate(90deg);color:var(--purple)}
 td.cname{white-space:normal;min-width:230px;font-weight:500;line-height:1.3}
+td.cname a.pglink{color:inherit;text-decoration:underline;text-decoration-color:var(--prule);text-underline-offset:3px}
+td.cname a.pglink:hover{color:var(--purple);text-decoration-color:var(--purple)}
+.lede.browse a{color:var(--purple)}
 /* Named tiers, not a bare "!". A mark that fires on nearly every row tells you
    nothing; one that says "Definition changed" tells you what to go and read. */
 .flag{display:inline-block;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.05em;
@@ -330,6 +333,13 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
        <span class="flag f-provisional">Provisional</span>
        <span class="flag f-geography">Sub-UK coverage</span> — so a marked row tells you what
        to go and read, rather than only that something exists to read.</p>
+    <p class="lede browse">Each name opens that indicator's own page — the latest figure, a chart,
+       every published year and its local highs and lows. Or browse them by topic:
+       <a href="topic/economy/">Economy</a> · <a href="topic/housing/">Housing</a> ·
+       <a href="topic/education/">Education</a> · <a href="topic/health/">Health</a> ·
+       <a href="topic/crime/">Crime &amp; justice</a> · <a href="topic/transport/">Transport</a> ·
+       <a href="topic/environment/">Environment &amp; energy</a> ·
+       <a href="topic/migration/">Population &amp; migration</a> · <a href="indicator/">all, A–Z</a></p>
 
     <div class="toolbar">
       <div class="sfield">
@@ -491,6 +501,7 @@ function detailHtml(s,isRef){
     <div class="dgrid">${rows.map(([k,v])=>
       `<div><span class="dk">${esc(k)}</span><span class="dv">${v}</span></div>`).join("")}</div>
     <div class="dlinks">
+      ${!isRef&&PAGES[s.id]?`<a class="prim" href="indicator/${esc(PAGES[s.id])}/">Indicator page →</a>`:""}
       ${!isRef&&s.id?`<a class="prim" href="explore.html#p=${esc(s.id)}~line~none~${s.start}~${end}~pm">Chart this in the explorer →</a>`:""}
       ${s.source_url?`<a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}
       ${s.source_api?`<a href="${esc(s.source_api)}" target="_blank" rel="noopener">API endpoint ↗</a>`:""}
@@ -570,7 +581,7 @@ function mountTool(all){
       return `<tr class="irow${open?" open":""}" data-id="${esc(s.id)}">
         <td class="cx"><button class="exp" aria-expanded="${open}"
             aria-label="${open?"Collapse":"Expand"} ${esc(s.name)}">▶</button></td>
-        <td class="cname">${esc(s.name)}${flagBadges(s,false)}</td>
+        <td class="cname">${PAGES[s.id]?`<a class="pglink" href="indicator/${esc(PAGES[s.id])}/">${esc(s.name)}</a>`:esc(s.name)}${flagBadges(s,false)}</td>
         <td>${esc(pubOf(s))}</td>
         <td>${esc(s.geography||"—")}</td>
         <td class="cunit" title="${esc(s.unit||"")}">${esc(s.unit||"—")}</td>
@@ -624,7 +635,7 @@ function mountTool(all){
     st[s.dataset.f]=s.value; draw();
   });
   tbl.addEventListener("click",e=>{
-    if(e.target.closest(".detail")) return;      /* clicks inside a row's own panel */
+    if(e.target.closest(".detail")||e.target.closest("a")) return;      /* clicks inside a row's own panel, or on a link */
     const tr=e.target.closest("tr.irow"); if(!tr) return;
     const id=tr.dataset.id;
     st.open.has(id)?st.open.delete(id):st.open.add(id);
@@ -660,7 +671,11 @@ function mountTool(all){
   openFromHash();
 }
 
-fetch("data/bundle.json",{cache:"no-cache"}).then(r=>r.ok?r.json():Promise.reject()).then(db=>{
+/* Each indicator's own page, written by ingest/pages.py: id -> slug. Fetched
+   alongside the bundle; if it is missing the rows simply carry no link. */
+let PAGES={};
+fetch("data/pages.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({})).then(p=>{PAGES=p||{};})
+.then(()=>fetch("data/bundle.json",{cache:"no-cache"})).then(r=>r.ok?r.json():Promise.reject()).then(db=>{
   const m=db.meta||{}, prov=(m.provenance||"unknown");
   const stats=[
     ["Data",`<span class="dot${prov==="live"?"":" warn"}"></span>${esc(cap(prov))}`],

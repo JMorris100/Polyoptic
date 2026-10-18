@@ -479,6 +479,7 @@ def index_page(series: list[dict], slugs: dict) -> str:
     body = f"""{crumbs(1, [("All indicators", None)])}
 <h1>Every indicator, A–Z</h1>
 <p class="sub">{len(series)} official UK statistics from {len({s.get('publisher') for s in series})} publishers. Each page has every published year, a chart, the source and the caveats.</p>
+<p>Want the raw values, the exact address each one was fetched from, and the caveats side by side? Every indicator is also on <a href="../data.html#catalogue">Explorer Verify</a>.</p>
 <p>{" · ".join(f'<a href="#l-{c}">{c}</a>' for c in letters)}</p>
 """ + "".join(f'<div class="grp" id="l-{c}">{c}</div><ul class="list">'
               + "".join(card(s, f'{slugs[s["id"]]}/') for s in letters[c]) + "</ul>" for c in letters)

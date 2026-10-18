@@ -123,24 +123,35 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .fstep:not(.fshare)::after{content:"";position:absolute;top:50%;right:-30px;width:30px;height:2px;background:var(--prule)}
 .fstep:not(.fshare)::before{content:"";position:absolute;top:calc(50% - 4px);right:-31px;border:5px solid transparent;border-left:7px solid var(--purple);
   border-right:0;z-index:1}
-.fnum{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.12em;color:var(--purple);margin-bottom:6px}
+.fnum{font-size:11.5px;font-weight:600;letter-spacing:.02em;color:var(--purple);margin-bottom:6px;transition:color .5s}
 .fstep h3{font-size:17px;font-weight:700;margin:0 0 8px;letter-spacing:-.01em}
-.fstep p{font-size:13px;color:var(--muted);margin:0;line-height:1.5}
-.fstep ul{list-style:none;margin:0;padding:0;font-size:13px;color:var(--ink);line-height:1.55}
+.fstep p{font-size:13px;color:var(--muted);margin:0;line-height:1.5;transition:color .5s}
+.fstep ul{list-style:none;margin:0;padding:0;font-size:13px;color:var(--ink);line-height:1.55;transition:color .5s}
 .fstep li a{color:inherit;text-decoration:none;border-bottom:1px solid var(--prule)}
 .fstep li a:hover{color:var(--purple)}
-.fstep li::before{content:"–";color:var(--purple);margin-right:6px}
-.fsub{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:6px 0 2px}
+.fstep li::before{content:"–";color:var(--purple);margin-right:6px;transition:color .5s}
+.fsub{font-size:11px;font-weight:600;color:var(--muted);margin:6px 0 2px;transition:color .5s}
 .fsub:first-of-type{margin-top:0}
-.fnote{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted);margin-top:8px}
-.fshare{background:var(--purple);border-color:var(--purple);color:#fff}
-.fshare .fnum{color:rgba(255,255,255,.7)}
-.fshare p{color:rgba(255,255,255,.88)}
+.fnote{font-size:11.5px;color:var(--muted);margin-top:8px;transition:color .5s}
+/* the step being described: purple, lifted, and the arrow out of it lit, so
+   the highlight travels left to right along the process */
+.fstep{transition:background .5s,border-color .5s,color .5s,transform .5s,box-shadow .5s}
+.fstep.on{background:var(--purple);border-color:var(--purple);color:#fff;transform:translateY(-4px);box-shadow:0 12px 28px rgba(70,51,168,.28)}
+.fstep.on .fnum,.fstep.on .fsub,.fstep.on .fnote{color:rgba(255,255,255,.75)}
+.fstep.on p,.fstep.on ul{color:rgba(255,255,255,.92)}
+.fstep.on li::before{color:#fff}
+.fstep.on li a{border-bottom-color:rgba(255,255,255,.4)}
+.fstep::after{transition:background .5s}
+.fstep.on::after{background:var(--purple)}
+.fchecks{transition:background .5s,border-color .5s,box-shadow .5s}
+.fchecks.on{border-color:var(--purple);box-shadow:0 0 0 3px var(--prule)}
+.fconn{transition:border-color .5s}.fconn.on{border-left-color:var(--purple)}
+@media (prefers-reduced-motion: reduce){.fstep,.fstep.on{transition:none;transform:none}}
 .fconn{grid-row:2;height:40px;justify-self:center;border-left:1.5px dashed var(--prule)}
 .fchecks{grid-row:3;grid-column:2 / 5;background:var(--soft);border:1px solid var(--prule);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.5}
 .fprov{grid-row:4;grid-column:1 / -1;margin-top:22px;background:var(--hover);border:1px solid var(--rule);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.5}
 .fprov a{color:var(--purple)}
-.flabel{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--purple);margin-bottom:4px}
+.flabel{font-size:12px;font-weight:600;color:var(--purple);margin-bottom:4px}
 @media(max-width:980px){
   .flow{grid-template-columns:1fr;row-gap:26px}
   .fstep:not(.fshare)::after{top:auto;bottom:-26px;right:auto;left:28px;width:2px;height:26px}
@@ -414,7 +425,6 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
 <section id="process">
   <div class="wrap">
     <div class="slabel"><h2>From published figure to a chart you can defend</h2></div>
-    <p class="lede mono">What the explorer does, in order, every time</p>
     <div class="flow">
       <div class="fstep"><div class="fnum">01</div><h3>Source</h3>
         <ul id="flowSrc"></ul><div class="fnote" id="flowSrcNote">Refreshed every Monday from each release</div></div>
@@ -427,13 +437,12 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
         <div class="fsub">By area</div><ul><li>Map</li><li>Ranking, change, range</li><li>Heatmap</li></ul></div>
       <div class="fstep"><div class="fnum">05</div><h3>Context</h3>
         <ul><li>Government in power, shaded</li><li>Or a ribbon by party, PM or election</li><li>Series breaks marked on the line</li><li>Click any year for the working</li></ul></div>
-      <div class="fstep fshare"><div class="fnum">06</div><h3>Share</h3>
+      <div class="fstep fshare on"><div class="fnum">06</div><h3>Share</h3>
         <p>Copy a link, download CSV or PNG, or cite it — short or Harvard.</p></div>
       <div class="fconn" style="grid-column:2"></div><div class="fconn" style="grid-column:3"></div><div class="fconn" style="grid-column:4"></div>
       <div class="fchecks"><div class="flabel">Comparability checks</div>
         Warns when geographies, year bases or units don’t match, or a series breaks — and offers the fix: rebase, cut at the break, or show it on a map.</div>
-      <div class="fprov"><div class="flabel">Provenance, the whole way</div>
-        Source, licence, geography and years travel with the number into every link, CSV, PNG and citation. Every raw value is on
+      <div class="fprov">Source, licence, geography and years travel with the number into every link, CSV, PNG and citation. Every raw value is on
         <a href="data.html">Explorer Verify</a>, next to the exact address it was fetched from.</div>
     </div>
   </div>
@@ -887,6 +896,28 @@ function fail(){
 
 /* The Source step lists the publishers actually in the catalogue, counted
    from what built, and the Pick step says how many indicators there are. */
+/* The highlight walks the six steps, left to right, and lights the checks
+   while it is on the three they sit under. Only while the section is on
+   screen; with reduced motion it stays on the last step. */
+function animateFlow(){
+  if(still) return;
+  const steps=[...document.querySelectorAll("#process .fstep")];
+  const conns=[...document.querySelectorAll("#process .fconn")], checks=document.querySelector("#process .fchecks");
+  let i=steps.length-1, seen=false, held=null;
+  const show=k=>{
+    steps.forEach((el,j)=>el.classList.toggle("on",j===k));
+    const mid=k>=1&&k<=3;
+    checks.classList.toggle("on",mid);
+    conns.forEach((c,j)=>c.classList.toggle("on",j===k-1));
+  };
+  new IntersectionObserver(es=>es.forEach(e=>seen=e.isIntersecting),{threshold:.3}).observe(document.getElementById("process"));
+  steps.forEach((el,j)=>{
+    el.addEventListener("mouseenter",()=>{held=j;show(j);});
+    el.addEventListener("mouseleave",()=>{held=null;});
+  });
+  setInterval(()=>{ if(!seen||held!==null||document.hidden) return; i=(i+1)%steps.length; show(i); },1900);
+}
+
 function fillFlow(){
   const pubs=DB.publishers||[], el=document.getElementById("flowSrc");
   const top=pubs.slice(0,6);
@@ -919,6 +950,7 @@ syncTheme();
 function boot(){
   still=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   fillFlow();
+  animateFlow();
   demoBoot();
 
   fillTiles();
