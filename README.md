@@ -100,7 +100,8 @@ power per-person, real-terms and %-of-GDP everywhere.
 
 ## What the explorer does
 
-- Up to four series on one chart, from any topics
+- Up to four series on one chart, from any topics; filter the catalogue by topic and by what it
+  covers (UK, Great Britain, England…, or series with local-area figures)
 - **Over time:** line, step, dots, area, gap between two, columns, stacked
   area, stacked columns, slope, scatter, small multiples. **By area:** ranking,
   change, range, heatmap

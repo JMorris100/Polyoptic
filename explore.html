@@ -181,7 +181,11 @@ body.side-collapsed .siderail{display:block}
 
 #q{width:100%;padding:9px 11px;border:1px solid var(--rule);font-family:inherit;font-size:13.5px;background:var(--paper);border-radius:2px}
 #q:focus{outline:2px solid var(--purple);outline-offset:-1px}
-.filters{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.filters{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.frow{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.flabel{font-size:11.5px;color:var(--muted);width:100%;margin-bottom:1px}
+.f i{font-style:normal;opacity:.6;margin-left:2px}
+.f:disabled{opacity:.4;cursor:default}
 .f{font-family:"IBM Plex Mono";font-size:10.5px;padding:5px 10px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px}
 .f[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
 .cat{max-height:46vh;overflow-y:auto}
@@ -197,8 +201,7 @@ body.side-collapsed .siderail{display:block}
    and let the unit — much the longest — dominate the row. Only geography keeps
    a badge, because it is the field that varies once sub-national data lands
    and the one that fires the incomparability warnings. */
-.ci .cm{display:block;margin-top:5px;font-family:"IBM Plex Mono";font-size:9.5px;
-  line-height:1.5;color:var(--muted)}
+.ci .cm{display:block;margin-top:3px;font-size:12px;line-height:1.4;color:var(--muted)}
 .ci .tag{background:var(--paper);border:1px solid var(--rule);padding:1px 5px;
   white-space:nowrap;margin-right:5px;color:var(--muted)}
 .ci[aria-selected="true"] .tag{background:#fff;border-color:var(--prule)}
@@ -320,10 +323,24 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .probedot{stroke:var(--surface);stroke-width:2}
 .hovline{stroke:var(--muted);stroke-width:1;opacity:0;pointer-events:none}
 .hovline.on{opacity:.45}
-.working .wyear{display:block;font-weight:600;font-size:13px;margin-bottom:4px}
-.working .wblk{display:block;padding:5px 0 5px;border-top:1px solid var(--prule)}
-.working .wblk:first-of-type{border-top:0;padding-top:0}
-.working .wdot{display:inline-block;width:12px;height:3px;vertical-align:middle;margin-right:7px}
+/* the year working: a sum per series, numbers large, labels small */
+.working:has(.wyear){font-family:"Public Sans",system-ui,sans-serif;line-height:1.4;padding:12px 14px}
+.working .wyear{font-family:Archivo,sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;margin-bottom:8px}
+.working .wyear span{font-family:"Public Sans",sans-serif;font-weight:400;font-size:12.5px;color:var(--muted);letter-spacing:0;margin-left:6px}
+.working .wblk{padding:10px 0;border-top:1px solid var(--prule)}
+.working .wblk:last-child{padding-bottom:0}
+.working .wname{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:8px}
+.working .wdot{width:13px;height:3px;flex-shrink:0}
+.wsum{display:flex;align-items:flex-start;flex-wrap:wrap;gap:6px 10px}
+.wc{display:flex;flex-direction:column;min-width:0;max-width:220px}
+.wc b{font-family:"IBM Plex Mono";font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.2}
+.wc span{font-size:11.5px;color:var(--muted);line-height:1.3;margin-top:2px}
+.wc.wstep b{color:var(--muted)}
+.wc.wout{background:var(--surface);border:1px solid var(--prule);border-radius:3px;padding:4px 9px}
+.wc.wout b{color:var(--purple)}
+.wo{font-family:"IBM Plex Mono";font-size:16px;color:var(--muted);padding-top:2px}
+.working .wsrc{font-size:12px;color:var(--muted);margin-top:8px}
+.working .wnote{font-size:12px;margin-top:6px}
 .workhint{margin:0 16px 10px;font-family:"IBM Plex Mono";font-size:10px;
   letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .warn b{color:var(--warn-ink-b)}
@@ -839,7 +856,7 @@ let uid=0;
 const mkPanel = (sel=[], over={}) =>
   ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"bands", src:SRCSTYLE, gran:"years", h:H_DEF, w:12, title:null, lvl:"", asort:"desc", table:false, ...over});
 
-const state = { panels:[ mkPanel(["rents","pay"]) ], active:0, focus:null, q:"", topic:"all", openCfg:null, openMenu:null, renaming:null,
+const state = { panels:[ mkPanel(["rents","pay"]) ], active:0, focus:null, q:"", topic:"all", geo:"all", openCfg:null, openMenu:null, renaming:null,
   /* the point whose working is open: {key, id, x} — one at a time, site-wide */
   probe:null };
 const lockedKeys = new Set();
@@ -1031,24 +1048,30 @@ function working(p,set,xk){
     const base=indexBase(p);
     const b=raw.find(q=>q[0]>=(base??p.from)&&q[1]!=null);
     if(b&&pub!=null) step.op=`${vfmt(pub)} ÷ ${vfmt(b[1])} × 100`,
-                     step.why=`rebased on the ${Math.floor(b[0])} figure`;
+                     step.why=`rebased on the ${Math.floor(b[0])} figure`,
+                     step.mid=["÷",`${vfmt(b[1])} × 100`], step.cap=`its ${Math.floor(b[0])} value, set to 100`;
   } else if(t==="yoy"){
     const prev=raw[i-per];
     if(prev&&prev[1]!=null&&pub!=null)
       step.op=`(${vfmt(pub)} − ${vfmt(prev[1])}) ÷ ${vfmt(prev[1])} × 100`,
-      step.why=`against ${Math.floor(prev[0])}`;
+      step.why=`against ${Math.floor(prev[0])}`,
+      step.mid=["vs",vfmt(prev[1])], step.cap=`the ${Math.floor(prev[0])} value; % change`;
   } else if(t==="roll3"){
     const w=raw.slice(Math.max(0,i-(3*per-1)),i+1).filter(q=>q[1]!=null);
-    if(w.length) step.op=`mean of ${w.length} ${w.length===1?"point":"points"}, ${Math.floor(w[0][0])}–${year}`;
+    if(w.length) step.op=`mean of ${w.length} ${w.length===1?"point":"points"}, ${Math.floor(w[0][0])}–${year}`,
+      step.mid=["→",`mean of ${w.map(q=>vfmt(q[1])).join(", ")}`], step.cap=`${Math.floor(w[0][0])}–${year}`;
   } else if(!skipped&&t==="real"){
     const b=refAt("deflator",2024), d=refAt("deflator",year);
-    if(b&&d&&pub!=null) step.op=`${vfmt(pub)} × (${vfmt(b)} ÷ ${vfmt(d)})`, step.ref="deflator";
+    if(b&&d&&pub!=null) step.op=`${vfmt(pub)} × (${vfmt(b)} ÷ ${vfmt(d)})`, step.ref="deflator",
+      step.mid=["×",`${vfmt(b)} ÷ ${vfmt(d)}`], step.cap=`GDP deflator, 2024 ÷ ${year}`;
   } else if(!skipped&&t==="percap"){
     const q=refAt("population",year);
-    if(q&&pub!=null) step.op=`${vfmt(pub)} ÷ ${vfmt(q)}`, step.ref="population";
+    if(q&&pub!=null) step.op=`${vfmt(pub)} ÷ ${vfmt(q)}`, step.ref="population",
+      step.mid=["÷",vfmt(q)], step.cap=`UK population, ${year}`;
   } else if(!skipped&&t==="pctgdp"){
     const gv=refAt("gdp",year);
-    if(gv&&pub!=null) step.op=`${vfmt(pub)} ÷ ${vfmt(gv)} × 100`, step.ref="gdp";
+    if(gv&&pub!=null) step.op=`${vfmt(pub)} ÷ ${vfmt(gv)} × 100`, step.ref="gdp",
+      step.mid=["÷",`${vfmt(gv)} × 100`], step.cap=`nominal GDP, ${year}`;
   }
   return {year, xk, pub, shown, step, skipped,
           interpolated: per!==1 && Math.abs(xk-year)>1e-9,
@@ -1091,45 +1114,55 @@ function workingHtml(p,sets){
 /* The working for a whole year: one block per series, so lines that are
    being compared are checked together. A "relative to" line shows the two
    rebased figures it divides. */
+/* The working for a whole year, drawn as a sum rather than a sentence: for
+   each series, the published figure, the step applied to it, and the figure
+   on the chart, each number with a short label underneath. The source links
+   sit quietly below. A "relative to" line divides the two rebased figures. */
+const cell=(v,cap,cls="")=>`<div class="wc ${cls}"><b>${v}</b><span>${cap}</span></div>`;
+const opc=t=>`<div class="wo">${t}</div>`;
 function yearWorkingHtml(p,sets){
   const pr=state.probe;
   if(!pr||pr.key!==p.key||pr.code||pr.x==null) return "";
   const year=Math.floor(pr.x);
+  const link=(m,label)=>[m.source_url?`<a href="${esc(m.source_url)}" target="_blank" rel="noopener">${label||esc(m.source)} ↗</a>`:esc(m.source),
+    m.source_api?`<a href="${esc(m.source_api)}" target="_blank" rel="noopener">API ↗</a>`:""].filter(Boolean).join(" · ");
   const blocks=sets.map(set=>{
-    const dot=`<span class="wdot" style="background:${set.colour}"></span>`;
+    const head=`<div class="wname"><span class="wdot" style="background:${set.colour}"></span>${esc(set.name)}</div>`;
     if(set.metas){
       const [m0,m1]=set.metas, ip={...p,trans:"index"};
       const at=m=>{const q=transform(m,ip).find(q=>q[0]===pr.x); return q?q[1]:null;};
       const v=(set.pts.find(q=>q[0]===pr.x)||[])[1], a=at(m0), b=at(m1);
       if(v==null) return "";
-      const by=indexBase(p);
-      return `<div class="wblk"><span class="wtop">${dot}${esc(set.name)} · ${fmt(v)}</span>
-        <span class="wop">${vfmt(a)} ÷ ${vfmt(b)} × 100 <span class="wmut">— both rebased to ${by==null?"their first year":Math.floor(by)} = 100</span></span>
-        <span class="wop wmut">As published: ${esc(m0.name)} ${vfmt(rawAt(m0,year))} ${esc(m0.unit)}; ${esc(m1.name)} ${vfmt(rawAt(m1,year))} ${esc(m1.unit)}</span></div>`;
+      const by=indexBase(p), byl=by==null?"first year":Math.floor(by);
+      return `<div class="wblk">${head}<div class="wsum">
+        ${cell(vfmt(a),`${esc(m0.name)}, ${byl} = 100`)}${opc("÷")}
+        ${cell(vfmt(b),`${esc(m1.name)}, ${byl} = 100`)}${opc("× 100 =")}
+        ${cell(vfmt(v),"on the chart","wout")}</div>
+        <div class="wsrc">${link(m0)} · ${link(m1)}</div></div>`;
     }
     const w=working(p,set,pr.x);
     if(!w) return "";
     const s=set.meta;
-    const refBit=w.step.ref
-      ? ` <span class="wmut">(${esc(REF_META[w.step.ref].name)}${refCdid(w.step.ref)?", "+refCdid(w.step.ref):""}` +
-        `${refHref(w.step.ref)?` · <a href="${esc(refHref(w.step.ref))}" target="_blank" rel="noopener">↗</a>`:""})</span>`
-      : "";
+    const pubCell=cell(vfmt(w.pub),`published, ${esc(w.unitPub)}`);
+    const sum = w.step.mid
+      ? `${pubCell}${opc(esc(w.step.mid[0]))}${cell(esc(w.step.mid[1]),esc(w.step.cap),"wstep")}${opc("=")}${cell(vfmt(w.shown),`on the chart, ${esc(w.unitShown)}`,"wout")}`
+      : `${cell(vfmt(w.shown),`published and plotted as is, ${esc(w.unitPub)}`,"wout")}`;
+    const ref=w.step.ref&&refHref(w.step.ref)?` · <a href="${esc(refHref(w.step.ref))}" target="_blank" rel="noopener">${esc(REF_META[w.step.ref].name)}${refCdid(w.step.ref)?" ("+refCdid(w.step.ref)+")":""} ↗</a>`:"";
     const notes=[];
-    if(w.skipped) notes.push(`Transform not applied — ${esc(s.name)} is a ${esc(s.kind.replace("_"," "))}, so deflating or dividing it would be meaningless. The figure shown is as published.`);
-    if(w.interpolated) notes.push(`This point sits between two annual figures. It is interpolated for the ${esc(p.gran)} view, not published.`);
-    return `<div class="wblk"><span class="wtop">${dot}${esc(s.name)} · ${fmt(w.shown)} ${esc(w.unitShown)}</span>
-      ${w.step.op
-        ? `<span class="wop">${esc(w.step.op)}${refBit}${w.step.why?` <span class="wmut">— ${esc(w.step.why)}</span>`:""}</span>`
-        : `<span class="wop wmut">As published — no transform applied.</span>`}
-      <span class="wop wmut">As published: ${vfmt(w.pub)} ${esc(w.unitPub)} · ${esc(s.source)}${
-        s.source_url?` · <a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}${
-        s.source_api?` · <a href="${esc(s.source_api)}" target="_blank" rel="noopener">API ↗</a>`:""}</span>
-      ${notes.map(n=>`<span class="wnote">${n}</span>`).join("")}</div>`;
+    if(w.skipped) notes.push(`Not adjusted: ${esc(s.name)} is already a rate or index, so this is the published figure.`);
+    if(w.interpolated) notes.push(`Between two annual figures — estimated for the ${esc(p.gran)} view, not published.`);
+    return `<div class="wblk">${head}<div class="wsum">${sum}</div>
+      ${notes.map(n=>`<div class="wnote">${n}</div>`).join("")}
+      <div class="wsrc">${link(s)}${ref}</div></div>`;
   }).filter(Boolean);
   if(!blocks.length) return "";
-  const label=p.gran==="years"?String(year):(+pr.x).toFixed(2);
+  const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], fr=pr.x-year;
+  const label=p.gran==="quarters"?`${year} Q${Math.round(fr*4)+1}`
+            : p.gran==="months"?`${MON[Math.round(fr*12)%12]} ${year}`
+            : p.gran==="days"?`${year}, day ${Math.round(fr*365)+1}`
+            : String(year);
   return `<div class="working"><button class="wx" data-act="unprobe" title="Close" aria-label="Close working">×</button>
-    <span class="wyear">${label}</span>${blocks.join("")}</div>`;
+    <div class="wyear">${label} <span>how each number on the chart was worked out</span></div>${blocks.join("")}</div>`;
 }
 
 /* Charts that show the working. The time charts take a click anywhere and
@@ -2304,24 +2337,39 @@ function renderSidebar(){
     const q=P0(); if(!q) return; q.sel=q.sel.filter(x=>x!==b.dataset.drop); render();
   });
 
-  /* filters */
+  /* filters: what it's about, and what it covers. "Local areas" picks the
+     series that also break down below national level, which is what the
+     By area views need. Each option's count is what picking it would give,
+     given the other filter and the search. */
   const inMode=catalogue();
+  const q=state.q.toLowerCase();
+  const okQ=s=>!q||[s.name,s.source,s.unit,s.geography].join(" ").toLowerCase().includes(q);
+  const okTopic=(s,t)=>t==="all"||s.topics.includes(t);
+  const okGeo=(s,g)=>g==="all"||(g==="local"?!!s.areas:s.geography===g);
   const topics=["all",...new Set(inMode.flatMap(s=>s.topics))];
-  document.getElementById("filters").innerHTML=topics.map(t=>
-    `<button class="f" data-topic="${t}" aria-pressed="${state.topic===t}">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join("");
+  /* broadest first */
+  const GEO_ORDER=["UK","Great Britain","England and Wales","England & Wales","England","Wales","Scotland","Northern Ireland"];
+  const geos=[...new Set(inMode.map(s=>s.geography))].sort((a,b)=>
+    (GEO_ORDER.indexOf(a)+1||99)-(GEO_ORDER.indexOf(b)+1||99));
+  const geoOpts=[["all","All"],...geos.map(g=>[g,g])].concat(inMode.some(s=>s.areas)?[["local","Local areas"]]:[]);
+  const chip=(attr,k,label,on,n)=>`<button class="f" data-${attr}="${esc(k)}" aria-pressed="${on}"${n===0&&!on?" disabled":""}>${esc(label)}${k!=="all"?` <i>${n}</i>`:""}</button>`;
+  document.getElementById("filters").innerHTML=
+    `<div class="frow"><span class="flabel">Topic</span>${topics.map(t=>chip("topic",t,t.charAt(0).toUpperCase()+t.slice(1),state.topic===t,
+        inMode.filter(s=>okQ(s)&&okGeo(s,state.geo)&&okTopic(s,t)).length)).join("")}</div>`+
+    `<div class="frow"><span class="flabel">Covers</span>${geoOpts.map(([k,l])=>chip("geo",k,l,state.geo===k,
+        inMode.filter(s=>okQ(s)&&okTopic(s,state.topic)&&okGeo(s,k)).length)).join("")}</div>`;
   document.querySelectorAll("[data-topic]").forEach(b=>b.onclick=()=>{state.topic=b.dataset.topic;renderSidebar();});
+  document.querySelectorAll("[data-geo]").forEach(b=>b.onclick=()=>{state.geo=b.dataset.geo;renderSidebar();});
 
   /* catalogue */
-  const q=state.q.toLowerCase();
-  const list=inMode.filter(s=>(state.topic==="all"||s.topics.includes(state.topic))&&
-    (!q||s.name.toLowerCase().includes(q)||s.source.toLowerCase().includes(q)));
+  const list=inMode.filter(s=>okTopic(s,state.topic)&&okGeo(s,state.geo)&&okQ(s));
   const cat=document.getElementById("cat");
   cat.innerHTML=list.length?list.map(s=>{
     const i=p?p.sel.indexOf(s.id):-1, on=i>=0, end=s.start+s.values.length-1;
-    return `<div class="ci" data-id="${s.id}" aria-selected="${on}">
+    return `<div class="ci" data-id="${s.id}" aria-selected="${on}" title="${esc(s.name)} — ${esc(s.unit)}">
       <span class="sw" style="${on?`background:${PAL(i)};border-color:${PAL(i)}`:""}"></span>
       <span class="body"><span class="cn">${esc(s.name)}</span>
-      <span class="cm"><span class="tag">${esc(s.geography)}</span>${esc(s.unit)}<span class="sep">·</span>${s.start}–${end}</span>
+      <span class="cm">${esc(s.geography)}<span class="sep">·</span>${s.start}–${end}${s.areas?`<span class="sep">·</span>local figures`:""}</span>
       </span></div>`;}).join("") : `<div class="empty">Nothing matches that.</div>`;
   cat.querySelectorAll(".ci").forEach(el=>el.onclick=()=>{
     const id=el.dataset.id;
@@ -3059,7 +3107,7 @@ function setMode(next){
   if(next===MODE) return;
   MODE=next;
   try{ localStorage.setItem("polyoptic-mode", MODE); }catch(e){}
-  state.panels=[]; state.active=0; state.topic="all"; state.q="";
+  state.panels=[]; state.active=0; state.topic="all"; state.geo="all"; state.q="";
   const box=document.getElementById("q"); if(box) box.value="";
   applyThemeForMode(); syncThemeBtn(); syncModeBtn(); render();
   /* TEMPORARY — see the party trick block below. Deliberately only on a real
