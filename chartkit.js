@@ -113,6 +113,51 @@ function bands(o){
   });
 }
 
+/* Government as a ribbon under the chart instead of shading behind it: a
+   slim party-coloured band with party names, or prime ministers, or general
+   elections marked. Shares the chart's x scale, so it lines up year for year.
+   o: {mode: party|pm|elections, x0, x1, sx, l, r, W, eras, pms}
+   Returns HTML: a small title and the ribbon's own SVG. */
+const ELECTIONS=[1997,2001,2005,2010,2015,2017,2019,2024];
+function ribbon(o){
+  const g=[], {sx,W}=o;
+  const wrap=(title,h,aria)=>`<div class="ribbon-t">${title}</div><svg class="ribbon" viewBox="0 0 ${W} ${h}" style="width:100%;height:auto" role="img" aria-label="${aria}">${g.join("")}</svg>`;
+  if(o.mode==="elections"){
+    g.push(`<line class="gridline" x1="${o.l}" y1="7" x2="${o.r}" y2="7"/>`);
+    ELECTIONS.forEach(y=>{ if(y>=o.x0&&y<=o.x1){
+      g.push(`<circle cx="${sx(y).toFixed(1)}" cy="7" r="3.4" class="elect"/>`);
+      g.push(`<text class="pmlabel" x="${sx(y).toFixed(1)}" y="24" text-anchor="middle">${y}</text>`);
+    }});
+    return wrap("General elections",29,"General election years");
+  }
+  /* a slim rounded band; names sit beneath it rather than inside the blocks */
+  const BY=3, BH=8;
+  (o.eras||[]).forEach(e=>{
+    const f=Math.max(e.from,o.x0), t=Math.min(e.to,o.x1); if(t<=f) return;
+    const x=sx(f), w=sx(t)-sx(f);
+    g.push(`<g class="era"><title>${esc(e.party)} ${e.from}–${e.to}</title><rect x="${x.toFixed(1)}" y="${BY}" width="${Math.max(1,w-1.5).toFixed(1)}" height="${BH}" rx="${BH/2}" fill="${e.colour}"/></g>`);
+  });
+  if(o.mode==="party"){
+    (o.eras||[]).forEach(e=>{
+      const f=Math.max(e.from,o.x0), t=Math.min(e.to,o.x1); if(t<=f) return;
+      const x=sx(f), w=sx(t)-sx(f);
+      if(w>64) g.push(`<text class="eralabel" x="${(x+w/2).toFixed(1)}" y="${BY+BH+14}" text-anchor="middle">${esc(e.party)}</text>`);
+    });
+    return wrap("Government in power",30,"Governing party by year");
+  }
+  /* prime ministers, staggered onto a second row where short ones collide */
+  const R1=BY+BH+16, R2=R1+11;
+  let lastX=-1e9, lastRow=2;
+  (o.pms||[]).filter(([y])=>y>=o.x0&&y<=o.x1).forEach(([y,n])=>{
+    const x=sx(y), row=(x-lastX<58&&lastRow===1)?2:1;
+    lastX=x; lastRow=row;
+    const ty=row===1?R1:R2;
+    g.push(`<line class="pmtick" x1="${x.toFixed(1)}" y1="${BY+BH}" x2="${x.toFixed(1)}" y2="${ty-8}"/>`);
+    g.push(`<text class="pmlabel" x="${x.toFixed(1)}" y="${ty}" text-anchor="${x>o.r-30?"end":"middle"}">${esc(n)}</text>`);
+  });
+  return wrap("Government in power",R2+5,"Governing party and prime ministers by year");
+}
+
 /* Breaks sit on the line they belong to. A series that stops at a break gets
    a hollow end point (drawn by endPoint) and the reason beside its label; a
    break part way along gets a marker at that year, with the full note on
@@ -175,5 +220,5 @@ function linePath(pts,sx,Y,step){
   return d.trim();
 }
 
-window.CK={PAL,pal,esc,wrapText,nameLines,gutterFor,niceStep,yAxis,tickFmt,frame,BANDS_TOP,bands,breaks,endPoint,endLabels,linePath};
+window.CK={PAL,pal,esc,wrapText,nameLines,gutterFor,niceStep,yAxis,tickFmt,frame,BANDS_TOP,bands,ribbon,ELECTIONS,breaks,endPoint,endLabels,linePath};
 })();

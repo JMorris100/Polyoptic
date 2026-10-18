@@ -34,3 +34,11 @@ html[data-theme="dark"] .band{fill-opacity:.09}
 .psrc{font-size:12px;line-height:1.45;color:var(--ink);overflow-wrap:anywhere}
 .psrc b{font-weight:600}
 .pmeta{font-size:11.5px;color:var(--muted);overflow-wrap:anywhere}
+
+/* government as a ribbon under the chart */
+.ribbon-t{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:10px 0 5px}
+.era rect{opacity:.7}.era:hover rect{opacity:1}
+.pmtick{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2;opacity:.3}
+.pmlabel{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:8.5px;fill:var(--muted)}
+.eralabel{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:var(--muted)}
+.elect{fill:var(--purple)}

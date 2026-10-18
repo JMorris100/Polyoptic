@@ -55,7 +55,7 @@ body.resizing{user-select:none;cursor:ns-resize}
 
 /* ── header ── */
 header{position:sticky;top:0;z-index:40;background:#4633A8;color:#fff}
-.hrow{max-width:1600px;margin:0 auto;padding:0 32px;height:70px;display:flex;align-items:center;gap:14px}
+.hrow{padding:0 24px 0 20px;height:70px;display:flex;align-items:center;gap:14px}
 .brand{display:flex;align-items:center;gap:9px;text-decoration:none}
 .brand svg{width:36px;height:26px}
 .wm{font-family:"Archivo";font-weight:800;font-size:21px;letter-spacing:-0.05em;color:#fff}
@@ -71,79 +71,80 @@ header{position:sticky;top:0;z-index:40;background:#4633A8;color:#fff}
 .hb.eye{display:inline-flex;align-items:center;justify-content:center;padding:7px 12px}
 .hb.eye svg{width:24px;height:16px;display:block}
 
-.shell{max-width:1600px;margin:0 auto;padding:26px 32px 90px;display:grid;grid-template-columns:308px 1fr;gap:22px;align-items:start;transition:grid-template-columns .18s ease}
-body.side-collapsed .shell{grid-template-columns:0 1fr;gap:0}
+/* The panel hugs the left edge at full height and the charts take the rest
+   of the screen, the way a video site's guide does. Close the panel and the
+   sources move into a column on the right, so the charts still get the width
+   and the provenance is still beside them. */
+.shell{display:grid;grid-template-columns:300px minmax(0,1fr);align-items:start;transition:grid-template-columns .18s ease}
+.main{padding:22px 26px 90px;min-width:0}
+body.side-collapsed .shell{grid-template-columns:0 minmax(0,1fr)}
 body.side-collapsed .side{visibility:hidden;pointer-events:none}
+body.side-collapsed .main{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:22px;align-items:start;padding-left:40px}
+body.side-collapsed .srcpanel{margin-top:0;position:sticky;top:92px;max-height:calc(100vh - 110px);overflow-y:auto;scrollbar-width:thin}
 .siderail{position:fixed;left:0;top:50%;transform:translateY(-50%);z-index:45;display:none}
 body.side-collapsed .siderail{display:block}
 .siderail button{width:26px;height:74px;border:1px solid var(--rule);border-left:0;background:var(--surface);
-  color:var(--muted);cursor:pointer;border-radius:0 4px 4px 0;font-size:13px}
+  color:var(--muted);cursor:pointer;border-radius:0 8px 8px 0;font-size:13px}
 .siderail button:hover{color:var(--purple);border-color:var(--purple)}
-.sidehide{width:100%;padding:10px 0;border:0;border-top:1px solid var(--rule);background:var(--soft);color:var(--purple);
-  cursor:pointer;font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:500;
-  display:flex;align-items:center;justify-content:center;gap:8px}
-.sidehide:hover{background:var(--purple);color:#fff}
-.sidehide svg{width:13px;height:13px}
-.sidecollapse{width:24px;height:24px;border:1px solid var(--rule);background:var(--surface-2);color:var(--muted);
-  cursor:pointer;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;float:right;margin-top:-3px}
-.sidecollapse:hover{color:var(--purple);border-color:var(--purple)}
-.sidecollapse svg{width:12px;height:12px}
-@media(max-width:1040px){.shell{grid-template-columns:1fr;padding:20px 20px 60px}}
+.sidecollapse{width:32px;height:32px;border:0;background:transparent;color:var(--muted);
+  cursor:pointer;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.sidecollapse:hover{background:var(--hover);color:var(--ink)}
+.sidecollapse svg{width:16px;height:16px}
+@media(max-width:1040px){
+  .shell,body.side-collapsed .shell{grid-template-columns:1fr}
+  .main,body.side-collapsed .main{display:block;padding:18px 16px 60px}
+  body.side-collapsed .srcpanel{position:static;max-height:none;margin-top:16px}
+}
 
-/* ── sidebar ── */
-.side{position:sticky;top:96px}
-@media(max-width:1040px){.side{position:static}}
-.panelbox{background:var(--surface);border:1px solid var(--rule)}
-.psec{padding:14px 16px;border-bottom:1px solid var(--rule)}
+/* ── the panel ── */
+.side{position:sticky;top:70px;height:calc(100vh - 70px);overflow-y:auto;overscroll-behavior:contain;
+  background:var(--surface);border-right:1px solid var(--rule);scrollbar-width:thin;scrollbar-color:var(--rule) transparent}
+@media(max-width:1040px){.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--rule)}}
+.panelbox{padding:10px 12px 18px}
+.psec{padding:12px 4px 14px;border-bottom:1px solid var(--rule)}
 .psec:last-child{border-bottom:0}
-.plabel{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.phead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.plabel{font-family:Archivo,sans-serif;font-size:15.5px;font-weight:700;letter-spacing:-.01em;color:var(--ink);margin-bottom:10px}
+.phead .plabel{margin-bottom:0}
+.cfgpanel .plabel{font-family:"IBM Plex Mono";font-size:10px;font-weight:400;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 
 /* which chart am I editing */
-.pswitch{display:flex;gap:5px;flex-wrap:wrap}
-.ps{font-family:"IBM Plex Mono";font-size:11px;padding:6px 11px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px;transition:.13s}
-.ps:hover{border-color:var(--ink);color:var(--ink)}
-.ps[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
-.ps.add{color:var(--purple);border-color:var(--prule);background:var(--soft);font-weight:500}
-.ps.add:hover{background:var(--soft-hover)}
+.pswitch{display:flex;gap:6px;flex-wrap:wrap}
+.ps{font-family:inherit;font-size:13px;font-weight:500;padding:7px 12px;border:0;background:var(--hover);color:var(--ink);cursor:pointer;border-radius:8px;transition:.13s}
+.ps:hover{background:var(--soft-hover)}
+.ps[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
 
 /* selected tray — survives topic filtering */
-.tray{display:flex;flex-direction:column;gap:6px}
-.trayitem{display:flex;align-items:center;gap:9px;padding:7px 9px;background:var(--soft);border:1px solid var(--prule);border-radius:2px}
-.trayitem .sw{width:11px;height:11px;flex-shrink:0;border-radius:2px}
-.trayitem .nm{flex:1;min-width:0;font-size:12.5px;font-weight:500;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.trayitem .x{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:15px;line-height:1;padding:0 2px}
-.trayitem .x:hover{color:var(--purple)}
-.trayempty{font-size:12.5px;color:var(--muted);padding:4px 0}
+.tray{display:flex;flex-direction:column;gap:2px}
+.trayitem{display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:10px;background:var(--soft)}
+.trayitem .sw{width:12px;height:12px;flex-shrink:0;border-radius:3px}
+.trayitem .nm{flex:1;min-width:0;font-size:14px;font-weight:500;line-height:1.3;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trayitem .x{border:0;background:transparent;color:var(--muted);cursor:pointer;font-size:17px;line-height:1;padding:2px 4px;border-radius:50%}
+.trayitem .x:hover{color:var(--ink);background:var(--hover)}
+.trayempty{font-size:13.5px;color:var(--muted);padding:4px 6px}
 
-#q{width:100%;padding:9px 11px;border:1px solid var(--rule);font-family:inherit;font-size:13.5px;background:var(--paper);border-radius:2px}
+#q{width:100%;padding:10px 16px;border:1px solid var(--rule);font-family:inherit;font-size:14px;background:var(--surface-2);color:var(--ink);border-radius:100px}
 #q:focus{outline:2px solid var(--purple);outline-offset:-1px}
-.filters{display:flex;flex-direction:column;gap:8px;margin-top:10px}
-.frow{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
-.flabel{font-size:11.5px;color:var(--muted);width:100%;margin-bottom:1px}
-.f i{font-style:normal;opacity:.6;margin-left:2px}
-.f:disabled{opacity:.4;cursor:default}
-.f{font-family:"IBM Plex Mono";font-size:10.5px;padding:5px 10px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px}
-.f[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
-.cat{max-height:46vh;overflow-y:auto}
-@media(max-width:1040px){.cat{max-height:300px}}
-.ci{padding:12px 16px;border-bottom:1px solid var(--rule-soft);cursor:pointer;display:flex;gap:10px;align-items:flex-start}
+.filters{display:flex;flex-direction:column;gap:10px;margin-top:12px}
+.frow{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.flabel{font-size:12.5px;font-weight:600;color:var(--muted);width:100%;margin:0 0 1px 2px}
+.f{font-family:inherit;font-size:13px;font-weight:500;padding:6px 11px;border:0;background:var(--hover);color:var(--ink);cursor:pointer;border-radius:8px;transition:.13s}
+.f:hover{background:var(--soft-hover)}
+.f i{font-style:normal;opacity:.55;margin-left:3px;font-weight:400}
+.f:disabled{opacity:.35;cursor:default}
+.f:disabled:hover{background:var(--hover)}
+.f[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.cat{padding:4px 0 6px;display:flex;flex-direction:column;gap:1px}
+.ci{padding:9px 10px;border-radius:10px;cursor:pointer;display:flex;gap:12px;align-items:flex-start;transition:background .12s}
 .ci:hover{background:var(--hover)}
 .ci[aria-selected="true"]{background:var(--soft)}
-.ci .sw{width:11px;height:11px;flex-shrink:0;margin-top:3px;border:1.5px solid var(--rule);background:transparent;border-radius:2px}
+.ci .sw{width:12px;height:12px;flex-shrink:0;margin-top:4px;border:1.5px solid var(--rule);background:transparent;border-radius:3px}
 .ci .body{flex:1;min-width:0}
-.ci .cn{display:block;font-size:13.5px;font-weight:600;line-height:1.35;color:var(--ink)}
-/* One muted line, not three competing chips. Geography, unit and coverage are
-   three different kinds of fact; boxing two of them made them look like peers
-   and let the unit — much the longest — dominate the row. Only geography keeps
-   a badge, because it is the field that varies once sub-national data lands
-   and the one that fires the incomparability warnings. */
-.ci .cm{display:block;margin-top:3px;font-size:12px;line-height:1.4;color:var(--muted)}
-.ci .tag{background:var(--paper);border:1px solid var(--rule);padding:1px 5px;
-  white-space:nowrap;margin-right:5px;color:var(--muted)}
-.ci[aria-selected="true"] .tag{background:#fff;border-color:var(--prule)}
+.ci .cn{display:block;font-size:14px;font-weight:500;line-height:1.35;color:var(--ink)}
+.ci .cm{display:block;margin-top:2px;font-size:12.5px;line-height:1.4;color:var(--muted)}
 .ci .cm .sep{opacity:.5;padding:0 3px}
-.empty{padding:18px 16px;font-size:13px;color:var(--muted)}
-.foot{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted)}
+.empty{padding:14px 10px;font-size:13.5px;color:var(--muted)}
+.foot{font-size:12.5px;color:var(--muted);padding:0 6px}
 
 /* ── panels ── */
 .stack{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;align-items:start}
@@ -153,9 +154,13 @@ body.side-collapsed .siderail{display:block}
 .pcard.is-focus{border-color:var(--purple);box-shadow:0 0 0 1px var(--purple)}
 
 .pbar{display:flex;align-items:center;gap:11px;padding:12px 16px;border-bottom:1px solid var(--rule)}
-.grip{cursor:grab;color:var(--rule);font-size:15px;line-height:1;letter-spacing:-2px;padding:2px 3px;flex-shrink:0;touch-action:none}
-.grip:hover{color:var(--muted)}
-.pcard.is-focus .grip{color:var(--prule)}
+/* the drag handle: a real button-sized target, not a faint glyph */
+.grip{cursor:grab;width:28px;height:28px;flex-shrink:0;touch-action:none;display:inline-flex;align-items:center;justify-content:center;
+  color:var(--muted);border-radius:6px;border:1px dashed var(--rule);background:transparent}
+.grip svg{width:14px;height:14px;pointer-events:none}
+.grip:hover{color:var(--purple);border-color:var(--purple);border-style:solid;background:var(--soft)}
+.grip:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
+body.dragging,body.dragging *{cursor:grabbing!important}
 .pnum{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;
   color:var(--purple);background:var(--soft);border:1px solid var(--prule);padding:3px 8px;border-radius:2px}
 .pcard.is-focus .pnum{background:var(--purple);color:#fff;border-color:var(--purple)}
@@ -360,7 +365,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   background:var(--surface);color:var(--purple);cursor:pointer;border-radius:2px;width:100%;transition:.14s}
 .addbtn:hover{background:var(--soft);border-color:var(--purple);border-style:solid}
 
-.srcpanel{background:var(--surface);border:1px solid var(--rule);padding:14px 16px;margin-top:16px}
+.srcpanel{background:var(--surface);border:1px solid var(--rule);padding:14px 16px;margin-top:16px;container-type:inline-size}
 .srcitem{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,2fr);gap:8px 28px;padding:12px 0;border-bottom:1px solid var(--rule-soft);align-items:start}
 .srcitem:last-child{border-bottom:0;padding-bottom:2px}
 .srcitem .srcdet{grid-column:1/-1}
@@ -379,6 +384,8 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .srcoff{font-size:12.5px;color:var(--muted);margin:10px 0 0}
 @media (max-width:1000px){.srcitem{grid-template-columns:1fr}.srcfacts{margin-left:21px}}
 @media (max-width:560px){.srcfacts{grid-template-columns:1fr 1fr}}
+/* in the narrow right-hand column the facts stack under each name */
+@container (max-width:620px){.srcitem{grid-template-columns:1fr}.srcfacts{margin-left:21px;grid-template-columns:1fr 1fr}}
 .fchip{font-family:"IBM Plex Mono";font-size:9px;letter-spacing:.05em;text-transform:uppercase;
   padding:1px 5px;border-radius:2px;border:1px solid var(--rule);color:var(--muted)}
 .fchip.f-discontinued{color:#9B1C1C;border-color:#E9B7B7;background:#FDF0F0}
@@ -560,8 +567,8 @@ html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px col
   <div class="side">
     <div class="panelbox">
       <div class="psec">
-        <button class="sidecollapse" id="sideHideTop" title="Collapse the panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></button>
-        <div class="plabel">Editing</div>
+        <div class="phead"><div class="plabel">Editing</div>
+          <button class="sidecollapse" id="sideHideTop" title="Hide this panel — the charts get the full width" aria-label="Hide the panel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg></button></div>
         <div class="pswitch" id="pswitch"></div>
       </div>
       <div class="psec">
@@ -574,18 +581,17 @@ html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px col
         <div class="filters" id="filters"></div>
       </div>
       <div class="cat" id="cat"></div>
-      <div class="psec" style="border-top:1px solid var(--rule)">
-        <div class="foot" id="count"></div>
-      </div>
-      <button class="sidehide" id="sideHide" title="Collapse the panel to give charts the full width"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg> Hide panel — full-width charts</button>
+      <div class="foot" id="count"></div>
     </div>
   </div>
 
-  <div>
-    <div class="stack" id="stack"></div>
-    <div class="addbar">
-      <div class="layoutpick" id="layoutpick" role="group" aria-label="Chart layout"></div>
-      <button class="addbtn" id="addBottom">+ Add another chart</button>
+  <div class="main">
+    <div class="charts">
+      <div class="stack" id="stack"></div>
+      <div class="addbar">
+        <div class="layoutpick" id="layoutpick" role="group" aria-label="Chart layout"></div>
+        <button class="addbtn" id="addBottom">+ Add another chart</button>
+      </div>
     </div>
     <div class="srcpanel" id="srcs"></div>
   </div>
@@ -707,8 +713,9 @@ const CHART_ICON={
 };
 const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["rel","Relative to last series"],["yoy","Year-on-year %"],
                     ["roll3","3-year average"],["real","Real terms"],["percap","Per person"],["pctgdp","% of GDP"]];
-/* government in power: each premiership shaded behind the data, or off */
-const ERA_MODES = [["off","Off"],["bands","Shaded"]];
+/* government in power: shaded behind the data, a ribbon under it, or off */
+const ERA_MODES = [["bands","Shaded behind chart"],["party","Ribbon: party"],["pm","Ribbon: party and PMs"],["elections","Ribbon: elections"],["off","Off"]];
+const RIBBONS = new Set(["party","pm","elections"]);
 const GRANS = [["years","Years"],["quarters","Quarters"],["months","Months"],["days","Days"]];
 const GRAN_PER = {years:1, quarters:4, months:12, days:365};
 const H_MIN=210, H_MAX=640, H_DEF=300;
@@ -1667,8 +1674,6 @@ const IC={
   dup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 5H6a2 2 0 0 0-2 2v10"/></svg>',
   del:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13M10 11v6M14 11v6"/></svg>',
   pen:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19l-4 1z"/></svg>',
-  mvL:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 6l-6 6 6 6"/></svg>',
-  mvR:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6l6 6-6 6"/></svg>',
   table:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="5" width="16" height="14" rx="1.5"/><path d="M4 10h16M10 10v9"/></svg>',
   half:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="8" height="12" rx="1.5"/><rect x="13" y="6" width="8" height="12" rx="1.5"/></svg>',
   wide:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="6" width="18" height="12" rx="1.5"/></svg>',
@@ -1751,7 +1756,11 @@ function statsFor(p,sets){
 function drawChart(p,sets){
   const v=viewOf(p,sets), vs=clipSets(sets,v);
   setLayout(v,vs);
-  return statsFor(v,vs)+chartFor(v,vs);
+  const chart=chartFor(v,vs);
+  /* drawn straight after the chart, with the same margins, so it lines up */
+  const rib = RIBBONS.has(p.era)&&BANDED.has(p.chart)
+    ? CK.ribbon({mode:p.era,x0:v.from,x1:v.to,sx:y=>px(v,y),l:M.l,r:W-M.r,W,eras:DB.eras,pms:DB.pms}) : "";
+  return statsFor(v,vs)+chart+rib;
 }
 
 function warningsFor(p,sets){
@@ -2068,7 +2077,7 @@ function panelHtml(p,i){
 
   return `<div class="pcard ${state.focus===i?"is-focus":""} ${lk?"locked":""}" style="--span:${p.w}" data-i="${i}" data-key="${p.key}">
     <div class="pbar">
-      <span class="grip" data-act="grip" title="${lk?"Locked — unlock to move":"Drag to reorder"}">⠿</span>
+      <span class="grip" data-act="grip" tabindex="0" role="button" title="${lk?"Locked — unlock to move":"Drag to move this chart (or use the arrow keys)"}" aria-label="Move chart ${i+1}"><svg viewBox="0 0 16 16" fill="currentColor"><circle cx="5.5" cy="3.5" r="1.4"/><circle cx="10.5" cy="3.5" r="1.4"/><circle cx="5.5" cy="8" r="1.4"/><circle cx="10.5" cy="8" r="1.4"/><circle cx="5.5" cy="12.5" r="1.4"/><circle cx="10.5" cy="12.5" r="1.4"/></svg></span>
       <button class="pi ${open?"on":""}" data-act="cfg" aria-expanded="${open}" title="Chart settings" aria-label="Chart settings">${IC.sliders}</button>
       <button class="pi ${lk?"on":""}" data-act="lock" aria-pressed="${lk}" title="${lk?"Unlock — let this chart move":"Lock this chart in place"}" aria-label="${lk?"Unlock chart":"Lock chart"}">${lk?IC.lock:IC.unlock}</button>
       <button class="pi ${p.table?"on":""}" data-act="tabletoggle" aria-pressed="${!!p.table}" title="${p.table?"Hide the numbers":"Check the numbers behind this chart"}" aria-label="Check the numbers">${IC.table}</button>
@@ -2086,17 +2095,13 @@ function panelHtml(p,i){
       <button class="mi" data-act="png">${IC.png} Download PNG</button>
       <button class="mi" data-act="tabletoggle">${IC.table} ${p.table?"Hide the numbers":"Check the numbers"}</button>
       <div class="msep"></div>
-      <!-- Reordering without a pointer. Drag is fine with a mouse and useless
-           with a keyboard, and roughly nobody discovers it on a phone. -->
-      <button class="mi" data-act="moveback" ${i===0?"disabled":""}>${IC.mvL} Move earlier</button>
-      <button class="mi" data-act="movefwd" ${i===state.panels.length-1?"disabled":""}>${IC.mvR} Move later</button>
-      <div class="msep"></div>
       <button class="mi" data-act="dup">${IC.dup} Duplicate chart</button>
       <button class="mi danger" data-act="del">${IC.del} Remove chart</button>
     </div>
     ${ctrl}${warns}${body}${work}${legend}${p.table&&sets.length&&!AREA_CHARTS.has(p.chart)?verifyHtml(p):""}${foot}
     <div class="rgrip" data-act="rgrip" title="Drag to change height"></div>
-    <span class="hpill">${p.h}px</span>
+    <div class="cgrip" data-act="cgrip" title="Drag to change width and height"></div>
+    <span class="hpill">${wLabel(p.w)} · ${p.h}px</span>
   </div>`;
 }
 
@@ -2356,12 +2361,6 @@ document.getElementById("stack").addEventListener("click",e=>{
   else if(act==="unprobe") state.probe=null;
   else if(act==="charttile") p.chart=actEl.dataset.v;
   else if(act==="pair") p.sel=actEl.dataset.v.split(",");
-  else if(act==="moveback"||act==="movefwd"){
-    const j=act==="moveback"?i-1:i+1;
-    if(j<0||j>=state.panels.length) return;
-    state.panels.splice(j,0,state.panels.splice(i,1)[0]);
-    state.active=j; state.focus=j; state.openMenu=null;
-  }
   else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,src:p.src,gran:p.gran,h:p.h,w:p.w,lvl:p.lvl,asort:p.asort,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
   else if(act==="del"){ state.openMenu=null; state.panels.splice(i,1); lockedKeys.delete(p.key); if(state.openCfg===p.key) state.openCfg=null; state.active=Math.max(0,Math.min(state.active,state.panels.length-1)); state.focus=null; }
   else if(act==="csv"){ state.openMenu=null; exportCsv(i); render(); return; }
@@ -2524,6 +2523,10 @@ document.addEventListener("pointermove",e=>{
     if(d<bestD){ bestD=d; best={kind:"gap", i, span:gap, h:rr.height}; }
   });
 
+  /* The drop slot stands for wherever the chart will land, not where it
+     started. Nearest-to-the-slot therefore means "keep the current target";
+     reading it as "back to the start" undid every drag on release. */
+  if(best && best.kind==="pos" && best.i===drag.index) best=drag.target;
   if(best && JSON.stringify(best)!==JSON.stringify(drag.target)){
     drag.target=best;
     if(best.kind==="pos"){
@@ -2582,7 +2585,7 @@ document.addEventListener("pointerup",()=>{
 let rz=null;
 document.getElementById("stack").addEventListener("pointerdown",e=>{
   const mode=e.target.dataset.act;
-  if(mode!=="rgrip") return;
+  if(mode!=="rgrip"&&mode!=="cgrip") return;
   const card=e.target.closest(".pcard"), i=+card.dataset.i;
   rz={i,mode,y0:e.clientY,x0:e.clientX,h0:state.panels[i].h,w0:state.panels[i].w,card};
   card.classList.add("is-resizing");
@@ -2601,20 +2604,44 @@ document.addEventListener("pointermove",e=>{
   const card=document.querySelector(`.pcard[data-i="${rz.i}"]`);
   if(!card) return;
 
+  /* the corner also sets width, snapped to the widths the grid tiles at */
+  if(rz.mode==="cgrip"){
+    const stackW=document.getElementById("stack").getBoundingClientRect().width;
+    const want=Math.max(3,Math.min(12,(rz.w0/12*stackW + (e.clientX-rz.x0)) / stackW * 12));
+    let w=W_SNAPS[0];
+    W_SNAPS.forEach(s=>{ if(Math.abs(s-want)<Math.abs(w-want)) w=s; });
+    if(w!==p.w){ p.w=w; card.style.setProperty("--span",w); }
+  }
+
   const sets=buildSets(p);
   if(sets.length){
     const holder=card.querySelector(".pbody");
     const chart=drawChart(p,sets);
     if(chart&&holder) holder.innerHTML=chart;
   }
-  const pill=card.querySelector(".hpill"); if(pill) pill.textContent=p.h+"px";
+  const pill=card.querySelector(".hpill"); if(pill) pill.textContent=wLabel(p.w)+" · "+p.h+"px";
 });
 document.addEventListener("pointerup",()=>{
   if(!rz) return;
+  const wasWidth = rz.mode==="cgrip" && state.panels[rz.i] && state.panels[rz.i].w!==rz.w0;
   document.querySelector(`.pcard[data-i="${rz.i}"]`)?.classList.remove("is-resizing");
   document.body.classList.remove("resizing");
   rz=null;
-  writeHash();
+  if(wasWidth) render(); else writeHash();   /* a width change redraws at the new size */
+});
+
+/* Moving without a pointer: the drag handle is focusable, and the arrow keys
+   move its chart one place earlier or later. */
+document.getElementById("stack").addEventListener("keydown",e=>{
+  if(e.target.dataset.act!=="grip") return;
+  const back=e.key==="ArrowUp"||e.key==="ArrowLeft", fwd=e.key==="ArrowDown"||e.key==="ArrowRight";
+  if(!back&&!fwd) return;
+  e.preventDefault();
+  const i=+e.target.closest(".pcard").dataset.i, j=back?i-1:i+1, p=state.panels[i];
+  if(j<0||j>=state.panels.length||lockedKeys.has(p.key)) return;
+  state.panels.splice(j,0,state.panels.splice(i,1)[0]);
+  state.active=j; state.focus=j; render();
+  document.querySelector(`.pcard[data-i="${j}"] [data-act="grip"]`)?.focus();
 });
 
 /* ══════════════════════════════════════════════
@@ -2739,6 +2766,11 @@ const exportCss=th=>`
   .sm-t{font-size:10px;font-weight:500}
   .hit{fill:transparent}
   .hovline,.probeline{display:none}
+  .era rect{opacity:.7}
+  .pmtick{stroke:${th.ink};stroke-width:1;stroke-dasharray:2 2;opacity:.3}
+  .pmlabel{font-size:8.5px;fill:${th.muted}}
+  .eralabel{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:${th.muted}}
+  .elect{fill:${th.ink}}
   .probedot{display:none}
   .baseline{stroke:${th.muted};stroke-width:1;opacity:.75}
   .axunit{font-size:10px;fill:${th.muted}}
@@ -2766,7 +2798,10 @@ function exportPng(i){
   const TH = EXPORT_THEMES[document.documentElement.dataset.theme] || EXPORT_THEMES.light;
 
   const view=viewOf(p,sets), stats=statsData(view,clipSets(sets,view));
-  const PAD=26, TOP=74+(stats.length?40:0), LEGEND=26, SCALE=2, CRED_LH=13;
+  /* line charts name their lines at the ends, so they need no key — the same
+     rule as on screen; a key of long names also ran into itself */
+  const keyed=!(isLineish(p)&&sets.every(x=>x.unit===sets[0].unit));
+  const PAD=26, TOP=74+(stats.length?40:0), LEGEND=keyed?26:0, SCALE=2, CRED_LH=13;
   const inner=svgs.map(s=>{
     const vb=s.getAttribute("viewBox").split(/\s+/).map(Number);
     return {markup:s.innerHTML, w:vb[2], h:vb[3]};
@@ -2791,7 +2826,7 @@ function exportPng(i){
     parts+=`<svg x="${PAD}" y="${y}" width="${W}" height="${s.h}" viewBox="0 0 ${s.w} ${s.h}">${s.markup}</svg>`;
     y+=s.h+8;
   });
-  const legend=sets.map((s,k)=>{
+  const legend=!keyed?"":sets.map((s,k)=>{
     const x=PAD+k*Math.min(300,(W)/sets.length);
     return `<rect x="${x}" y="${y+6}" width="13" height="3" fill="${s.colour}"/>`+
            `<text class="cred" x="${x+18}" y="${y+11}">${esc(s.name)} — ${esc(s.unit)}</text>`;
@@ -2844,9 +2879,8 @@ function readHash(){
   if(q.get("p")){
     const panels=decodeURIComponent(q.get("p")).split(";").map(chunk=>{
       const [sel,chart,trans,from,to,era,h,w,gran,ttl,lvl,asort,tbl,src]=chunk.split("~");
-      /* older links stored a ribbon mode (1/0, party, pm, elections); anything
-         but off now means shaded */
-      const eraMode = (era==="0"||era==="off") ? "off" : "bands";
+      /* the oldest links stored the government setting as 1/0 */
+      const eraMode = era==="0" ? "off" : ERA_MODES.some(m=>m[0]===era) ? era : "bands";
       return mkPanel((sel||"").split(",").filter(id=>S(id)),
         {chart:chart||"line",trans:trans||"index",from:+from||1997,to:+to||2026,
          era:eraMode,src:SRC_STYLES.some(x=>x[0]===src)?src:pageSrc,gran:(GRANS.some(g=>g[0]===gran)?gran:"years"),
@@ -2867,7 +2901,6 @@ function readHash(){
   try{ if(localStorage.getItem("polyoptic-side")==="collapsed") document.body.classList.add("side-collapsed"); }catch(e){}
   const set=c=>{ document.body.classList.toggle("side-collapsed",c);
     try{ localStorage.setItem("polyoptic-side", c?"collapsed":"open"); }catch(e){} };
-  document.getElementById("sideHide").onclick=()=>set(true);
   document.getElementById("sideHideTop").onclick=()=>set(true);
   document.getElementById("sideOpen").onclick=()=>set(false);
 })();
@@ -2917,6 +2950,7 @@ const GUIDE=[
   {t:"Who was in power, and sources", sel:['.cfgpanel select[data-act="era"]','.cfgpanel'],
    setup:()=>{const p=P0(); if(p) state.openCfg=p.key;},
    li:[["",`<b>Government</b> shades each prime minister behind the chart in their party's colour, or switches it off.`],
+       ["",`It can also be a ribbon under the chart instead — by party, with prime ministers, or with general elections marked.`],
        ["",`<b>Sources</b> sets how this chart credits its data — a short line, full Harvard citations, or off. It applies to the chart's PNG and CSV as well.`]]},
   {t:"Check the numbers", sel:['.pcard [data-act="tabletoggle"]'], setup:()=>{state.openCfg=null;},
    li:[[gi(IC.table),`Opens a table under the chart: every year's published figure, the value plotted, and the sum in between — with links to the source.`]]},
@@ -2927,11 +2961,11 @@ const GUIDE=[
   {t:"Rename it", sel:['.pcard .ptitle'], setup:()=>{state.openMenu=null;},
    li:[[gi(IC.pen),`Click a chart's title to rename it. Your own title survives changing the indicators underneath it.`]]},
   {t:"Move, size and pin", sel:['.pcard .grip'],
-   li:[[gi(IC.dup),`Drag this handle to reorder the stack. Drag a chart's <b>right</b> or <b>bottom</b> edge to resize it, and the padlock pins it so neither happens by accident.`]]},
+   li:[["",`Drag this handle to move a chart anywhere in the grid — or focus it and use the arrow keys. Drag a chart's <b>bottom edge</b> for height, or its <b>bottom-right corner</b> for width and height. The padlock pins a chart so none of this happens by accident.`]]},
   {t:"More charts", sel:["#addBottom"],
    li:[["",`Start a fresh chart. They stack down the page and each one keeps its own settings.`]]},
-  {t:"Room to work", sel:["#sideHide"],
-   li:[["",`Collapses the indicator panel and gives the charts the full width. The rail on the left edge brings it back.`]]},
+  {t:"Room to work", sel:["#sideHideTop"],
+   li:[["",`Hides the indicator panel so the charts get the full width, and moves the sources into a column on the right. The tab on the left edge brings the panel back.`]]},
   {t:"Where it all came from", sel:["#srcs"],
    li:[["",`Every source behind the chart you're editing: the release it came from, what it covers, how it was published, and every published value.`]]},
   {t:"Take it with you", sel:["#copyLink"],
