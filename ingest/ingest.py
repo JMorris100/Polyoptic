@@ -159,10 +159,11 @@ FLAG_LABELS = {
     "definition":   "Definition changed",
     "partial":      "Partial period",
     "provisional":  "Provisional",
+    "development":  "In development",
     "geography":    "Sub-UK coverage",
 }
 # Most misleading first. The badge shows the first that applies.
-FLAG_ORDER = ["discontinued", "definition", "partial", "provisional", "geography"]
+FLAG_ORDER = ["discontinued", "definition", "partial", "provisional", "development", "geography"]
 
 FLAG_PATTERNS = {
     "discontinued": r"discontinu|replaced by|no longer (?:published|collected)|final year",
@@ -172,6 +173,9 @@ FLAG_PATTERNS = {
     "partial":      r"partial|part[- ]year|incomplete year|to date",
     "provisional":  r"provisional|subject to revision|early estimate|revised later|"
                     r"outcome-assignment lag|assignment lag",
+    # ONS's own status for statistics whose method is still being settled
+    # (formerly "experimental statistics")
+    "development":  r"statistics? in development|experimental statistic",
 }
 
 
@@ -220,6 +224,11 @@ class Series:
     # The final year, when the source is only part-way through it:
     # {year, have, of, unit, label, how, value, plotted}. See partial_year().
     partial: dict | None = None
+    # How a sub-annual source became one value a year: {how: mean|last|sum,
+    # per: 12|4}. None for sources published annually. Pages label figures
+    # with it ("2025 average", "Dec 2025"), so a reader checking one against
+    # the publisher's monthly table knows which figure to look for.
+    annual: dict | None = None
 
     def validate(self) -> None:
         if self.year_basis not in {"calendar", "financial", "academic"}:
@@ -1357,6 +1366,12 @@ def build_series(spec: dict) -> Series:
         by_year = {y: v * spec["sign"] for y, v in by_year.items()}
     part = partial_year(_ANNUAL.get("counts", {}), _ANNUAL.get("how", "mean"),
                         spec.get("year_basis", "calendar")) if _ANNUAL else None
+    annual = None
+    if _ANNUAL.get("counts"):
+        ns = list(_ANNUAL["counts"].values())
+        per = max(set(ns), key=ns.count)
+        if per > 1:
+            annual = {"how": _ANNUAL.get("how", "mean"), "per": per}
     if part:
         part["value"] = by_year.get(part["year"])
         # A part-year TOTAL is not comparable with whole-year totals — 4,441
@@ -1373,6 +1388,7 @@ def build_series(spec: dict) -> Series:
     s = series_from_spec(spec, start, values,
                          fetched=datetime.now(timezone.utc).isoformat(timespec="seconds"),
                          source_api=spec["fetch"].get("_resolved_url", ""))
+    s.annual = annual
     if part:
         s.partial = part
         if "partial" not in s.flags and spec.get("flags") is None:
@@ -1416,6 +1432,7 @@ def carry_forward(spec: dict, old: dict) -> Series:
                          fetched=old.get("fetched", ""), source_api=old.get("source_api", ""))
     s.areas = bool(old.get("areas", False))
     s.partial = old.get("partial")
+    s.annual = old.get("annual")
     if s.partial and "partial" not in s.flags and spec.get("flags") is None:
         s.flags = [f for f in FLAG_ORDER if f in set(s.flags) | {"partial"}]
     s.stale = True

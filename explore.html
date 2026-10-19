@@ -526,9 +526,11 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .fchip.f-discontinued{color:#9B1C1C;border-color:#E9B7B7;background:#FDF0F0}
 .fchip.f-definition{color:#92400E;border-color:#EBCFA6;background:#FFF6EA}
 .fchip.f-partial{color:#7A5A0A;border-color:#E4D4A0;background:#FFFAEC}
+.fchip.f-development{color:#2B4A6F;border-color:#CFDDED;background:#EEF4FB}
 html[data-theme="dark"] .fchip.f-discontinued{color:#F0A0A0;border-color:#5A2323;background:#301414}
 html[data-theme="dark"] .fchip.f-definition{color:#EDBE86;border-color:#553C13;background:#2E2109}
 html[data-theme="dark"] .fchip.f-partial{color:#E4CE88;border-color:#4A3E14;background:#2A2308}
+html[data-theme="dark"] .fchip.f-development{color:#A9C2DE;border-color:#2C3C50;background:#17222F}
 .srcdet{padding:4px 0 2px 21px}
 .sdnote{padding:9px 12px;background:var(--warnbg);border-left:3px solid var(--warn);
   color:var(--warn-ink);font-size:12.5px;line-height:1.45;margin-bottom:11px}
@@ -1178,6 +1180,12 @@ function yearWorkingHtml(p,sets){
     const ref=w.step.ref&&refHref(w.step.ref)?` · <a href="${esc(refHref(w.step.ref))}" target="_blank" rel="noopener">${esc(REF_META[w.step.ref].name)}${refCdid(w.step.ref)?" ("+refCdid(w.step.ref)+")":""} ↗</a>`:"";
     const notes=[];
     if(w.skipped) notes.push(`Not adjusted: ${esc(s.name)} is already a rate or index, so this is the published figure.`);
+    /* a monthly or quarterly source: say which published figure this year is */
+    if(s.annual){ const a=s.annual, per=a.per===12?"monthly":"quarterly",
+        endM={financial:"March",academic:"August"}[s.year_basis]||"December";
+      notes.push(a.how==="mean"?`The average of the ${per} figures for the year.`:
+                 a.how==="sum"?`The total of the ${per} figures for the year.`:
+                 a.how==="last"?(a.per===12?`The ${endM} figure — the last month of the year.`:"The last quarter of the year."):""); }
     if(w.interpolated) notes.push(`Between two annual figures — estimated for the ${esc(p.gran)} view, not published.`);
     /* one short line saying what the numbers are, used when the working sits
        beside the chart and the per-number labels are hidden to save height */
@@ -2322,7 +2330,7 @@ function verifyHtml(p){
     ${notes.map(n=>`<p class="vnote">${n}</p>`).join("")}
     <div class="vscroll"><table class="vtbl"><thead><tr>${head1}</tr>${transformed?`<tr>${head2}</tr>`:`<tr></tr>`}</thead><tbody>${rows}</tbody></table></div>
     <div class="vsrcs">${srcs}</div>
-    <div class="vfoot">Published values are annual: where a source publishes monthly or quarterly, the pipeline averages to one value per year. Compare against the annual figure where the source gives one.
+    <div class="vfoot">Published values are annual. Where a source publishes monthly or quarterly, each year is the average, the last month or the total, whichever the measure calls for, and the working above says which. Compare against that figure in the source.
       <button class="vcsv" data-act="csv">${IC.csv} Download chart data (CSV)</button></div>
   </div>`;
 }
@@ -2633,7 +2641,7 @@ document.addEventListener("pointerdown",e=>{
    content as a Verify row, scoped to what is on screen. */
 const srcOpen=new Set();
 const FLAG_LABEL={discontinued:"Discontinued",definition:"Definition changed",
-  partial:"Partial period",provisional:"Provisional",geography:"Sub-UK coverage"};
+  partial:"Partial period",provisional:"Provisional",development:"In development",geography:"Sub-UK coverage"};
 const flagChips=m=>(m.flags||[]).filter(f=>FLAG_LABEL[f])
   .map(f=>`<span class="fchip f-${f}">${FLAG_LABEL[f]}</span>`).join("");
 
