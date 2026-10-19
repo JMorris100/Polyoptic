@@ -115,8 +115,6 @@ svg{display:block}
 section{padding:60px 0;border-top:1px solid var(--rule)}
 .slabel{display:flex;align-items:baseline;gap:13px;margin-bottom:24px;flex-wrap:wrap}
 section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
-.topiclinks{font-size:13.5px;color:var(--muted);margin:16px 0 0;line-height:1.7}
-.topiclinks a{color:var(--purple)}
 .lede.mono{font-family:"IBM Plex Mono";font-size:12px;letter-spacing:.02em;margin-top:-14px}
 /* ── the walkthrough and how it works, side by side ─────────────────
    The walkthrough plays on the left; the stages run down the right and light
@@ -346,9 +344,10 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 @media(max-width:760px){.pairs{grid-template-columns:1fr}}
 .pair{background:var(--surface);padding:22px;text-decoration:none;transition:.14s}
 .pair:hover{background:var(--soft)}
-.pair .pq{font-family:"IBM Plex Sans";font-weight:700;font-size:17px;letter-spacing:-0.025em;margin-bottom:8px}
-.pair .pm{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);line-height:1.7}
-.pair .pm b{color:var(--purple);font-weight:500}
+.pair{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;min-height:118px;color:var(--ink)}
+.pair .pq{font-family:"IBM Plex Sans";font-weight:700;font-size:21px;line-height:1.2;letter-spacing:-0.025em}
+.pair::after{content:"→";font-size:20px;color:var(--purple);transition:transform .15s}
+.pair:hover::after{transform:translateX(4px)}
 
 footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px solid var(--rule)}
 .fgrid{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap}
@@ -491,19 +490,17 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
 <section id="questions">
   <div class="wrap">
     <div class="slabel"><h2>Questions worth asking</h2></div>
-    <p class="lede">Each one is a claim you have heard, the number behind it, and what that
-      number does and does not show. Open any of them in the explorer and change the
-      assumptions yourself.</p>
+    <p class="lede">Questions people actually ask, answered with the official numbers. Open one for the chart, the caveats and the working.</p>
     <div class="pairs">
       <!-- These point at /q/ pages rather than straight into the explorer.
            Chart state lives in the URL fragment, which never reaches a server,
            so an explorer link cannot unfurl as the chart it opens — every one
            of them would preview identically. A real URL per question gets a
            real card, and a slug someone might actually search for. -->
-      <a class="pair" href="q/has-pay-kept-up-with-prices/"><div class="pq">Has pay kept up with prices?</div><div class="pm"><b>Average weekly earnings</b> × <b>CPIH</b>, both rebased<br>2000–2026 · UK</div></a>
-      <a class="pair" href="q/have-rents-outrun-pay/"><div class="pq">Have rents outrun pay?</div><div class="pm"><b>Private rents index</b> × <b>average weekly earnings</b>, both rebased<br>2015–2026 · UK</div></a>
-      <a class="pair" href="q/what-does-the-debt-cost-to-carry/"><div class="pq">What does the debt cost to carry?</div><div class="pm"><b>Public sector net debt</b> × <b>debt interest</b>, both rebased<br>1993–2026 · UK</div></a>
-      <a class="pair" href="q/did-lost-schooling-widen-the-gap/"><div class="pq">Did lost schooling widen the attainment gap?</div><div class="pm"><b>Persistent absence</b> × <b>disadvantage gap index</b>, both rebased<br>2010–2026 · England</div></a>
+      <a class="pair" href="q/has-pay-kept-up-with-prices/"><div class="pq">Has pay kept up with prices?</div></a>
+      <a class="pair" href="q/have-rents-outrun-pay/"><div class="pq">Have rents outrun pay?</div></a>
+      <a class="pair" href="q/what-does-the-debt-cost-to-carry/"><div class="pq">What does the debt cost to carry?</div></a>
+      <a class="pair" href="q/did-lost-schooling-widen-the-gap/"><div class="pq">Did lost schooling widen the attainment gap?</div></a>
     </div>
   </div>
 </section>
@@ -534,7 +531,6 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
       <a class="node" data-topic="environment" href="#"><div class="trow"><span class="tico" data-icon="environment"></span><span class="tn">Environment &amp; Energy</span></div><div class="tc"></div><div class="td">Emissions, the electricity mix, energy use, recycling and sewage spills.</div></a>
       <a class="node" data-topic="migration" href="#"><div class="trow"><span class="tico" data-icon="migration"></span><span class="tn">Population &amp; Migration</span></div><div class="tc"></div><div class="td">Population, births, deaths and fertility, migration, visas and asylum.</div></a>
     </div>
-    <p class="topiclinks">Read about each indicator, with every published year and its source: <a href="topic/economy/">Economy</a> · <a href="topic/housing/">Housing</a> · <a href="topic/education/">Education</a> · <a href="topic/health/">Health</a> · <a href="topic/crime/">Crime &amp; justice</a> · <a href="topic/transport/">Transport</a> · <a href="topic/environment/">Environment &amp; energy</a> · <a href="topic/migration/">Population &amp; migration</a> · <a href="indicator/">all of them, A–Z</a></p>
   </div>
 </section>
 
