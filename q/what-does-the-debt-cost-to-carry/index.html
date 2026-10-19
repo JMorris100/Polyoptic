@@ -176,14 +176,14 @@ fetch("../../data/bundle.json",{cache:"no-cache"}).then(r=>r.ok?r.json():Promise
   const g=[];
   for(let i=0;i<=4;i++){const y=M.t+i*(H-M.t-M.b)/4,v=mx-(mx-mn)*i/4;
     g.push(`<line x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}" stroke="var(--rule)" stroke-width="1" opacity=".7"/>`);
-    g.push(`<text x="${M.l-9}" y="${y+3.5}" text-anchor="end" font-family="IBM Plex Mono" font-size="10" fill="var(--muted)">${fmt(v)}</text>`);}
+    g.push(`<text x="${M.l-9}" y="${y+4}" text-anchor="end" font-family="IBM Plex Sans" font-size="11.5" style="font-variant-numeric:tabular-nums" fill="var(--muted)">${fmt(v)}</text>`);}
   const step=(x1-x0)>24?5:(x1-x0)>12?2:1;
   for(let yr=Math.ceil(x0/step)*step;yr<=x1;yr+=step)
-    g.push(`<text x="${PX(yr)}" y="${H-7}" text-anchor="middle" font-family="IBM Plex Mono" font-size="10" fill="var(--muted)">${yr}</text>`);
+    g.push(`<text x="${PX(yr)}" y="${H-7}" text-anchor="middle" font-family="IBM Plex Sans" font-size="11.5" fill="var(--muted)">${yr}</text>`);
   sets.forEach(s=>{
     g.push(`<path d="M${s.pts.map(q=>PX(q[0]).toFixed(1)+" "+PY(q[1]).toFixed(1)).join(" L")}" fill="none" stroke="${s.colour}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`);
     const last=s.pts[s.pts.length-1];
-    g.push(`<text x="${W-M.r+7}" y="${PY(last[1])+3.5}" font-family="IBM Plex Mono" font-size="10.5" font-weight="500" fill="${s.colour}">${fmt(last[1])}</text>`);
+    g.push(`<text x="${W-M.r+7}" y="${PY(last[1])+3.5}" font-family="IBM Plex Sans" font-size="11.5" font-weight="600" fill="${s.colour}">${fmt(last[1])}</text>`);
   });
   document.getElementById("chart").innerHTML=
     `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="What does the debt cost to carry?">${g.join("")}</svg>`;

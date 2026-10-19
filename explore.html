@@ -743,7 +743,7 @@ const PLACEHOLDER = {
   series:[
     {id:"hpe",name:"House price to earnings ratio",topics:["housing"],unit:"ratio",geography:"England & Wales",year_basis:"calendar",source:"ONS / HM Land Registry",licence:"OGL v3.0",kind:"ratio",start:1997,
      values:[3.5,3.8,4.2,4.6,5.0,5.6,6.2,6.6,6.8,7.0,7.3,6.8,6.4,6.6,6.5,6.5,6.6,6.9,7.2,7.5,7.7,7.8,7.8,7.7,8.2,8.7,8.9,8.6,8.5,8.4]},
-    {id:"realpay",name:"Real median weekly pay",topics:["economy"],unit:"£/week, 2024 prices",geography:"UK",year_basis:"calendar",source:"ONS ASHE",licence:"OGL v3.0",kind:"money_real",start:1997,
+    {id:"realpay",name:"Real median weekly pay",topics:["work"],unit:"£/week, 2024 prices",geography:"UK",year_basis:"calendar",source:"ONS ASHE",licence:"OGL v3.0",kind:"money_real",start:1997,
      values:[452,463,472,484,497,507,516,525,533,538,545,542,530,524,514,508,504,506,516,523,527,531,538,545,540,524,519,528,536,542]},
     {id:"completions",name:"Net additional dwellings",topics:["housing"],unit:"dwellings",geography:"England",year_basis:"financial",source:"MHCLG live tables",licence:"OGL v3.0",kind:"count",start:1997,
      values:[150,155,148,142,140,148,163,178,193,203,214,207,145,137,134,125,137,171,190,217,222,241,243,216,217,234,235,221,215,210],
@@ -762,9 +762,9 @@ const PLACEHOLDER = {
      discontinuities:[{year:2020,note:"Attendance recording and school opening rules changed; series is not comparable across this point"}]},
     {id:"teachers",name:"Teacher vacancies",topics:["education"],unit:"vacancies per 1,000 teachers",geography:"England",year_basis:"academic",source:"DfE Explore Education Statistics",licence:"OGL v3.0",kind:"rate",start:2010,
      values:[0.7,0.8,0.9,1.0,1.2,1.3,1.4,1.4,1.5,1.4,1.6,2.1,2.4,2.3,2.2,2.1]},
-    {id:"cpih",name:"CPIH",topics:["economy"],unit:"index, 2015=100",geography:"UK",year_basis:"calendar",source:"ONS",licence:"OGL v3.0",kind:"index",start:1997,
+    {id:"cpih",name:"CPIH",topics:["work"],unit:"index, 2015=100",geography:"UK",year_basis:"calendar",source:"ONS",licence:"OGL v3.0",kind:"index",start:1997,
      values:[69.2,70.5,71.5,72.3,73.2,74.3,75.6,77.0,78.5,80.3,82.2,84.6,85.9,88.0,91.2,93.4,95.5,97.2,97.5,98.5,100.9,103.1,104.9,105.9,108.6,117.6,126.0,130.2,133.5,136.4]},
-    {id:"unemp",name:"Unemployment rate",topics:["economy"],unit:"% of workforce",geography:"UK",year_basis:"calendar",source:"ONS",licence:"OGL v3.0",kind:"rate",start:1997,
+    {id:"unemp",name:"Unemployment rate",topics:["work"],unit:"% of workforce",geography:"UK",year_basis:"calendar",source:"ONS",licence:"OGL v3.0",kind:"rate",start:1997,
      values:[7.0,6.3,6.0,5.5,5.1,5.2,5.0,4.8,4.8,5.4,5.3,5.7,7.6,7.9,8.1,7.9,7.6,6.2,5.4,4.9,4.4,4.1,3.8,4.6,4.5,3.7,4.0,4.3,4.4,4.5]},
     {id:"debtint",name:"Debt interest spending",topics:["economy"],unit:"£bn, cash",geography:"UK",year_basis:"financial",source:"HM Treasury / OBR",licence:"OGL v3.0",kind:"money_cash",start:1997,
      values:[29,29,25,26,22,21,23,24,26,28,30,31,31,44,49,48,49,49,45,48,54,50,48,39,71,111,94,105,110,112]}
@@ -840,7 +840,7 @@ const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["rel","Re
 /* government in power: shaded behind the data, a ribbon under it, or off */
 const ERA_MODES = [["bands","Shaded behind chart"],["party","Ribbon: party"],["pm","Ribbon: party and PMs"],["elections","Ribbon: elections"],["off","Off"]];
 const RIBBONS = new Set(["party","pm","elections"]);
-const TOPICS = [["economy","Economy"],["housing","Housing"],["education","Education"],["health","Health"],
+const TOPICS = [["work","Work, pay & living standards"],["economy","Economy & public finances"],["housing","Housing"],["education","Education"],["health","Health"],
   ["crime","Crime & justice"],["transport","Transport"],["environment","Environment & energy"],["migration","Population & migration"]];
 const topicName=t=>t==="all"?"All":((TOPICS.find(x=>x[0]===t)||[])[1]||t.charAt(0).toUpperCase()+t.slice(1));
 const GRANS = [["years","Years"],["quarters","Quarters"],["months","Months"],["days","Days"]];
@@ -3197,13 +3197,13 @@ const EXPORT_THEMES={
 
 };
 const exportCss=th=>`
-  text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
   .gridline{stroke:${th.grid};stroke-width:1;opacity:.7}
-  .axlabel{font-size:10px;fill:${th.muted}}
+  .axlabel{font-size:11.5px;fill:${th.muted}}
   .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
   .nodata{fill:${th.ink};opacity:.045}
   .nodatat{opacity:.75;letter-spacing:.04em}
-  .sm-t{font-size:10px;font-weight:500}
+  .sm-t{font-size:11.5px;font-weight:600}
   .hit{fill:transparent}
   .arealbl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:12px;fill:${th.ink}}
   .areaval,.areahead{font-size:10.5px;fill:${th.muted}}
@@ -3214,14 +3214,14 @@ const exportCss=th=>`
   .hovline,.probeline{display:none}
   .era rect{opacity:.7}
   .pmtick{stroke:${th.ink};stroke-width:1;stroke-dasharray:2 2;opacity:.3}
-  .pmlabel{font-size:8.5px;fill:${th.muted}}
-  .eralabel{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:${th.muted}}
+  .pmlabel{font-size:10px;fill:${th.muted}}
+  .eralabel{font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;fill:${th.muted}}
   .elect{fill:${th.ink}}
   .probedot{display:none}
   .baseline{stroke:${th.muted};stroke-width:1;opacity:.75}
-  .axunit{font-size:10px;fill:${th.muted}}
+  .axunit{font-size:11.5px;font-weight:500;fill:${th.muted}}
   .endlbl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:11px;font-weight:600}
-  .endval{font-size:10px;fill:${th.muted}}
+  .endval{font-size:11px;fill:${th.muted}}
   .brk{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:10px;fill:${th.warn}}
   .brkline{stroke:${th.warn};stroke-width:1;stroke-dasharray:2 2}
   .hollow{fill:${th.bg}}
@@ -3229,7 +3229,7 @@ const exportCss=th=>`
   .leader{fill:none;stroke-width:1;opacity:.45}
   .band{fill-opacity:${th.bg==="#ffffff"?.07:.09}}
   .banddiv{stroke:${th.grid};stroke-width:1}
-  .bandlbl{font-size:9px;fill:${th.muted}}
+  .bandlbl{font-size:10px;font-weight:500;fill:${th.muted}}
   .stat{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:24px}
   .ttl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:19px;fill:${th.ink}}
   .sub{font-size:11px;fill:${th.muted}}

@@ -244,7 +244,7 @@ against the live catalogues on 2026-08-05, and the spreadsheet sources on
 and justice, transport, environment, local statistics, headline ONS economic
 and labour-market series (GDP, inflation, employment, productivity, public
 finances, trade), and the three reference series — 198 indicators in one
-catalogue, filed under the homepage's eight topics. Of those, 116 come from
+catalogue, filed under the homepage's nine topics. Of those, 116 come from
 ONS Explore Local Statistics with figures for every local area, and 27 of
 those are `snapshot` series, published for one or two years only, which the
 explorer opens as a map rather than a trend. National series added in
@@ -335,15 +335,15 @@ nearly empty until the script runs, so `ingest/pages.py` writes pages a search
 engine can read without running anything: `indicator/<slug>/` for every series
 (latest figure, a chart drawn as SVG, every published year, the source, notes
 and breaks, the highest and lowest local areas where there are any, and a
-`data.csv`), `topic/<topic>/` for each of the eight topics, an A–Z at
+`data.csv`), `topic/<topic>/` for each of the nine topics, an A–Z at
 `indicator/`, and `sitemap.xml` with all of them. Indicator pages carry
 schema.org `Dataset` markup, so they can appear in Google Dataset Search. The
 weekly refresh runs it after `ingest.py`; run it by hand after a manual
 rebuild. Slugs come from the series name and are written to `data/pages.json`.
 
 **The share images are generated in a browser**, not by the build: open
-`og/build.html` from the dev server, click *Download all*, and drop the sixteen
-PNGs into `og/` (four for the main pages, eight for the topics, four for the
+`og/build.html` from the dev server, click *Download all*, and drop the seventeen
+PNGs into `og/` (four for the main pages, nine for the topics, four for the
 questions). Filenames match the `og:image` tags — don't rename them. They
 are drawn on a canvas from `bundle.json`, so the comparison cards show the real
 current chart, and they need re-running when a chart changes materially.

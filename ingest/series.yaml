@@ -76,7 +76,7 @@ series:
   # ── HOUSING ──────────────────────────────────────────────
   - id: rents
     name: Private rents index (IPHRP)
-    topics: [housing, economy]
+    topics: [housing, work]
     unit: index, Jan 2015=100
     kind: index
     geography: UK
@@ -98,7 +98,7 @@ series:
   # ── ECONOMY ──────────────────────────────────────────────
   - id: cpih
     name: CPIH
-    topics: [economy]
+    topics: [work]
     unit: index, 2015=100
     kind: index
     geography: UK
@@ -110,7 +110,7 @@ series:
 
   - id: unemp
     name: Unemployment rate
-    topics: [economy]
+    topics: [work]
     unit: "% of workforce"
     kind: rate
     geography: UK
@@ -124,7 +124,7 @@ series:
 
   - id: pay
     name: Average weekly earnings (total pay)
-    topics: [economy]
+    topics: [work]
     unit: "£ per week, cash"
     kind: money_cash
     geography: UK
@@ -957,7 +957,7 @@ series:
 
   - id: claimants
     name: Claimant Count
-    topics: [economy]
+    topics: [work]
     unit: "%"
     kind: rate
     geography: UK
@@ -978,7 +978,7 @@ series:
 
   - id: inactive
     name: Economic inactivity rate
-    topics: [economy]
+    topics: [work]
     unit: "%"
     kind: rate
     geography: Great Britain
@@ -997,7 +997,7 @@ series:
 
   - id: emprate
     name: Employment rate
-    topics: [economy]
+    topics: [work]
     unit: "%"
     kind: rate
     geography: Great Britain
@@ -1034,7 +1034,7 @@ series:
 
   - id: gdhi
     name: Gross disposable household income per head
-    topics: [economy, housing]
+    topics: [work, housing]
     unit: "£"
     kind: money_cash
     geography: UK
@@ -1085,7 +1085,7 @@ series:
 
   - id: paymed
     name: Gross median weekly pay
-    topics: [economy]
+    topics: [work]
     unit: "£"
     kind: money_cash
     geography: UK
@@ -1541,7 +1541,7 @@ series:
 
   - id: cpi
     name: CPI inflation rate
-    topics: [economy]
+    topics: [work]
     unit: "% change on a year earlier"
     kind: rate
     geography: UK
@@ -1555,7 +1555,7 @@ series:
 
   - id: rpi
     name: RPI inflation rate
-    topics: [economy]
+    topics: [work]
     unit: "% change on a year earlier"
     kind: rate
     geography: UK
@@ -1570,7 +1570,7 @@ series:
 
   - id: oohcosts
     name: Owner occupiers' housing costs
-    topics: [housing, economy]
+    topics: [housing, work]
     unit: "index, 2015=100"
     kind: index
     geography: UK
@@ -1584,7 +1584,7 @@ series:
 
   - id: emplfs
     name: Employment rate, 16 to 64 (LFS)
-    topics: [economy]
+    topics: [work]
     unit: "% of people aged 16 to 64"
     kind: rate
     geography: UK
@@ -1600,7 +1600,7 @@ series:
 
   - id: inactivity
     name: Economic inactivity rate, 16 to 64 (LFS)
-    topics: [economy, health]
+    topics: [work, health]
     unit: "% of people aged 16 to 64"
     kind: rate
     geography: UK
@@ -1617,7 +1617,7 @@ series:
 
   - id: youthunemp
     name: Youth unemployment rate
-    topics: [economy, education]
+    topics: [work, education]
     unit: "% of economically active 16 to 24 year olds"
     kind: rate
     geography: UK
@@ -1631,7 +1631,7 @@ series:
 
   - id: vacancies
     name: Job vacancies
-    topics: [economy]
+    topics: [work]
     unit: "thousands"
     kind: count
     geography: UK
@@ -1643,7 +1643,7 @@ series:
 
   - id: realpay
     name: Average weekly earnings (real)
-    topics: [economy]
+    topics: [work]
     unit: "£ per week, constant prices"
     kind: money_real
     geography: UK
@@ -2447,7 +2447,7 @@ series:
   - id: inactiveni
     name: Economic inactivity rate (Northern Ireland)
     topics:
-    - economy
+    - work
     unit: '%'
     kind: rate
     geography: Northern Ireland
@@ -2467,7 +2467,7 @@ series:
   - id: emprateni
     name: Employment rate (Northern Ireland)
     topics:
-    - economy
+    - work
     unit: '%'
     kind: rate
     geography: Northern Ireland
@@ -2487,7 +2487,7 @@ series:
   - id: unempmodel
     name: Modelled unemployment rate
     topics:
-    - economy
+    - work
     unit: '%'
     kind: rate
     geography: Great Britain
@@ -2504,7 +2504,7 @@ series:
   - id: jobdensity
     name: Job density
     topics:
-    - economy
+    - work
     unit: jobs per resident aged 16 to 64
     kind: ratio
     geography: Great Britain
@@ -2521,7 +2521,7 @@ series:
   - id: childpovbhc
     name: Children in relative poverty before housing costs
     topics:
-    - economy
+    - work
     unit: '%'
     kind: rate
     geography: UK
@@ -2538,7 +2538,7 @@ series:
   - id: childpovahc
     name: Children in relative poverty after housing costs
     topics:
-    - economy
+    - work
     unit: '%'
     kind: rate
     geography: UK

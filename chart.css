@@ -5,18 +5,20 @@
 
 /* Grid recedes: it is scaffolding for reading a value, not a mark. */
 .gridline{stroke:var(--rule);stroke-width:1;opacity:.7}
-.axlabel{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;fill:var(--muted)}
+/* Labels in the body face with even-width figures: easier to read at small
+   sizes than the monospace, and the numbers still line up. */
+.axlabel{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11.5px;font-variant-numeric:tabular-nums;fill:var(--muted)}
 .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
 /* a stronger line at 100 on an index, or 0 when the data crosses it */
 .baseline{stroke:var(--muted);stroke-width:1;opacity:.75}
-.axunit{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;fill:var(--muted)}
+.axunit{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11.5px;font-weight:500;fill:var(--muted)}
 .nodata{fill:var(--ink);opacity:.045}
 .nodatat{opacity:.75;letter-spacing:.04em}
-.sm-t{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;font-weight:500}
+.sm-t{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11.5px;font-weight:600}
 
 /* names at the line ends, and breaks drawn on the line */
 .endlbl{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11px;font-weight:600}
-.endval{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;fill:var(--muted)}
+.endval{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11px;font-variant-numeric:tabular-nums;fill:var(--muted)}
 .brk{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:10px;fill:var(--warn)}
 .brkline{stroke:var(--warn);stroke-width:1;stroke-dasharray:2 2}
 .hollow{fill:var(--surface)}
@@ -27,7 +29,7 @@
 .band{fill-opacity:.07}
 html[data-theme="dark"] .band{fill-opacity:.09}
 .banddiv{stroke:var(--rule);stroke-width:1}
-.bandlbl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9px;fill:var(--muted)}
+.bandlbl{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:10px;font-weight:500;fill:var(--muted)}
 
 /* the source line under a chart: where the numbers come from in plain
    sentence case, then the facts about this view, quieter underneath */
@@ -39,6 +41,6 @@ html[data-theme="dark"] .band{fill-opacity:.09}
 .ribbon-t{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:10px 0 5px}
 .era rect{opacity:.7}.era:hover rect{opacity:1}
 .pmtick{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2;opacity:.3}
-.pmlabel{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:8.5px;fill:var(--muted)}
-.eralabel{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:var(--muted)}
+.pmlabel{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:10px;fill:var(--muted)}
+.eralabel{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;fill:var(--muted)}
 .elect{fill:var(--purple)}

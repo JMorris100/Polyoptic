@@ -72,16 +72,19 @@ const tickFmt=(v,st)=>{let d=0; while(d<6&&Math.abs(st*10**d-Math.round(st*10**d
 
 /* Gridlines, y labels, year labels and the unit as a line of text above the
    plot rather than rotated up the side. `base` is drawn stronger.
-   o: {g, ax, Y, x0, x1, sx, l, r, bot, H, label, base} */
+   o: {g, ax, Y, x0, x1, sx, l, r, bot, H, label, base, noX}
+   noX leaves out the years, for a y axis drawn on its own while it animates */
 function frame(o){
   const {g,ax,Y,l,r}=o;
   const same=(v,b)=>b!=null&&Math.abs(v-b)<ax.st/1e6;
   ax.ticks.forEach(v=>{
     g.push(`<line class="${same(v,o.base)?"baseline":"gridline"}" x1="${l}" y1="${Y(v).toFixed(1)}" x2="${r}" y2="${Y(v).toFixed(1)}"/>`);
-    g.push(`<text class="axlabel" x="${l-9}" y="${(Y(v)+3.5).toFixed(1)}" text-anchor="end">${tickFmt(v,ax.st)}</text>`);
+    g.push(`<text class="axlabel" x="${l-9}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${tickFmt(v,ax.st)}</text>`);
   });
   if(o.base!=null&&o.base>ax.mn&&o.base<ax.mx&&!ax.ticks.some(v=>same(v,o.base)))
     g.push(`<line class="baseline" x1="${l}" y1="${Y(o.base).toFixed(1)}" x2="${r}" y2="${Y(o.base).toFixed(1)}"/>`);
+  if(o.label) g.push(`<text class="axunit" x="0" y="11">${esc(o.label)}</text>`);
+  if(o.noX) return;
   const span=o.x1-o.x0;
   let step=span>24?5:span>12?2:1;
   /* on a narrow chart, fewer years rather than years printed over each other */
@@ -89,7 +92,6 @@ function frame(o){
   while(step*per<38&&step<span) step=step<2?2:step<5?5:step*2;
   for(let yr=Math.ceil(o.x0/step)*step;yr<=o.x1;yr+=step)
     g.push(`<text class="axlabel" x="${o.sx(yr).toFixed(1)}" y="${o.H-6}" text-anchor="middle">${yr}</text>`);
-  if(o.label) g.push(`<text class="axunit" x="0" y="11">${esc(o.label)}</text>`);
 }
 /* the extra room above the plot that government shading needs for names */
 const BANDS_TOP=16;
@@ -225,9 +227,10 @@ function linePath(pts,sx,Y,step){
 }
 
 
-/* Small line icons for the eight topics, drawn on a 16-unit grid in
+/* Small line icons for the topics, drawn on a 16-unit grid in
    currentColor so they take the colour of whatever they sit in. */
 const TOPIC_ICONS={
+  work:'<rect x="2.5" y="5" width="11" height="8.5" rx="1.5"/><path d="M6 5V3.3h4V5M2.5 8.8h11M8 8v1.6"/>',
   economy:'<path d="M2.5 12.5l3.5-4 3 2.5 4.5-6"/><path d="M10.5 5h3v3"/>',
   housing:'<path d="M2.5 7.5L8 3l5.5 4.5"/><path d="M4 6.5v7h8v-7"/><path d="M6.8 13.5v-3.5h2.4v3.5"/>',
   education:'<path d="M1.5 6.5L8 3.5l6.5 3L8 9.5z"/><path d="M4.5 8v3.2c1 .9 2.2 1.3 3.5 1.3s2.5-.4 3.5-1.3V8"/>',
