@@ -72,16 +72,19 @@ const tickFmt=(v,st)=>{let d=0; while(d<6&&Math.abs(st*10**d-Math.round(st*10**d
 
 /* Gridlines, y labels, year labels and the unit as a line of text above the
    plot rather than rotated up the side. `base` is drawn stronger.
-   o: {g, ax, Y, x0, x1, sx, l, r, bot, H, label, base} */
+   o: {g, ax, Y, x0, x1, sx, l, r, bot, H, label, base, noX}
+   noX leaves out the years, for a y axis drawn on its own while it animates */
 function frame(o){
   const {g,ax,Y,l,r}=o;
   const same=(v,b)=>b!=null&&Math.abs(v-b)<ax.st/1e6;
   ax.ticks.forEach(v=>{
     g.push(`<line class="${same(v,o.base)?"baseline":"gridline"}" x1="${l}" y1="${Y(v).toFixed(1)}" x2="${r}" y2="${Y(v).toFixed(1)}"/>`);
-    g.push(`<text class="axlabel" x="${l-9}" y="${(Y(v)+3.5).toFixed(1)}" text-anchor="end">${tickFmt(v,ax.st)}</text>`);
+    g.push(`<text class="axlabel" x="${l-9}" y="${(Y(v)+4).toFixed(1)}" text-anchor="end">${tickFmt(v,ax.st)}</text>`);
   });
   if(o.base!=null&&o.base>ax.mn&&o.base<ax.mx&&!ax.ticks.some(v=>same(v,o.base)))
     g.push(`<line class="baseline" x1="${l}" y1="${Y(o.base).toFixed(1)}" x2="${r}" y2="${Y(o.base).toFixed(1)}"/>`);
+  if(o.label) g.push(`<text class="axunit" x="0" y="11">${esc(o.label)}</text>`);
+  if(o.noX) return;
   const span=o.x1-o.x0;
   let step=span>24?5:span>12?2:1;
   /* on a narrow chart, fewer years rather than years printed over each other */
@@ -89,7 +92,6 @@ function frame(o){
   while(step*per<38&&step<span) step=step<2?2:step<5?5:step*2;
   for(let yr=Math.ceil(o.x0/step)*step;yr<=o.x1;yr+=step)
     g.push(`<text class="axlabel" x="${o.sx(yr).toFixed(1)}" y="${o.H-6}" text-anchor="middle">${yr}</text>`);
-  if(o.label) g.push(`<text class="axunit" x="0" y="11">${esc(o.label)}</text>`);
 }
 /* the extra room above the plot that government shading needs for names */
 const BANDS_TOP=16;

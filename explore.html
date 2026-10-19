@@ -3197,13 +3197,13 @@ const EXPORT_THEMES={
 
 };
 const exportCss=th=>`
-  text{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  text{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-variant-numeric:tabular-nums}
   .gridline{stroke:${th.grid};stroke-width:1;opacity:.7}
-  .axlabel{font-size:10px;fill:${th.muted}}
+  .axlabel{font-size:11.5px;fill:${th.muted}}
   .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
   .nodata{fill:${th.ink};opacity:.045}
   .nodatat{opacity:.75;letter-spacing:.04em}
-  .sm-t{font-size:10px;font-weight:500}
+  .sm-t{font-size:11.5px;font-weight:600}
   .hit{fill:transparent}
   .arealbl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:12px;fill:${th.ink}}
   .areaval,.areahead{font-size:10.5px;fill:${th.muted}}
@@ -3214,14 +3214,14 @@ const exportCss=th=>`
   .hovline,.probeline{display:none}
   .era rect{opacity:.7}
   .pmtick{stroke:${th.ink};stroke-width:1;stroke-dasharray:2 2;opacity:.3}
-  .pmlabel{font-size:8.5px;fill:${th.muted}}
-  .eralabel{font-size:8.5px;letter-spacing:.08em;text-transform:uppercase;fill:${th.muted}}
+  .pmlabel{font-size:10px;fill:${th.muted}}
+  .eralabel{font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;fill:${th.muted}}
   .elect{fill:${th.ink}}
   .probedot{display:none}
   .baseline{stroke:${th.muted};stroke-width:1;opacity:.75}
-  .axunit{font-size:10px;fill:${th.muted}}
+  .axunit{font-size:11.5px;font-weight:500;fill:${th.muted}}
   .endlbl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:11px;font-weight:600}
-  .endval{font-size:10px;fill:${th.muted}}
+  .endval{font-size:11px;fill:${th.muted}}
   .brk{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:10px;fill:${th.warn}}
   .brkline{stroke:${th.warn};stroke-width:1;stroke-dasharray:2 2}
   .hollow{fill:${th.bg}}
@@ -3229,7 +3229,7 @@ const exportCss=th=>`
   .leader{fill:none;stroke-width:1;opacity:.45}
   .band{fill-opacity:${th.bg==="#ffffff"?.07:.09}}
   .banddiv{stroke:${th.grid};stroke-width:1}
-  .bandlbl{font-size:9px;fill:${th.muted}}
+  .bandlbl{font-size:10px;font-weight:500;fill:${th.muted}}
   .stat{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:24px}
   .ttl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:19px;fill:${th.ink}}
   .sub{font-size:11px;fill:${th.muted}}
