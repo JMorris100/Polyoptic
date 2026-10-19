@@ -411,8 +411,11 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
         facts.append(f'<div class="fact"><b>{esc(ch[0])}</b><span>{esc(ch[1])}</span></div>')
     if part and part.get("value") is not None:
         what = {"sum": "So far in", "mean": "Average so far,", "last": "Latest,"}.get(part.get("how"), "So far,")
+        # a stock's part-year figure is its latest month, not a span of months
+        when = (f'{(part.get("label") or "").split("–")[-1]} {part["year"]}'.strip()
+                if part.get("how") == "last" else part_label(s))
         facts.append(f'<div class="fact part"><b>{esc(with_unit(part["value"], unit) if len(with_unit(part["value"], unit)) <= 14 else fmt(part["value"]))}</b>'
-                     f'<span>{esc(what)} {esc(part_label(s))} · part-year</span></div>')
+                     f'<span>{esc(what)} {esc(when)}{"" if part.get("how") == "last" else " · part-year"}</span></div>')
     if len(pts) >= 3 and not snap:
         hy, hv = max(pts, key=lambda p: p[1])
         my, mv = min(pts, key=lambda p: p[1])
