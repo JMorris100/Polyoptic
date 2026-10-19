@@ -298,8 +298,8 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 
 /* ── topics as a mind map ────────────────────────────────────────
    The eye opens, then the topics branch out of it along drawn lines.
-   Positions are set by script from the width; under 980px it is a list. */
-.mind{position:relative;height:620px;margin-top:6px}
+   Positions are set by script from the width; under 1200px it is a list. */
+.mind{position:relative;height:700px;margin-top:6px}
 .mlinks{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
 .mlink{fill:none;stroke:var(--prule);stroke-width:1.6;stroke-dasharray:1;stroke-dashoffset:1;
   transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1),stroke .25s,stroke-width .25s;transition-delay:var(--d,0s),0s,0s}
@@ -328,13 +328,14 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .tn{font-family:"IBM Plex Sans";font-weight:700;font-size:16.5px;letter-spacing:-0.02em;line-height:1.2}
 .tc{font-size:12px;font-weight:600;color:var(--purple);margin-top:1px}
 .td{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.4}
-@media(max-width:979px){
+@media(max-width:1199px){
   .mind{height:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px}
   .mlinks{display:none}
   .meye{position:static;transform:none;grid-column:1/-1;width:150px;margin:0 auto 6px}
   .node{position:static;width:auto;transform:translateY(10px);transition:transform .5s,opacity .5s;transition-delay:var(--d,0s)}
   .mind.open .node{transform:none}
 }
+@media(min-width:760px) and (max-width:1199px){.mind{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:560px){.mind{grid-template-columns:1fr}}
 @media (prefers-reduced-motion: reduce){.mlink,.node,.meye .lid,.meye .bar,.meye .mlbl{transition:none!important}}
 
@@ -508,7 +509,7 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
 <section id="topics">
   <div class="wrap">
     <div class="slabel"><h2>Topics</h2></div>
-    <p class="lede">Every indicator sits in one of eight topics. Open one to see everything in it.</p>
+    <p class="lede">Every indicator sits in a topic. Open one to see everything in it.</p>
     <div class="mind" id="mind">
       <svg class="mlinks" id="mlinks" aria-hidden="true"></svg>
       <div class="meye" aria-hidden="true">
@@ -520,9 +521,10 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
             <rect class="bar" style="transition-delay:.69s" x="52.75" y="42.60" width="6" height="22.68"/><rect class="bar" style="transition-delay:.76s" x="64.25" y="30.72" width="6" height="34.56"/>
           </g></g>
         </svg>
-        <div class="mlbl" id="mindCount">Eight topics</div>
+        <div class="mlbl" id="mindCount">&nbsp;</div>
       </div>
-      <a class="node" data-topic="economy" href="explore.html#t=economy"><div class="trow"><span class="tico" data-icon="economy"></span><span class="tn">Economy</span></div><div class="tc"></div><div class="td">Prices, pay, jobs, productivity, business, trade and the public finances.</div></a>
+      <a class="node" data-topic="work" href="explore.html#t=work"><div class="trow"><span class="tico" data-icon="work"></span><span class="tn">Work, pay &amp; living standards</span></div><div class="tc"></div><div class="td">Jobs, pay, prices, household income, child poverty and the cost of living.</div></a>
+      <a class="node" data-topic="economy" href="explore.html#t=economy"><div class="trow"><span class="tico" data-icon="economy"></span><span class="tn">Economy &amp; public finances</span></div><div class="tc"></div><div class="td">Growth, productivity, business, trade, investment, borrowing, debt and tax.</div></a>
       <a class="node" data-topic="housing" href="explore.html#t=housing"><div class="trow"><span class="tico" data-icon="housing"></span><span class="tn">Housing</span></div><div class="tc"></div><div class="td">Prices, rents, affordability, housebuilding, homelessness and waiting lists.</div></a>
       <a class="node" data-topic="education" href="explore.html#t=education"><div class="trow"><span class="tico" data-icon="education"></span><span class="tn">Education</span></div><div class="tc"></div><div class="td">Pupils, teachers, absence, GCSEs, early years, apprenticeships and NEET.</div></a>
       <a class="node" data-topic="health" href="#"><div class="trow"><span class="tico" data-icon="health"></span><span class="tn">Health</span></div><div class="tc"></div><div class="td">NHS waiting lists, A&amp;E, GPs, obesity, smoking, life expectancy and wellbeing.</div></a>
@@ -1019,32 +1021,32 @@ function fillTiles(){
 }
 
 /* ── topics as a mind map ──────────────────────────────────────────
-   The topics sit round an ellipse about the eye, two to a quarter so none
-   lands on top of it, and each is joined to the eye by a curve. When the
+   The topics sit evenly round an ellipse about the eye, the first straight
+   above it, and each is joined to the eye by a curve. When the
    section comes into view the eye opens and the topics branch out of it, one
-   after another. Below 980px it is a plain list, so nothing is laid out here. */
+   after another. Below 1200px it is a plain list, so nothing is laid out here. */
 function mindMap(){
   const box=document.getElementById("mind"), svg=document.getElementById("mlinks");
   const nodes=[...box.querySelectorAll(".node")];
   const n=DB.series.length;
   document.getElementById("mindCount").textContent=`${n} indicators, ${nodes.length} topics`;
-  const wide=matchMedia("(min-width:980px)");
+  const wide=matchMedia("(min-width:1200px)");
   function lay(){
     nodes.forEach((el,i)=>el.style.setProperty("--d",(still?0:.35+i*.09)+"s"));
     if(!wide.matches){ svg.innerHTML=""; return; }
     const W=box.clientWidth, H=box.clientHeight, cx=W/2, cy=H/2;
-    const rx=Math.min(W*.36,560), ry=H*.37;
+    const rx=Math.min(W*.37,560), ry=H*.40;
     svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
     const paths=nodes.map((el,i)=>{
-      const a=(-67.5+i*45)*Math.PI/180;
+      const a=(-90+i*360/nodes.length)*Math.PI/180;
       const dx=rx*Math.cos(a), dy=ry*Math.sin(a);
       el.style.setProperty("--tx",dx.toFixed(1)+"px"); el.style.setProperty("--ty",dy.toFixed(1)+"px");
       /* a mind-map curve out of the eye: sideways to the topics at the sides,
          up or down to the ones above and below it */
-      const sxn=Math.sign(dx), syn=Math.sign(dy), nh=el.offsetHeight/2;
+      const sxn=Math.abs(dx)<1?0:Math.sign(dx), syn=Math.sign(dy), nh=el.offsetHeight/2, nw=el.offsetWidth/2;
       let d;
       if(Math.abs(Math.cos(a))>.6){
-        const x0=cx+sxn*84, ex=cx+dx-sxn*125, ey=cy+dy;
+        const x0=cx+sxn*84, ex=cx+dx-sxn*nw, ey=cy+dy;
         d=`M${x0} ${cy} C${x0+(ex-x0)*.6} ${cy} ${x0+(ex-x0)*.4} ${ey} ${ex} ${ey}`;
       } else {
         const x0=cx+sxn*22, y0=cy+syn*34, ex=cx+dx, ey=cy+dy-syn*nh;
@@ -1063,7 +1065,8 @@ function mindMap(){
     el.addEventListener("mouseleave",()=>svg.querySelector(`[data-i="${i}"]`)?.classList.remove("hot"));
   });
   if(still||!("IntersectionObserver" in window)){ box.classList.add("open"); return; }
-  const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ box.classList.add("open"); io.disconnect(); } }),{threshold:.3});
+  /* opens as soon as a little of it shows, so no topic is ever left hidden */
+  const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ box.classList.add("open"); io.disconnect(); } }),{threshold:.12});
   io.observe(box);
 }
 

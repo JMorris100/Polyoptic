@@ -227,9 +227,10 @@ function linePath(pts,sx,Y,step){
 }
 
 
-/* Small line icons for the eight topics, drawn on a 16-unit grid in
+/* Small line icons for the topics, drawn on a 16-unit grid in
    currentColor so they take the colour of whatever they sit in. */
 const TOPIC_ICONS={
+  work:'<rect x="2.5" y="5" width="11" height="8.5" rx="1.5"/><path d="M6 5V3.3h4V5M2.5 8.8h11M8 8v1.6"/>',
   economy:'<path d="M2.5 12.5l3.5-4 3 2.5 4.5-6"/><path d="M10.5 5h3v3"/>',
   housing:'<path d="M2.5 7.5L8 3l5.5 4.5"/><path d="M4 6.5v7h8v-7"/><path d="M6.8 13.5v-3.5h2.4v3.5"/>',
   education:'<path d="M1.5 6.5L8 3.5l6.5 3L8 9.5z"/><path d="M4.5 8v3.2c1 .9 2.2 1.3 3.5 1.3s2.5-.4 3.5-1.3V8"/>',

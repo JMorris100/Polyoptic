@@ -33,7 +33,8 @@ SITE = "https://polyoptic.co"
 OGL = "https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
 
 TOPICS = [
-    ("economy", "Economy", "Prices, pay, jobs, productivity, business, trade and the public finances."),
+    ("work", "Work, pay & living standards", "Jobs, pay, prices, household income, child poverty and the cost of living."),
+    ("economy", "Economy & public finances", "Growth, productivity, business, trade, investment, borrowing, debt and tax."),
     ("housing", "Housing", "Prices, rents, affordability, housebuilding, homelessness and waiting lists."),
     ("education", "Education", "Pupils, teachers, absence, GCSEs, early years, apprenticeships and NEET."),
     ("health", "Health", "NHS waiting lists, A&E, GPs, obesity, smoking, life expectancy and wellbeing."),
@@ -486,7 +487,7 @@ def index_page(series: list[dict], slugs: dict) -> str:
     ld = [{"@context": "https://schema.org", "@type": "CollectionPage", "name": "Every indicator, A–Z",
            "url": f"{SITE}/indicator/", "isPartOf": {"@type": "WebSite", "name": "Polyoptic", "url": f"{SITE}/"}}]
     return page(path="indicator/", depth=1, title="Every UK statistic on Polyoptic, A–Z | Polyoptic",
-                desc=f"All {len(series)} official UK indicators on Polyoptic, A–Z: economy, housing, education, health, crime, transport, environment and population.",
+                desc=f"All {len(series)} official UK indicators on Polyoptic, A–Z: work and pay, the economy, housing, education, health, crime, transport, environment and population.",
                 og_image="og/home.png", og_alt="Polyoptic", ld=ld, body=body)
 
 
