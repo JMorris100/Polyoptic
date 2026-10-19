@@ -126,11 +126,16 @@ function drawQ(ctx,c,db){
   const sets=c.ids.map((id,i)=>{
     const s=db.series.find(x=>x.id===id); if(!s) return null;
     const pts=s.values.map((v,k)=>[s.start+k,v])
-      .filter(q=>q[0]>=c.from&&q[0]<=c.to&&q[1]!=null);
+      .filter(q=>q[0]>=c.from&&q[0]<=c.to&&q[1]!=null&&q[0]!==(s.partial||{}).year);  /* whole years only, as on the page */
     if(pts.length<2) return null;
-    const base=pts[0][1];
-    return {name:s.name,colour:i?S2:S1,pts:pts.map(([y,v])=>[y,v/base*100])};
+    return {name:s.name,colour:i?S2:S1,pts};
   }).filter(Boolean);
+  /* the years both share, rebased at the first — the same rule as the page */
+  if(sets.length>=2){
+    const S0=Math.max(...sets.map(x=>x.pts[0][0])), E0=Math.min(...sets.map(x=>x.pts[x.pts.length-1][0]));
+    sets.forEach(x=>{ const inside=x.pts.filter(q=>q[0]>=S0&&q[0]<=E0), base=inside[0][1];
+      x.pts=inside.map(([y,v])=>[y,v/base*100]); });
+  }
 
   const top=190+lines.length*58, bot=H-104, L=74, R=W-74;
   if(sets.length<2){
@@ -169,7 +174,8 @@ function drawQ(ctx,c,db){
   }
   ctx.font="400 19px 'IBM Plex Mono', monospace"; ctx.fillStyle=MUTED;
   ctx.textAlign="right";
-  ctx.fillText(`${c.from}–${c.to} · ${c.geo} · polyoptic.co`,W-74,H-24);
+  const span=sets.length>=2?`${sets[0].pts[0][0]}–${sets[0].pts[sets[0].pts.length-1][0]}`:`${c.from}–${c.to}`;
+  ctx.fillText(`${span} · ${c.geo} · polyoptic.co`,W-74,H-24);
   ctx.textAlign="left";
 }
 

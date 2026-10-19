@@ -52,22 +52,35 @@ esc = lambda s: html.escape(str(s), quote=True)
 # ── numbers ──────────────────────────────────────────────────────────
 
 def fmt(v: float | None) -> str:
+    """A figure to the precision a reader can use, with no trailing zeros:
+    4.9 not 4.92, 8 not 8.00, 69.3 million not 69,281,437."""
     if v is None:
         return "–"
     a = abs(v)
-    if a >= 10000:
-        return f"{v:,.0f}"
+    if a >= 10_000_000:
+        return (f"{v / 1e6:,.1f}".rstrip("0").rstrip(".") + " million").replace("-", "−", 1)
     if a >= 100:
-        return f"{v:,.0f}" if a >= 1000 else f"{v:.0f}"
-    if a >= 10:
-        return f"{v:.1f}"
-    return f"{v:.2f}"
+        return f"{v:,.0f}".replace("-", "−", 1)
+    if a >= 1:
+        out = f"{v:.1f}"
+    else:
+        out = f"{v:.2f}"
+    out = out.rstrip("0").rstrip(".") if "." in out else out
+    return out.replace("-", "−", 1) if out.startswith("-") else out
 
 
 def with_unit(v: float, unit: str) -> str:
     u = unit or ""
+    if u.startswith("£") and v < 0:                  # −£151,296m, not £-151,296m
+        return "−" + with_unit(-v, u)
+    if u.startswith("£ per "):                       # £752 per week
+        return f"£{fmt(v)} {u[2:]}"
     if u.startswith("%"):
         return f"{fmt(v)}%" + (u[1:] if u != "%" else "")
+    # £m and £bn wrap the number: £867,021m, £2.3bn, then anything after the comma
+    for scale in ("m", "bn"):
+        if u == f"£{scale}" or u.startswith(f"£{scale},"):
+            return f"£{fmt(v)}{scale}" + u[len(scale) + 1:]
     if u.startswith("£") and not u.startswith("£ per") and " " not in u.strip():
         return f"£{fmt(v)}"
     return f"{fmt(v)} {u}".strip()
@@ -91,6 +104,22 @@ def slugify(s: str) -> str:
 
 def points(s: dict) -> list[tuple[int, float]]:
     return [(s["start"] + i, v) for i, v in enumerate(s["values"]) if v is not None]
+
+
+def full_points(s: dict) -> list[tuple[int, float]]:
+    """Whole years only: a final year the source is part-way through is left out,
+    so 'latest', changes and highs and lows compare like with like."""
+    p = s.get("partial") or {}
+    return [(y, v) for y, v in points(s) if y != p.get("year")] or points(s)
+
+
+def part_label(s: dict) -> str:
+    """'Jan–Mar 2026' for a part-year figure, or '' when there is none."""
+    p = s.get("partial") or {}
+    if not p:
+        return ""
+    span = p.get("label") or f'{p.get("have")} of {p.get("of")} periods'
+    return f'{span} {p["year"]}'
 
 
 # ── the chart, drawn here so the page needs no script ───────────────
@@ -196,7 +225,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex San
 .topnav{margin-left:auto;display:flex;align-items:center;gap:18px}
 .topnav a{color:#fff;text-decoration:none;font-size:14px;opacity:.9}
 .topnav .btn{background:#fff;color:#4633A8;padding:7px 14px;border-radius:100px;font-size:13.5px;font-weight:600;opacity:1}
-@media(max-width:640px){.topnav a:not(.btn){display:none}}
+@media(max-width:820px){.topnav a:not(.btn){display:none}}
 main{padding:40px 0 10px}
 .crumbs{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.06em;color:var(--muted);margin:0 0 14px}
 .crumbs a{color:var(--muted)}
@@ -276,7 +305,7 @@ def page(*, path: str, depth: int, title: str, desc: str, og_image: str, og_alt:
 <body>
 <div class="topbar"><div class="wrap">
   <a class="brand" href="{up}index.html">{LOGO}<span class="wordmark">poly<span class="b">optic</span></span></a>
-  <nav class="topnav"><a href="{up}indicator/">Indicators</a><a href="{up}data.html">Verify</a><a href="{up}about.html">About</a>
+  <nav class="topnav"><a href="{up}index.html#questions">Questions</a><a href="{up}index.html#topics">Topics</a><a href="{up}indicator/">Indicators</a><a href="{up}about.html">About</a><a href="{up}data.html">Verify</a>
     <a class="btn" href="{up}{explore}">Open in the explorer</a></nav>
 </div></div>
 <main class="wrap">
@@ -308,7 +337,7 @@ def breadcrumb_ld(trail: list[tuple[str, str]]) -> dict:
 
 def change_line(s: dict) -> tuple[str, str] | None:
     """The change over the last ten years (or the whole run, if shorter)."""
-    pts = points(s)
+    pts = full_points(s)
     if len(pts) < 2:
         return None
     ly, lv = pts[-1]
@@ -323,14 +352,19 @@ def change_line(s: dict) -> tuple[str, str] | None:
                 f'{"+" if d >= 0 else "−"}{fmt(abs(d))}', f"change since {by}")
     if bv:
         pc = (lv / bv - 1) * 100
-        return (f'{"+" if pc >= 0 else "−"}{abs(pc):.1f}%', f"change since {by}")
+        # +13,770% says nothing a reader can use; past 100% a rounded figure
+        # (or the multiple, past 1,000%) reads better than a decimal place
+        if abs(pc) >= 1000 and pc > 0:
+            return (f"{lv / bv:,.0f}×", f"since {by}")
+        return (f'{"+" if pc >= 0 else "−"}{abs(pc):,.{0 if abs(pc) >= 100 else 1}f}%', f"change since {by}")
     return None
 
 
 def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs: dict) -> str:
-    pts = points(s)
+    pts = full_points(s)
     ly, lv = pts[-1]
     fy = pts[0][0]
+    part = s.get("partial") or {}
     topic = (s.get("topics") or ["economy"])[0]
     tname = TOPIC_NAME.get(topic, topic.title())
     geo = s.get("geography", "UK")
@@ -353,6 +387,10 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
     ch = change_line(s)
     if ch and not snap:
         facts.append(f'<div class="fact"><b>{esc(ch[0])}</b><span>{esc(ch[1])}</span></div>')
+    if part and part.get("value") is not None:
+        what = {"sum": "So far in", "mean": "Average so far,", "last": "Latest,"}.get(part.get("how"), "So far,")
+        facts.append(f'<div class="fact part"><b>{esc(with_unit(part["value"], unit) if len(with_unit(part["value"], unit)) <= 14 else fmt(part["value"]))}</b>'
+                     f'<span>{esc(what)} {esc(part_label(s))} · part-year</span></div>')
     if len(pts) >= 3 and not snap:
         hy, hv = max(pts, key=lambda p: p[1])
         my, mv = min(pts, key=lambda p: p[1])
@@ -362,8 +400,12 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
     breaks = s.get("discontinuities") or []
     chart = ""
     if len(pts) >= 2:
+        pnote = ""
+        if part:
+            pnote = (f"{part['year']} covers {part_label(s).rsplit(' ', 1)[0]} only · " if part.get("plotted")
+                     else f"{part['year']} is left off until the year is complete · ")
         chart = (f'<div class="card">{chart_svg(s)}<p class="cap">{esc(unit)} · {esc(geo)} · '
-                 f'{"dashed lines mark breaks in the series · " if breaks else ""}source: {esc(s.get("source",""))}</p></div>')
+                 f'{"dashed lines mark breaks in the series · " if breaks else ""}{esc(pnote)}source: {esc(s.get("source",""))}</p></div>')
 
     notes = "".join(f"<li>{esc(n)}</li>" for n in s.get("notes", []))
     brk = "".join(f'<li><b>{esc(d.get("year",""))}: {esc(d.get("label",""))}.</b> {esc(d.get("note",""))}</li>' for d in breaks)
@@ -379,6 +421,9 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
 <p style="margin-top:12px"><a href="../../explore.html#p={s['id']}~map~none~{fy}~{ly}~bands">See every area on a map →</a></p>"""
 
     table = "".join(f'<tr><td>{y}</td><td class="n">{esc(fmt(v))}</td></tr>' for y, v in reversed(pts))
+    if part and part.get("value") is not None:
+        table = (f'<tr><td>{esc(part_label(s))} <small>(part-year)</small></td>'
+                 f'<td class="n">{esc(fmt(part["value"]))}</td></tr>') + table
     data_tbl = f"""<h2>Every published year</h2>
 <details{' open' if len(pts) <= 12 else ''}><summary>{len(pts)} value{'s' if len(pts) != 1 else ''}, {esc(unit)}</summary>
 <table style="margin-top:10px"><thead><tr><th>Year</th><th class="n">{esc(unit)}</th></tr></thead><tbody>{table}</tbody></table></details>
@@ -446,7 +491,7 @@ def csv_text(s: dict) -> str:
 # ── topics and the index ────────────────────────────────────────────
 
 def card(s: dict, href: str) -> str:
-    pts = points(s)
+    pts = full_points(s)
     ly, lv = pts[-1]
     return (f'<li><a href="{href}"><b>{esc(s["name"])}</b>'
             f'<span>{esc(with_unit(lv, s.get("unit","")))} in {ly} · {esc(s.get("geography",""))}</span></a></li>')
@@ -491,6 +536,125 @@ def index_page(series: list[dict], slugs: dict) -> str:
                 og_image="og/home.png", og_alt="Polyoptic", ld=ld, body=body)
 
 
+# ── question pages: the number, from the data ───────────────────────
+# The question pages are written by hand, all but one paragraph. "The number"
+# used to be hand-written too, and drifted from the data it describes as the
+# data refreshed weekly. It is now written here, from the same years and the
+# same rebasing the page's chart uses: the years both series share, rebased
+# to the first of them, whole years only.
+
+QUESTION_NAMES = {
+    "pay": "average pay", "cpih": "prices (CPIH)", "rents": "private rents",
+    "psnd": "public sector net debt", "debtint": "debt interest",
+    "absence": "persistent absence", "gap": "the disadvantage gap index",
+}
+
+
+def pct(v: float) -> str:
+    return f'{"+" if v >= 0 else "−"}{abs(v):.0f}%'
+
+
+def question_number(html_text: str, by_id: dict) -> tuple[str, int, int] | None:
+    m = re.search(r"const IDS=(\[[^\]]*\]), FROM=(\d+), TO=(\d+)", html_text)
+    if not m:
+        return None
+    ids, frm, to = json.loads(m.group(1)), int(m.group(2)), int(m.group(3))
+    runs = []
+    for i in ids:
+        s = by_id.get(i)
+        if not s:
+            return None
+        pts = [(y, v) for y, v in full_points(s) if frm <= y <= to]
+        if len(pts) < 2:
+            return None
+        runs.append((i, dict(pts)))
+    start = max(min(d) for _, d in runs)
+    end = min(max(d) for _, d in runs)
+    if end <= start:
+        return None
+    reb = []
+    for i, d in runs:
+        yrs = [y for y in sorted(d) if start <= y <= end]
+        base = d[yrs[0]]
+        reb.append((i, {y: d[y] / base * 100 for y in yrs}))
+    (a, A), (b, B) = reb
+    na, nb = QUESTION_NAMES.get(a, by_id[a]["name"]), QUESTION_NAMES.get(b, by_id[b]["name"])
+    both = sorted(set(A) & set(B))
+    end = both[-1]
+    ga, gb = A[end] - 100, B[end] - 100
+    cap = lambda t: t[0].upper() + t[1:]
+    if ga >= 0 and gb >= 0:
+        verdict = (f"{cap(na)} rose faster" if ga > gb + 1 else
+                   f"{cap(nb)} rose faster" if gb > ga + 1 else "The two rose by about the same")
+    elif ga < 0 and gb < 0:
+        verdict = (f"Both fell, {na} by less" if ga > gb + 1 else
+                   f"Both fell, {nb} by less" if gb > ga + 1 else "Both fell by about the same")
+    else:
+        up, down = (na, nb) if ga > gb else (nb, na)
+        verdict = f"{cap(up)} rose while {down} fell"
+    # how far one line has moved relative to the other: 233 against 188 is
+    # 24% ahead, which reads better than "45 index points"
+    rel = {y: (A[y] / B[y] - 1) * 100 for y in both}
+    r = rel[end]
+    if abs(r) < 1:
+        tail = f"By {end} the two were level, relative to {start}."
+    else:
+        tail = (f"Relative to {start}, {na} ended {abs(r):.0f}% "
+                f"{'ahead of' if r > 0 else 'behind'} {nb}")
+        far = max(both, key=lambda y: abs(rel[y]))
+        if far != end and abs(rel[far]) > abs(r) + 2:
+            tail += (f", having been {abs(rel[far]):.0f}% "
+                     f"{'ahead' if rel[far] > 0 else 'behind'} at the widest, in {far}")
+        tail += "."
+    return (f"Rebased to {start} = 100, {na} reached {A[end]:.0f} by {end} and {nb} {B[end]:.0f}: "
+            f"{na} {pct(ga)}, {nb} {pct(gb)}. {verdict}. {tail}", start, end)
+
+
+# Indicator pages whose address changed when the series was renamed or
+# merged. Each old address gets a small page that forwards to the new one, so
+# a link someone already shared still lands.
+MOVED = {
+    "private-rents-index-iphrp": "rents",
+    "employment-rate": "emprate",
+    "economic-inactivity-rate": "inactive",
+    "persistent-absences-for-all-pupils": "absence",
+}
+
+
+def write_moved(slugs: dict) -> None:
+    for old, sid in MOVED.items():
+        new = slugs.get(sid)
+        if not new or new == old:
+            continue
+        d = ROOT / "indicator" / old
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "index.html").write_text(
+            f'<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8"><title>Moved</title>'
+            f'<link rel="canonical" href="{SITE}/indicator/{new}/">'
+            f'<meta http-equiv="refresh" content="0; url=../{new}/"><meta name="robots" content="noindex"></head>'
+            f'<body><p>This indicator has moved to <a href="../{new}/">its new page</a>.</p></body></html>',
+            encoding="utf-8")
+
+
+def write_question_numbers(by_id: dict) -> None:
+    for p in sorted((ROOT / "q").glob("*/index.html")):
+        text = p.read_text(encoding="utf-8")
+        got = question_number(text, by_id)
+        if not got:
+            print(f"  question {p.parent.name}: series missing, paragraph left as it was")
+            continue
+        line, start, end = got
+        new, n = re.subn(r"(<!-- number:[^>]*-->\n\s*)<p>.*?</p>(\n\s*<!-- /number -->)",
+                         lambda m: f"{m.group(1)}<p>{esc(line)}</p>{m.group(2)}", text, count=1, flags=re.S)
+        # the year range in the title, description and subtitle follows the data
+        # ('2015–2026' when rents stop in 2024 was a promise the chart broke);
+        # en-dash ranges only, so the script's FROM/TO and explorer links are untouched
+        new = re.sub(r"\b(1[89]\d\d|20\d\d)–(1[89]\d\d|20\d\d)\b", f"{start}–{end}", new)
+        new = re.sub(r"\b(1[89]\d\d|20\d\d) to (1[89]\d\d|20\d\d)\b(?=\">)", f"{start} to {end}", new)
+        if n and new != text:
+            p.write_text(new, encoding="utf-8")
+
+
 # ── the sitemap ─────────────────────────────────────────────────────
 
 def sitemap(entries: list[tuple[str, str, str, str]]) -> str:
@@ -518,6 +682,8 @@ def main() -> None:
             sl = f'{sl}-{s["id"]}'
         seen.add(sl); slugs[s["id"]] = sl
 
+    write_question_numbers(by_id)
+
     for d in ("indicator", "topic"):
         shutil.rmtree(ROOT / d, ignore_errors=True)
     today = datetime.now(timezone.utc).date().isoformat()
@@ -541,6 +707,8 @@ def main() -> None:
         (out / "index.html").write_text(indicator_page(s, slugs[s["id"]], by_id, slugs, ix, pubs))
         (out / "data.csv").write_text(csv_text(s))
         entries.append((f"indicator/{slugs[s['id']]}/", (s.get("fetched") or today)[:10], "weekly", "0.6"))
+
+    write_moved(slugs)
 
     (ROOT / "indicator" / "index.html").write_text(index_page(series, slugs))
     (ROOT / "data" / "pages.json").write_text(json.dumps(slugs, separators=(",", ":")))

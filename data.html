@@ -268,8 +268,10 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
       <span class="wordmark">poly<span class="b">optic</span></span>
     </a>
     <nav class="topnav">
+      <a href="index.html#questions">Questions</a>
       <a href="index.html#topics">Topics</a>
-      <a href="#refs">References</a>
+      <a href="indicator/">Indicators</a>
+      <a href="about.html">About</a>
       <a class="btn-ghost" href="#catalogue" aria-current="page">Verify</a>
       <a class="btn-invert" href="explore.html">Open the explorer</a>
     </nav>
@@ -286,8 +288,8 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
        pulled from, the date they were pulled, and every value as ingested, gaps and breaks
        included. Charts live in the <a href="explore.html">explorer</a>.</p>
     <div class="statrow" id="meta"></div>
-    <div id="loadfail"><b>Couldn't load <code>data/bundle.json</code>.</b> The raw bundle either
-      hasn't been built yet or isn't being served. Run <code>python ingest/ingest.py</code> and reload.</div>
+    <!-- filled only if loading fails, so crawlers and link previews never see it -->
+    <div id="loadfail" role="alert"></div>
   </div>
 
   <!-- Promoted above the catalogue. This is the one block that tells someone
@@ -306,8 +308,9 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
         live there, and the caveat badges on each row point at what to look for.</li>
       <li><b>Or reproduce the whole thing.</b> Clone the repo and run
         <code>python ingest/ingest.py --dry-run</code>: it fetches everything fresh and
-        reports what it got. Nothing is computed at ingest beyond collapsing to years —
-        every transform happens in your browser, from the values on this page.</li>
+        reports what it got. Nothing is computed at ingest beyond collapsing to years, and
+        holding back a part-year total until its year is complete — every transform
+        happens in your browser, from the values on this page.</li>
     </ol>
     <p class="lede" style="margin-top:16px">Found a mismatch? The bundle records when it was
       fetched, and sources revise their own history — that is normal for official statistics.
@@ -490,7 +493,7 @@ function detailHtml(s,isRef){
        ["Measure",esc(mlabel(s.kind))],
        ["Year basis",esc(s.year_basis||"—")],
        ["Licence",esc(s.licence||"OGL v3.0")],
-       ["Last fetched",esc(stamp(s.fetched))],
+       ["Last fetched",esc(stamp(s.fetched))+(s.stale?" — the latest refresh couldn’t reach the source, so this is the last good copy":"")],
        ["Observations",`${obs} of ${s.values.length} years`],
        ["Topics",(s.topics||[]).map(t=>
           `<button class="tpill" data-facet-topic="${esc(t)}">${esc(topicLabel(t))}</button>`).join("")||"—"]];
@@ -686,7 +689,16 @@ fetch("data/pages.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>
   ];
   document.getElementById("meta").innerHTML=
     stats.map(([k,v])=>`<div class="stat"><span class="k">${esc(k)}</span><span class="v">${v}</span></div>`).join("")+
-    ((m.failed||[]).length
+    /* a failed fetch keeps the last good copy, so say which ones and from when */
+    ((m.stale||[]).length
+      ? `<div class="stat alert"><span class="k">Couldn’t refresh — showing the last good copy</span>
+           <span class="v">${m.stale.map(id=>{const s=db.series.find(x=>x.id===id);
+             return esc((s?s.name:id)+(s&&s.fetched?` (fetched ${stamp(s.fetched)})`:""));}).join(", ")}</span></div>` : "")+
+    ((m.dropped||[]).length
+      ? `<div class="stat alert"><span class="k">Not available yet</span>
+           <span class="v">${esc(m.dropped.join(", "))}</span></div>` : "")+
+    /* bundles from before the last-good-copy change only list failures */
+    (!m.stale&&(m.failed||[]).length
       ? `<div class="stat alert"><span class="k">Failed this refresh</span>
            <span class="v">${esc(m.failed.join(", "))}</span></div>` : "");
 
@@ -734,7 +746,9 @@ fetch("data/pages.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>
     const s=SER[b.dataset.dl]; if(!s) return;
     download("polyoptic-"+(s.id||"series")+".csv", csvFor(s));
   });
-}).catch(()=>{ document.getElementById("loadfail").style.display="block"; });
+}).catch(()=>{ const el=document.getElementById("loadfail");
+  el.innerHTML="<b>The figures didn’t load.</b> Please reload the page in a moment. If it keeps happening, the raw data is still at <a href=\"data/bundle.json\">data/bundle.json</a>.";
+  el.style.display="block"; });
 </script>
 </body>
 </html>

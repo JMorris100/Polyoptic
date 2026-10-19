@@ -37,6 +37,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 import requests
+from urllib.parse import urljoin
 import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -213,6 +214,12 @@ class Series:
     notes: list[str] = field(default_factory=list)
     fetched: str = ""
     source_api: str = ""       # the exact endpoint the values were pulled from
+    # True when this refresh could not fetch the series and the values are the
+    # last good copy from an earlier build; `fetched` is then that earlier date.
+    stale: bool = False
+    # The final year, when the source is only part-way through it:
+    # {year, have, of, unit, label, how, value, plotted}. See partial_year().
+    partial: dict | None = None
 
     def validate(self) -> None:
         if self.year_basis not in {"calendar", "financial", "academic"}:
@@ -322,11 +329,20 @@ def to_year(label: str, basis: str) -> int | None:
     return None
 
 
+# What the last to_annual call saw: observations per year and how they were
+# collapsed. build_series reads it to spot a final year that is only part-way
+# through — a seven-month average or a one-quarter total sitting at the end of
+# the line as if it were a whole year.
+_ANNUAL: dict = {}
+
+
 def to_annual(pairs: list[tuple[int, float]], how: str = "mean") -> dict[int, float]:
     """Collapse sub-annual observations to one value per year."""
     buckets: dict[int, list[float]] = {}
     for year, value in pairs:
         buckets.setdefault(year, []).append(value)
+    _ANNUAL.clear()
+    _ANNUAL.update(counts={y: len(v) for y, v in buckets.items()}, how=how)
     if how == "last":
         return {y: v[-1] for y, v in buckets.items()}
     if how == "sum":
@@ -496,8 +512,12 @@ def fetch_csv(cfg: dict) -> dict[int, float]:
     import csv
     import io
 
-    text = get(cfg["url"]).text
-    cfg["_resolved_url"] = cfg["url"]
+    # {today} in the URL becomes today's date as 19/Oct/2026. The Bank of
+    # England's database used to accept an end date of 2099 and now answers
+    # one with an error page, so the request asks for exactly what exists.
+    url = cfg["url"].replace("{today}", datetime.now(timezone.utc).strftime("%d/%b/%Y"))
+    text = get(url).text
+    cfg["_resolved_url"] = url
     reader = csv.DictReader(io.StringIO(text))
     pairs: list[tuple[int, float]] = []
     for row in reader:
@@ -782,6 +802,17 @@ def fetch_spreadsheet(cfg: dict) -> dict[int, float]:
         Years run across a header row; one data row holds the measure. Give
         `row_match` (the row label) and `label_column`.
     """
+    # `page`: the publisher gives each release its own dated file name, so a
+    # fixed URL goes stale with the next release. Read the dataset page and
+    # take the first link matching `link_pattern` — ONS lists the latest first.
+    if cfg.get("page") and not (cfg.get("url") or cfg.get("urls")):
+        html_text = get(cfg["page"]).text
+        pat = cfg.get("link_pattern", r"\.xlsx")
+        hrefs = [h for h in re.findall(r'href="([^"]+)"', html_text) if re.search(pat, h)]
+        if not hrefs:
+            raise ValueError(f"no link matching {pat!r} on {cfg['page']}")
+        cfg["url"] = urljoin(cfg["page"], hrefs[0].replace("&amp;", "&"))
+
     # Some publishers put one file per year (crime outcomes), so a series can
     # span several workbooks. Same shape in each; merge the years.
     urls = cfg.get("urls") or [cfg["url"]]
@@ -1202,8 +1233,16 @@ def build_areas(specs: list[dict], only: str | None = None) -> dict:
 
     AREAS_DIR.mkdir(parents=True, exist_ok=True)
 
-    registry: dict[str, dict] = {}
-    index: dict[str, dict] = {}
+    # Start from the index already on disk, so a series whose areas fail to
+    # fetch this time (or one left out by --only) keeps its entry and its file
+    # rather than disappearing from the map.
+    try:
+        old = json.loads((AREAS_DIR / "index.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        old = {}
+    registry: dict[str, dict] = dict(old.get("areas") or {})
+    index: dict[str, dict] = {k: v for k, v in (old.get("series") or {}).items()
+                              if (AREAS_DIR / f"{k}.json").exists()}
 
     for spec in els:
         sid, slug = spec["id"], spec["fetch"]["indicator"]
@@ -1275,10 +1314,75 @@ def build_areas(specs: list[dict], only: str | None = None) -> dict:
 # Build
 # ─────────────────────────────────────────────────────────────
 
+PERIOD_NAMES = {12: ("month", ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]),
+                4: ("quarter", ["Q1", "Q2", "Q3", "Q4"])}
+
+
+def partial_year(counts: dict[int, int], how: str, basis: str) -> dict | None:
+    """
+    The final year, if it holds fewer sub-annual periods than a full year does.
+
+    A full year's count is the commonest count among the earlier years, so a
+    monthly series expects 12 and a quarterly one 4 without being told. Annual
+    sources (one observation a year) are never partial by this test.
+    """
+    if len(counts) < 3:
+        return None
+    last = max(counts)
+    earlier = [n for y, n in counts.items() if y != last]
+    full = max(set(earlier), key=earlier.count)
+    if full <= 1 or counts[last] >= full:
+        return None
+    have = counts[last]
+    out = {"year": last, "have": have, "of": full, "how": how}
+    if full in PERIOD_NAMES:
+        unit, names = PERIOD_NAMES[full]
+        # financial years start in April, academic in September; quarters are
+        # named as published (Q1 = the first quarter of the year shown)
+        first = {"financial": 3, "academic": 8}.get(basis, 0) if full == 12 else 0
+        pick = [names[(first + i) % full] for i in range(have)]
+        out["unit"] = unit
+        out["label"] = pick[0] if have == 1 else f"{pick[0]}–{pick[-1]}"
+    return out
+
+
 def build_series(spec: dict) -> Series:
     adapter = ADAPTERS[spec["source_type"]]
+    _ANNUAL.clear()
     by_year = adapter(spec["fetch"])
+    # `sign: -1` for a series published the other way up from its name
+    # (ONS's net lending, shown here as net borrowing)
+    if spec.get("sign", 1) != 1:
+        by_year = {y: v * spec["sign"] for y, v in by_year.items()}
+    part = partial_year(_ANNUAL.get("counts", {}), _ANNUAL.get("how", "mean"),
+                        spec.get("year_basis", "calendar")) if _ANNUAL else None
+    if part:
+        part["value"] = by_year.get(part["year"])
+        # A part-year TOTAL is not comparable with whole-year totals — 4,441
+        # small boat arrivals in one quarter is not a 90% fall — so it comes off
+        # the line and is kept only as a labelled figure. A part-year average
+        # or latest level is still a fair reading of the level, so it stays,
+        # flagged and labelled with the months it covers.
+        if part["how"] == "sum":
+            by_year = {y: v for y, v in by_year.items() if y != part["year"]}
+            part["plotted"] = False
+        else:
+            part["plotted"] = True
     start, values = densify(by_year)
+    s = series_from_spec(spec, start, values,
+                         fetched=datetime.now(timezone.utc).isoformat(timespec="seconds"),
+                         source_api=spec["fetch"].get("_resolved_url", ""))
+    if part:
+        s.partial = part
+        if "partial" not in s.flags and spec.get("flags") is None:
+            s.flags = [f for f in FLAG_ORDER if f in set(s.flags) | {"partial"}]
+    s.validate()
+    return s
+
+
+def series_from_spec(spec: dict, start: int, values: list, fetched: str, source_api: str) -> Series:
+    """A Series with its descriptive fields from series.yaml and the given values."""
     publisher, publisher_full = resolve_publisher(spec)
     s = Series(
         id=spec["id"], name=spec["name"], topics=spec["topics"], unit=spec["unit"],
@@ -1292,12 +1396,38 @@ def build_series(spec: dict) -> Series:
         notes=spec.get("notes", []),
         flags=derive_flags(spec, spec.get("notes", []), spec.get("discontinuities", []),
                            spec["geography"]),
-        fetched=datetime.now(timezone.utc).isoformat(timespec="seconds"),
-        source_api=spec["fetch"].get("_resolved_url", ""),
+        fetched=fetched,
+        source_api=source_api,
         snapshot=bool(spec.get("snapshot", False)),
     )
-    s.validate()
     return s
+
+
+def carry_forward(spec: dict, old: dict) -> Series:
+    """The last good copy of a series whose fetch failed this time.
+
+    A failed fetch used to drop the series from the bundle, so one bad Monday
+    at a publisher took its indicators off the site until the next good run.
+    Now the values and their fetch date come from the previous bundle, the
+    descriptive fields still come from series.yaml (so a renamed topic or a
+    new note still lands), and the series is marked stale for Verify to show.
+    """
+    s = series_from_spec(spec, old["start"], old["values"],
+                         fetched=old.get("fetched", ""), source_api=old.get("source_api", ""))
+    s.areas = bool(old.get("areas", False))
+    s.partial = old.get("partial")
+    if s.partial and "partial" not in s.flags and spec.get("flags") is None:
+        s.flags = [f for f in FLAG_ORDER if f in set(s.flags) | {"partial"}]
+    s.stale = True
+    return s
+
+
+def previous_bundle() -> dict:
+    """The bundle on disk before this run, or an empty one."""
+    try:
+        return json.loads(OUT.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
 
 
 def main() -> int:
@@ -1318,7 +1448,7 @@ def main() -> int:
         return els_catalogue(args.els_geo, args.els_min_span)
 
     config = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
-    specs = config["series"]
+    all_specs = specs = config["series"]
     if args.only:
         specs = [s for s in specs if s["id"] == args.only]
         if not specs:
@@ -1339,8 +1469,15 @@ def main() -> int:
             failed.append((spec["id"], exc))
             print(f"  FAIL {spec['id']:<16} {type(exc).__name__}: {exc}", file=sys.stderr)
 
+    prev = previous_bundle()
+    prev_series = {p["id"]: p for p in prev.get("series", [])}
+    prev_refs = prev.get("refs", {})
+
     refs = {}
     for name, spec in config.get("references", {}).items():
+        if args.only and name in prev_refs:
+            refs[name] = prev_refs[name]                # --only leaves the references alone
+            continue
         try:
             start, values = densify(ADAPTERS[spec["source_type"]](spec["fetch"]))
             refs[name] = {"start": start, "values": values,
@@ -1348,9 +1485,26 @@ def main() -> int:
             print(f"  ok   ref:{name}")
         except Exception as exc:                      # noqa: BLE001
             print(f"  FAIL ref:{name} — {exc}", file=sys.stderr)
-            print("       transforms depending on this reference will be unavailable", file=sys.stderr)
+            if name in prev_refs:
+                refs[name] = prev_refs[name]
+                print("       kept the previous copy", file=sys.stderr)
+            else:
+                print("       transforms depending on this reference will be unavailable", file=sys.stderr)
 
     ok = {s.id for s in built}
+
+    # A failed fetch keeps the last good copy rather than dropping the series.
+    # Only a series that has never built (new in series.yaml) can be missing.
+    carried, dropped = [], []
+    for fid, _ in failed:
+        spec = next(sp for sp in specs if sp["id"] == fid)
+        if fid in prev_series:
+            built.append(carry_forward(spec, prev_series[fid]))
+            carried.append(fid)
+            print(f"  kept {fid:<16} last good copy from {prev_series[fid].get('fetched', '?')[:10]}",
+                  file=sys.stderr)
+        else:
+            dropped.append(fid)
 
     # Areas are built after the series so a series that failed its national
     # fetch cannot advertise local detail the explorer would then load.
@@ -1358,31 +1512,58 @@ def main() -> int:
     if not (args.no_areas or args.dry_run):
         areas = build_areas([s for s in specs if s["id"] in ok], args.only)
         for s in built:
-            s.areas = s.id in areas
+            s.areas = s.id in areas or (AREAS_DIR / f"{s.id}.json").exists()
     elif not args.dry_run:
         # Skipping the area BUILD must not strip the area FLAGS: the files are
         # still on disk and the explorer still offers them. Read what's there.
         for s in built:
             s.areas = (AREAS_DIR / f"{s.id}.json").exists()
 
+    now = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    failed_ids = [fid for fid, _ in failed]
+    if args.only:
+        # --only refreshes one series inside the existing bundle. It used to
+        # write a bundle holding that series alone. The other series, and the
+        # date of the last full build, are left as they were.
+        mine = {s.id: s for s in built}
+        series_out = []
+        for sp in all_specs:
+            if sp["id"] in mine:
+                series_out.append(asdict(mine[sp["id"]]))
+            elif sp["id"] in prev_series:
+                series_out.append(prev_series[sp["id"]])
+        pm = prev.get("meta", {})
+        failed_all = sorted((set(pm.get("failed", [])) - {args.only}) | set(failed_ids))
+        stale_all = sorted({p["id"] for p in series_out if p.get("stale")})
+        meta = {"provenance": "live" if not failed_all else "partial",
+                "generated": pm.get("generated", now), "updated": now,
+                "failed": failed_all, "stale": stale_all,
+                "dropped": sorted(set(pm.get("dropped", [])) - {args.only} | set(dropped))}
+    else:
+        order = {sp["id"]: i for i, sp in enumerate(all_specs)}
+        built.sort(key=lambda s: order.get(s.id, 1 << 30))
+        series_out = [asdict(s) for s in built]
+        meta = {"provenance": "live" if not failed else "partial",
+                "generated": now, "updated": now,
+                "failed": failed_ids, "stale": carried, "dropped": dropped}
+
+    pubs = {}
+    for p in series_out:
+        pubs.setdefault((p.get("publisher", ""), p.get("publisher_full", "")), 0)
+        pubs[(p.get("publisher", ""), p.get("publisher_full", ""))] += 1
+
     bundle = {
-        "meta": {
-            "provenance": "live" if not failed else "partial",
-            "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
-            "failed": [fid for fid, _ in failed],
-        },
+        "meta": meta,
         "eras": config["eras"],
         "pms": config["pms"],
         "refs": refs,
         # Who the catalogue actually draws on, counted from what built rather
         # than from a list anyone has to remember to update.
         "publishers": [
-            {"short": short, "full": full, "url": PUBLISHER_SITES.get(short, ""),
-             "series": sum(1 for s in built if s.publisher == short)}
-            for short, full in sorted({(s.publisher, s.publisher_full) for s in built},
-                                      key=lambda pf: -sum(1 for s in built if s.publisher == pf[0]))
+            {"short": short, "full": full, "url": PUBLISHER_SITES.get(short, ""), "series": n}
+            for (short, full), n in sorted(pubs.items(), key=lambda kv: -kv[1])
         ],
-        "series": [asdict(s) for s in built],
+        "series": series_out,
     }
 
     if args.dry_run:
@@ -1392,9 +1573,10 @@ def main() -> int:
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(json.dumps(bundle, separators=(",", ":")), encoding="utf-8")
     size = OUT.stat().st_size / 1024
-    print(f"\nwrote {OUT.relative_to(ROOT)} — {len(built)} series, {size:.0f} KB")
+    print(f"\nwrote {OUT.relative_to(ROOT)} — {len(series_out)} series, {size:.0f} KB")
     if failed:
-        print(f"{len(failed)} failed; bundle marked 'partial'", file=sys.stderr)
+        print(f"{len(failed)} failed ({len(carried)} kept from the last good copy, "
+              f"{len(dropped)} never built); bundle marked 'partial'", file=sys.stderr)
     return 0
 
 
