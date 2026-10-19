@@ -75,25 +75,32 @@ series:
 
   # ── HOUSING ──────────────────────────────────────────────
   - id: rents
-    name: Private rents index (IPHRP)
+    # Was the Index of Private Housing Rental Prices (IPHRP), which ONS
+    # stopped in March 2025. Its replacement, PIPR, is published back to
+    # January 2015, so the whole run comes from PIPR and nothing is spliced.
+    name: Private rents index (PIPR)
     topics: [housing, work]
-    unit: index, Jan 2015=100
+    unit: index, Jan 2023=100
     kind: index
     geography: UK
     year_basis: calendar
-    source: ONS Index of Private Housing Rental Prices
-    source_url: https://www.ons.gov.uk/economy/inflationandpriceindices/bulletins/indexofprivatehousingrentalprices/previousReleases
+    source: ONS Price Index of Private Rents
+    source_url: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
     licence: OGL v3.0
-    source_type: ons_beta
+    source_type: spreadsheet
     fetch:
-      dataset: index-private-housing-rental-prices
-      edition: time-series
-      version: latest
-      dimensions:
-        administrative-geography: K02000001
-        index-and-year-change: index
-    discontinuities:
-      - {year: 2025, label: "IPHRP ends Mar 2025, replaced by PIPR", note: "IPHRP was discontinued in March 2025 and replaced by the Price Index of Private Rents (PIPR); the final year is a partial one"}
+      page: https://www.ons.gov.uk/economy/inflationandpriceindices/datasets/priceindexofprivaterentsukmonthlypricestatistics
+      link_pattern: priceindexofprivaterents.*\.xlsx
+      sheet: Table 1
+      year_column: Time period
+      period_column: Time period
+      value_column: Index
+      filter: {Area code: K02000001}
+      aggregate: mean
+    notes:
+      - "Covers new and existing private tenancies, so it moves more slowly than advertised rents for new lets"
+      - "Replaced the Index of Private Housing Rental Prices (IPHRP) in 2025. ONS publishes PIPR back to January 2015, so this series is PIPR throughout"
+      - "Official statistics in development. Northern Ireland's latest two months are estimated by ONS"
 
   # ── ECONOMY ──────────────────────────────────────────────
   - id: cpih
@@ -175,17 +182,19 @@ series:
     kind: rate
     geography: England
     year_basis: academic
-    source: DfE Explore Education Statistics
+    # One series, not two. This used to come from DfE's own API while an
+    # identical copy (absencelocal) came through ONS Explore Local Statistics,
+    # and only one of them carried the 2020 break. The ELS route has the same
+    # national figures plus every local authority, so this id now uses it.
+    source: DfE pupil absence statistics, via ONS Explore Local Statistics
     source_url: https://explore-education-statistics.service.gov.uk/find-statistics/pupil-absence-in-schools-in-england
-    source_type: dfe_ees
+    source_type: els
     fetch:
-      data_set_id: 019d209c-08dc-74b6-9edb-52d521406fcf
-      indicator: TuAuP
-      criteria:
-        and:
-          - {filters: {eq: qYfzj}}       # absence type: persistent absence
-          - {filters: {eq: X5Vmf}}       # school type: total
-          - {geographicLevels: {eq: NAT}}
+      indicator: persistent-absences-all-pupils
+      geo: E92000001
+    notes:
+      - "Percentage of pupils in state-funded primary, secondary and special schools absent for 10% or more of the academic year"
+      - "No figures for 2019/20. Sessions missed for COVID reasons count as possible sessions in 2020/21 and 2021/22, but not as absences"
     discontinuities:
       - {year: 2020, label: "Recording rules changed", note: "Attendance recording rules and school opening changed; the series is not comparable across this point"}
 
@@ -281,7 +290,6 @@ series:
       filter: {Method of entry: Small boat arrivals}
     notes:
       - "Detections only. This is not a count of everyone who entered without permission, and the Home Office says so explicitly"
-      - "The final year is partial — the release covers quarters up to the year ending March 2026"
 
   - id: asylumbacklog
     name: Asylum cases awaiting an initial decision
@@ -611,7 +619,7 @@ series:
   - id: csew
     name: Crime Survey estimate of crime
     topics: [crime]
-    unit: incidents (thousands)
+    unit: "thousand incidents"
     kind: count
     geography: England and Wales
     year_basis: financial
@@ -911,7 +919,7 @@ series:
   - id: firms
     name: Active businesses
     topics: [economy]
-    unit: "number of enterprises"
+    unit: "enterprises"
     kind: count
     geography: UK
     year_basis: calendar
@@ -977,7 +985,7 @@ series:
       - "Northern Ireland local government districts Claimant Count figures are only available from 2013 onwards."
 
   - id: inactive
-    name: Economic inactivity rate
+    name: Economic inactivity rate, 16 to 64 (APS)
     topics: [work]
     unit: "%"
     kind: rate
@@ -996,7 +1004,7 @@ series:
       - "Updates to this indicator have been temporarily suspended until the APS reweighting is implemented in 2026."
 
   - id: emprate
-    name: Employment rate
+    name: Employment rate, 16 to 64 (APS)
     topics: [work]
     unit: "%"
     kind: rate
@@ -1121,7 +1129,7 @@ series:
   - id: fdiin
     name: Inward foreign direct investment
     topics: [economy]
-    unit: "£ millions"
+    unit: "£m"
     kind: money_cash
     geography: UK
     year_basis: calendar
@@ -1140,7 +1148,7 @@ series:
   - id: fdiout
     name: Outward foreign direct investment
     topics: [economy]
-    unit: "£ millions"
+    unit: "£m"
     kind: money_cash
     geography: UK
     year_basis: calendar
@@ -1161,7 +1169,7 @@ series:
   - id: airreg
     name: Air pollution regulating
     topics: [environment]
-    unit: "£ millions, 2024 prices"
+    unit: "£m, 2024 prices"
     kind: money_real
     geography: UK
     year_basis: calendar
@@ -1199,7 +1207,7 @@ series:
   - id: ghgreg
     name: Greenhouse gas regulating
     topics: [environment]
-    unit: "£ millions, 2024 prices"
+    unit: "£m, 2024 prices"
     kind: money_real
     geography: UK
     year_basis: calendar
@@ -1219,7 +1227,7 @@ series:
   - id: heatreg
     name: Urban heat regulating
     topics: [environment]
-    unit: "£ millions, 2024 prices"
+    unit: "£m, 2024 prices"
     kind: money_real
     geography: England
     year_basis: calendar
@@ -1594,7 +1602,7 @@ series:
     source_type: ons_timeseries
     fetch: {path: employmentandlabourmarket/peopleinwork/employmentandemployeetypes, cdid: LF24, dataset: lms, granularity: years}
     notes:
-      - "The headline Labour Force Survey rate, back to 1971. The other Employment rate in the catalogue comes from the Annual Population Survey, starts in 2004 and has figures for local areas"
+      - "The headline Labour Force Survey rate, back to 1971. The Annual Population Survey version, Employment rate, 16 to 64 (APS), starts in 2004, ends sooner and has figures for local areas"
     discontinuities:
       - {year: 2024, label: "Switch to Transformed LFS", note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
 
@@ -1611,7 +1619,7 @@ series:
     fetch: {path: employmentandlabourmarket/peoplenotinwork/economicinactivity, cdid: LF2S, dataset: lms, granularity: years}
     notes:
       - "People neither in work nor looking for work: students, carers, the retired and the long-term sick among them"
-      - "The headline Labour Force Survey rate, back to 1971. The other Economic inactivity rate comes from the Annual Population Survey, starts in 2004 and has figures for local areas"
+      - "The headline Labour Force Survey rate, back to 1971. The Annual Population Survey version, Economic inactivity rate, 16 to 64 (APS), starts in 2004, ends sooner and has figures for local areas"
     discontinuities:
       - {year: 2024, label: "Switch to Transformed LFS", note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
 
@@ -1632,7 +1640,7 @@ series:
   - id: vacancies
     name: Job vacancies
     topics: [work]
-    unit: "thousands"
+    unit: "thousand vacancies"
     kind: count
     geography: UK
     year_basis: calendar
@@ -1680,9 +1688,12 @@ series:
     source_url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf
     source_type: ons_timeseries
     fetch: {path: economy/governmentpublicsectorandtaxes/publicsectorfinance, cdid: J5II, dataset: pusf, granularity: years}
+    # ONS publishes the series as net LENDING, negative when the state borrows.
+    # Under the name "net borrowing" the sign is flipped, so borrowing is positive.
+    sign: -1
     notes:
       - "Excludes public sector banks. Calendar-year totals; the Budget is set on financial years"
-      - "ONS publishes this as net lending, so borrowing shows as a negative number: -150,000 means £150bn borrowed"
+      - "ONS publishes this as net lending, where borrowing is negative. The sign is flipped here to match the name: 150,000 means £150bn borrowed, and a negative figure would be a surplus"
 
   - id: taxreceipts
     name: Government current receipts
@@ -2179,7 +2190,7 @@ series:
     publisher_full: Bank of England
     source_type: csv
     fetch:
-      url: https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&Datefrom=01/Jan/1975&Dateto=31/Dec/2099&SeriesCodes=IUMABEDR&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N
+      url: https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&Datefrom=01/Jan/1975&Dateto={today}&SeriesCodes=IUMABEDR&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N
       year_column: DATE
       value_column: IUMABEDR
       aggregate: mean
@@ -2578,7 +2589,7 @@ series:
     name: Value of UK exports
     topics:
     - economy
-    unit: £ million
+    unit: "£m"
     kind: money_cash
     geography: UK
     year_basis: calendar
@@ -2628,7 +2639,7 @@ series:
     name: Public-funded expenditure on research and development
     topics:
     - economy
-    unit: £ million
+    unit: "£m"
     kind: money_cash
     geography: UK
     year_basis: financial
@@ -2646,7 +2657,7 @@ series:
     name: Business expenditure on research and development
     topics:
     - economy
-    unit: £ million
+    unit: "£m"
     kind: money_cash
     geography: UK
     year_basis: calendar
@@ -2916,7 +2927,7 @@ series:
     - education
     unit: '%'
     kind: rate
-    geography: UK
+    geography: Great Britain
     year_basis: calendar
     source: ONS Explore Local Statistics
     source_url: https://www.nomisweb.co.uk/datasets/apsnew
@@ -3038,26 +3049,6 @@ series:
     notes:
     - Percentage of 5 year olds at 'expected level' across all maths early learning goals.
     - Produced by Department for Education, published through ONS Explore Local Statistics
-  - id: absencelocal
-    name: Persistent absences for all pupils
-    topics:
-    - education
-    unit: '%'
-    kind: rate
-    geography: England
-    year_basis: academic
-    source: ONS Explore Local Statistics
-    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/pupil-absence-in-schools-in-england
-    publisher: ONS
-    source_type: els
-    fetch:
-      indicator: persistent-absences-all-pupils
-      geo: E92000001
-    notes:
-    - Percentage of pupils in state-funded schools that were absent for 10% or more of academic year.
-    - Produced by Department for Education, published through ONS Explore Local Statistics
-    - Data is not available for academic year 2019/20. Total includes state-funded primary, secondary and special schools. Sessions recorded as not attending due to COVID circumstances are included as possible
-      sessions in 2020/21 and 2021/22 only, but not as an absence within absence rates.
   - id: absencefsm
     name: Persistent absences for pupils eligible for free school meals
     topics:

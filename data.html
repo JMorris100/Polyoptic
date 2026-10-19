@@ -174,12 +174,14 @@ td.cname a.pglink:hover{color:var(--purple);text-decoration-color:var(--purple)}
 .flag.f-definition  {background:#FFF1E0;color:#92400E;border:1px solid #F2D8B0}
 .flag.f-partial     {background:#FFF8E6;color:#7A5A0A;border:1px solid #EBDCA8}
 .flag.f-provisional {background:#F1F0F6;color:#4B4B63;border:1px solid #DCDAE6}
+.flag.f-development {background:#EEF4FB;color:#2B4A6F;border:1px solid #CFDDED}
 .flag.f-geography   {background:#EEF3F8;color:#2F5273;border:1px solid #CFDEEB}
 .flag.more{background:none;border:1px dashed var(--rule);color:var(--muted)}
 html[data-theme="dark"] .flag.f-discontinued{background:#3A1414;color:#F5A3A3;border-color:#5C2222}
 html[data-theme="dark"] .flag.f-definition  {background:#3A2708;color:#F0C08A;border-color:#5A3E12}
 html[data-theme="dark"] .flag.f-partial     {background:#332A08;color:#E8D18A;border-color:#4E4114}
 html[data-theme="dark"] .flag.f-provisional {background:#23222E;color:#B4B2C6;border-color:#38364A}
+html[data-theme="dark"] .flag.f-development {background:#17222F;color:#A9C2DE;border-color:#2C3C50}
 html[data-theme="dark"] .flag.f-geography   {background:#16232E;color:#93B7D4;border-color:#25394A}
 td.cunit{max-width:210px;overflow:hidden;text-overflow:ellipsis}
 td.cmono,td.cid{font-family:"IBM Plex Mono";font-size:11.5px;color:var(--muted)}
@@ -268,8 +270,10 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
       <span class="wordmark">poly<span class="b">optic</span></span>
     </a>
     <nav class="topnav">
+      <a href="index.html#questions">Questions</a>
       <a href="index.html#topics">Topics</a>
-      <a href="#refs">References</a>
+      <a href="indicator/">Indicators</a>
+      <a href="about.html">About</a>
       <a class="btn-ghost" href="#catalogue" aria-current="page">Verify</a>
       <a class="btn-invert" href="explore.html">Open the explorer</a>
     </nav>
@@ -286,8 +290,8 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
        pulled from, the date they were pulled, and every value as ingested, gaps and breaks
        included. Charts live in the <a href="explore.html">explorer</a>.</p>
     <div class="statrow" id="meta"></div>
-    <div id="loadfail"><b>Couldn't load <code>data/bundle.json</code>.</b> The raw bundle either
-      hasn't been built yet or isn't being served. Run <code>python ingest/ingest.py</code> and reload.</div>
+    <!-- filled only if loading fails, so crawlers and link previews never see it -->
+    <div id="loadfail" role="alert"></div>
   </div>
 
   <!-- Promoted above the catalogue. This is the one block that tells someone
@@ -300,14 +304,16 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
       <li><b>Open the indicator</b> below and hit its <b>API endpoint</b> — the same
         address the pipeline called, at the source, not a copy we host.</li>
       <li><b>Compare the year you care about</b> with the raw values in the expanded row.
-        Monthly and quarterly sources are averaged to one value per year, so compare
-        against the annual figure where the source publishes one.</li>
+        Monthly and quarterly sources become one value a year — an average, the last
+        month of a stock, or a total — and the expanded row says which, so you know which
+        published figure to compare against.</li>
       <li><b>Read the source release</b> for context. Definitions, revisions and footnotes
         live there, and the caveat badges on each row point at what to look for.</li>
-      <li><b>Or reproduce the whole thing.</b> Clone the repo and run
+      <li><b>Or reproduce the whole thing.</b> Clone <a href="https://github.com/JMorris100/Polyoptic">the repository</a> and run
         <code>python ingest/ingest.py --dry-run</code>: it fetches everything fresh and
-        reports what it got. Nothing is computed at ingest beyond collapsing to years —
-        every transform happens in your browser, from the values on this page.</li>
+        reports what it got. Nothing is computed at ingest beyond collapsing to years, and
+        holding back a part-year total until its year is complete — every transform
+        happens in your browser, from the values on this page.</li>
     </ol>
     <p class="lede" style="margin-top:16px">Found a mismatch? The bundle records when it was
       fetched, and sources revise their own history — that is normal for official statistics.
@@ -331,6 +337,7 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
        <span class="flag f-definition">Definition changed</span>
        <span class="flag f-partial">Partial period</span>
        <span class="flag f-provisional">Provisional</span>
+       <span class="flag f-development">In development</span>
        <span class="flag f-geography">Sub-UK coverage</span> — so a marked row tells you what
        to go and read, rather than only that something exists to read.</p>
     <p class="lede browse">Each name opens that indicator's own page — the latest figure, a chart,
@@ -387,6 +394,14 @@ function stamp(iso,withTime){
   return (withTime&&m[4])?`${d}, ${m[4]}:${m[5]} UTC`:d;
 }
 const cap=s=>String(s).charAt(0).toUpperCase()+String(s).slice(1);
+function annualText(s){
+  const a=s.annual||{}, per=a.per===12?"months":a.per===4?"quarters":`${a.per} periods`;
+  const endM={financial:"March",academic:"August"}[s.year_basis]||"December";
+  if(a.how==="mean") return `the average of its ${per}`;
+  if(a.how==="sum") return `the total of its ${per}`;
+  if(a.how==="last") return a.per===12?`the ${endM} figure (the last month)`:"the last quarter's figure";
+  return "as published";
+}
 /* topic keys to the names the homepage uses */
 const TOPIC_NAME={crime:"Crime & justice",environment:"Environment & energy",migration:"Population & migration"};
 const topicLabel=t=>TOPIC_NAME[t]||cap(t);
@@ -400,11 +415,12 @@ const mlabel=k=>MEASURE[k]||cap(k||"—");
 /* Caveat tiers. The pipeline derives them (see derive_flags in ingest.py) and
    orders them worst-first, so flags[0] is what the badge should say. */
 const FLAG_LABEL={discontinued:"Discontinued",definition:"Definition changed",
-  partial:"Partial period",provisional:"Provisional",geography:"Sub-UK coverage"};
+  partial:"Partial period",provisional:"Provisional",development:"In development",geography:"Sub-UK coverage"};
 const FLAG_WHY={
   discontinued:"This series stopped, or was replaced by a differently-defined one.",
   definition:"The basis changed part-way through, so values either side are not strictly comparable.",
   partial:"A period here covers less than a full year, so the last point sits low for that reason alone.",
+  development:"Official statistics in development: the publisher is still settling the method, so figures may be revised as it changes.",
   provisional:"The most recent figures are provisional and will be revised.",
   geography:"Not UK-wide. Comparing it with a UK series is not like for like.",
 };
@@ -490,8 +506,11 @@ function detailHtml(s,isRef){
        ["Measure",esc(mlabel(s.kind))],
        ["Year basis",esc(s.year_basis||"—")],
        ["Licence",esc(s.licence||"OGL v3.0")],
-       ["Last fetched",esc(stamp(s.fetched))],
+       ["Last fetched",esc(stamp(s.fetched))+(s.stale?" — the latest refresh couldn’t reach the source, so this is the last good copy":"")],
        ["Observations",`${obs} of ${s.values.length} years`],
+       /* how a monthly or quarterly source became one value a year, so a check
+          against the publisher's table looks for the right figure */
+       ...(s.annual?[["Each year is",esc(annualText(s))]]:[]),
        ["Topics",(s.topics||[]).map(t=>
           `<button class="tpill" data-facet-topic="${esc(t)}">${esc(topicLabel(t))}</button>`).join("")||"—"]];
   const badges=isRef?"":flagBadges(s,true);
@@ -686,7 +705,16 @@ fetch("data/pages.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>
   ];
   document.getElementById("meta").innerHTML=
     stats.map(([k,v])=>`<div class="stat"><span class="k">${esc(k)}</span><span class="v">${v}</span></div>`).join("")+
-    ((m.failed||[]).length
+    /* a failed fetch keeps the last good copy, so say which ones and from when */
+    ((m.stale||[]).length
+      ? `<div class="stat alert"><span class="k">Couldn’t refresh — showing the last good copy</span>
+           <span class="v">${m.stale.map(id=>{const s=db.series.find(x=>x.id===id);
+             return esc((s?s.name:id)+(s&&s.fetched?` (fetched ${stamp(s.fetched)})`:""));}).join(", ")}</span></div>` : "")+
+    ((m.dropped||[]).length
+      ? `<div class="stat alert"><span class="k">Not available yet</span>
+           <span class="v">${esc(m.dropped.join(", "))}</span></div>` : "")+
+    /* bundles from before the last-good-copy change only list failures */
+    (!m.stale&&(m.failed||[]).length
       ? `<div class="stat alert"><span class="k">Failed this refresh</span>
            <span class="v">${esc(m.failed.join(", "))}</span></div>` : "");
 
@@ -734,7 +762,9 @@ fetch("data/pages.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>
     const s=SER[b.dataset.dl]; if(!s) return;
     download("polyoptic-"+(s.id||"series")+".csv", csvFor(s));
   });
-}).catch(()=>{ document.getElementById("loadfail").style.display="block"; });
+}).catch(()=>{ const el=document.getElementById("loadfail");
+  el.innerHTML="<b>The figures didn’t load.</b> Please reload the page in a moment. If it keeps happening, the raw data is still at <a href=\"data/bundle.json\">data/bundle.json</a>.";
+  el.style.display="block"; });
 </script>
 </body>
 </html>

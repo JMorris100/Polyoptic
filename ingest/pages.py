@@ -52,22 +52,35 @@ esc = lambda s: html.escape(str(s), quote=True)
 # ── numbers ──────────────────────────────────────────────────────────
 
 def fmt(v: float | None) -> str:
+    """A figure to the precision a reader can use, with no trailing zeros:
+    4.9 not 4.92, 8 not 8.00, 69.3 million not 69,281,437."""
     if v is None:
         return "–"
     a = abs(v)
-    if a >= 10000:
-        return f"{v:,.0f}"
+    if a >= 10_000_000:
+        return (f"{v / 1e6:,.1f}".rstrip("0").rstrip(".") + " million").replace("-", "−", 1)
     if a >= 100:
-        return f"{v:,.0f}" if a >= 1000 else f"{v:.0f}"
-    if a >= 10:
-        return f"{v:.1f}"
-    return f"{v:.2f}"
+        return f"{v:,.0f}".replace("-", "−", 1)
+    if a >= 1:
+        out = f"{v:.1f}"
+    else:
+        out = f"{v:.2f}"
+    out = out.rstrip("0").rstrip(".") if "." in out else out
+    return out.replace("-", "−", 1) if out.startswith("-") else out
 
 
 def with_unit(v: float, unit: str) -> str:
     u = unit or ""
+    if u.startswith("£") and v < 0:                  # −£151,296m, not £-151,296m
+        return "−" + with_unit(-v, u)
+    if u.startswith("£ per "):                       # £752 per week
+        return f"£{fmt(v)} {u[2:]}"
     if u.startswith("%"):
         return f"{fmt(v)}%" + (u[1:] if u != "%" else "")
+    # £m and £bn wrap the number: £867,021m, £2.3bn, then anything after the comma
+    for scale in ("m", "bn"):
+        if u == f"£{scale}" or u.startswith(f"£{scale},"):
+            return f"£{fmt(v)}{scale}" + u[len(scale) + 1:]
     if u.startswith("£") and not u.startswith("£ per") and " " not in u.strip():
         return f"£{fmt(v)}"
     return f"{fmt(v)} {u}".strip()
@@ -91,6 +104,41 @@ def slugify(s: str) -> str:
 
 def points(s: dict) -> list[tuple[int, float]]:
     return [(s["start"] + i, v) for i, v in enumerate(s["values"]) if v is not None]
+
+
+def full_points(s: dict) -> list[tuple[int, float]]:
+    """Whole years only: a final year the source is part-way through is left out,
+    so 'latest', changes and highs and lows compare like with like."""
+    p = s.get("partial") or {}
+    return [(y, v) for y, v in points(s) if y != p.get("year")] or points(s)
+
+
+def year_figure(s: dict, y: int) -> str:
+    """A year as the figure for it was made: '2025 average', 'Dec 2025' for
+    the last month of a stock, '2025 total' — or just '2025' for a source that
+    publishes one figure a year. A reader checking against the publisher's
+    monthly table then knows which figure to look for."""
+    a = s.get("annual") or {}
+    how, per = a.get("how"), a.get("per")
+    basis = s.get("year_basis", "calendar")
+    if how == "mean":
+        return f"{y} average"
+    if how == "sum":
+        return f"{y} total"
+    if how == "last" and per == 12:
+        return {"financial": f"Mar {y + 1}", "academic": f"Aug {y + 1}"}.get(basis, f"Dec {y}")
+    if how == "last" and per == 4:
+        return f"Q4 {y}"
+    return str(y)
+
+
+def part_label(s: dict) -> str:
+    """'Jan–Mar 2026' for a part-year figure, or '' when there is none."""
+    p = s.get("partial") or {}
+    if not p:
+        return ""
+    span = p.get("label") or f'{p.get("have")} of {p.get("of")} periods'
+    return f'{span} {p["year"]}'
 
 
 # ── the chart, drawn here so the page needs no script ───────────────
@@ -196,7 +244,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex San
 .topnav{margin-left:auto;display:flex;align-items:center;gap:18px}
 .topnav a{color:#fff;text-decoration:none;font-size:14px;opacity:.9}
 .topnav .btn{background:#fff;color:#4633A8;padding:7px 14px;border-radius:100px;font-size:13.5px;font-weight:600;opacity:1}
-@media(max-width:640px){.topnav a:not(.btn){display:none}}
+@media(max-width:820px){.topnav a:not(.btn){display:none}}
 main{padding:40px 0 10px}
 .crumbs{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.06em;color:var(--muted);margin:0 0 14px}
 .crumbs a{color:var(--muted)}
@@ -276,7 +324,7 @@ def page(*, path: str, depth: int, title: str, desc: str, og_image: str, og_alt:
 <body>
 <div class="topbar"><div class="wrap">
   <a class="brand" href="{up}index.html">{LOGO}<span class="wordmark">poly<span class="b">optic</span></span></a>
-  <nav class="topnav"><a href="{up}indicator/">Indicators</a><a href="{up}data.html">Verify</a><a href="{up}about.html">About</a>
+  <nav class="topnav"><a href="{up}index.html#questions">Questions</a><a href="{up}index.html#topics">Topics</a><a href="{up}indicator/">Indicators</a><a href="{up}about.html">About</a><a href="{up}data.html">Verify</a>
     <a class="btn" href="{up}{explore}">Open in the explorer</a></nav>
 </div></div>
 <main class="wrap">
@@ -308,7 +356,7 @@ def breadcrumb_ld(trail: list[tuple[str, str]]) -> dict:
 
 def change_line(s: dict) -> tuple[str, str] | None:
     """The change over the last ten years (or the whole run, if shorter)."""
-    pts = points(s)
+    pts = full_points(s)
     if len(pts) < 2:
         return None
     ly, lv = pts[-1]
@@ -323,14 +371,22 @@ def change_line(s: dict) -> tuple[str, str] | None:
                 f'{"+" if d >= 0 else "−"}{fmt(abs(d))}', f"change since {by}")
     if bv:
         pc = (lv / bv - 1) * 100
-        return (f'{"+" if pc >= 0 else "−"}{abs(pc):.1f}%', f"change since {by}")
+        # +13,770% says nothing a reader can use; past 100% a rounded figure
+        # (or the multiple, past 1,000%) reads better than a decimal place
+        # from a small base a percentage or a multiple is the misleading
+        # headline (299 to 41,472 is "139×"); give the change in the unit itself
+        if abs(pc) >= 300:
+            d = lv - bv
+            return (f'{"+" if d >= 0 else "−"}{fmt(abs(d))}', f"since {by} (from {fmt(bv)})")
+        return (f'{"+" if pc >= 0 else "−"}{abs(pc):,.{0 if abs(pc) >= 100 else 1}f}%', f"change since {by}")
     return None
 
 
 def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs: dict) -> str:
-    pts = points(s)
+    pts = full_points(s)
     ly, lv = pts[-1]
     fy = pts[0][0]
+    part = s.get("partial") or {}
     topic = (s.get("topics") or ["economy"])[0]
     tname = TOPIC_NAME.get(topic, topic.title())
     geo = s.get("geography", "UK")
@@ -340,7 +396,7 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
     pub_full = s.get("publisher_full") or s.get("publisher") or s.get("source")
     latest = with_unit(lv, unit)
     title = f'{s["name"]}: {geo} {"figures" if snap else "data"}, {years} | Polyoptic'
-    desc = (f'{s["name"]}, {geo}: {latest} in {ly}. '
+    desc = (f'{s["name"]}, {geo}: {latest}, {year_figure(s, ly)}. '
             + ("" if snap else f"Every published year from {fy}, ")
             + f"from {pub_full}, with the source, caveats and a chart you can rebase or compare.")
     explore = (f'explore.html#p={s["id"]}~map~none~{fy}~{ly}~bands' if snap and s.get("areas")
@@ -349,10 +405,17 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
 
     # a long unit ('house price to earnings ratio') goes under the number, not in it
     short = latest if len(latest) <= 14 else fmt(lv)
-    facts = [f'<div class="fact"><b>{esc(short)}</b><span>Latest, {ly}{"" if short == latest else " · " + esc(unit)}</span></div>']
+    facts = [f'<div class="fact"><b>{esc(short)}</b><span>Latest, {esc(year_figure(s, ly))}{"" if short == latest else " · " + esc(unit)}</span></div>']
     ch = change_line(s)
     if ch and not snap:
         facts.append(f'<div class="fact"><b>{esc(ch[0])}</b><span>{esc(ch[1])}</span></div>')
+    if part and part.get("value") is not None:
+        what = {"sum": "So far in", "mean": "Average so far,", "last": "Latest,"}.get(part.get("how"), "So far,")
+        # a stock's part-year figure is its latest month, not a span of months
+        when = (f'{(part.get("label") or "").split("–")[-1]} {part["year"]}'.strip()
+                if part.get("how") == "last" else part_label(s))
+        facts.append(f'<div class="fact part"><b>{esc(with_unit(part["value"], unit) if len(with_unit(part["value"], unit)) <= 14 else fmt(part["value"]))}</b>'
+                     f'<span>{esc(what)} {esc(when)}{"" if part.get("how") == "last" else " · part-year"}</span></div>')
     if len(pts) >= 3 and not snap:
         hy, hv = max(pts, key=lambda p: p[1])
         my, mv = min(pts, key=lambda p: p[1])
@@ -362,8 +425,12 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
     breaks = s.get("discontinuities") or []
     chart = ""
     if len(pts) >= 2:
+        pnote = ""
+        if part:
+            pnote = (f"{part['year']} covers {part_label(s).rsplit(' ', 1)[0]} only · " if part.get("plotted")
+                     else f"{part['year']} is left off until the year is complete · ")
         chart = (f'<div class="card">{chart_svg(s)}<p class="cap">{esc(unit)} · {esc(geo)} · '
-                 f'{"dashed lines mark breaks in the series · " if breaks else ""}source: {esc(s.get("source",""))}</p></div>')
+                 f'{"dashed lines mark breaks in the series · " if breaks else ""}{esc(pnote)}source: {esc(s.get("source",""))}</p></div>')
 
     notes = "".join(f"<li>{esc(n)}</li>" for n in s.get("notes", []))
     brk = "".join(f'<li><b>{esc(d.get("year",""))}: {esc(d.get("label",""))}.</b> {esc(d.get("note",""))}</li>' for d in breaks)
@@ -379,6 +446,9 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
 <p style="margin-top:12px"><a href="../../explore.html#p={s['id']}~map~none~{fy}~{ly}~bands">See every area on a map →</a></p>"""
 
     table = "".join(f'<tr><td>{y}</td><td class="n">{esc(fmt(v))}</td></tr>' for y, v in reversed(pts))
+    if part and part.get("value") is not None:
+        table = (f'<tr><td>{esc(part_label(s))} <small>(part-year)</small></td>'
+                 f'<td class="n">{esc(fmt(part["value"]))}</td></tr>') + table
     data_tbl = f"""<h2>Every published year</h2>
 <details{' open' if len(pts) <= 12 else ''}><summary>{len(pts)} value{'s' if len(pts) != 1 else ''}, {esc(unit)}</summary>
 <table style="margin-top:10px"><thead><tr><th>Year</th><th class="n">{esc(unit)}</th></tr></thead><tbody>{table}</tbody></table></details>
@@ -446,10 +516,10 @@ def csv_text(s: dict) -> str:
 # ── topics and the index ────────────────────────────────────────────
 
 def card(s: dict, href: str) -> str:
-    pts = points(s)
+    pts = full_points(s)
     ly, lv = pts[-1]
     return (f'<li><a href="{href}"><b>{esc(s["name"])}</b>'
-            f'<span>{esc(with_unit(lv, s.get("unit","")))} in {ly} · {esc(s.get("geography",""))}</span></a></li>')
+            f'<span>{esc(with_unit(lv, s.get("unit","")))}, {esc(year_figure(s, ly))} · {esc(s.get("geography",""))}</span></a></li>')
 
 
 def topic_page(k: str, name: str, blurb: str, series: list[dict], slugs: dict) -> str:
@@ -491,6 +561,265 @@ def index_page(series: list[dict], slugs: dict) -> str:
                 og_image="og/home.png", og_alt="Polyoptic", ld=ld, body=body)
 
 
+# ── question pages: the number and the chart, from the data ─────────
+# The question pages are written by hand except for the chart's numbers and
+# the paragraph under "The number", which are computed here, together, from
+# the bundle on every build — so the sentence and the chart cannot disagree,
+# and neither can drift from the data as it refreshes.
+#
+# Each question names HOW it is answered, because one sentence shape does not
+# fit every question:
+#   ratio         two series that are both money or price indexes, rebased to
+#                 the first year they share; "A ended N% ahead of B" is
+#                 meaningful because both are growth in the same kind of thing
+#   same_unit     convert one series into the other's unit first (debt interest
+#                 in £m into % of GDP, beside debt in % of GDP) and derive what
+#                 the pair means (interest ÷ debt, the effective rate)
+#   before_after  a question about an event: the last year before it against
+#                 the first year after it and the latest, naming any break in
+#                 the series that falls between them
+# The generator refuses to write a ratio between series in units that cannot
+# be compared, rather than writing a sentence that sounds right.
+
+QUESTIONS = {
+    "has-pay-kept-up-with-prices": {"kind": "ratio", "ids": ["pay", "cpih"], "from": 2000},
+    "have-rents-outrun-pay": {"kind": "ratio", "ids": ["rents", "pay"], "from": 2015},
+    "what-does-the-debt-cost-to-carry": {"kind": "same_unit", "ids": ["psnd", "debtint"], "from": 1993},
+    "did-lost-schooling-widen-the-gap": {
+        "kind": "before_after", "ids": ["gap", "absence"], "from": 2010,
+        "before": 2018, "after": 2021, "event": "the pandemic",
+        # a higher gap index means disadvantaged pupils are further behind
+        "words": {"gap": ("widened", "narrowed")},
+    },
+}
+
+QUESTION_NAMES = {
+    "pay": "average pay", "cpih": "prices (CPIH)", "rents": "private rents",
+    "psnd": "public sector net debt", "debtint": "debt interest",
+    "absence": "persistent absence", "gap": "the disadvantage gap index",
+}
+
+# units that can be rebased against each other: both growth in money or prices
+RATIO_KINDS = {"money_cash", "index"}
+
+
+def pct(v: float) -> str:
+    return f'{"+" if v >= 0 else "−"}{abs(v):.0f}%'
+
+
+def year_label(y: int, basis: str) -> str:
+    if basis == "academic":
+        return f"{y}/{(y + 1) % 100:02d}"
+    if basis == "financial":
+        return f"{y}-{(y + 1) % 100:02d}"
+    return str(y)
+
+
+def qname(s: dict) -> str:
+    return QUESTION_NAMES.get(s["id"], s["name"])
+
+
+def cap(t: str) -> str:
+    return t[0].upper() + t[1:]
+
+
+def q_ratio(cfg: dict, by_id: dict) -> dict:
+    a, b = (by_id[i] for i in cfg["ids"])
+    for s in (a, b):
+        if s["kind"] not in RATIO_KINDS:
+            raise ValueError(f'{s["id"]} is {s["kind"]} ({s["unit"]}): a ratio question needs money or price '
+                             f"indexes on both sides — give this question another kind")
+    runs = [dict((y, v) for y, v in full_points(s) if y >= cfg["from"]) for s in (a, b)]
+    start, end = max(min(r) for r in runs), min(max(r) for r in runs)
+    reb = [{y: r[y] / r[start] * 100 for y in sorted(r) if start <= y <= end} for r in runs]
+    A, B = reb
+    na, nb = qname(a), qname(b)
+    ga, gb = A[end] - 100, B[end] - 100
+    if ga >= 0 and gb >= 0:
+        verdict = (f"{cap(na)} rose faster" if ga > gb + 1 else
+                   f"{cap(nb)} rose faster" if gb > ga + 1 else "The two rose by about the same")
+    elif ga < 0 and gb < 0:
+        verdict = f"Both fell, {na if ga > gb else nb} by less"
+    else:
+        verdict = f"{cap(na if ga > gb else nb)} rose while {nb if ga > gb else na} fell"
+    both = sorted(set(A) & set(B))
+    rel = {y: (A[y] / B[y] - 1) * 100 for y in both}
+    r = rel[end]
+    if abs(r) < 1:
+        tail = f"By {end} the two were level, relative to {start}."
+    else:
+        tail = f"Relative to {start}, {na} ended {abs(r):.0f}% {'ahead of' if r > 0 else 'behind'} {nb}"
+        far = max(both, key=lambda y: abs(rel[y]))
+        if far != end and abs(rel[far]) > abs(r) + 2:
+            tail += f", having been {abs(rel[far]):.0f}% {'ahead' if rel[far] > 0 else 'behind'} at the widest, in {far}"
+        tail += "."
+    line = (f"Rebased to {start} = 100, {na} reached {A[end]:.0f} by {end} and {nb} {B[end]:.0f}: "
+            f"{na} {pct(ga)}, {nb} {pct(gb)}. {verdict}. {tail}")
+    return {"kind": "ratio", "sentence": line, "start": start, "end": end, "baseline": 100,
+            "unit": f"index, {start} = 100", "explore": f"{a['id']},{b['id']}~line~index~{start}~{end}~pm",
+            "sets": [{"id": s["id"], "name": s["name"], "pts": [[y, round(R[y], 3)] for y in sorted(R)]}
+                     for s, R in ((a, A), (b, B))]}
+
+
+def q_same_unit(cfg: dict, by_id: dict, refs: dict) -> dict:
+    """Debt in % of GDP beside interest in £m: put interest into % of GDP too,
+    and derive the effective rate, interest ÷ debt."""
+    debt, intr = (by_id[i] for i in cfg["ids"])
+    if not (debt["unit"].startswith("% of GDP") and intr["kind"] == "money_cash" and intr["unit"].startswith("£m")):
+        raise ValueError("same_unit expects a % of GDP stock and a £m cash flow")
+    g = refs["gdp"]
+    gdp = {g["start"] + i: v for i, v in enumerate(g["values"]) if v}
+    D = {y: v for y, v in full_points(debt) if y >= cfg["from"]}
+    I = {y: v for y, v in full_points(intr) if y >= cfg["from"]}
+    years = sorted(y for y in D if y in I and y in gdp)
+    start, end = years[0], years[-1]
+    ish = {y: I[y] / gdp[y] * 100 for y in years}                     # interest, % of GDP
+    eff = {y: I[y] / (D[y] / 100 * gdp[y]) * 100 for y in years}      # interest ÷ debt
+    low = min(years, key=lambda y: eff[y])
+    peak_i = max(years, key=lambda y: ish[y])
+    f1 = lambda v: f"{v:.1f}"
+    line = (f"In {start} net debt was {f1(D[start])}% of GDP and the interest on it cost {f1(ish[start])}% of GDP. "
+            f"By {end} the debt was {f1(D[end])}% of GDP, {D[end] / D[start]:.1f} times its {start} share of the economy, "
+            f"but interest cost {f1(ish[end])}% — {ish[end] / ish[start]:.1f} times"
+            + (f", and it peaked at {f1(ish[peak_i])}% in {peak_i}" if peak_i not in (start, end) else "")
+            + f". The difference is the rate: interest ÷ debt, the effective rate the state pays, "
+            f"went from {f1(eff[start])}% in {start} to a low of {f1(eff[low])}% in {low}"
+            + (f", and is back to {f1(eff[end])}% in {end}." if low != end else ".")
+            + " Interest and debt are both set against the size of the economy here, so rising prices and growth"
+            " do not flatter or inflate either one.")
+    return {"kind": "same_unit", "sentence": line, "start": start, "end": end, "baseline": None, "zero": True,
+            "unit": "% of GDP, and % of the debt", "explore": f"{debt['id']},{intr['id']}~line~pctgdp~{start}~{end}~pm",
+            "sets": [{"id": "debtint_gdp", "name": "Debt interest, % of GDP",
+                      "pts": [[y, round(ish[y], 3)] for y in years]},
+                     {"id": "effrate", "name": "Effective interest rate (interest ÷ debt)",
+                      "pts": [[y, round(eff[y], 3)] for y in years]}]}
+
+
+def q_before_after(cfg: dict, by_id: dict) -> dict:
+    main, other = (by_id[i] for i in cfg["ids"])
+    bef, aft, ev = cfg["before"], cfg["after"], cfg["event"]
+
+    def frame(s):
+        pts = {y: v for y, v in full_points(s) if y >= cfg["from"]}
+        b = max(y for y in pts if y <= bef)
+        a = min(y for y in pts if y >= aft)
+        return pts, b, a, max(pts)
+
+    def crossing(s, b, a):
+        return [d for d in s.get("discontinuities") or [] if b < int(d.get("year", 0)) <= a]
+
+    yl = lambda s, y: year_label(y, s.get("year_basis", "calendar"))
+    num = lambda s, v: f"{v:.1f}%" if (s.get("unit") or "").startswith("%") else f"{v:.2f}"
+
+    P, b, a, l = frame(main)
+    e = min(P)
+    up, down = cfg.get("words", {}).get(main["id"], ("rose", "fell"))
+    nm = qname(main)
+    parts = [f"{cap(nm)} {down if P[b] < P[e] else up} from {num(main, P[e])} in {yl(main, e)} "
+             f"to {num(main, P[b])} in {yl(main, b)}, the last year before {ev}."]
+    ch = (P[a] / P[b] - 1) * 100
+    parts.append(f"When it was next measured, in {yl(main, a)}, it was {num(main, P[a])}, "
+                 f"{'up' if ch >= 0 else 'down'} {abs(ch):.0f}% on {yl(main, b)}, and it is {num(main, P[l])} in {yl(main, l)}.")
+    if (P[b] - P[e]) * (P[l] - P[b]) < 0 and P[e] != P[b]:
+        share = (P[l] - P[b]) / (P[e] - P[b]) * 100
+        noun = (down if P[b] < P[e] else up)[:-2] + "ing"                # narrowed -> narrowing
+        parts.append(f"That is more than the whole of the {noun} before it." if share >= 100 else
+                     f"That undoes {share:.0f}% of the {noun} between {yl(main, e)} and {yl(main, b)}.")
+    O, ob, oa, ol = frame(other)
+    peak = max((y for y in O if y >= oa), key=lambda y: O[y])
+    on = qname(other)
+    parts.append(f"{cap(on)} was {num(other, O[ob])} of pupils in {yl(other, ob)}" if (other.get("unit") or "").startswith("%")
+                 else f"{cap(on)} was {num(other, O[ob])} in {yl(other, ob)}")
+    parts[-1] += (f" and peaked at {num(other, O[peak])} in {yl(other, peak)}; it is {num(other, O[ol])} in {yl(other, ol)}."
+                  if peak != ol else f" and is {num(other, O[ol])} in {yl(other, ol)}.")
+    # any break between "before" and "after" is said, in one clause
+    brk = []
+    for s, (sb, sa) in ((main, (b, a)), (other, (ob, oa))):
+        for d in crossing(s, sb, sa):
+            lab = d.get("label") or "the series breaks"
+            lab = lab[0].lower() + lab[1:]                                      # keep KS2 as KS2
+            brk.append(f"{qname(s)} ({lab}{'' if re.search(r'[0-9]{4}', lab) else ' in ' + str(d['year'])})")
+    if brk:
+        parts.append(("Neither series is" if len(brk) > 1 else "The series is not") +
+                     f" measured identically either side of {ev}: " + " and ".join(brk) +
+                     ", so compare the before and after figures with care.")
+    start = min(min(P), min(O))
+    end = max(l, ol)
+    sets = []
+    for s, pts, base in ((main, P, b), (other, O, ob)):
+        sets.append({"id": s["id"], "name": s["name"],
+                     "pts": [[y, round(pts[y] / pts[base] * 100, 3) if y in pts else None] for y in range(start, end + 1)]})
+    breaks = [{"year": int(d["year"]), "label": d.get("label", "")} for s in (main, other)
+              for d in (s.get("discontinuities") or [])]
+    return {"kind": "before_after", "sentence": " ".join(parts), "start": start, "end": end, "baseline": 100,
+            "unit": f"index, {yl(main, b)} = 100", "band": [b + 1, a, ev], "breaks": breaks,
+            "explore": f"{main['id']},{other['id']}~line~index~{start}~{end}~pm", "sets": sets}
+
+
+def build_question(slug: str, by_id: dict, refs: dict) -> dict | None:
+    cfg = QUESTIONS.get(slug)
+    if not cfg or any(i not in by_id for i in cfg["ids"]):
+        return None
+    fn = {"ratio": q_ratio, "before_after": q_before_after}.get(cfg["kind"])
+    q = q_same_unit(cfg, by_id, refs) if cfg["kind"] == "same_unit" else fn(cfg, by_id)
+    q["names"] = {s["id"]: s["name"] for s in q["sets"]}
+    return q
+
+
+def write_questions(by_id: dict, refs: dict) -> dict:
+    out = {}
+    for p in sorted((ROOT / "q").glob("*/index.html")):
+        slug = p.parent.name
+        q = build_question(slug, by_id, refs)
+        if not q:
+            print(f"  question {slug}: not configured or series missing, left as it was")
+            continue
+        out[slug] = q
+        text = p.read_text(encoding="utf-8")
+        new = re.sub(r"(<!-- number:[^>]*-->\n\s*)<p>.*?</p>(\n\s*<!-- /number -->)",
+                     lambda m: f"{m.group(1)}<p>{esc(q['sentence'])}</p>{m.group(2)}", text, count=1, flags=re.S)
+        data = json.dumps({k: v for k, v in q.items() if k != "sentence"}, separators=(",", ":"))
+        new = re.sub(r'<script type="application/json" id="qdata">.*?</script>',
+                     lambda m: f'<script type="application/json" id="qdata">{data}</script>', new, count=1, flags=re.S)
+        new = re.sub(r"explore\.html#p=[^\"]*", f"explore.html#p={q['explore']}", new)
+        # the year range in the title, description and subtitle follows the data;
+        # en-dash ranges only, so nothing in a script or link is touched
+        new = re.sub(r"\b(1[89]\d\d|20\d\d)–(1[89]\d\d|20\d\d)\b", f"{q['start']}–{q['end']}", new)
+        new = re.sub(r"\b(1[89]\d\d|20\d\d) to (1[89]\d\d|20\d\d)\b(?=\">)", f"{q['start']} to {q['end']}", new)
+        new = re.sub(r"\b(1[89]\d\d|20\d\d)\\u2013(1[89]\d\d|20\d\d)\b", f"{q['start']}\\\\u2013{q['end']}", new)   # inside JSON-LD
+        if new != text:
+            p.write_text(new, encoding="utf-8")
+    # the share-image builder draws the same numbers
+    (ROOT / "data" / "questions.json").write_text(json.dumps(out, separators=(",", ":")), encoding="utf-8")
+    return out
+
+
+# Indicator pages whose address changed when the series was renamed or
+# merged. Each old address gets a small page that forwards to the new one, so
+# a link someone already shared still lands.
+MOVED = {
+    "private-rents-index-iphrp": "rents",
+    "employment-rate": "emprate",
+    "economic-inactivity-rate": "inactive",
+    "persistent-absences-for-all-pupils": "absence",
+}
+
+
+def write_moved(slugs: dict) -> None:
+    for old, sid in MOVED.items():
+        new = slugs.get(sid)
+        if not new or new == old:
+            continue
+        d = ROOT / "indicator" / old
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "index.html").write_text(
+            f'<!DOCTYPE html><html lang="en-GB"><head><meta charset="utf-8"><title>Moved</title>'
+            f'<link rel="canonical" href="{SITE}/indicator/{new}/">'
+            f'<meta http-equiv="refresh" content="0; url=../{new}/"><meta name="robots" content="noindex"></head>'
+            f'<body><p>This indicator has moved to <a href="../{new}/">its new page</a>.</p></body></html>',
+            encoding="utf-8")
+
+
 # ── the sitemap ─────────────────────────────────────────────────────
 
 def sitemap(entries: list[tuple[str, str, str, str]]) -> str:
@@ -518,6 +847,8 @@ def main() -> None:
             sl = f'{sl}-{s["id"]}'
         seen.add(sl); slugs[s["id"]] = sl
 
+    write_questions(by_id, db.get("refs", {}))
+
     for d in ("indicator", "topic"):
         shutil.rmtree(ROOT / d, ignore_errors=True)
     today = datetime.now(timezone.utc).date().isoformat()
@@ -541,6 +872,8 @@ def main() -> None:
         (out / "index.html").write_text(indicator_page(s, slugs[s["id"]], by_id, slugs, ix, pubs))
         (out / "data.csv").write_text(csv_text(s))
         entries.append((f"indicator/{slugs[s['id']]}/", (s.get("fetched") or today)[:10], "weekly", "0.6"))
+
+    write_moved(slugs)
 
     (ROOT / "indicator" / "index.html").write_text(index_page(series, slugs))
     (ROOT / "data" / "pages.json").write_text(json.dumps(slugs, separators=(",", ":")))

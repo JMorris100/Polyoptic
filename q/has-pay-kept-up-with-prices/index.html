@@ -4,21 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Has pay kept up with prices? — Polyoptic</title>
-<meta name="description" content="Average weekly earnings against CPIH inflation, both rebased to the same starting year. 2000–2026, UK, from ONS releases.">
+<meta name="description" content="Average weekly earnings against CPIH inflation, both rebased to the same starting year. 2000–2025, UK, from ONS releases.">
 <link rel="canonical" href="https://polyoptic.co/q/has-pay-kept-up-with-prices/">
 <meta property="og:site_name" content="Polyoptic">
 <meta property="og:title" content="Has pay kept up with prices?">
-<meta property="og:description" content="Average weekly earnings × CPIH, both rebased. 2000–2026, UK.">
+<meta property="og:description" content="Average weekly earnings × CPIH, both rebased. 2000–2025, UK.">
 <meta property="og:image" content="https://polyoptic.co/og/has-pay-kept-up-with-prices.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Average weekly earnings × CPIH, both rebased, 2000 to 2026">
+<meta property="og:image:alt" content="Average weekly earnings × CPIH, both rebased, 2000 to 2025">
 <meta property="og:url" content="https://polyoptic.co/q/has-pay-kept-up-with-prices/">
 <meta property="og:type" content="article">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">
 {"@context":"https://schema.org","@type":"WebPage","name":"Has pay kept up with prices?",
- "url":"https://polyoptic.co/q/has-pay-kept-up-with-prices/","description":"Average weekly earnings against CPIH inflation, both rebased to the same starting year. 2000\u20132026, UK, from ONS releases.","inLanguage":"en-GB",
+ "url":"https://polyoptic.co/q/has-pay-kept-up-with-prices/","description":"Average weekly earnings against CPIH inflation, both rebased to the same starting year. 2000\u20132025, UK, from ONS releases.","inLanguage":"en-GB",
  "primaryImageOfPage":{"@type":"ImageObject","url":"https://polyoptic.co/og/has-pay-kept-up-with-prices.png","width":1200,"height":630},
  "license":"https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/",
  "isPartOf":{"@type":"WebSite","name":"Polyoptic","url":"https://polyoptic.co/"}}
@@ -42,7 +42,9 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex San
 .wordmark .b{font-weight:500;opacity:.85}
 .topnav{margin-left:auto;display:flex;align-items:center;gap:20px}
 .topnav a{color:#fff;text-decoration:none;font-size:14px;opacity:.9}
-.btn-invert{background:#fff;color:var(--purple);padding:7px 14px;border-radius:2px;font-size:13.5px;font-weight:600}
+/* on a phone only the explorer button and Verify stay in the bar */
+@media(max-width:820px){.topnav a:not(.btn-invert):not(.btn-ghost):not([href$="data.html"]){display:none}}
+.topnav a.btn-invert{opacity:1;background:#fff;color:var(--purple);padding:7px 14px;border-radius:2px;font-size:13.5px;font-weight:600}
 main{padding:52px 0 20px}
 .eyebrow{font-family:"IBM Plex Mono";font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;
   color:var(--muted);margin:0 0 12px}
@@ -95,31 +97,35 @@ footer p{max-width:52ch;margin:0}
       <span class="wordmark">poly<span class="b">optic</span></span>
     </a>
     <nav class="topnav">
-      <a href="../../index.html">Home</a>
+      <a href="../../index.html#questions">Questions</a>
+      <a href="../../index.html#topics">Topics</a>
+      <a href="../../indicator/">Indicators</a>
       <a href="../../about.html">About</a>
       <a href="../../data.html">Verify</a>
-      <a class="btn-invert" href="../../explore.html#p=pay,cpih~line~index~2000~2026~pm">Open in the explorer</a>
+      <a class="btn-invert" href="../../explore.html#p=pay,cpih~line~index~2000~2025~pm">Open in the explorer</a>
     </nav>
   </div>
 </div>
 
 <main class="wrap">
-  <p class="eyebrow">Arguments worth having</p>
+  <p class="eyebrow">Questions worth asking</p>
   <h1>Has pay kept up with prices?</h1>
-  <p class="sub">Average weekly earnings × CPIH, both rebased · 2000–2026 · UK</p>
+  <p class="sub">Average weekly earnings × CPIH, both rebased · 2000–2025 · UK</p>
 
   <div class="chartcard">
-    <div id="chart"><p id="fallback">Loading the chart…</p></div>
+    <div id="chart"></div>
     <div class="legend" id="legend"></div>
   </div>
 
-  <a class="cta" href="../../explore.html#p=pay,cpih~line~index~2000~2026~pm">Open this in the explorer →</a>
+  <a class="cta" href="../../explore.html#p=pay,cpih~line~index~2000~2025~pm">Open this in the explorer →</a>
 
   <div class="cols">
     <div>
       <h2 class="step"><i>The claim</i>Pay has not kept up with the cost of living.</h2>
       <h2 class="step"><i>The number</i></h2>
-      <p>Rebased to 2000, average weekly earnings and CPIH track each other closely until 2008, separate during the following decade, and converge again after 2021. The gap between the two lines at any point is the real-terms position at that point — above means pay has grown faster than prices since the base year, below means it has not.</p>
+      <!-- number: written by ingest/pages.py from the bundle on every build — edit QUESTION_NAMES there, not this paragraph -->
+      <p>Rebased to 2000 = 100, average pay reached 233 by 2025 and prices (CPIH) 188: average pay +133%, prices (CPIH) +88%. Average pay rose faster. Relative to 2000, average pay ended 24% ahead of prices (CPIH).</p>
+      <!-- /number -->
       <h2 class="step"><i>What it actually shows</i></h2>
       <p>This is the whole-economy average, so it answers the question for the economy and not for any particular person. A mean is pulled up by high earners; it moves when the composition of who is employed changes, not only when anyone gets a rise. And it is cumulative from the base year — change the start year in the explorer and the answer can change with it, which is worth doing before quoting any single figure from it.</p>
       <p>Click any point in the explorer and it shows the published figure, the figure
@@ -146,52 +152,59 @@ footer p{max-width:52ch;margin:0}
   </div>
 </footer>
 
+<script type="application/json" id="qdata">{"kind":"ratio","start":2000,"end":2025,"baseline":100,"unit":"index, 2000 = 100","explore":"pay,cpih~line~index~2000~2025~pm","sets":[{"id":"pay","name":"Average weekly earnings (total pay)","pts":[[2000,100.0],[2001,105.089],[2002,108.447],[2003,111.937],[2004,116.813],[2005,122.276],[2006,127.951],[2007,134.213],[2008,138.929],[2009,138.796],[2010,142.046],[2011,145.43],[2012,147.269],[2013,148.894],[2014,150.493],[2015,154.117],[2016,157.794],[2017,161.497],[2018,166.214],[2019,171.942],[2020,174.98],[2021,185.478],[2022,196.909],[2023,210.738],[2024,221.956],[2025,232.641]]},{"id":"cpih","name":"CPIH","pts":[[2000,100.0],[2001,101.635],[2002,103.134],[2003,104.496],[2004,105.995],[2005,108.174],[2006,110.899],[2007,113.488],[2008,117.439],[2009,119.755],[2010,122.752],[2011,127.52],[2012,130.79],[2013,133.787],[2014,135.695],[2015,136.24],[2016,137.602],[2017,141.144],[2018,144.414],[2019,146.866],[2020,148.365],[2021,152.044],[2022,164.169],[2023,175.204],[2024,181.063],[2025,188.011]]}],"names":{"pay":"Average weekly earnings (total pay)","cpih":"CPIH"}}</script>
 <script>
-/* A small chart of its own rather than the explorer's engine: this page has to
-   stand on its own for someone who arrived from a shared link, and it should
-   not wait on the explorer to do it. Both series rebased to the first year in
-   range, which is the same thing the permalink asks the explorer for. */
-const IDS=["pay", "cpih"], FROM=2000, TO=2026;
-const W=940,H=380,M={t:18,r:64,b:28,l:54};
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const fmt=n=>Math.abs(n)>=1000?n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,","):
-             Math.abs(n)>=100?n.toFixed(0):n.toFixed(1);
-fetch("../../data/bundle.json",{cache:"no-cache"}).then(r=>r.ok?r.json():Promise.reject()).then(db=>{
-  const sets=IDS.map((id,i)=>{
-    const s=db.series.find(x=>x.id===id); if(!s) return null;
-    const pts=s.values.map((v,k)=>[s.start+k,v]).filter(q=>q[0]>=FROM&&q[0]<=TO&&q[1]!=null);
-    if(pts.length<2) return null;
-    const base=pts[0][1];
-    return {name:s.name,colour:i?"var(--s2)":"var(--s1)",
-            pts:pts.map(([y,v])=>[y,v/base*100]),src:s.source};
-  }).filter(Boolean);
-  if(sets.length<2){document.getElementById("fallback").textContent=
-    "This comparison needs a rebuilt data bundle."; return;}
-  const vals=sets.flatMap(s=>s.pts.map(q=>q[1]));
-  let mn=Math.min(...vals),mx=Math.max(...vals); const pad=(mx-mn)*0.12; mn-=pad; mx+=pad;
-  const xs=sets.flatMap(s=>s.pts.map(q=>q[0]));
-  const x0=Math.min(...xs),x1=Math.max(...xs);
+/* The chart draws the numbers pages.py computed for this page (in #qdata),
+   the same numbers the paragraph under "The number" is written from, so the
+   two cannot disagree. How they are computed — rebased, converted to a share
+   of GDP, or set against the last year before an event — is decided there,
+   per question. A small chart of its own rather than the explorer's engine:
+   this page has to stand on its own for someone arriving from a shared link. */
+(function(){
+  let Q={}; try{ Q=JSON.parse(document.getElementById("qdata").textContent); }catch(e){}
+  const box=document.getElementById("chart");
+  if(!Q.sets||Q.sets.length<2){ box.innerHTML='<p id="fallback">The chart for this question is being rebuilt.</p>'; return; }
+  const W=940,H=380,M={t:24,r:72,b:28,l:54}, COL=["var(--s1)","var(--s2)"];
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+  const fmt=n=>{const a=Math.abs(n);return a>=1000?n.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,","):a>=100?n.toFixed(0):a>=10?n.toFixed(1).replace(/\.0$/,""):n.toFixed(1);};
+  const vals=Q.sets.flatMap(s=>s.pts.map(p=>p[1]).filter(v=>v!=null));
+  if(Q.baseline!=null) vals.push(Q.baseline);
+  if(Q.zero) vals.push(0);
+  /* round 1-2-5 steps, snapped out to whole steps — the explorer's rule */
+  const nice=r=>{const e=Math.pow(10,Math.floor(Math.log10(r))),f=r/e;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e;};
+  let mn=Math.min(...vals),mx=Math.max(...vals);
+  const ST=nice((mx-mn)/4||1); mn=Math.floor(mn/ST+1e-9)*ST; mx=Math.ceil(mx/ST-1e-9)*ST;
+  const TICKS=[]; for(let t=mn;t<=mx+ST/2;t+=ST) TICKS.push(+t.toFixed(10));
+  const x0=Q.start,x1=Q.end;
   const PX=y=>M.l+((y-x0)/Math.max(1,x1-x0))*(W-M.l-M.r);
   const PY=v=>M.t+(1-(v-mn)/(mx-mn))*(H-M.t-M.b);
+  const T=(x,y,t,a,extra="")=>`<text x="${x}" y="${y}" text-anchor="${a}" font-family="IBM Plex Sans" font-size="11.5" fill="var(--muted)" ${extra}>${t}</text>`;
   const g=[];
-  for(let i=0;i<=4;i++){const y=M.t+i*(H-M.t-M.b)/4,v=mx-(mx-mn)*i/4;
-    g.push(`<line x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}" stroke="var(--rule)" stroke-width="1" opacity=".7"/>`);
-    g.push(`<text x="${M.l-9}" y="${y+4}" text-anchor="end" font-family="IBM Plex Sans" font-size="11.5" style="font-variant-numeric:tabular-nums" fill="var(--muted)">${fmt(v)}</text>`);}
+  /* the event a before-and-after question is about, shaded */
+  if(Q.band){ const [a,b,lab]=Q.band, xa=PX(a-0.5), xb=PX(b-0.5);
+    g.push(`<rect x="${xa}" y="${M.t}" width="${xb-xa}" height="${H-M.t-M.b}" fill="var(--rule)" opacity=".45"/>`);
+    g.push(T((xa+xb)/2,M.t-8,esc(lab),"middle")); }
+  for(const v of TICKS){const y=PY(v), base=Q.baseline!=null&&Math.abs(v-Q.baseline)<1e-9;
+    g.push(`<line x1="${M.l}" y1="${y}" x2="${W-M.r}" y2="${y}" stroke="${base?"var(--muted)":"var(--rule)"}" stroke-width="1" opacity="${base?.8:.7}"/>`);
+    g.push(T(M.l-9,y+4,ST<1?v.toFixed(1):fmt(v).replace(/\.0$/,""),"end",'style="font-variant-numeric:tabular-nums"'));}
   const step=(x1-x0)>24?5:(x1-x0)>12?2:1;
-  for(let yr=Math.ceil(x0/step)*step;yr<=x1;yr+=step)
-    g.push(`<text x="${PX(yr)}" y="${H-7}" text-anchor="middle" font-family="IBM Plex Sans" font-size="11.5" fill="var(--muted)">${yr}</text>`);
-  sets.forEach(s=>{
-    g.push(`<path d="M${s.pts.map(q=>PX(q[0]).toFixed(1)+" "+PY(q[1]).toFixed(1)).join(" L")}" fill="none" stroke="${s.colour}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`);
-    const last=s.pts[s.pts.length-1];
-    g.push(`<text x="${W-M.r+7}" y="${PY(last[1])+3.5}" font-family="IBM Plex Sans" font-size="11.5" font-weight="600" fill="${s.colour}">${fmt(last[1])}</text>`);
+  for(let yr=Math.ceil(x0/step)*step;yr<=x1;yr+=step) g.push(T(PX(yr),H-7,yr,"middle"));
+  /* lines break where a year is missing rather than bridging the gap */
+  const ends=[];
+  Q.sets.forEach((s,i)=>{
+    let d="",pen=false;
+    s.pts.forEach(([y,v])=>{ if(v==null){pen=false;return;} d+=(pen?"L":"M")+PX(y).toFixed(1)+" "+PY(v).toFixed(1)+" "; pen=true; });
+    g.push(`<path d="${d}" fill="none" stroke="${COL[i]}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>`);
+    const last=[...s.pts].reverse().find(p=>p[1]!=null);
+    ends.push({y:PY(last[1]),x:PX(last[0]),v:last[1],c:COL[i]});
   });
-  document.getElementById("chart").innerHTML=
-    `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="Has pay kept up with prices?">${g.join("")}</svg>`;
+  /* end labels kept 14px apart */
+  ends.sort((a,b)=>a.y-b.y); for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<14) ends[i].y=ends[i-1].y+14;
+  ends.forEach(e=>g.push(`<text x="${e.x+8}" y="${e.y+4}" font-family="IBM Plex Sans" font-size="11.5" font-weight="600" fill="${e.c}">${fmt(e.v)}</text>`));
+  box.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="${esc(document.title)}">${g.join("")}</svg>`;
   document.getElementById("legend").innerHTML=
-    sets.map(s=>`<span><i style="background:${s.colour}"></i>${esc(s.name)}</span>`).join("")+
-    `<span>index, ${x0}=100</span>`;
-}).catch(()=>{document.getElementById("fallback").textContent=
-  "The data bundle isn't being served — the chart on this page is drawn from it.";});
+    Q.sets.map((s,i)=>`<span><i style="background:${COL[i]}"></i>${esc(s.name)}</span>`).join("")+`<span>${esc(Q.unit)}</span>`;
+})();
 </script>
 </body>
 </html>

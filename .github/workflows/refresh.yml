@@ -17,6 +17,23 @@ jobs:
           python-version: "3.12"
       - run: pip install -r ingest/requirements.txt
       - run: python ingest/ingest.py
+      # A failed fetch keeps the last good copy, so the catalogue should never
+      # shrink. If it does, something is badly wrong: stop before committing,
+      # so the site keeps the data it has instead of losing indicators.
+      - name: Refuse to shrink the catalogue
+        run: |
+          python - <<'PY'
+          import json, subprocess, sys
+          new = json.load(open("data/bundle.json"))
+          old = json.loads(subprocess.run(["git", "show", "HEAD:data/bundle.json"],
+                                          capture_output=True, text=True, check=True).stdout)
+          a, b = len(old["series"]), len(new["series"])
+          lost = sorted({s["id"] for s in old["series"]} - {s["id"] for s in new["series"]})
+          print(f"series: {a} before, {b} after; kept from an earlier fetch: {new['meta'].get('stale', [])}")
+          if b < a - 3:
+              print(f"::error::refresh would drop {a - b} series ({', '.join(lost[:20])}); not committing")
+              sys.exit(1)
+          PY
       # the plain pages search engines read: one per indicator and topic, and the sitemap
       - run: python ingest/pages.py
       - name: Commit if changed

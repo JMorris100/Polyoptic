@@ -106,6 +106,22 @@ body.side-collapsed .siderail{display:block}
 .side{position:sticky;top:70px;height:calc(100vh - 70px);overflow-y:auto;overscroll-behavior:contain;
   background:var(--surface);border-right:1px solid var(--rule);scrollbar-width:thin;scrollbar-color:var(--rule) transparent}
 @media(max-width:1040px){.side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--rule)}}
+/* On a phone the chart comes first — it is what a shared link was sent for —
+   and the panel becomes a full-screen sheet behind a button at the bottom. */
+.mobpanel{display:none}
+@media(max-width:760px){
+  .shell,body.side-collapsed .shell{display:flex;flex-direction:column;align-items:stretch}
+  .main,body.side-collapsed .main{order:-1;padding-bottom:90px;width:100%;min-width:0}
+  .siderail,body.side-collapsed .siderail{display:none}
+  .side,body.side-collapsed .side{position:fixed;inset:0;z-index:70;height:100%;border:0;visibility:hidden;pointer-events:none;
+    transform:translateY(100%);transition:transform .3s ease,visibility 0s .3s}
+  body.side-open .side{visibility:visible;pointer-events:auto;transform:none;transition:transform .3s ease}
+  .mobpanel{display:flex;align-items:center;gap:8px;position:fixed;left:50%;bottom:16px;transform:translateX(-50%);z-index:65;
+    padding:12px 20px;border-radius:100px;border:0;background:var(--purple);color:#fff;font:600 14px "IBM Plex Sans",sans-serif;
+    box-shadow:0 8px 24px rgba(0,0,0,.25);cursor:pointer;white-space:nowrap}
+  body.side-open .mobpanel{display:none}
+}
+@media (max-width:760px) and (prefers-reduced-motion:reduce){.side{transition:none}}
 /* The old look — small mono capitals for labels, thin rules, square-ish
    chips, purple for what's selected — in a panel that runs the full height
    of the left edge. */
@@ -510,9 +526,11 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .fchip.f-discontinued{color:#9B1C1C;border-color:#E9B7B7;background:#FDF0F0}
 .fchip.f-definition{color:#92400E;border-color:#EBCFA6;background:#FFF6EA}
 .fchip.f-partial{color:#7A5A0A;border-color:#E4D4A0;background:#FFFAEC}
+.fchip.f-development{color:#2B4A6F;border-color:#CFDDED;background:#EEF4FB}
 html[data-theme="dark"] .fchip.f-discontinued{color:#F0A0A0;border-color:#5A2323;background:#301414}
 html[data-theme="dark"] .fchip.f-definition{color:#EDBE86;border-color:#553C13;background:#2E2109}
 html[data-theme="dark"] .fchip.f-partial{color:#E4CE88;border-color:#4A3E14;background:#2A2308}
+html[data-theme="dark"] .fchip.f-development{color:#A9C2DE;border-color:#2C3C50;background:#17222F}
 .srcdet{padding:4px 0 2px 21px}
 .sdnote{padding:9px 12px;background:var(--warnbg);border-left:3px solid var(--warn);
   color:var(--warn-ink);font-size:12.5px;line-height:1.45;margin-bottom:11px}
@@ -681,9 +699,10 @@ html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px col
 </aside>
 
 
+<button class="mobpanel" id="mobPanel" type="button" aria-controls="side">☰ Indicators &amp; settings</button>
 <div class="siderail"><button id="sideOpen" title="Show the indicator panel" aria-label="Show the indicator panel">❯</button></div>
 <div class="shell">
-  <div class="side">
+  <div class="side" id="side">
     <div class="panelbox">
       <div class="psec">
         <div class="phead"><div class="plabel">Editing</div>
@@ -1161,6 +1180,12 @@ function yearWorkingHtml(p,sets){
     const ref=w.step.ref&&refHref(w.step.ref)?` · <a href="${esc(refHref(w.step.ref))}" target="_blank" rel="noopener">${esc(REF_META[w.step.ref].name)}${refCdid(w.step.ref)?" ("+refCdid(w.step.ref)+")":""} ↗</a>`:"";
     const notes=[];
     if(w.skipped) notes.push(`Not adjusted: ${esc(s.name)} is already a rate or index, so this is the published figure.`);
+    /* a monthly or quarterly source: say which published figure this year is */
+    if(s.annual){ const a=s.annual, per=a.per===12?"monthly":"quarterly",
+        endM={financial:"March",academic:"August"}[s.year_basis]||"December";
+      notes.push(a.how==="mean"?`The average of the ${per} figures for the year.`:
+                 a.how==="sum"?`The total of the ${per} figures for the year.`:
+                 a.how==="last"?(a.per===12?`The ${endM} figure — the last month of the year.`:"The last quarter of the year."):""); }
     if(w.interpolated) notes.push(`Between two annual figures — estimated for the ${esc(p.gran)} view, not published.`);
     /* one short line saying what the numbers are, used when the working sits
        beside the chart and the per-number labels are hidden to save height */
@@ -1190,7 +1215,12 @@ const PROBEABLE=new Set([...YEARPICK,"map","areas","arrow","range","heat"]);
    ══════════════════════════════════════════════ */
 /* Margins depend on what the chart carries (see setLayout), so M is set per
    panel before its chart is drawn. */
-const W=940, M={t:26,r:66,b:26,l:58};
+/* W is the drawing width. On a phone the chart is drawn narrower, so it is
+   not a 940-wide picture shrunk to a strip: text stays readable and the chart
+   keeps its height. It is set before every render (see chartWidth). */
+let W=940;
+const M={t:26,r:66,b:26,l:58};
+const chartWidth=()=>{ W=innerWidth<=760?Math.max(420,Math.min(940,Math.round((innerWidth-32)*1.3))):940; };
 const M0={...M};
 const px=(p,y)=>M.l+((y-p.from)/Math.max(1,p.to-p.from))*(W-M.l-M.r);
 function scale(vals){
@@ -1329,7 +1359,10 @@ function renderLine(p,sets,mode){
     const cx=px(p,last[0]), cy=Y(last[1]);
     CK.endPoint(g,cx,cy,s.colour,endBreak);
     const yr=Math.floor(last[0]);
-    labels.push({colour:s.colour,cx,cy,name:s.name,val:fmt(last[1])+(yr<p.to?` in ${yr}`:""),endBreak});
+    /* a final year the source is part-way through says which months it covers */
+    const part=(s.meta||{}).partial, partEnd=part&&part.plotted&&yr===part.year;
+    labels.push({colour:s.colour,cx,cy,name:s.name,
+      val:fmt(last[1])+(partEnd?` · ${part.label||"part of"} ${yr} only`:(yr<p.to?` in ${yr}`:"")),endBreak});
   });
   /* the chosen period: a marker where each series crosses it */
   const pr=state.probe;
@@ -2297,7 +2330,7 @@ function verifyHtml(p){
     ${notes.map(n=>`<p class="vnote">${n}</p>`).join("")}
     <div class="vscroll"><table class="vtbl"><thead><tr>${head1}</tr>${transformed?`<tr>${head2}</tr>`:`<tr></tr>`}</thead><tbody>${rows}</tbody></table></div>
     <div class="vsrcs">${srcs}</div>
-    <div class="vfoot">Published values are annual: where a source publishes monthly or quarterly, the pipeline averages to one value per year. Compare against the annual figure where the source gives one.
+    <div class="vfoot">Published values are annual. Where a source publishes monthly or quarterly, each year is the average, the last month or the total, whichever the measure calls for, and the working above says which. Compare against that figure in the source.
       <button class="vcsv" data-act="csv">${IC.csv} Download chart data (CSV)</button></div>
   </div>`;
 }
@@ -2608,7 +2641,7 @@ document.addEventListener("pointerdown",e=>{
    content as a Verify row, scoped to what is on screen. */
 const srcOpen=new Set();
 const FLAG_LABEL={discontinued:"Discontinued",definition:"Definition changed",
-  partial:"Partial period",provisional:"Provisional",geography:"Sub-UK coverage"};
+  partial:"Partial period",provisional:"Provisional",development:"In development",geography:"Sub-UK coverage"};
 const flagChips=m=>(m.flags||[]).filter(f=>FLAG_LABEL[f])
   .map(f=>`<span class="fchip f-${f}">${FLAG_LABEL[f]}</span>`).join("");
 
@@ -2692,7 +2725,7 @@ function renderDock(){
 document.getElementById("dock").addEventListener("click",e=>{
   if(e.target.closest('[data-act="unprobe"]')){ state.probe=null; render(); }
 });
-function render(){ renderPanels(); renderSidebar(); renderSources(); renderDock(); writeHash(); }
+function render(){ chartWidth(); renderPanels(); renderSidebar(); renderSources(); renderDock(); writeHash(); }
 /* crossing the width where the right column appears moves the card */
 matchMedia("(min-width:1041px)").addEventListener("change",()=>{ if(typeof DB!=="undefined"&&DB) render(); });
 
@@ -3322,7 +3355,9 @@ function writeHash(){
      defaults for the two it does not carry. */
   /* sourcing is per chart now, so it rides on the end of each panel */
   const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||""),p.lvl,p.asort,p.table?1:0,p.src].join("~")).join(";");
-  history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active);
+  /* the open topic rides along, so a copied link keeps the topic it was opened on */
+  const t=state.drawer&&state.topic&&state.topic!=="all"?"&t="+encodeURIComponent(state.topic):"";
+  history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active+t);
 }
 function readHash(){
   if(!location.hash) return;
@@ -3346,7 +3381,8 @@ function readHash(){
          h:Math.max(H_MIN,Math.min(H_MAX,+h||H_DEF)),w:(W_SNAPS.includes(+w)?+w:12)});
     });
     if(panels.length) state.panels=panels;
-  } else if(q.get("t")){                       /* topic deep-link from the homepage tiles */
+  }
+  if(q.get("t")){                              /* a topic, on its own or with a chart */
     const topic=q.get("t");
     if(catalogue().some(s=>s.topics.includes(topic))){ state.topic=topic; state.drawer=true; }
   }
@@ -3359,8 +3395,15 @@ function readHash(){
   const set=c=>{ document.body.classList.toggle("side-collapsed",c);
     try{ localStorage.setItem("polyoptic-side", c?"collapsed":"open"); }catch(e){}
     if(typeof DB!=="undefined"&&DB) render(); };
-  document.getElementById("sideHideTop").onclick=()=>set(true);
+  /* on a phone the same button closes the sheet rather than collapsing a column */
+  const phone=()=>matchMedia("(max-width:760px)").matches;
+  const sheet=o=>{ document.body.classList.toggle("side-open",o); };
+  document.getElementById("sideHideTop").onclick=()=>phone()?sheet(false):set(true);
   document.getElementById("sideOpen").onclick=()=>set(false);
+  document.getElementById("mobPanel").onclick=()=>sheet(true);
+  /* redraw when the drawing width changes: a phone turned on its side */
+  let rz; addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(()=>{
+    const was=W; chartWidth(); if(W!==was&&typeof DB!=="undefined"&&DB) render(); },150); });
 })();
 
 const themeBtn=document.getElementById("themeBtn");
@@ -3543,11 +3586,14 @@ document.getElementById("helpBtn").onclick=()=>
 document.addEventListener("keydown",e=>{
   if(e.key==="Escape"&&gEl.classList.contains("on")) closeGuide(true);
 });
-/* first visit only */
+/* First visit only, and never over a chart someone was sent to: a shared
+   link (#p=…) or a topic (#t=…) should open on what it points at. Nor on a
+   phone, where the tour covers the whole screen. The ? button offers it. */
 (function(){
   let seen=true;
   try{ seen=localStorage.getItem(GUIDE_KEY)==="seen"; }catch(e){}
-  if(!seen) openGuide(0);
+  const linked=/^#(p|t)=/.test(location.hash), small=matchMedia("(max-width:760px)").matches;
+  if(!seen&&!linked&&!small) openGuide(0);
 })();
 
 document.getElementById("copyLink").onclick=()=>{
