@@ -17,10 +17,16 @@ jobs:
           python-version: "3.12"
       - run: pip install -r ingest/requirements.txt
       - run: python ingest/ingest.py
+      # the plain pages search engines read: one per indicator and topic, and the sitemap
+      - run: python ingest/pages.py
       - name: Commit if changed
         run: |
           git config user.name  "polyoptic-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add data/bundle.json
+          # data/ not data/bundle.json — the area files under data/areas/ are
+          # rebuilt by the same run, and staging only the bundle would leave
+          # the explorer's local detail frozen at whenever it was last built
+          # by hand.
+          git add data indicator topic sitemap.xml
           git diff --staged --quiet || git commit -m "data: scheduled refresh"
           git push

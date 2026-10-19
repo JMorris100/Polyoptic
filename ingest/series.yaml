@@ -28,46 +28,6 @@
 # wrong. `published` is never derived.
 # ══════════════════════════════════════════════════════════════
 
-# ──────────────────────────────────────────────────────────────
-# Modes. A mode is a named subset of the catalogue that the explorer
-# can swap to wholesale. Series not claimed by any mode make up the
-# default catalogue; a series listed in a mode appears only there.
-#
-# Keeping the membership here rather than in the front end means a mode
-# is still just data — same as the series themselves.
-# ──────────────────────────────────────────────────────────────
-modes:
-  brexit:
-    name: Brexit mode
-    blurb: The numbers that get argued about most, and the denominators that usually go missing.
-    series:
-      - netmig
-      - smallboats
-      - asylumbacklog
-      - asylumgrant
-      - hotels
-      - returns
-      - returnsall
-      - visastudy
-      - visastudydep
-      - visawork
-      - visahcw
-      - oda
-      - odarefugee
-      - eugross
-      - eureceipts
-      - eunet
-      - nondoms
-      - nondomtax
-      - fno
-      - csew
-      - prc
-      - chargerate
-      - chargeviolence
-      - chargesexual
-      - chargetheft
-      - chargedamage
-
 eras:
   - {from: 1997, to: 2010, party: Labour,       colour: "#E4003B"}
   - {from: 2010, to: 2015, party: Coalition,    colour: "#7E6FA8"}
@@ -133,7 +93,7 @@ series:
         administrative-geography: K02000001
         index-and-year-change: index
     discontinuities:
-      - {year: 2025, note: "IPHRP was discontinued in March 2025 and replaced by the Price Index of Private Rents (PIPR); the final year is a partial one"}
+      - {year: 2025, label: "IPHRP ends Mar 2025, replaced by PIPR", note: "IPHRP was discontinued in March 2025 and replaced by the Price Index of Private Rents (PIPR); the final year is a partial one"}
 
   # ── ECONOMY ──────────────────────────────────────────────
   - id: cpih
@@ -160,7 +120,7 @@ series:
     source_type: ons_timeseries
     fetch: {path: employmentandlabourmarket/peoplenotinwork/unemployment, cdid: MGSX, dataset: lms, granularity: months}
     discontinuities:
-      - {year: 2024, note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
+      - {year: 2024, label: "Switch to Transformed LFS", note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
 
   - id: pay
     name: Average weekly earnings (total pay)
@@ -227,7 +187,7 @@ series:
           - {filters: {eq: X5Vmf}}       # school type: total
           - {geographicLevels: {eq: NAT}}
     discontinuities:
-      - {year: 2020, note: "Attendance recording rules and school opening changed; the series is not comparable across this point"}
+      - {year: 2020, label: "Recording rules changed", note: "Attendance recording rules and school opening changed; the series is not comparable across this point"}
 
   - id: gap
     name: Disadvantage attainment gap index (KS2)
@@ -246,7 +206,7 @@ series:
         and:
           - {geographicLevels: {eq: NAT}}
     discontinuities:
-      - {year: 2020, note: "No KS2 assessments in 2019/20 and 2020/21; the gap on either side is not measured on identical cohorts"}
+      - {year: 2020, label: "No KS2 tests 2020, 2021", note: "No KS2 assessments in 2019/20 and 2020/21; the gap on either side is not measured on identical cohorts"}
 
   - id: pupils
     name: Pupils in schools
@@ -300,7 +260,7 @@ series:
       - "Each point is the year ending December, taken from a rolling four-quarter series"
       - "The most recent years are provisional and have been revised substantially in the past — YE June 2024 was first published at 906,000 and now stands well below that"
     discontinuities:
-      - {year: 2020, note: "ONS moved from the International Passenger Survey to an administrative-data method; estimates before and after are not produced the same way, and the series only starts in 2012 on the current basis"}
+      - {year: 2020, label: "New ONS method", note: "ONS moved from the International Passenger Survey to an administrative-data method; estimates before and after are not produced the same way, and the series only starts in 2012 on the current basis"}
 
   - id: smallboats
     name: Small boat arrivals
@@ -504,7 +464,7 @@ series:
 
   - id: oda
     name: Overseas aid as a share of national income
-    topics: [economy, aid]
+    topics: [economy]
     unit: "% of GNI"
     kind: ratio
     geography: UK
@@ -524,7 +484,7 @@ series:
 
   - id: odarefugee
     name: Aid spent on refugees inside the UK
-    topics: [economy, aid, migration]
+    topics: [economy, migration]
     unit: "£m, cash"
     kind: money_cash
     geography: UK
@@ -545,7 +505,7 @@ series:
 
   - id: eugross
     name: Payments to EU institutions, gross
-    topics: [economy, europe]
+    topics: [economy]
     unit: "£m, cash"
     kind: money_cash
     geography: UK
@@ -559,7 +519,7 @@ series:
 
   - id: eureceipts
     name: Receipts from EU institutions
-    topics: [economy, europe]
+    topics: [economy]
     unit: "£m, cash"
     kind: money_cash
     geography: UK
@@ -573,7 +533,7 @@ series:
 
   - id: eunet
     name: Net position with EU institutions
-    topics: [economy, europe]
+    topics: [economy]
     unit: "£m, cash"
     kind: money_cash
     geography: UK
@@ -587,7 +547,7 @@ series:
 
   - id: nondoms
     name: Non-domiciled taxpayers
-    topics: [economy, tax]
+    topics: [economy]
     unit: individuals
     kind: count
     geography: UK
@@ -608,7 +568,7 @@ series:
 
   - id: nondomtax
     name: Tax and NICs paid by non-domiciled taxpayers
-    topics: [economy, tax]
+    topics: [economy]
     unit: "£m, cash"
     kind: money_cash
     geography: UK
@@ -669,7 +629,7 @@ series:
       - "Asks people what happened to them, so it counts crime whether or not it was reported. This is the series that shows crime falling by around two thirds since the mid-1990s"
       - "Excludes fraud and computer misuse, which would otherwise dominate the total"
     discontinuities:
-      - {year: 2020, note: "Face-to-face interviewing stopped during the pandemic; the telephone survey that replaced it is not comparable, so there is a genuine hole here rather than a zero"}
+      - {year: 2020, label: "Survey paused in pandemic", note: "Face-to-face interviewing stopped during the pandemic; the telephone survey that replaced it is not comparable, so there is a genuine hole here rather than a zero"}
 
   - id: prc
     name: Police recorded crime
@@ -692,7 +652,7 @@ series:
       - "Counts what the police wrote down. It rose sharply from 2014 largely because forces were told to record crime properly after being found not to be, which is why it moves opposite to the survey"
       - "Not accredited as official statistics, on those grounds"
     discontinuities:
-      - {year: 2014, note: "A change in recording practice following HMIC inspections; the rise from here on is substantially a recording effect rather than a change in crime"}
+      - {year: 2014, label: "Recording practice changed", note: "A change in recording practice following HMIC inspections; the rise from here on is substantially a recording effect rather than a change in crime"}
 
   - id: chargerate
     name: Charge rate, all offences
@@ -798,3 +758,3188 @@ series:
     notes:
       - "Measured against the offences recorded in the same period, which is the basis the headline charge rate uses. The most recent year is therefore understated — a lot of those investigations are still open, and their outcomes get assigned later"
       - "That lag is not even across offence types. Sexual offences take the longest to investigate, so they are depressed the most in the latest year: on the closed-investigations basis the same year reads roughly twice as high"
+
+  # ── TRANSPORT ────────────────────────────────────────────
+  # DfT's road safety tables carry deaths, all casualties and traffic volume on
+  # one sheet, which is why all three come from the same workbook. Note the
+  # geography: these are Great Britain, not UK — Northern Ireland reports
+  # separately, and the explorer's mismatch warning should fire when they are
+  # put next to a UK series.
+  - id: roaddeaths
+    name: Road deaths
+    topics: [transport]
+    unit: deaths per year
+    kind: count
+    geography: Great Britain
+    year_basis: calendar
+    source: DfT road safety statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/road-safety-statistics-data-tables
+    source_type: spreadsheet
+    fetch: &ras
+      url: https://assets.publishing.service.gov.uk/media/6a6398df9a419980593b2bdf/ras0101.ods
+      sheet: Casualties
+      year_column: Year
+      value_column: All road users (killed)
+    notes:
+      - "Deaths reported to the police on the STATS19 form. Fatalities are near-completely reported, so this is the most reliable series in the road safety set"
+      - "The 1926 start predates driving tests, MOTs and speed limits on most roads; deaths peaked in 1966 at over 7,900 with a fraction of today's traffic"
+
+  - id: casualties
+    name: Road casualties, all severities
+    topics: [transport]
+    unit: casualties per year
+    kind: count
+    geography: Great Britain
+    year_basis: calendar
+    source: DfT road safety statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/road-safety-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      <<: *ras
+      value_column: All road users (all severities)
+    notes:
+      - "Police-reported casualties only. DfT says plainly that non-fatal injuries are substantially under-reported — comparison with survey and hospital data suggests a large share never reaches a STATS19 form — so treat the level as a floor and the trend as the useful part"
+      - "Slight-injury counts are also affected by forces changing their injury-reporting systems from 2016, which raised recorded severity without any change on the road"
+
+  - id: traffic
+    name: Road traffic
+    topics: [transport]
+    unit: billion vehicle miles
+    kind: count
+    geography: Great Britain
+    year_basis: calendar
+    source: DfT road safety statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/road-safety-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      <<: *ras
+      value_column: All traffic (billion vehicle miles)
+    notes:
+      - "The denominator the casualty figures should usually be read against: traffic has roughly quadrupled since 1950 while deaths have fallen by around three quarters"
+
+  - id: busjourneys
+    name: Local bus passenger journeys
+    topics: [transport]
+    unit: million journeys per year
+    kind: count
+    geography: Great Britain
+    year_basis: financial
+    source: DfT bus statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/bus-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/69c11f97cfa346b9d4704a50/bus01.ods
+      sheet: BUS01a
+      year_column: Year ending March
+      value_column: Great Britain
+    notes:
+      - "Years ending March, so the year labelled 2021 is the one the pandemic hit hardest — journeys roughly halved and have not returned to the 2005 level"
+
+  # ── ENVIRONMENT & ENERGY ─────────────────────────────────
+  # Three shares off the same Energy Trends table. They deliberately do not sum
+  # to 100: low-carbon includes renewables plus nuclear, and net imports sit
+  # outside all three.
+  - id: renewshare
+    name: Renewable share of electricity generation
+    topics: [environment]
+    unit: "% of generation"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: DESNZ Energy Trends
+    source_url: https://www.gov.uk/government/statistics/electricity-section-5-energy-trends
+    source_type: spreadsheet
+    fetch: &et51
+      url: https://assets.publishing.service.gov.uk/media/6a6a0f222607fd81ff068812/ET_5.1_JUL_26.xlsx
+      sheet: Annual
+      layout: wide
+      label_column: 1
+      year_header_row: 133
+      row_match: Renewable generation share [note 2]
+    notes:
+      - "Share of electricity *generated*, not of energy consumed. Electricity is roughly a fifth of UK final energy use, so a renewables share above half does not mean half the country's energy is renewable"
+      - "Includes biomass, which is counted as renewable in this series but is contested as a carbon-neutral fuel"
+
+  - id: lowcarbon
+    name: Low-carbon share of electricity generation
+    topics: [environment]
+    unit: "% of generation"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: DESNZ Energy Trends
+    source_url: https://www.gov.uk/government/statistics/electricity-section-5-energy-trends
+    source_type: spreadsheet
+    fetch:
+      <<: *et51
+      row_match: Low-carbon generation share [note 2]
+    notes:
+      - "Renewables plus nuclear. Overlaps the renewables series rather than adding to it"
+
+  - id: fossilshare
+    name: Fossil fuel share of electricity generation
+    topics: [environment]
+    unit: "% of generation"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: DESNZ Energy Trends
+    source_url: https://www.gov.uk/government/statistics/electricity-section-5-energy-trends
+    source_type: spreadsheet
+    fetch:
+      <<: *et51
+      row_match: Fossil fuel generation share [note 2]
+    notes:
+      - "Coal, oil and gas. Coal's share went from around a third of generation in 1998 to nil when the last coal plant closed in 2024, so most of what remains here is gas"
+
+  # ══════════════════════════════════════════════════════════
+  # ONS Explore Local Statistics
+  #
+  # One endpoint, one indicator slug per series (see fetch_els in
+  # ingest.py). These are the UK-level rows of a service whose real
+  # subject is local geography — the same slugs drive data/areas.json,
+  # so anything added here gains a map's worth of detail for free.
+  #
+  # Generated with `python ingest/ingest.py --els-catalogue` and then
+  # edited: short ids, this catalogue's topic tags, and the notes that
+  # tie a new series to one already here. Most notes below are ONS's
+  # own caveats, carried through rather than paraphrased.
+  # ══════════════════════════════════════════════════════════
+
+  # ── ECONOMY — from ONS Explore Local Statistics ─────────────
+
+  - id: firms
+    name: Active businesses
+    topics: [economy]
+    unit: "number of enterprises"
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: active-businesses}
+    notes:
+      - "The starting point for demography is the concept of a population of active businesses in a reference year (t). These are defined as businesses that had either turnover or employment at any time during the reference period."
+
+  - id: firmbirths
+    name: Business births
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: business-births}
+    notes:
+      - "A birth is identified as a business that was present in year t, but did not exist in year t-1 or t-2. Births are identified by making comparison of annual active population files and identifying those present in the latest file, but not the two previous ones."
+      - "The birth rate is calculated using the number of births as a proportion of the active businesses."
+
+  - id: firmdeaths
+    name: Business deaths
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: business-deaths}
+    notes:
+      - "A death is defined as a business that was on the active file in year t, but was no longer present in the active file in t+1 and t+2. In order to provide an early estimate of deaths, an adjustment has been made to the latest two years deaths to allow for reactivations. These figures are provisional and subject to revision."
+      - "The death rate is calculated using the number of deaths as a proportion of the active businesses."
+
+  - id: claimants
+    name: Claimant Count
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/bulletins/regionallabourmarket/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: claimant-count}
+    notes:
+      - "Not the unemployment rate: it counts benefit claims, which respond to eligibility rules as well as to the labour market. Read it against the LFS unemployment series rather than instead of it"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Proportions of people claiming are the number of claimants in a year divided by the population aged from 16 to 64 from mid-year 2023 population estimates."
+      - "The experimental Claimant Count consists of claimants of Jobseekers Allowance (JSA) and some Universal Credit (UC) Claimants. The UC claimants that are included are 1) those that were recorded as not in employment (May 2013-April 2015), and 2) those claimants of Universal Credit who are required to search for work, i.e. within the Searching for Work conditionality regime as defined by the Department for Work & Pensions (from April 2015 onwards)."
+      - "The count is based on live claims on the second Thursday of the reference month."
+      - "Under certain circumstances, some people are able to claim both contribution-based JSA and UC at the same time. Consequently, there has been a small amount of double counting. Information from DWP suggests this double counting increased at the start of the pandemic and has stabilised at approximately 1.0 to 1.5% of the Claimant Count."
+      - "Northern Ireland local government districts Claimant Count figures are only available from 2013 onwards."
+
+  - id: inactive
+    name: Economic inactivity rate
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: Great Britain
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/datasets/li01regionallabourmarketlocalindicatorsforcountieslocalandunitaryauthorities
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: economic-inactivity-rate}
+    notes:
+      - "ONS titles this indicator Great Britain but serves the top-level row as 'United Kingdom'. Published here on the narrower claim in the title"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Calculation of economic inactivity rate: number of economically inactive people aged 16 to 64 years divided by the population aged 16 to 64 years. Population is the sum of employed plus unemployed plus inactive."
+      - "The ongoing challenges with response rates, response levels and weighting approach mean that labour market statistics based on both the Labour Force Survey (LFS) and Annual Population Survey (APS) will be considered [official statistics in development](https://osr.statisticsauthority.gov.uk/policies/official-statistics-policies/official-statistics-in-development/) until further review. Because of increased volatility of LFS and APS estimates, estimates of change should be treated with additional caution."
+      - "Updates to this indicator have been temporarily suspended until the APS reweighting is implemented in 2026."
+
+  - id: emprate
+    name: Employment rate
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: Great Britain
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/datasets/li01regionallabourmarketlocalindicatorsforcountieslocalandunitaryauthorities
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: employment-rate}
+    notes:
+      - "ONS titles this indicator Great Britain but serves the top-level row as 'United Kingdom'. Published here on the narrower claim in the title"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Calculation of employment rate: number of employed people aged 16 to 64 years divided by the population aged 16 to 64 years. Population is the sum of employed plus unemployed plus inactive."
+      - "The ongoing challenges with response rates, response levels and weighting approach mean that labour market statistics based on both the Labour Force Survey (LFS) and Annual Population Survey (APS) will be considered [official statistics in development](https://osr.statisticsauthority.gov.uk/policies/official-statistics-policies/official-statistics-in-development/) until further review. Because of increased volatility of LFS and APS estimates, estimates of change should be treated with additional caution."
+      - "Updates to this indicator have been temporarily suspended until the APS reweighting is implemented in 2026."
+
+  - id: foodoutlets
+    name: Food outlets
+    topics: [health, economy]
+    unit: "per 1,000 population"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/ukbusinessactivitysizeandlocation/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: food-outlets}
+    notes:
+      - "The data for this indicator is sourced from [Nomis](https://www.nomisweb.co.uk/query/construct/summary.asp?reset=yes&mode=construct&dataset=142&version=0), based on an extract from the Inter-Departmental Business Register (IDBR). This dataset records the number of enterprises that were live at a reference point in March each year."
+      - "An enterprise can be thought of as the overall business, made up of all the individual sites or workplaces. It is defined as the smallest combination of legal units (generally based on VAT and/or PAYE records) that has a certain degree of autonomy within an enterprise group."
+      - "Please refer to the [UK business; activity, size and location quality and methods guide](https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/methodologies/ukbusinessactivitysizeandlocationqmi) for more information."
+      - "Mid-year population estimates for the period 2010 to 2024 have been used to calculate rates per 1,000 population (sourced from [Nomis](https://www.nomisweb.co.uk/datasets/pestsyoala)). The most recent (2024) population estimates have been used to produce rates for the 2025 data."
+
+  - id: gdhi
+    name: Gross disposable household income per head
+    topics: [economy, housing]
+    unit: "£"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/regionalaccounts/grossdisposablehouseholdincome/bulletins/regionalgrossdisposablehouseholdincomegdhi/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: gross-disposable-household-income-per-head}
+    notes:
+      - "Figures for 2023 are provisional, as national estimates have not been through supply and use balancing at the time of the data source publication."
+
+  - id: gdpheadreal
+    name: Gross domestic product per head in chained volume measures
+    topics: [economy]
+    unit: "£"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/regionaleconomicactivitybygrossdomesticproductuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: gross-domestic-product-per-head-chained-volume-measure}
+    notes:
+      - "Chained volume measures — real terms, and the series to use for 'are we better off', with the cash series alongside to show how much of the nominal rise was prices"
+      - "This time series has the effects of inflation removed by considering changes in quantity between consecutive periods, holding prices from previous periods constant and is most useful for monitoring growth over time within any given area."
+      - "2023 data are provisional."
+      - "Data for the City of London has been excluded from the visualisations on this service due to its very high GDP figures and very low population, which distort the overall representation. Please refer to the accompanying dataset below or the [data source](https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/regionaleconomicactivitybygrossdomesticproductuk/previousreleases) for this information."
+
+  - id: gdphead
+    name: Gross domestic product per head at current market prices
+    topics: [economy]
+    unit: "£"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/regionaleconomicactivitybygrossdomesticproductuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: gross-domestic-product-per-head-current-market-price}
+    notes:
+      - "Cash prices, so most of the rise before the mid-2000s is inflation. The chained volume series is the real-terms answer to the same question"
+      - "This time series includes the effects of inflation and is most useful for comparison of levels between different areas."
+      - "2023 data are provisional."
+      - "Data for the City of London has been excluded from the visualisations on this service due to its very high GDP figures and very low population, which distort the overall representation. Please refer to the accompanying dataset below or the [data source](https://www.ons.gov.uk/economy/grossdomesticproductgdp/bulletins/regionaleconomicactivitybygrossdomesticproductuk/previousreleases) for this information."
+
+  - id: paymed
+    name: Gross median weekly pay
+    topics: [economy]
+    unit: "£"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/bulletins/annualsurveyofhoursandearnings/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: gross-median-weekly-pay}
+    notes:
+      - "The median, and residence-based — the existing average weekly earnings series is a workplace-based mean over a different population, so the two are not alternative estimates of the same thing and the gap between them is the point"
+      - "Assembled by ONS from more than one collection (Office for National Statistics, Northern Ireland Statistics and Research Agency), so the nations are not always on identical definitions"
+      - "For Great Britain data, 2025 estimates are provisional and relate to the pay period that includes 30 April 2025. Estimates for 2024 have been revised and relate to the pay period that includes 17 April 2024."
+      - "The country level figure for Northern Ireland has been sourced from Nomis rather than NISRA. This is to allow for confidence intervals."
+      - "Combined Authority data has been sourced from the following: [2023 (revised)](https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/adhocs/2934annualsurveyofhoursandearningsestimatesofearningsofresidencebasedemployeesbycombinedauthorities), [2024 (revised) and 2025 (provisional)](https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/adhocs/3107annualsurveyofhoursandearningsestimatesofearningsofresidenceandworkbasedemployeesbycombinedauthorities2024revisedand2025provisional)."
+
+  - id: highgrowth
+    name: High growth businesses
+    topics: [economy]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: high-growth-businesses}
+    notes:
+      - "High growth measures all businesses with an average growth in employment of greater than 20%, per annum, over a three-year period. The size threshold used to identify these businesses is that they have 10 or more employees."
+      - "The rate of high growth businesses is calculated using the number of high growth businesses as a proportion of the active businesses with 10 or more employees."
+
+  - id: fdiin
+    name: Inward foreign direct investment
+    topics: [economy]
+    unit: "£ millions"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/articles/foreigndirectinvestmentexperimentaluksubnationalstatistics/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: inward-foreign-direct-investment}
+    notes:
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Foreign direct investment (FDI) is cross-border investment made with the objective of establishing a lasting interest in the host economy. FDI is also defined by control relationships, where the direct investor (parent company) controls at least 10% of the voting power (ordinary shares) of the direct investment enterprise. These relationships can be measured in two directions:"
+      - "- outward: the direct investments of UK-resident companies in other countries."
+      - "- inward: the direct investments in the UK from non-resident companies."
+      - "Several factors affected FDI statistics for 2020. This not only includes disruption from the coronavirus (COVID-19) pandemic and global recession, but also some changes to the FDI statistical populations and sampling methods. We advise caution when comparing results for 2020 with earlier years. More detail can be found in [Foreign direct investment statistics, overview of methods changes: 2020](https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/articles/foreigndirectinvestmentstatisticsoverviewofmethodschanges/2020)."
+
+  - id: fdiout
+    name: Outward foreign direct investment
+    topics: [economy]
+    unit: "£ millions"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/articles/foreigndirectinvestmentexperimentaluksubnationalstatistics/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: outward-foreign-direct-investment}
+    notes:
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Foreign direct investment (FDI) is cross-border investment made with the objective of establishing a lasting interest in the host economy. FDI is also defined by control relationships, where the direct investor (parent company) controls at least 10% of the voting power (ordinary shares) of the direct investment enterprise. These relationships can be measured in two directions:"
+      - "- outward: the direct investments of UK-resident companies in other countries."
+      - "- inward: the direct investments in the UK from non-resident companies."
+      - "Several factors affected FDI statistics for 2020. This not only includes disruption from the coronavirus (COVID-19) pandemic and global recession, but also some changes to the FDI statistical populations and sampling methods. We advise caution when comparing results for 2020 with earlier years. More detail can be found in [Foreign direct investment statistics, overview of methods changes: 2020](https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/articles/foreigndirectinvestmentstatisticsoverviewofmethodschanges/2020)."
+
+  # ── ENVIRONMENT — natural capital and emissions ─────────────
+
+  - id: airreg
+    name: Air pollution regulating
+    topics: [environment]
+    unit: "£ millions, 2024 prices"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/uknaturalcapitalaccounts/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: air-pollution-regulating}
+    notes:
+      - "A valuation of an ecosystem service, not spending: ONS estimates what the vegetation's removal of air pollutants would otherwise have cost in health damage. Treat it as an accounting estimate with wide uncertainty, not a measured flow of money"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "This data includes all pollutants and all habitats."
+      - "Please refer to the [UK natural capital accounts quality and methods guide](https://www.ons.gov.uk/economy/environmentalaccounts/methodologies/uknaturalcapitalaccountsqualityandmethodsguide) for more information."
+
+  - id: ghgcapita
+    name: Greenhouse gas emissions
+    topics: [environment]
+    unit: "tCO2e per capita"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/collections/uk-local-authority-and-regional-greenhouse-gas-emissions-national-statistics
+    publisher: DESNZ
+    source_type: els
+    fetch: {indicator: greenhouse-gas-emissions}
+    notes:
+      - "Greenhouse gas emissions (tCO2e) per capita refers to the average amount of greenhouse gas emissions produced by each person in a specific area over a year. This metric is calculated by dividing the total greenhouse gas emissions of an area by its population. The result is expressed in tonnes of CO2 equivalent (tCO2e) per person."
+      - "Greenhouse gas emissions here include territorial emissions of carbon dioxide (CO2), methane (CH4) and nitrous oxide (N2O)."
+      - "Emissions are reported against the areas where they occurred except for emissions associated with energy supply that are distributed to the areas based on where the 'end-use' of the energy occurred and emissions from waste that have been distributed based on the waste arising in each area."
+      - "Emissions data is from UK local authority greenhouse gas emissions estimates where some emissions can't be fully allocated to individual local authorities for technical or disclosure reasons."
+      - "Some of this data has been aggregated and may show differences to other published figures."
+      - "Emissions data is also visualised on [Local Authority Greenhouse Gas Map.](https://naei.energysecurity.gov.uk/laghgapp/)"
+
+  - id: ghgreg
+    name: Greenhouse gas regulating
+    topics: [environment]
+    unit: "£ millions, 2024 prices"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/uknaturalcapitalaccounts/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: greenhouse-gas-regulating}
+    notes:
+      - "A valuation of carbon sequestration by UK habitats, priced at the government's non-traded carbon values. Not money that changed hands"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "This data includes all habitats."
+      - "Local greenhouse gas regulating estimates are produced through local authority modelling of national estimates and are not specific to the land management of each authority."
+      - "Greenhouse gas regulating estimates measure the net greenhouse gas emitted and absorbed."
+      - "Please refer to the [UK natural capital accounts quality and methods guide](https://www.ons.gov.uk/economy/environmentalaccounts/methodologies/uknaturalcapitalaccountsqualityandmethodsguide) for more information."
+
+  - id: heatreg
+    name: Urban heat regulating
+    topics: [environment]
+    unit: "£ millions, 2024 prices"
+    kind: money_real
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/environmentalaccounts/bulletins/uknaturalcapitalaccounts/previousreleases
+    publisher: ONS
+    source_type: els
+    # ELS lists K02 among this indicator's geography types, but the UK row
+    # does not exist and the request 400s. England does, so this is England.
+    fetch: {indicator: urban-heat-regulating, geo: E92000001}
+    notes:
+      - "A valuation of the cooling urban vegetation provides. Not money that changed hands"
+      - "England only. ONS's own metadata lists this indicator as UK-wide, but no UK-level figure is served"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Hot days are defined as days with a maximum temperature of 28 degrees Celsius and above."
+      - "The UK and country level values for the number of hot days are the sum of the number of hot days per local authority."
+      - "There are two parts to the calculation of annual value. The value that nature provides in work productivity savings during hot days and savings on air conditioning. The air conditioning value is based on a model from 2014 and we assume a flat time series for this contribution. When there are no hot days for a local authority, this means that the only value comes from the air conditioning value."
+      - "These values have been rounded to 1 decimal place. Some Local Authorities with 0 values may have an annual and asset value that are hidden by being rounded to 1 decimal place. Please view the Natural Capital Accounts [Detailed Summary Tables](https://www.ons.gov.uk/economy/environmentalaccounts/datasets/uknaturalcapitalaccountsdetailedsummarytables) for the full details."
+      - "Please refer to the [UK natural capital accounts quality and methods guide](https://www.ons.gov.uk/economy/environmentalaccounts/methodologies/uknaturalcapitalaccountsqualityandmethodsguide) for more information."
+
+  # ── HEALTH & WELLBEING ──────────────────────────────────────
+
+  - id: hlefemale
+    name: Female healthy life expectancy
+    topics: [health]
+    unit: "years"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/bulletins/healthstatelifeexpectanciesuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: healthy-life-expectancy-female}
+    notes:
+      - "Healthy life expectancy, not life expectancy — years lived in self-reported good health. It has been flat or falling while total life expectancy rose, which is the whole reason to plot the two together"
+      - "Pooled 2-year estimates, plotted at the first year of each band — a point here summarises 2 years, not one"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Healthy life expectancy is a summary measure of health that adds a quality dimension to estimates of life expectancy by dividing expected lifespan into time spent in different states of health. Healthy life expectancy measures health-related wellbeing and represents the average time an individual is expected to live in \"very good\" or \"good\" general health, based on how individuals perceive their general health."
+      - "The estimates in this indicator have been produced using an interim methodological fix. The decline in sample size of the Annual Population Survey has impaired our ability to continue using the previous method to estimate age-specific prevalence of \"good\" general health by local authority. We therefore used logistic regression to estimate \"good\" health prevalence instead of using the survey's observed prevalence. This enables continuity in local area reporting with a viable, comparable time series. ONS is currently conducting a review of data sources to assess their future potential to provide robust, reliable and durable measures of health status."
+      - "Figures are based on the number of deaths registered, mid-year population estimates, and health state prevalence aggregated over three consecutive years. Figures exclude deaths of non-residents."
+      - "Estimates for Isles of Scilly and City of London are excluded because of insufficient population counts."
+      - "Estimates for Northern Ireland’s local government districts are available only from 2014 to 2016 onward."
+      - "These estimates of healthy life expectancy in Northern Ireland use different methods and data sources compared to those produced by the Northern Ireland Department of Health; please see their [Health inequalities annual report](https://www.health-ni.gov.uk/news/health-inequalities-annual-report-2025) for more information."
+      - "More quality and methodology information on strengths, limitations, appropriate uses, and how the data were created is available in the [Health state life expectancies, UK quality and methodology information (QMI) report](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/methodologies/healthstatelifeexpectanciesukqmi2020to2022)."
+
+  - id: hlemale
+    name: Male healthy life expectancy
+    topics: [health]
+    unit: "years"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/bulletins/healthstatelifeexpectanciesuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: healthy-life-expectancy-male}
+    notes:
+      - "Healthy life expectancy, not life expectancy — years lived in self-reported good health"
+      - "Pooled 2-year estimates, plotted at the first year of each band — a point here summarises 2 years, not one"
+      - "Published by ONS as an experimental statistic — the method is still under development"
+      - "Healthy life expectancy is a summary measure of health that adds a quality dimension to estimates of life expectancy by dividing expected lifespan into time spent in different states of health. Healthy life expectancy measures health-related wellbeing and represents the average time an individual is expected to live in \"very good\" or \"good\" general health, based on how individuals perceive their general health."
+      - "The estimates in this indicator have been produced using an interim methodological fix. The decline in sample size of the Annual Population Survey has impaired our ability to continue using the previous method to estimate age-specific prevalence of \"good\" general health by local authority. We therefore used logistic regression to estimate \"good\" health prevalence instead of using the survey's observed prevalence. This enables continuity in local area reporting with a viable, comparable time series. ONS is currently conducting a review of data sources to assess their future potential to provide robust, reliable and durable measures of health status."
+      - "Figures are based on the number of deaths registered, mid-year population estimates, and health state prevalence aggregated over three consecutive years. Figures exclude deaths of non-residents."
+      - "Estimates for Isles of Scilly and City of London are excluded because of insufficient population counts."
+      - "Estimates for Northern Ireland’s local government districts are available only from 2014 to 2016 onward."
+      - "These estimates of healthy life expectancy in Northern Ireland use different methods and data sources compared to those produced by the Northern Ireland Department of Health; please see their [Health inequalities annual report](https://www.health-ni.gov.uk/news/health-inequalities-annual-report-2025) for more information."
+      - "More quality and methodology information on strengths, limitations, appropriate uses, and how the data were created is available in the [Health state life expectancies, UK quality and methodology information (QMI) report](https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/methodologies/healthstatelifeexpectanciesukqmi2020to2022)."
+
+  - id: wbanxiety
+    name: Anxiety
+    topics: [health]
+    unit: "score out of 10"
+    kind: ratio
+    geography: UK
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/bulletins/measuringnationalwellbeing/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: wellbeing-anxiety}
+
+  - id: wbhappy
+    name: Happiness
+    topics: [health]
+    unit: "score out of 10"
+    kind: ratio
+    geography: UK
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/bulletins/measuringnationalwellbeing/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: wellbeing-happiness}
+
+  - id: wbsatisfied
+    name: Life satisfaction
+    topics: [health]
+    unit: "score out of 10"
+    kind: ratio
+    geography: UK
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/bulletins/measuringnationalwellbeing/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: wellbeing-satisfaction}
+
+  - id: wbworthwhile
+    name: Feeling life is worthwhile
+    topics: [health]
+    unit: "score out of 10"
+    kind: ratio
+    geography: UK
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/bulletins/measuringnationalwellbeing/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: wellbeing-worthwhile}
+
+  # ── HOUSING ─────────────────────────────────────────────────
+
+  - id: houseprice
+    name: Average house price
+    topics: [housing, economy]
+    unit: "£"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/collections/uk-house-price-index-reports
+    publisher: HM Land Registry
+    source_type: els
+    fetch: {indicator: average-house-price, aggregate: mean}
+    notes:
+      - "For the UK House Price Index (UK HPI), the standard average house price is calculated by taking the average (geometric mean) price in January 2015 and then recalculating it in accordance with the index change back in time and forward to the present day. The geometric mean reduces the weighting given to high value properties when compared to the arithmetic mean and is typically lower, usually closer to that of the median."
+      - "Estimates for the most recent months are provisional and are likely to be updated as more data is incorporated into the index. Read [Revisions to the UK HPI data](https://www.gov.uk/government/publications/about-the-uk-house-price-index/about-the-uk-house-price-index#monthly-revision)."
+      - "The UK House Price Index (UK HPI) is calculated by the Office for National Statistics and Land & Property Services Northern Ireland. Find out about the [methodology used](https://www.gov.uk/government/publications/about-the-uk-house-price-index/quality-and-methodology#methods-used-to-produce-the-uk-hpi) to create the UK HPI."
+      - "Data for the UK House Price Index is provided by HM Land Registry, Registers of Scotland, The Land & Property Services Northern Ireland Statistics & Research Agency and the Valuation Office Agency. Find out more [about the UK House Price Index](https://www.gov.uk/government/publications/about-the-uk-house-price-index)."
+
+  - id: ftbsales
+    name: First-time buyer mortgage sales
+    topics: [housing]
+    unit: "per 1,000 stock"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/housing/datasets/firsttimebuyermortgagesalesbylocalauthorityuk2006to2023
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: first-time-buyer-mortgage-sales}
+    notes:
+      - "Mortgage Product Sales Data (PSD001) is regulatory data reported to the Financial Conduct Authority (FCA) by regulated mortgage lenders."
+      - "This data reflects the number of mortgages taken out by first-time buyers, either individually or jointly, but does not include first-time buyers who purchased a property without a mortgage."
+      - "The first-time buyer indicator in the FCA data is reported by the mortgage providers and its definition may vary across firms. For example, for individuals who are not remortgaging but have previously owned a property may or may not be counted as first-time buyers. Additionally, if a mortgage is taken out jointly by one first-time buyer and one non-first-time buyer, it may or may not be counted as a first-time buyer."
+      - "The dwelling stock estimates used are published by MHCLG, Welsh Government, Scottish Government and the Northern Ireland Department of Finance."
+      - "Some of this data has been aggregated and may differ from other published figures. Data for the Isles of Scilly is unavailable for all years due to low counts. Mortgage sales for Isles of Scilly have been excluded from aggregated areas that would normally include data from this area."
+
+  # ── POPULATION ──────────────────────────────────────────────
+
+  - id: popchange5
+    name: Five-year population change
+    topics: [migration]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: five-year-population-change}
+    notes:
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: medianage
+    name: Median age
+    topics: [migration]
+    unit: "years"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: median-age}
+    notes:
+      - "Median age is calculated as the age category in which the mid-point of the population distribution falls. There may be slight differences when compared with other sources, as these may reflect where the mid-point falls within the given age category. These reflect differences in precision, not accuracy."
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: pop015
+    name: Population aged 0 to 15
+    topics: [migration]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: percentage-population-aged-0-to-15}
+    notes:
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: pop1664
+    name: Population aged 16 to 64
+    topics: [migration]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: percentage-population-aged-16-to-64}
+    notes:
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: pop65
+    name: Population aged 65 and over
+    topics: [migration]
+    unit: "%"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: percentage-population-aged-65}
+    notes:
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: poptotal
+    name: Total population
+    topics: [migration]
+    unit: "people"
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: population-count}
+    notes:
+      - "The same mid-year estimates that power this site's per-person transforms, published here as a series in its own right"
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  - id: popdensity
+    name: Population density
+    topics: [migration]
+    unit: "persons per square kilometre"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/pestsyoala
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: population-density}
+    notes:
+      - "[Standard Area Measurements (December 2024) in the UK](https://geoportal.statistics.gov.uk/datasets/ons::standard-area-measurements-for-the-local-authority-districts-december-2024-in-the-uk/about) was used to calculate population density by dividing the total population by the area in square kilometres."
+      - "Population estimates in Explore Local Statistics (ELS) are informed by those available on Nomis at the time of publication on ELS."
+      - "Data on ELS will be updated when the [Population estimates for the UK, England, Wales, Scotland and Northern Ireland: mid-2025](https://www.ons.gov.uk/releases/populationestimatesfortheukenglandwalesscotlandandnorthernirelandmid2025) release is published, provisionally scheduled for September to October 2026."
+
+  # ── Added 2026-10-18: headline ONS series, each checked against the live
+  #    timeseries JSON (title, unit and an annual run) before being added ──
+
+  - id: gdpreal
+    name: Gross domestic product (real)
+    topics: [economy]
+    unit: "£m, chained volume measures"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS National Accounts
+    source_url: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/abmi/ukea
+    source_type: ons_timeseries
+    fetch: {path: economy/grossdomesticproductgdp, cdid: ABMI, dataset: ukea, granularity: years}
+    notes:
+      - "Chained volume measures: output with price changes taken out, so years are comparable in real terms"
+
+  - id: bizinv
+    name: Business investment (real)
+    topics: [economy]
+    unit: "£m, chained volume measures"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS National Accounts
+    source_url: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/npel/cxnv
+    source_type: ons_timeseries
+    fetch: {path: economy/grossdomesticproductgdp, cdid: NPEL, dataset: cxnv, granularity: years}
+
+  - id: saving
+    name: Household saving ratio
+    topics: [economy]
+    unit: "% of household disposable income"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS National Accounts
+    source_url: https://www.ons.gov.uk/economy/grossdomesticproductgdp/timeseries/nrjs/ukea
+    source_type: ons_timeseries
+    fetch: {path: economy/grossdomesticproductgdp, cdid: NRJS, dataset: ukea, granularity: years}
+
+  - id: cpi
+    name: CPI inflation rate
+    topics: [economy]
+    unit: "% change on a year earlier"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Consumer price inflation
+    source_url: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/d7g7/mm23
+    source_type: ons_timeseries
+    fetch: {path: economy/inflationandpriceindices, cdid: D7G7, dataset: mm23, granularity: years}
+    notes:
+      - "The annual figure is the average of the twelve monthly 12-month rates"
+
+  - id: rpi
+    name: RPI inflation rate
+    topics: [economy]
+    unit: "% change on a year earlier"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Consumer price inflation
+    source_url: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/czbh/mm23
+    source_type: ons_timeseries
+    fetch: {path: economy/inflationandpriceindices, cdid: CZBH, dataset: mm23, granularity: years}
+    notes:
+      - "RPI is no longer a National Statistic; ONS publishes it for continuity and recommends CPIH"
+      - "The annual figure is the average of the twelve monthly 12-month rates"
+
+  - id: oohcosts
+    name: Owner occupiers' housing costs
+    topics: [housing, economy]
+    unit: "index, 2015=100"
+    kind: index
+    geography: UK
+    year_basis: calendar
+    source: ONS Consumer price inflation
+    source_url: https://www.ons.gov.uk/economy/inflationandpriceindices/timeseries/l5p5/mm23
+    source_type: ons_timeseries
+    fetch: {path: economy/inflationandpriceindices, cdid: L5P5, dataset: mm23, granularity: years}
+    notes:
+      - "The housing-costs component of CPIH, measured as the rent an owner occupier would pay for an equivalent home"
+
+  - id: emplfs
+    name: Employment rate, 16 to 64 (LFS)
+    topics: [economy]
+    unit: "% of people aged 16 to 64"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Labour Force Survey
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/lf24/lms
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peopleinwork/employmentandemployeetypes, cdid: LF24, dataset: lms, granularity: years}
+    notes:
+      - "The headline Labour Force Survey rate, back to 1971. The other Employment rate in the catalogue comes from the Annual Population Survey, starts in 2004 and has figures for local areas"
+    discontinuities:
+      - {year: 2024, label: "Switch to Transformed LFS", note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
+
+  - id: inactivity
+    name: Economic inactivity rate, 16 to 64 (LFS)
+    topics: [economy, health]
+    unit: "% of people aged 16 to 64"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Labour Force Survey
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/economicinactivity/timeseries/lf2s/lms
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peoplenotinwork/economicinactivity, cdid: LF2S, dataset: lms, granularity: years}
+    notes:
+      - "People neither in work nor looking for work: students, carers, the retired and the long-term sick among them"
+      - "The headline Labour Force Survey rate, back to 1971. The other Economic inactivity rate comes from the Annual Population Survey, starts in 2004 and has figures for local areas"
+    discontinuities:
+      - {year: 2024, label: "Switch to Transformed LFS", note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
+
+  - id: youthunemp
+    name: Youth unemployment rate
+    topics: [economy, education]
+    unit: "% of economically active 16 to 24 year olds"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Labour Force Survey
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peoplenotinwork/unemployment/timeseries/mgwy/lms
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peoplenotinwork/unemployment, cdid: MGWY, dataset: lms, granularity: years}
+    discontinuities:
+      - {year: 2024, label: "Switch to Transformed LFS", note: "Transition from the Labour Force Survey to the Transformed LFS changes the basis"}
+
+  - id: vacancies
+    name: Job vacancies
+    topics: [economy]
+    unit: "thousands"
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: ONS Vacancy Survey
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/timeseries/ap2y/lms
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peopleinwork/employmentandemployeetypes, cdid: AP2Y, dataset: lms, granularity: years, aggregate: mean}
+
+  - id: realpay
+    name: Average weekly earnings (real)
+    topics: [economy]
+    unit: "£ per week, constant prices"
+    kind: money_real
+    geography: UK
+    year_basis: calendar
+    source: ONS Average Weekly Earnings
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/earningsandworkinghours/timeseries/a3wx/lms
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peopleinwork/earningsandworkinghours, cdid: A3WX, dataset: lms, granularity: years}
+    notes:
+      - "Total pay deflated by ONS with CPI, so a pound means the same in every year"
+
+  - id: productivity
+    name: Labour productivity
+    topics: [economy]
+    unit: "index, 2023=100"
+    kind: index
+    geography: UK
+    year_basis: calendar
+    source: ONS Labour Productivity
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/labourproductivity/timeseries/lzvb/prdy
+    source_type: ons_timeseries
+    fetch: {path: employmentandlabourmarket/peopleinwork/labourproductivity, cdid: LZVB, dataset: prdy, granularity: years}
+    notes:
+      - "Output per hour worked across the whole economy"
+
+  - id: psnb
+    name: Public sector net borrowing
+    topics: [economy]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Public Sector Finances
+    source_url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/j5ii/pusf
+    source_type: ons_timeseries
+    fetch: {path: economy/governmentpublicsectorandtaxes/publicsectorfinance, cdid: J5II, dataset: pusf, granularity: years}
+    notes:
+      - "Excludes public sector banks. Calendar-year totals; the Budget is set on financial years"
+      - "ONS publishes this as net lending, so borrowing shows as a negative number: -150,000 means £150bn borrowed"
+
+  - id: taxreceipts
+    name: Government current receipts
+    topics: [economy]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Public Sector Finances
+    source_url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/publicsectorfinance/timeseries/anby/pusf
+    source_type: ons_timeseries
+    fetch: {path: economy/governmentpublicsectorandtaxes/publicsectorfinance, cdid: ANBY, dataset: pusf, granularity: years}
+    notes:
+      - "General government total current receipts: taxes, National Insurance and other income"
+
+  - id: tradebal
+    name: Trade balance
+    topics: [economy]
+    unit: "£m, cash"
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Balance of Payments
+    source_url: https://www.ons.gov.uk/economy/nationalaccounts/balanceofpayments/timeseries/ikbj/ukea
+    source_type: ons_timeseries
+    fetch: {path: economy/nationalaccounts/balanceofpayments, cdid: IKBJ, dataset: ukea, granularity: years}
+    notes:
+      - "Exports minus imports of goods and services; negative is a deficit"
+
+  - id: lefemale
+    name: Female life expectancy
+    topics: [health]
+    unit: "years"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/bulletins/lifeexpectancyforlocalareasoftheuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: life-expectancy-female}
+    notes:
+      - "Life expectancy at birth, the total — chart it beside healthy life expectancy to see how many of those years are spent in good health"
+      - "Pooled 2-year estimates, plotted at the first year of each band — a point here summarises 2 years, not one"
+      - "Life expectancy at birth is a period measure based on mortality rates observed in the given reference period. It does not predict how long babies born during this period will actually live."
+
+  - id: lemale
+    name: Male life expectancy
+    topics: [health]
+    unit: "years"
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/bulletins/lifeexpectancyforlocalareasoftheuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch: {indicator: life-expectancy-male}
+    notes:
+      - "Life expectancy at birth, the total — chart it beside healthy life expectancy to see how many of those years are spent in good health"
+      - "Pooled 2-year estimates, plotted at the first year of each band — a point here summarises 2 years, not one"
+      - "Life expectancy at birth is a period measure based on mortality rates observed in the given reference period. It does not predict how long babies born during this period will actually live."
+
+  # ══════════════════════════════════════════════════════════════
+  # NATIONAL INDICATORS ADDED OCTOBER 2026
+  # Each from the department that publishes it. Most are England only,
+  # because the policy area is devolved, and say so in `geography`.
+  # ══════════════════════════════════════════════════════════════
+
+  # ── NHS PERFORMANCE (England) ───────────────────────────────
+  #
+  # The NHS is devolved, so there is no single UK waiting-list or A&E
+  # figure; Scotland, Wales and Northern Ireland count differently. These
+  # are England only, and say so.
+
+  - id: rttwaitlist
+    name: NHS waiting list (RTT incomplete pathways)
+    topics: [health]
+    unit: pathways waiting
+    kind: count
+    geography: England
+    year_basis: calendar
+    source: NHS England Referral to Treatment waiting times
+    source_url: https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/
+    publisher: NHS England
+    source_type: spreadsheet
+    fetch:
+      url: https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/10/RTT-Overview-Timeseries-Including-Estimates-for-Missing-Trusts-Aug26-XLS-139K-vjgRdG.xlsx
+      sheet: Full Time Series
+      header_row: 12
+      year_column: 2          # column C, 'Month' — its label sits a row above the header
+      period_column: 2
+      value_column: Total waiting (mil) with estimates for missing data
+      aggregate: last
+    notes:
+      - "A stock, not a flow — the number of referral-to-treatment pathways still open at the end of the month. Each point is the December figure, except the latest year, which is a partial year taken at the most recent month published"
+      - "Counts pathways, not people. One patient waiting for two treatments counts twice; NHS England estimates the number of unique patients is roughly 10–15% lower"
+      - "The collection began in 2007; the steep fall through 2008 is real — trusts were clearing long waits ahead of the 18-week target that came in at the end of that year"
+      - "Includes NHS England's estimates for trusts that did not submit data in a given month, so the series is not distorted by missing returns"
+      - "Consultant-led elective care only. It does not include A&E, cancer, mental health or community waits"
+    discontinuities:
+      - {year: 2013, label: "Sexual health removed", note: "From April 2013 consultant-led sexual health services were no longer commissioned by the NHS and dropped out of RTT reporting. These were mostly short, week-long pathways"}
+      - {year: 2020, label: "COVID-19", note: "Referrals collapsed during the pandemic and elective activity was paused, so the list rose sharply afterwards as delayed demand returned"}
+      - {year: 2024, label: "Community services removed", note: "From February 2024 data, community service pathways should no longer be reported in RTT data, which took a small number of pathways off the list. Figures before and after are not on quite the same basis"}
+
+  - id: ae4hour
+    name: A&E attendances seen within 4 hours
+    topics: [health]
+    unit: "% of attendances"
+    kind: rate
+    geography: England
+    year_basis: financial
+    source: NHS England A&E attendances and emergency admissions
+    source_url: https://www.england.nhs.uk/statistics/statistical-work-areas/ae-waiting-times-and-activity/
+    publisher: NHS England
+    source_type: spreadsheet
+    fetch:
+      url: https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/10/Quarterly-Annual-Time-Series-Sw39Tc.xls   # legacy .xls, read with xlrd
+      sheet: Annual Data
+      header_row: 17
+      year_column: Year
+      value_column: Percentage in 4 hours or less (all)
+      scale: 100
+    notes:
+      - "Share of all A&E attendances — major emergency departments, single-specialty units, minor injury units and walk-in centres — that ended in admission, transfer or discharge within four hours of arrival. The operational standard is 95%, and the interim target has been 76–78%"
+      - "Including minor injury units flatters the figure. Type 1 (major A&E) performance alone runs far lower: about 61% in 2025-26"
+      - "Measures time spent in A&E, not how long patients waited to be seen by a clinician"
+    discontinuities:
+      - {year: 2015, label: "Monthly collection", note: "The data source switched from the weekly WSitAE return to the monthly MSitAE return from July 2015"}
+      - {year: 2019, label: "CRS trial sites excluded", note: "From May 2019 to May 2023, 14 trusts testing new A&E standards (the Clinical Review of Standards) stopped reporting four-hour performance and are excluded from the figure. NHS England warns these years are not directly comparable with others"}
+      - {year: 2020, label: "COVID-19", note: "Attendances fell by around a third in 2020-21, which flattered four-hour performance. Booked A&E appointments were also counted from August 2020"}
+
+  - id: gpfte
+    name: Fully qualified GPs (full-time equivalent)
+    topics: [health]
+    unit: full-time equivalent GPs
+    kind: count
+    geography: England
+    year_basis: calendar
+    source: NHS England General Practice Workforce statistics
+    source_url: https://digital.nhs.uk/data-and-information/publications/statistical/general-and-personal-medical-services
+    publisher: NHS England
+    source_type: spreadsheet
+    fetch:
+      url: https://files.digital.nhs.uk/BA/ADF4E3/GPW%20Bulletin%20Tables%20-%20August%202026.xlsx
+      sheet: 1a
+      layout: wide
+      label_column: 0
+      row_match: All Fully Qualified GPs (excludes GPs in Training Grade)
+      column_match: March
+    notes:
+      - "Each point is the position at 31 March. Full-time equivalent counts a 37.5-hour week as one, so it falls when GPs cut their hours even if headcount holds steady"
+      - "Fully qualified GPs only: partners, salaried GPs, retainers and regular locums. GPs in training are excluded, as are ad-hoc locums, which have been removed from the whole time series since June 2021"
+      - "Traditional general practices only — GPs working in walk-in centres, urgent treatment centres, prisons and similar settings are not counted"
+      - "Includes NHS England's estimates for practices that did not submit full records. Early years of the collection had lower submission rates and may understate the true figure"
+      - "Published by NHS Digital until its 2023 merger with NHS England, and by NHS England since"
+    discontinuities:
+      - {year: 2017, label: "Locum recording", note: "Recorded GP locum numbers jumped in March 2017 after new recording guidance. NHS England has since estimated the missing locum FTE back to 2015, but the early years rest partly on those estimates"}
+      - {year: 2025, label: "Leaver records cleaned", note: "From April 2025, a data-quality measure removed records of staff who had left a practice but not been closed down. NHS England says this may have reduced headline figures from that point"}
+
+  - id: ambcat2
+    name: Ambulance Category 2 mean response time
+    topics: [health]
+    unit: minutes
+    kind: ratio
+    geography: England
+    year_basis: financial
+    source: NHS England Ambulance Quality Indicators
+    source_url: https://www.england.nhs.uk/statistics/statistical-work-areas/ambulance-quality-indicators/
+    publisher: NHS England
+    source_type: spreadsheet
+    fetch:
+      url: https://www.england.nhs.uk/statistics/wp-content/uploads/sites/2/2026/10/AmbSYS-Time-Series-to-20260930-as6t8.xlsx
+      sheet: Raw
+      header_row: 5
+      year_column: Year
+      period_column: Month
+      value_column: A31
+      filter: {Area: ENG, Trust: ""}
+      aggregate: mean
+      scale: 0.016666666666666666
+    notes:
+      - "Mean time from a 999 call to an ambulance arriving for Category 2 calls — emergencies such as suspected heart attacks and strokes. The target is 18 minutes, with an interim goal of 30 minutes"
+      - "Each year is the simple average of the monthly means, not NHS England's incident-weighted annual figure. The two usually agree to within about ten seconds (2024-25: 35.2 minutes here, 35.4 published), but the gap reaches about 20 seconds in 2020-21 and a minute in the part-year 2017-18"
+      - "The first year covers August 2017 to March 2018 only, and the latest year is partial — it runs to the most recent month published"
+    discontinuities:
+      - {year: 2017, label: "New response standards", note: "The Ambulance Response Programme replaced the old Red 1 and Red 2 targets from August 2017. There is no comparable figure before then"}
+      - {year: 2020, label: "COVID-19", note: "Demand fell in the first months of the pandemic, then hospital handover delays drove response times to record highs in 2022-23"}
+
+  # ══════════════════════════════════════════════════════════════
+  # HOUSING — national
+  #
+  # MHCLG live tables. All England only: housing is devolved, and the
+  # Welsh, Scottish and Northern Irish equivalents are collected on
+  # different definitions, so there is no honest UK total to add up.
+  # ══════════════════════════════════════════════════════════════
+
+  # The time-series workbook is quarterly, and the adapter's `aggregate: last`
+  # would take December for every year except the latest, which only runs to
+  # March. Filtering on the 31 March rows keeps every point on the same date.
+  # Add next year's "31 March" label when the file is refreshed.
+  - id: tempaccom
+    name: Households in temporary accommodation
+    topics: [housing]
+    unit: households
+    kind: count
+    geography: England
+    year_basis: calendar
+    source: MHCLG Statutory homelessness live tables
+    source_url: https://www.gov.uk/government/statistical-data-sets/live-tables-on-homelessness
+    publisher: MHCLG
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a82eee63bd75b81e2329a7b/Statutory_Homelessness_England_Time_Series_202603.ods
+      sheet: TA1
+      header_row: 6
+      year_column: Time period
+      period_column: Time period
+      value_column: Households in TA Total
+      filter:
+        Time period: ["31 March 1998", "31 March 1999", "31 March 2000", "31 March 2001",
+                      "31 March 2002", "31 March 2003", "31 March 2004", "31 March 2005",
+                      "31 March 2006", "31 March 2007", "31 March 2008", "31 March 2009",
+                      "31 March 2010", "31 March 2011", "31 March 2012", "31 March 2013",
+                      "31 March 2014", "31 March 2015", "31 March 2016", "31 March 2017",
+                      "31 March 2018", "31 March 2019", "31 March 2020", "31 March 2021",
+                      "31 March 2022", "31 March 2023", "31 March 2024", "31 March 2025",
+                      "31 March 2026"]
+    notes:
+      - "Households living in accommodation arranged by their council while it decides or discharges a homelessness duty, as at 31 March each year. A stock, not a flow"
+      - "Counts households, not people. Roughly half of them include children, and the number of children in temporary accommodation is published alongside"
+      - "Councils that miss a return are estimated by MHCLG from their earlier figures and similar areas, so the national total is partly imputed in some quarters. The latest quarter is provisional"
+      - "It more than halved between 2005 and 2011, after a 2005 target to halve it by 2010, and has risen almost every year since to a series high"
+    discontinuities:
+      - {year: 2018, label: "Homelessness Reduction Act", note: "From April 2018 the Homelessness Reduction Act changed the duties councils owe, and the collection moved from the P1E return to case-level H-CLIC data. MHCLG publishes the total as one series, but the households it covers are not defined identically either side"}
+
+  - id: roughsleep
+    name: People sleeping rough on a single night
+    topics: [housing]
+    unit: people
+    kind: count
+    geography: England
+    year_basis: calendar
+    source: MHCLG Rough sleeping snapshot in England
+    source_url: https://www.gov.uk/government/statistics/rough-sleeping-snapshot-in-england-autumn-2025
+    publisher: MHCLG
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/699daa5807d7bff3604d6c20/Rough_sleeping_snapshot_in_England__autumn_2025.ods
+      sheet: Table_1_Total
+      layout: wide
+      year_header_row: 5
+      label_column: 3
+      row_match: England
+    notes:
+      - "A snapshot of people seen, or thought to be, sleeping rough on one night between October and November. It is not everyone who sleeps rough over a year, which is several times higher"
+      - "Each council chooses whether to count on the street or to estimate with local partners, and picks its own night, so the method is not uniform across areas or years"
+      - "Excludes people in hostels, night shelters and other temporary accommodation, who are homeless but not sleeping rough"
+    discontinuities:
+      - {year: 2020, label: "Everyone In", note: "In March 2020 councils were told to bring everyone sleeping rough indoors during the pandemic. The autumn 2020 and 2021 snapshots are depressed by that emergency programme rather than reflecting the usual pressures"}
+
+  # Table 244 is the calendar-year version of table 213. Both are building-
+  # control "indicators of new supply", not the net additions measure.
+  - id: homestarts
+    name: New homes started
+    topics: [housing]
+    unit: dwellings per year
+    kind: count
+    geography: England
+    year_basis: calendar
+    source: MHCLG House building live tables
+    source_url: https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building
+    publisher: MHCLG
+    source_type: spreadsheet
+    fetch: &housebuilding
+      url: https://assets.publishing.service.gov.uk/media/6ab3e27a997a4b2950ccedf8/LiveTable244.ods
+      sheet: LT_244
+      header_row: 5
+      year_column: Calendar year
+      value_column: All Starts
+    notes:
+      - "Permanent dwellings started, all tenures, from building control inspections (live table 244). Not seasonally adjusted"
+      - "A quick indicator, not the official measure of housing supply. Net additional dwellings, which also counts conversions and changes of use and takes off demolitions, runs well above this and is the figure the 1.5 million homes target is judged on"
+      - "Figures from October 2005 to March 2007 miss a small number of homes inspected by independent approved inspectors. The latest year is provisional"
+
+  - id: homecompletions
+    name: New homes completed
+    topics: [housing]
+    unit: dwellings per year
+    kind: count
+    geography: England
+    year_basis: calendar
+    source: MHCLG House building live tables
+    source_url: https://www.gov.uk/government/statistical-data-sets/live-tables-on-house-building
+    publisher: MHCLG
+    source_type: spreadsheet
+    fetch:
+      <<: *housebuilding
+      value_column: All Completions
+    notes:
+      - "Permanent dwellings completed, all tenures, from building control inspections (live table 244). Not seasonally adjusted"
+      - "A quick indicator, not the official measure of housing supply. Net additional dwellings, which also counts conversions and changes of use and takes off demolitions, runs well above this and is the figure the 1.5 million homes target is judged on"
+      - "The post-war peak of over 350,000 a year was mostly council housing. Councils have built only a few thousand homes a year since the 1990s"
+      - "Data for earlier years are less reliable and definitions may not be consistent through the series. Figures from October 2005 to March 2007 miss a small number of homes inspected by independent approved inspectors. The latest year is provisional"
+
+  - id: waitinglist
+    name: Households on council housing waiting lists
+    topics: [housing]
+    unit: households
+    kind: count
+    geography: England
+    year_basis: calendar
+    source: MHCLG Rents, lettings and tenancies live tables
+    source_url: https://www.gov.uk/government/statistical-data-sets/live-tables-on-rents-lettings-and-tenancies
+    publisher: MHCLG
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a2be263e50716856ed4afc4/Live_Table_600.ods
+      sheet: Regional_Data
+      layout: wide
+      year_header_row: 4
+      label_column: 3
+      row_match: England
+    notes:
+      - "Households on local authority housing registers as at 31 March (1 April up to 2018), from live table 600"
+      - "Not the number of households waiting for social housing. Councils purge their lists at different intervals, and a household can be on more than one council's list"
+      - "Choice-based lettings from 2003 pushed the lists up, because applicants had a reason to register. Since 2012 councils have been able to set their own rules on who qualifies, and many shut people out"
+    discontinuities:
+      - {year: 2013, label: "Localism Act qualification rules", note: "The Localism Act 2011 let councils decide who qualifies for their register from June 2012. Many removed households with no priority, so most of the fall over the next two years is a change in who counts rather than in need"}
+
+  # ══════════════════════════════════════════════════════════════
+  # CRIME AND JUSTICE — national
+  # ══════════════════════════════════════════════════════════════
+
+  # Same workbook as `fno`. Table 1.A.1 runs monthly from June 2015;
+  # column_match keeps the 30 June column for each year.
+  - id: prisonpop
+    name: Prison population
+    topics: [crime]
+    unit: prisoners
+    kind: count
+    geography: England and Wales
+    year_basis: calendar
+    source: MoJ Offender Management Statistics Quarterly
+    source_url: https://www.gov.uk/government/statistics/offender-management-statistics-quarterly-january-to-march-2026
+    publisher: MoJ
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a69e0e116bc92f51e1a4310/prison-population-2026.ods
+      sheet: Table_1_A_1
+      layout: wide
+      year_header_row: 5
+      label_column: 2
+      row_match: All custody types
+      row_filter: {0: Male and female, 1: All ages}
+      column_match: June
+    notes:
+      - "Everyone held in prison in England and Wales on 30 June each year: remand, sentenced and non-criminal prisoners, all ages, both sexes"
+      - "The population is set by sentencing and release policy as much as by crime. Prisons were close to full from 2023, and early-release schemes from September 2024 brought the number down without any change in offending"
+      - "This table starts in June 2015, so the series is short"
+
+  - id: policeofficers
+    name: Police officers
+    topics: [crime]
+    unit: officers (FTE)
+    kind: count
+    geography: England and Wales
+    year_basis: calendar
+    source: Home Office Police workforce, England and Wales
+    source_url: https://www.gov.uk/government/statistics/police-workforce-england-and-wales-31-march-2026
+    publisher: Home Office
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6a58d9ab60a6e36813cb4305/police-workforce-mar26-tables-220726.ods
+      sheet: Table_H3
+      header_row: 7
+      year_column: As at
+      value_column: Total officers (FTE)
+    notes:
+      - "Full-time equivalent officers in the 43 territorial forces as at 31 March each year"
+      - "Excludes British Transport Police, special constables and officers seconded out to bodies such as the National Crime Agency. Includes officers seconded in, and those on long-term absence such as parental leave"
+      - "Numbers fell by about 20,000 between 2010 and 2018 under austerity, then rose by a similar amount under the 2019 to 2023 uplift programme"
+
+  - id: crownbacklog
+    name: Crown Court outstanding cases
+    topics: [crime]
+    unit: open cases
+    kind: count
+    geography: England and Wales
+    year_basis: calendar
+    source: MoJ Criminal court statistics quarterly
+    source_url: https://www.gov.uk/government/statistics/criminal-court-statistics-quarterly-april-to-june-2026
+    publisher: MoJ
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6ab26e5d734e2435f202ee60/ccsq_publication_tables_2026Q2.ods
+      sheet: Table_C1
+      header_row: 5
+      year_column: Year
+      value_column: "All cases: open"
+      filter: {Quarter: All}
+    notes:
+      - "Cases open in the Crown Court at 31 December each year, from the annual rows of table C1. Includes trials, sentencing cases and appeals"
+      - "A snapshot of live cases, not receipts minus disposals. It leaves out cases where a defendant has absconded and has a live bench warrant"
+      - "The whole series was re-stated in 2025 on MoJ's new One Crown data pipeline, so it will not match figures quoted from earlier editions. Data before 2016 is on an older method and not in this table"
+      - "The backlog was falling until 2018, jumped when jury trials stopped in the pandemic, and has kept rising since to a record above 80,000"
+
+    # ── ENVIRONMENT ─────────────────────────────────────────
+  - id: ghgtotal
+    name: Greenhouse gas emissions, UK total
+    topics: [environment]
+    unit: MtCO2e
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: DESNZ final UK greenhouse gas emissions statistics
+    source_url: https://www.gov.uk/government/collections/uk-territorial-greenhouse-gas-emissions-statistics
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6982294819d3abdb495f37ce/final-greenhouse-gas-emissions-tables-2024.xlsx
+      sheet: "1.1"
+      layout: wide
+      label_column: 0
+      row_match: Total greenhouse gas emissions
+    notes:
+      - "Territorial emissions: what is emitted within the UK's borders. Emissions embodied in imports are not counted, and nor are international aviation and shipping"
+      - "Covers the seven Kyoto gases, weighted by global warming potential into million tonnes of CO2 equivalent, net of removals by forests and soils"
+      - "DESNZ re-estimates the whole series back to 1990 with every release as methods improve, so earlier years change from one edition to the next. The series is always internally consistent; it just won't match older publications"
+
+  - id: recycling
+    name: Household recycling rate
+    topics: [environment]
+    unit: "% of household waste"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: Defra UK statistics on waste
+    source_url: https://www.gov.uk/government/statistics/uk-waste-data
+    publisher: Defra
+    publisher_full: Department for Environment, Food & Rural Affairs
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6aac00ba2f29b3888481867d/UK_Statistics_on_Waste_dataset_Sept_2026_accessible.ods
+      sheet: Waste_from_Households
+      year_column: Year
+      value_column: UK
+      filter: {Measure: Recycling rate (including IBAm)}
+      scale: 100
+    notes:
+      - "Waste from households sent for recycling, composting or reuse, as a share of all waste from households. This is the UK's headline measure, and the one used for the old EU 50% target"
+      - "Includes metal recovered from incinerator bottom ash, which Defra only counts from 2015. A version without it runs back to 2010 and is about one point lower"
+      - "Wales recycles well above the UK average (over 55%), so England's rate is a little below the UK figure"
+
+  - id: stormspills
+    name: Storm overflow spill events
+    topics: [environment]
+    unit: monitored spills per year
+    kind: count
+    geography: England
+    year_basis: calendar
+    source: Environment Agency event duration monitoring annual returns
+    source_url: https://environment.data.gov.uk/dataset/21e15f12-0df8-4bfc-b763-45226c16a8ac
+    publisher: Environment Agency
+    publisher_full: Environment Agency
+    source_type: spreadsheet
+    fetch:
+      url: https://environment.data.gov.uk/api/file/download?fileDataSetId=c55e170e-3c75-49a5-8026-a961ff94c8e0&fileName=EDM%20Storm%20Overflow%20Annual%20Return%20-%20Long-term%20Trends.zip
+      member: EDM Storm Overflow Annual Return - Long-term Trends 2016-2025.xlsx
+      sheet: Long-term trends
+      layout: wide
+      label_column: 1
+      year_header_row: 4
+      row_match: Total number of monitored spill events3
+    notes:
+      - "Spills recorded by the monitors water companies fit to storm overflows, counted the EA's way: once a spill starts, everything in the next 12 hours is one spill, and every 24 hours after that is another"
+      - "Monitoring was rolled out over these years: 862 overflows reported spill data in 2016, about 12,000 in 2020 and over 14,000 from 2023. Most of the rise before 2020 is more monitors, not more sewage"
+      - "Spill counts follow rainfall closely. 2023 and 2024 were very wet years, and 2025 was dry, so year-to-year changes say as much about the weather as about the sewers"
+      - "England only, including Welsh Water's overflows in England"
+    discontinuities:
+      - {year: 2020, label: "Near-full monitoring", note: "Before 2020 only part of the overflow network had event duration monitors, so earlier totals are not comparable; from 2020 most overflows were covered"}
+      - {year: 2021, label: "All overflows reported", note: "From 2021 companies had to list every storm overflow, whether or not it had a monitor, and give reasons for low monitor uptime"}
+
+    # ── ECONOMY ─────────────────────────────────────────────
+  - id: bankrate
+    name: Bank Rate
+    topics: [economy]
+    unit: "% a year"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: Bank of England Bankstats database (IUMABEDR)
+    source_url: https://www.bankofengland.co.uk/boeapps/database/fromshowcolumns.asp?Travel=NIxAZxSUx&FromSeries=1&ToSeries=50&DAT=RNG&FD=1&FM=Jan&FY=1975&TD=31&TM=Dec&TY=2026&FNY=Y&CSVF=TT&html.x=66&html.y=26&SeriesCodes=IUMABEDR&UsingCodes=Y&Filter=N&title=IUMABEDR&VPD=Y
+    publisher: Bank of England
+    publisher_full: Bank of England
+    source_type: csv
+    fetch:
+      url: https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&Datefrom=01/Jan/1975&Dateto=31/Dec/2099&SeriesCodes=IUMABEDR&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N
+      year_column: DATE
+      value_column: IUMABEDR
+      aggregate: mean
+    notes:
+      - "Annual average: the mean of the Bank's monthly averages of daily Bank Rate. It is not the rate at the end of the year, so a year with cuts late on shows a higher figure than the rate people were paying by December"
+      - "The current year is partial — the average of the months published so far"
+      - "Before 1981 the Bank's policy rate was Minimum Lending Rate; the Bank publishes the series as one continuous history"
+      - "The Monetary Policy Committee has set Bank Rate since 1997, when the Bank became operationally independent"
+
+    # ── POPULATION ──────────────────────────────────────────
+  - id: births
+    name: Live births
+    topics: [migration]
+    unit: births per year
+    kind: count
+    geography: England and Wales
+    year_basis: calendar
+    source: ONS Births in England and Wales
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/livebirths/datasets/birthsinenglandandwalesbirthregistrations
+    source_type: spreadsheet
+    fetch:
+      url: https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/livebirths/datasets/birthsinenglandandwalesbirthregistrations/2025/2025birthregistrations.xlsx
+      sheet: Table_6
+      year_column: Year
+      value_column: Number of Live births
+      filter:
+        Country: England, Wales and Elsewhere
+        Registration type: [All registration types, All registrations]
+        Age of Mother at birth (years): All ages
+        Age of Father at birth (years): All ages
+    notes:
+      - "Births occurring in each year and registered in England and Wales, including a few hundred to mothers usually resident outside England and Wales"
+      - "Births peaked at 881,000 in the 1947 baby boom and at 876,000 in 1964. The 2025 figure, 585,000, is the lowest since 1977"
+      - "Birth registration was suspended for several months during the 2020 lockdown; ONS counts births by when they happened, so late-registered 2020 births are included"
+
+  - id: deaths
+    name: Deaths registered
+    topics: [migration]
+    unit: deaths per year
+    kind: count
+    geography: England and Wales
+    year_basis: calendar
+    source: ONS Deaths registered in England and Wales
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/deaths/datasets/deathsregisteredinenglandandwalesseriesdrreferencetables
+    source_type: spreadsheet
+    fetch:
+      url: https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/deaths/datasets/deathsregisteredinenglandandwalesseriesdrreferencetables/2025/annualdeathregistrations2025.xlsx
+      sheet: Table_1
+      year_column: Year of registration
+      value_column: Number of deaths
+      filter:
+        Country: England, Wales and Non-residents
+        Sex: All People
+    notes:
+      - "Deaths by the year they were registered, not the year they happened. Most deaths are registered within days, but those referred to a coroner can take months, so a few fall into the following year"
+      - "Includes deaths of non-residents that occurred in England and Wales"
+      - "A count, not a rate. The population has grown and aged, so a flat number of deaths still means mortality rates have fallen"
+      - "The series starts with civil registration in 1838; registration was not compulsory until 1875, so the earliest years undercount"
+    discontinuities:
+      - {year: 1875, label: "Registration compulsory", note: "Death registration became compulsory under the Births and Deaths Registration Act 1874; earlier years undercount"}
+
+  - id: tfr
+    name: Total fertility rate
+    topics: [migration]
+    unit: children per woman
+    kind: ratio
+    geography: England and Wales
+    year_basis: calendar
+    source: ONS Births in England and Wales
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/birthsdeathsandmarriages/livebirths/datasets/birthsinenglandandwalesbirthregistrations
+    source_type: spreadsheet
+    fetch:
+      url: https://www.ons.gov.uk/file?uri=/peoplepopulationandcommunity/birthsdeathsandmarriages/livebirths/datasets/birthsinenglandandwalesbirthregistrations/2025/2025birthregistrations.xlsx
+      sheet: Table_10
+      year_column: Year
+      value_column: Age-specific fertility rate
+      filter:
+        Country: England, Wales and Elsewhere
+        Parent: Mother
+        Age group (years): [Under 20, 20 to 24, 25 to 29, 30 to 34, 35 to 39, 40 and over]
+      # TFR = 5 x the sum of the six five-year age-specific rates (per 1,000 women) / 1,000
+      scale: 0.005
+    notes:
+      - "The average number of children a woman would have if she lived through her childbearing years at this year's birth rates. About 2.1 is needed to replace the population without migration"
+      - "Calculated here from ONS's five-year age-specific fertility rates, because ONS no longer publishes the headline rate as a time series. It matches ONS's own figure to within about 0.01 in most years (1.39 for 2025), but can differ by up to 0.05 in a few wartime years"
+      - "Rates from 2012 to 2020 were revised in 2023 after the 2021 Census showed more women of childbearing age than previously estimated, so older publications show slightly higher figures for those years"
+
+  # National education and transport indicators. Verified 2026-10-18; every
+  # entry below builds with ingest.build_series().
+  #
+  # Two new publisher facts worth adding to ingest.py when these are merged
+  # (the rail entries set publisher / publisher_full explicitly meanwhile):
+  #   PUBLISHERS["ORR"] = "Office of Rail and Road"
+  #   PUBLISHER_SITES["ORR"] = "https://dataportal.orr.gov.uk/"
+
+  # ── EDUCATION ────────────────────────────────────────────
+  - id: teachers
+    name: Teachers in state-funded schools
+    topics: [education]
+    unit: full-time equivalent teachers
+    kind: count
+    geography: England
+    year_basis: academic
+    source: DfE School workforce in England
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/school-workforce-in-england
+    source_type: csv
+    fetch:
+      url: https://content.explore-education-statistics.service.gov.uk/api/data-set-files/47006239-5f46-4c97-8ae0-38fd288d1c1e/download
+      year_column: time_period
+      value_column: fte_all_teachers
+      year_basis: academic
+      filter:
+        geographic_level: National
+        establishment_type_group: Total state-funded schools
+    notes:
+      - "Full-time equivalent, not headcount: two half-time teachers count as one. Headcount runs roughly 5% higher"
+      - "Counted in the November census each year, so 2025/26 is the workforce as at November 2025"
+      - "Covers state-funded nursery, primary, secondary, special schools and pupil referral units. Independent schools are not included"
+      - "This dataset is not exposed through the EES API, so it is read from the release's CSV download (a 20 MB file covering every local authority)"
+
+  - id: neet
+    name: Young people not in education, employment or training (NEET)
+    topics: [education]
+    unit: "% of 16 to 24 year olds"
+    kind: rate
+    geography: England
+    year_basis: calendar
+    source: DfE NEET age 16 to 24
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/neet-statistics-annual-brief
+    source_type: dfe_ees
+    fetch:
+      data_set_id: 019cc380-4628-71be-bdc2-a01a95b64c89
+      indicator: 6DPUr
+      criteria:
+        and:
+          - {filters: {eq: S4uEV}}       # age: 16 to 24
+          - {filters: {eq: o2yPm}}       # sex: total
+          - {filters: {eq: TyUpP}}       # quarter: Q4 (October to December)
+          - {geographicLevels: {eq: NAT}}
+    notes:
+      - "A Labour Force Survey estimate, not a count. Each point is the October to December quarter, which is the figure DfE leads its annual brief with. The data are not seasonally adjusted, so quarters should not be mixed: July to September always runs highest as school and college leavers are between courses"
+      - "Age is academic age (age at the start of the school year), so this is not identical to the ONS UK NEET figure, which is seasonally adjusted and uses age on the survey date. DfE puts the gap at about half a point"
+      - "Sampling error is around half a percentage point either way, so year-to-year moves smaller than that are not reliably real"
+      - "The LFS response rate fell sharply from 2020 and ONS has reweighted the survey since; estimates from 2020 on are less certain than earlier ones"
+
+  # ── TRANSPORT ────────────────────────────────────────────
+  - id: railjourneys
+    name: Rail passenger journeys
+    topics: [transport]
+    unit: million journeys per year
+    kind: count
+    geography: Great Britain
+    year_basis: financial
+    source: ORR passenger rail usage
+    source_url: https://dataportal.orr.gov.uk/statistics/usage/passenger-rail-usage/table-1220-passenger-journeys/
+    publisher: ORR
+    publisher_full: Office of Rail and Road
+    source_type: spreadsheet
+    fetch:
+      url: https://dataportal.orr.gov.uk/media/1652/table-1220-passenger-journeys.ods
+      sheet: 1220_Passenger_journeys
+      year_column: Time period
+      value_column: Passenger journeys (million)
+    notes:
+      - "National Rail only: Eurostar, the London Underground and light rail are not included"
+      - "Financial years (April to March) from 1984-85. Before that ORR only has calendar years, back to 1872, and there are no figures for 1939 to 1945"
+      - "Everything from 2020-21 onwards is provisional. ORR has not yet adjusted for split ticketing (one trip bought as several tickets, which inflates the count), and plans revisions back to April 2020. Elizabeth line journeys from 2022-23 have also been corrected once for overcounting and may be adjusted again"
+      - "The year labelled 2020 is April 2020 to March 2021, when journeys fell to under a quarter of the pre-pandemic level"
+    discontinuities:
+      - {year: 1938, label: "DfT data from 1938", note: "Figures from 1938 come from the Department for Transport; earlier years are historical railway returns compiled by the National Infrastructure Commission"}
+      - {year: 1984, label: "Calendar to financial years", note: "Figures to 1983 are calendar years; from 1984 they are April to March financial years, so January to March 1984 is not counted in either"}
+      - {year: 1986, label: "Ticket-system data from 1986", note: "From April 1986 journeys are estimated from the CAPRI ticket-sales system, which missed some operator-specific and multi-modal tickets until 1999. From April 2003 they come from its successor, LENNON"}
+      - {year: 1999, label: "PTE tickets included", note: "From April 1999 journeys on Passenger Transport Executive tickets are included, which they were not before"}
+      - {year: 2020, label: "Pandemic estimation", note: "Mass season-ticket refunds in 2020-21 meant ORR had to estimate season and other ticket use by a different method; it marks a break for 2020-21 and 2021-22 and says these years are more uncertain than others"}
+
+  - id: railontime
+    name: Rail punctuality (trains on time)
+    topics: [transport]
+    unit: "% of station stops"
+    kind: rate
+    geography: Great Britain
+    year_basis: calendar
+    source: ORR passenger rail performance
+    source_url: https://dataportal.orr.gov.uk/statistics/performance/passenger-rail-performance/table-3133-train-punctuality-at-recorded-station-stops-by-operator/
+    publisher: ORR
+    publisher_full: Office of Rail and Road
+    source_type: spreadsheet
+    fetch:
+      url: https://dataportal.orr.gov.uk/media/1425/table-3133-train-punctuality-at-recorded-station-stops-by-operator.ods
+      sheet: 3133_Punctuality_(quarterly)
+      year_column: Time period
+      period_column: Time period
+      value_column: Trains arriving within 59 seconds (percentage)
+      filter: {National or Operator: Great Britain}
+      aggregate: mean
+    notes:
+      - "The industry's 'On Time' measure: the share of recorded station stops a train reached within 59 seconds of the timetable. It is much stricter than the old Public Performance Measure, which allowed five minutes (ten for long-distance) at the final destination only, so On Time reads some 20 points lower for the same railway"
+      - "Each year is the simple average of ORR's four quarterly figures for that calendar year"
+      - "The first year (2014) is partial — April to December only — and the latest year is partial too, covering only the quarters published so far. Because October to December is always the worst quarter (leaf fall), a partial year will read differently from a full one"
+      - "Punctuality jumped in 2020 and 2021 because far fewer trains ran during the pandemic, not because the railway got better"
+      - "PPM is still published, but ORR's national PPM table only starts in 2019-20, so On Time gives the longer consistent series"
+
+  - id: newbevcars
+    name: New battery electric cars registered
+    topics: [transport]
+    unit: thousand cars per year
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: DfT vehicle licensing statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/vehicle-licensing-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6aad561f3f8e4e96a6a66a38/veh1153.ods
+      sheet: VEH1153a_RoadUsing
+      year_column: Date
+      value_column: Battery Electric
+      filter:
+        Geography: United Kingdom
+        Date Interval: Annual
+        BodyType: Cars
+        Keepership: Total
+    notes:
+      - "Cars registered for the first time in the UK that run on battery power alone. Plug-in hybrids and range-extended electric cars are counted separately and are not included"
+      - "UK figures start in 2015; DfT only has Great Britain before July 2014"
+      - "A count, not a share. Total new car registrations fell by almost 30% in 2020 and have not fully recovered, so the count understates how fast the mix has shifted: battery electric cars were under 0.5% of new cars in 2015 and about 23% in 2025"
+      - "Around three quarters of new battery electric cars are registered to companies rather than private keepers, largely because of company-car tax rates"
+      - "The workbook is a 6 MB .ods; the first parse takes several minutes before the sheet cache kicks in"
+
+  # Battery electric share of new cars: VEH1153 puts fuel types in columns,
+  # so the share is one column over another (`denominator_column`).
+  - id: bevshare
+    name: Battery electric share of new cars
+    topics: [transport]
+    unit: "% of new car registrations"
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: DfT vehicle licensing statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/vehicle-licensing-statistics-data-tables
+    source_type: spreadsheet
+    fetch:
+      url: https://assets.publishing.service.gov.uk/media/6aad561f3f8e4e96a6a66a38/veh1153.ods
+      sheet: VEH1153a_RoadUsing
+      year_column: Date
+      value_column: Battery Electric
+      denominator_column: Total
+      filter:
+        Geography: United Kingdom
+        Date Interval: Annual
+        BodyType: Cars
+        Keepership: Total
+    notes:
+      - "Battery-only cars as a share of all cars registered for the first time. Plug-in hybrids are not counted"
+      - "UK figures start in 2015; DfT only has Great Britain before July 2014"
+
+  # ══════════════════════════════════════════════════════════════
+  # MORE FROM ONS EXPLORE LOCAL STATISTICS
+  # Every indicator the service publishes that the catalogue did not yet
+  # carry. Where ELS has no UK figure, `geo` picks the widest national
+  # level it does have (England and Wales, England, Wales…). `snapshot`
+  # marks the ones published for one or two years only: a map, not a trend.
+  # ══════════════════════════════════════════════════════════════
+
+  - id: inactiveni
+    name: Economic inactivity rate (Northern Ireland)
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: Northern Ireland
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nisra.gov.uk/statistics/labour-market-and-social-welfare/labour-force-survey
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: economic-inactivity-rate-ni
+      geo: N92000002
+    notes:
+    - Percentage of people aged 16 to 64 who are not in employment and are not actively seeking work.
+    - Produced by Northern Ireland Statistics and Research Agency, published through ONS Explore Local Statistics
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: emprateni
+    name: Employment rate (Northern Ireland)
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: Northern Ireland
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nisra.gov.uk/statistics/labour-market-and-social-welfare/labour-force-survey
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: employment-rate-ni
+      geo: N92000002
+    notes:
+    - Percentage of people aged 16 to 64 in employment.
+    - Produced by Northern Ireland Statistics and Research Agency, published through ONS Explore Local Statistics
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: unempmodel
+    name: Modelled unemployment rate
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: Great Britain
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/employmentandlabourmarket/peopleinwork/employmentandemployeetypes/datasets/li01regionallabourmarketlocalindicatorsforcountieslocalandunitaryauthorities
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: modelled-unemployment
+      geo: K03000001
+    notes:
+    - Modelled percentage of economically active people aged 16 years and over without a job and actively seeking work.
+  - id: jobdensity
+    name: Job density
+    topics:
+    - economy
+    unit: jobs per resident aged 16 to 64
+    kind: ratio
+    geography: Great Britain
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/jd
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: job-density
+      geo: K03000001
+    notes:
+    - Number of jobs per resident aged 16 to 64.
+  - id: childpovbhc
+    name: Children in relative poverty before housing costs
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/collections/children-in-low-income-families-local-area-statistics
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: children-in-relative-poverty-before-housing
+    notes:
+    - Percentage of children aged under 16 living in relative low income families Before Housing Costs (BHC).
+    - Produced by Department for Work and Pensions, published through ONS Explore Local Statistics
+  - id: childpovahc
+    name: Children in relative poverty after housing costs
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/collections/children-in-low-income-families-local-area-statistics
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: children-in-relative-poverty-after-housing
+    notes:
+    - Percentage of children aged under 16 living in relative low income families After Housing Costs (AHC).
+    - Produced by Department for Work and Pensions, published through ONS Explore Local Statistics
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: fuelpov
+    name: Fuel poverty (England)
+    topics:
+    - housing
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/collections/fuel-poverty-statistics
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: fuel-poverty
+      geo: E92000001
+    notes:
+    - Percentage of households in fuel poverty (Low Income Low Energy Efficiency metric).
+    - Produced by Department for Energy Security and Net Zero, published through ONS Explore Local Statistics
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: exports
+    name: Value of UK exports
+    topics:
+    - economy
+    unit: £ million
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/internationaltrade/bulletins/internationaltradeinuknationsregionsandcities/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: value-uk-exports
+    notes:
+    - Estimated total value of UK exports including trade in both goods and services (£ millions).
+  - id: gvahour
+    name: Gross value added per hour worked
+    topics:
+    - economy
+    unit: £ per hour worked
+    kind: money_cash
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/economicoutputandproductivity/productivitymeasures/bulletins/regionalandsubregionallabourproductivityuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: gross-value-added-per-hour-worked
+      geo: E92000001
+    notes:
+    - Estimated value added of goods and services produced per hour worked.
+  - id: gvajob
+    name: Gross value added per job filled
+    topics:
+    - economy
+    unit: £ per filled job
+    kind: money_cash
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/economicoutputandproductivity/productivitymeasures/bulletins/regionalandsubregionallabourproductivityuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: gross-value-added-per-filled-job
+      geo: E92000001
+    notes:
+    - Estimated value added of goods and services produced per job filled.
+  - id: rdpublic
+    name: Public-funded expenditure on research and development
+    topics:
+    - economy
+    unit: £ million
+    kind: money_cash
+    geography: UK
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/researchanddevelopmentexpenditure/datasets/ukpublicfundedgrossregionalcapitalandnoncapitalexpenditureonresearchanddevelopment
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: expenditure-research-and-development-public
+    notes:
+    - Public-funded gross expenditure within each region (£ millions).
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: rdbusiness
+    name: Business expenditure on research and development
+    topics:
+    - economy
+    unit: £ million
+    kind: money_cash
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/economy/governmentpublicsectorandtaxes/researchanddevelopmentexpenditure/bulletins/businessenterpriseresearchanddevelopment/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: expenditure-research-and-development-business
+    notes:
+    - Businesses gross expenditure within each region (£ millions).
+  - id: bizsurv1
+    name: One-year business survival rate
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: business-survival-one-year
+    notes:
+    - Percentage of newly born businesses that survived for one year.
+  - id: bizsurv2
+    name: Two-year business survival rate
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: business-survival-two-year
+    notes:
+    - Percentage of newly born businesses that survived for two years.
+  - id: bizsurv3
+    name: Three-year business survival rate
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: business-survival-three-year
+    notes:
+    - Percentage of newly born businesses that survived for three years.
+  - id: bizsurv4
+    name: Four-year business survival rate
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: business-survival-four-year
+    notes:
+    - Percentage of newly born businesses that survived for four years.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: bizsurv5
+    name: Five-year business survival rate
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/businessindustryandtrade/business/activitysizeandlocation/bulletins/businessdemography/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: business-survival-five-year
+    notes:
+    - Percentage of newly born businesses that survived for five years.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: netaddeng
+    name: Net additions to the housing stock (England)
+    topics:
+    - housing
+    unit: per 1,000 dwellings
+    kind: rate
+    geography: England
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/live-tables-on-dwelling-stock-including-vacants
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: net-additions-housing-stock
+      geo: E92000001
+    notes:
+    - Net additions to the housing stock per 1,000 dwellings.
+    - Produced by Ministry of Housing, Communities and Local Government, published through ONS Explore Local Statistics
+  - id: netaddwal
+    name: Net additions to the housing stock (Wales)
+    topics:
+    - housing
+    unit: per 1,000 dwellings
+    kind: rate
+    geography: Wales
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://stats.gov.wales/en-GB/6476cc20-ddeb-46a5-be64-10a23c8a159f/start#about
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: net-additions-housing-stock-wales
+      geo: W92000004
+    notes:
+    - Net additions to the housing stock per 1,000 dwellings.
+    - Produced by Welsh Government, published through ONS Explore Local Statistics
+    - In Wales, the approach to housing stock is very similar to that in England, using the Census and adding a measure of net supply for each intervening year. However, there may be a small negative bias
+      in the net supply estimate for Wales compared to the rest of the UK since they do not include new builds certified by Approved Inspectors and they have no way of incorporating gains or losses due to
+      Change of Use.
+  - id: netaddni
+    name: Net additions to the housing stock (Northern Ireland)
+    topics:
+    - housing
+    unit: per 1,000 dwellings
+    kind: rate
+    geography: Northern Ireland
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.finance-ni.gov.uk/publications/annual-housing-stock-statistics
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: net-additions-housing-stock-northern-ireland
+      geo: N92000002
+    notes:
+    - Net additions to the housing stock per 1,000 dwellings.
+    - Produced by Northern Ireland Department of Finance, published through ONS Explore Local Statistics
+  - id: affordability
+    name: Housing affordability ratio (residence-based)
+    topics:
+    - housing
+    unit: house price to earnings ratio
+    kind: ratio
+    geography: England and Wales
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/housing/bulletins/housingaffordabilityinenglandandwales/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: housing-affordability-ratio
+      geo: K04000001
+    notes:
+    - Ratio of median house price to median gross annual residence-based earnings.
+  - id: strlength
+    name: Average length of short-term let stay
+    topics:
+    - housing
+    unit: nights per stay
+    kind: ratio
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/housing/bulletins/shorttermletsthroughonlinecollaborativeeconomyplatformsuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: average-length-of-short-term-let-stay
+    notes:
+    - Average length of stay (in nights) at a short-term let.
+    - Published monthly; shown here as the average of each year's months. The first year starts in July 2023, so it is a part year
+  - id: strnights
+    name: Number of guest nights at a short-term let
+    topics:
+    - housing
+    unit: guest nights per month (average)
+    kind: count
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/housing/bulletins/shorttermletsthroughonlinecollaborativeeconomyplatformsuk/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: number-of-guest-nights-at-a-short-term-let
+    notes:
+    - The number of guest nights spent during a stay at a short-term let, with a night counted per individual member of the visiting group.
+    - Published monthly; shown here as the average of each year's months. The first year starts in July 2023, so it is a part year
+  - id: feachieve
+    name: Further education and skills learner achievements
+    topics:
+    - education
+    unit: per 100,000 population
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/further-education-and-skills
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: further-education-skills-learner-achievements
+      geo: E92000001
+    notes:
+    - People aged 19 and over achieving a funded further education and skills learning aim, per 100,000 people.
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+    - Total achievements are the count of learners that achieved at any point during the stated academic period. Learners achieving more than one course will appear only once in the grand total. Geography
+      is based upon the home postcode of the learner. Figures for all academic years cover the twelve months (Aug to Jul) and are final full year figures.
+  - id: fepart
+    name: Further education and skills participation
+    topics:
+    - education
+    unit: per 100,000 population
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/data-catalogue/further-education-and-skills
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: further-education-skills-participation
+      geo: E92000001
+    notes:
+    - People aged 19 and over participating in further education and skills learning (including apprenticeships), per 100,000 people.
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+    - Participation is the count of learners that participated at any point during the stated academic period. Learners undertaking more than one course will be counted only once. Geography is based upon
+      the home postcode of the learner. Figures for all academic years cover the twelve months (Aug to Jul) and are final full year figures.
+  - id: gcseengmaths
+    name: GCSEs in English and Maths
+    topics:
+    - education
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/level-2-and-3-attainment-by-young-people-aged-19
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: gcses-equivalent-english-maths
+      geo: E92000001
+    notes:
+    - Percentage of people achieving GCSEs in both subjects by age 19.
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+    - All geography breakdowns are based on the school location of the young person at age 15 (year 11) and include only those educated in the state-funded sector. These figures include GCSEs and other level
+      2 qualifications, such as functional skills. Some of this data has been aggregated and may show differences to other published figures.
+  - id: level3
+    name: Level 3 or above qualifications (Great Britain)
+    topics:
+    - education
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/apsnew
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: level-3-or-above-qualifications
+    notes:
+    - Percentage of people aged 16 to 64 with Level 3 or above qualifications.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: level3ni
+    name: Level 3 or above qualifications (Northern Ireland)
+    topics:
+    - education
+    unit: '%'
+    kind: rate
+    geography: Northern Ireland
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nisra.gov.uk/publications/highest-qualification-level-2023
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: level-3-or-above-qualifications-ni
+      geo: N92000002
+    notes:
+    - Percentage of people aged 16 to 64 with Level 3 or above qualifications.
+    - Produced by Northern Ireland Statistics and Research Agency, published through ONS Explore Local Statistics
+    - Figures produced by NISRA may differ slightly to other highest qualification levels statistical publications, either due to differing sources, age analysed or slight differences in methodologies for
+      assigning highest qualifications levels. Updates to this indicator have been temporarily suspended until the APS reweighting is implemented in 2027.
+  - id: ks2expected
+    name: Pupils at the end of key stage 2 meeting the expected standard in reading, writing and maths (combined)
+    topics:
+    - education
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/key-stage-2-attainment/2024-25-revised
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: pupils-at-expected-standards-end-primary-school
+      geo: E92000001
+    notes:
+    - Percentage of pupils at the end of key stage 2 in state-funded schools meeting the expected standard in reading, writing and maths (combined).
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+  - id: noquals
+    name: No qualifications
+    topics:
+    - education
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.nomisweb.co.uk/datasets/apsnew
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: no-qualifications-great-britain
+    notes:
+    - Percentage of people aged 16 to 64 with no qualifications.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: eycomm
+    name: Communication and language skills by end of early years foundation stage
+    topics:
+    - education
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/early-years-foundation-stage-profile-results
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: early-years-communication-language
+      geo: E92000001
+    notes:
+    - Percentage of 5 year olds at 'expected level' across all communication and language early learning goals.
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+  - id: eyliteracy
+    name: Literacy skills by end of early years foundation stage
+    topics:
+    - education
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/early-years-foundation-stage-profile-results
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: early-years-literacy
+      geo: E92000001
+    notes:
+    - Percentage of 5 year olds at 'expected level' across all literacy early learning goals.
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+  - id: eymaths
+    name: Maths skills by end of early years foundation stage
+    topics:
+    - education
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/early-years-foundation-stage-profile-results
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: early-years-mathematics
+      geo: E92000001
+    notes:
+    - Percentage of 5 year olds at 'expected level' across all maths early learning goals.
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+  - id: absencelocal
+    name: Persistent absences for all pupils
+    topics:
+    - education
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/pupil-absence-in-schools-in-england
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: persistent-absences-all-pupils
+      geo: E92000001
+    notes:
+    - Percentage of pupils in state-funded schools that were absent for 10% or more of academic year.
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+    - Data is not available for academic year 2019/20. Total includes state-funded primary, secondary and special schools. Sessions recorded as not attending due to COVID circumstances are included as possible
+      sessions in 2020/21 and 2021/22 only, but not as an absence within absence rates.
+  - id: absencefsm
+    name: Persistent absences for pupils eligible for free school meals
+    topics:
+    - education
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/pupil-absence-in-schools-in-england
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: persistent-absences-pupils-free-school-meals
+      geo: E92000001
+    notes:
+    - Percentage of FSM-eligible pupils in state-funded schools that were absent for 10% or more of academic year.
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+    - Data is not available for academic year 2019/20. Sessions recorded as not attending due to COVID circumstances are included as possible sessions in 2020/21 and 2021/22 only, but not as an absence within
+      absence rates.
+  - id: absencelac
+    name: Persistent absences for pupils looked after by local authorities
+    topics:
+    - education
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/outcomes-for-children-in-need-including-children-looked-after-by-local-authorities-in-england
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: persistent-absences-pupils-looked-after-by-local-authorities
+      geo: E92000001
+    notes:
+    - Percentage of pupils looked after continuously for at least 12 months by local authorities in England that were absent for 10% or more of academic year.
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+  - id: apprach
+    name: Apprenticeship achievements (England)
+    topics:
+    - education
+    unit: per 100,000 population
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/apprenticeships/2025-26
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: apprenticeship-achievements
+      geo: E92000001
+    notes:
+    - Apprenticeship programme achievements by people aged 16 or above, per 100,000 people.
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+  - id: apprstarts
+    name: Apprenticeship starts (England)
+    topics:
+    - education
+    unit: per 100,000 population
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://explore-education-statistics.service.gov.uk/find-statistics/apprenticeships/2025-26
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: apprenticeship-starts
+      geo: E92000001
+    notes:
+    - Apprenticeship programme starts by people aged 16 or above, per 100,000 people.
+    - Produced by Department for Education, published through ONS Explore Local Statistics
+  - id: apprstartsni
+    name: Apprenticeship starts (Northern Ireland)
+    topics:
+    - education
+    unit: per 100,000 population
+    kind: rate
+    geography: Northern Ireland
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://www.economy-ni.gov.uk/publications/apprenticeshipsni-ad-hoc-tables
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: apprenticeship-starts-ni
+      geo: N92000002
+    notes:
+    - Apprenticeship programme starts by people aged 16 or above, per 100,000 people.
+    - Produced by Department for the Economy (Northern Ireland) ApprenticeshipsNI, published through ONS Explore Local Statistics
+  - id: apprstartssco
+    name: Apprenticeship starts (Scotland)
+    topics:
+    - education
+    unit: per 100,000 population
+    kind: rate
+    geography: Scotland
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.skillsdevelopmentscotland.co.uk/publications-statistics/statistics/modern-apprenticeships
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: apprenticeship-starts-scotland
+      geo: S92000003
+    notes:
+    - Modern apprenticeship programme starts by people aged 16 or above, per 100,000 people.
+    - Produced by Skills Development Scotland, published through ONS Explore Local Statistics
+  - id: apprachsco
+    name: Apprenticeship achievements (Scotland)
+    topics:
+    - education
+    unit: per 100,000 population
+    kind: rate
+    geography: Scotland
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.skillsdevelopmentscotland.co.uk/publications-statistics/statistics/modern-apprenticeships
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: apprenticeship-achievements-scotland
+      geo: S92000003
+    notes:
+    - Modern apprenticeship programme achievements by people aged 16 or above, per 100,000 people.
+    - Produced by Skills Development Scotland, published through ONS Explore Local Statistics
+  - id: apprstartswal
+    name: Apprenticeship starts (Wales)
+    topics:
+    - education
+    unit: per 100,000 population
+    kind: rate
+    geography: Wales
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://stats.gov.wales/en-GB/topic/14/apprenticeships
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: apprenticeship-starts-wales
+      geo: W92000004
+    notes:
+    - Apprenticeship programme starts by people aged 16 or above, per 100,000 people.
+    - Produced by Welsh Government, published through ONS Explore Local Statistics
+  - id: apprachwal
+    name: Apprenticeship achievements (Wales)
+    topics:
+    - education
+    unit: per 100,000 population
+    kind: rate
+    geography: Wales
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://stats.gov.wales/en-GB/topic/14/apprenticeships
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: apprenticeship-achievements-wales
+      geo: W92000004
+    notes:
+    - Apprenticeship programme achievements by people aged 16 or above, per 100,000 people.
+    - Produced by Welsh Government, published through ONS Explore Local Statistics
+  - id: smokers
+    name: Cigarette smokers
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/healthandsocialcare/healthandlifeexpectancies/bulletins/adultsmokinghabitsingreatbritain/previousreleases
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: cigarette-smokers
+    notes:
+    - Percentage of people aged 18 and over who state they currently smoke cigarettes (excluding e-cigarettes).
+    - Pooled 5-year estimates, plotted at the first year of each band
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: healthyrec
+    name: Healthy weight prevalence in children at reception age
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://fingertips.phe.org.uk/profile/obesity-physical-activity-nutrition/data#page/1/gid/8000011/pat/159/par/K02000001/ati/15/are/E92000001/yrr/1/cid/4/tbm/1
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: healthy-weight-children-reception
+      geo: E92000001
+    notes:
+    - Percentage of children aged 4 to 5 classified as at a healthy weight.
+    - Produced by Office for Health Improvement and Disparities, published through ONS Explore Local Statistics
+  - id: healthyy6
+    name: Healthy weight prevalence in children at Year 6 age
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://fingertips.phe.org.uk/profile/obesity-physical-activity-nutrition/data#page/1/gid/8000011/pat/159/par/K02000001/ati/15/are/E92000001/yrr/1/cid/4/tbm/1
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: healthy-weight-children-year-6
+      geo: E92000001
+    notes:
+    - Percentage of children aged 10 to 11 classified as at a healthy weight.
+    - Produced by Office for Health Improvement and Disparities, published through ONS Explore Local Statistics
+  - id: obeserec
+    name: Obesity prevalence in children at reception age
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://fingertips.phe.org.uk/profile/obesity-physical-activity-nutrition/data#page/1/gid/8000011/pat/159/par/K02000001/ati/15/are/E92000001/yrr/1/cid/4/tbm/1
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: obese-children-reception
+      geo: E92000001
+    notes:
+    - Percentage of children aged 4 to 5 classified as living with obesity.
+    - Produced by Office for Health Improvement and Disparities, published through ONS Explore Local Statistics
+  - id: obesey6
+    name: Obesity prevalence in children at Year 6 age
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://fingertips.phe.org.uk/profile/obesity-physical-activity-nutrition/data#page/1/gid/8000011/pat/159/par/K02000001/ati/15/are/E92000001/yrr/1/cid/4/tbm/1
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: obese-children-year-6
+      geo: E92000001
+    notes:
+    - Percentage of children aged 10 to 11 classified as living with obesity.
+    - Produced by Office for Health Improvement and Disparities, published through ONS Explore Local Statistics
+  - id: overweightrec
+    name: Overweight prevalence in children at reception age
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://fingertips.phe.org.uk/profile/obesity-physical-activity-nutrition/data#page/1/gid/8000011/pat/159/par/K02000001/ati/15/are/E92000001/yrr/1/cid/4/tbm/1
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: overweight-children-reception
+      geo: E92000001
+    notes:
+    - Percentage of children aged 4 to 5 classified as overweight.
+    - Produced by Office for Health Improvement and Disparities, published through ONS Explore Local Statistics
+  - id: overweighty6
+    name: Overweight prevalence in children at Year 6 age
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://fingertips.phe.org.uk/profile/obesity-physical-activity-nutrition/data#page/1/gid/8000011/pat/159/par/K02000001/ati/15/are/E92000001/yrr/1/cid/4/tbm/1
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: overweight-children-year-6
+      geo: E92000001
+    notes:
+    - Percentage of children aged 10 to 11 classified as overweight.
+    - Produced by Office for Health Improvement and Disparities, published through ONS Explore Local Statistics
+  - id: underweightrec
+    name: Underweight prevalence in children at reception age
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://fingertips.phe.org.uk/profile/obesity-physical-activity-nutrition/data#page/1/gid/8000011/pat/159/par/K02000001/ati/15/are/E92000001/yrr/1/cid/4/tbm/1
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: underweight-children-reception
+      geo: E92000001
+    notes:
+    - Percentage of children aged 4 to 5 classified as underweight.
+    - Produced by Office for Health Improvement and Disparities, published through ONS Explore Local Statistics
+  - id: underweighty6
+    name: Underweight prevalence in children at Year 6 age
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://fingertips.phe.org.uk/profile/obesity-physical-activity-nutrition/data#page/1/gid/8000011/pat/159/par/K02000001/ati/15/are/E92000001/yrr/1/cid/4/tbm/1
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: underweight-children-year-6
+      geo: E92000001
+    notes:
+    - Percentage of children aged 10 to 11 classified as underweight.
+    - Produced by Office for Health Improvement and Disparities, published through ONS Explore Local Statistics
+  - id: adultobesity
+    name: Adult obesity prevalence
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://fingertips.phe.org.uk/profile/obesity-physical-activity-nutrition/data#page/1/gid/1938133368/pat/159/par/K02000001/ati/15/are/E92000001/yrr/1/cid/4/tbm/1
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: adult-obesity-prevalence
+      geo: E92000001
+    notes:
+    - Percentage of adults aged 18 and over classified as living with obesity.
+    - Produced by Office for Health Improvement and Disparities, published through ONS Explore Local Statistics
+  - id: cancerearly
+    name: Cancer diagnosis at stage 1 and 2
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://fingertips.phe.org.uk/profile/public-health-outcomes-framework/data#page/4/gid/1000042/pat/15/par/E92000001/ati/6/are/E12000004/iid/93671/age/1/sex/4/cat/-1/ctp/-1/yrr/1/cid/4/tbm/1/page-options/car-ao-0_car-do-0_tre-ao-1
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: cancer-diagnosis-stage-1-and-2
+      geo: E92000001
+    notes:
+    - New cases of cancer diagnosed at stages 1 and 2 as a percentage of all new cases of cancer diagnosed at any known stage.
+    - Produced by Office for Health Improvement and Disparities, published through ONS Explore Local Statistics
+  - id: cvdunder75
+    name: Preventable cardiovascular mortality (England)
+    topics:
+    - health
+    unit: per 100,000 population
+    kind: rate
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://fingertips.phe.org.uk/profile/public-health-outcomes-framework/data#page/4/gid/1000044/pat/159/par/K02000001/ati/15/are/E92000001/iid/93722/age/163/sex/4/cat/-1/ctp/-1/yrr/3/cid/4/tbm/1/page-options/car-do-0
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: cardiovascular-mortality-persons-aged-under-75
+      geo: E92000001
+    notes:
+    - Age-standardised mortality from cardiovascular diseases considered preventable for people aged under 75, per 100,000 people.
+    - Pooled 3-year estimates, plotted at the first year of each band — a point summarises three years, not one
+    - Produced by Office for Health Improvement and Disparities, published through ONS Explore Local Statistics
+  - id: cvdunder75ni
+    name: Preventable cardiovascular mortality (Northern Ireland)
+    topics:
+    - health
+    unit: per 100,000 population
+    kind: rate
+    geography: Northern Ireland
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.health-ni.gov.uk/articles/health-inequalities-data-requested-during-202526
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: cardiovascular-mortality-persons-aged-under-75-ni
+      geo: N92000002
+    notes:
+    - Age-standardised mortality from cardiovascular diseases considered preventable for people aged under 75, per 100,000 people.
+    - Pooled 3-year estimates, plotted at the first year of each band — a point summarises three years, not one
+    - Produced by Northern Ireland Department of Health, published through ONS Explore Local Statistics
+    - All figures up to and including 2011 are based on the 2011 Census mid-year population estimates. All figures from 2012 onward are based on the 2021 Census mid-year population estimates. This indicator
+      covers the period since March 2020 and includes the impact of the COVID-19 pandemic. Rates presented are based on year of death registration, not year of occurrence.
+  - id: chdsco
+    name: Mortality rate from coronary heart disease or cerebrovascular disease (Scotland)
+    topics:
+    - health
+    unit: per 100,000 population
+    kind: rate
+    geography: Scotland
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://publichealthscotland.scot/publications/show-all-releases?id=114742
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: mortality-rate-coronary-heart-disease-scotland
+      geo: S92000003
+    notes:
+    - Age-standardised mortality rate from coronary heart disease or cerebrovascular disease for people aged under 75, per 100,000 people.
+    - Produced by Public Health Scotland Cardiac Audit Programme, published through ONS Explore Local Statistics
+  - id: elecuse
+    name: Domestic electricity consumption
+    topics:
+    - environment
+    unit: kWh per household
+    kind: ratio
+    geography: Great Britain
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/collections/sub-national-electricity-consumption-data
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: domestic-electricity-consumption
+      geo: K03000001
+    notes:
+    - Median domestic electricity consumption (kWh).
+    - Produced by Department for Energy Security and Net Zero (Great Britain), published through ONS Explore Local Statistics
+  - id: gasuse
+    name: Domestic gas consumption
+    topics:
+    - environment
+    unit: kWh per household
+    kind: ratio
+    geography: Great Britain
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/collections/sub-national-gas-consumption-data
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: domestic-gas-consumption
+      geo: K03000001
+    notes:
+    - Median domestic gas consumption (kWh).
+    - Produced by Department for Energy Security and Net Zero, published through ONS Explore Local Statistics
+  - id: cov4g
+    name: 4G coverage
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ofcom.org.uk/phones-and-broadband/coverage-and-speeds/infrastructure-research
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: 4g-coverage
+    notes:
+    - Percentage of area with 4G coverage from at least one mobile network provider.
+    - Produced by Ofcom, published through ONS Explore Local Statistics
+    - Some of this data has been aggregated and may show differences to other published figures.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: cov5g
+    name: 5G coverage
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ofcom.org.uk/phones-and-broadband/coverage-and-speeds/infrastructure-research
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: 5g-coverage
+    notes:
+    - Percentage of area with 5G coverage from at least one mobile network provider.
+    - Produced by Ofcom, published through ONS Explore Local Statistics
+    - Some of this data has been aggregated and may show differences to other published figures.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: gigabit
+    name: Gigabit capable broadband
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ofcom.org.uk/phones-and-broadband/coverage-and-speeds/infrastructure-research
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: gigabit-capable-broadband
+    notes:
+    - Percentage of premises that have coverage from a gigabit-capable service (download speeds of at least 1,000 Mbps or more).
+    - Produced by Ofcom, published through ONS Explore Local Statistics
+    - All coverage figures refer to fixed line broadband only. Some of this data has been aggregated and may show differences to other published figures.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: below30
+    name: Premises below 30Mbps
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ofcom.org.uk/phones-and-broadband/coverage-and-speeds/infrastructure-research
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: premises-below-30mbps
+    notes:
+    - Percentage of premises that do not have access to services above 30 Mbps.
+    - Produced by Ofcom, published through ONS Explore Local Statistics
+    - All coverage figures refer to fixed line broadband only. Some of this data has been aggregated and may show differences to other published figures.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: fullfibre
+    name: Premises with access to full fibre
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ofcom.org.uk/phones-and-broadband/coverage-and-speeds/infrastructure-research
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: premises-full-fibre
+    notes:
+    - Percentage of premises that have coverage from a full-fibre service.
+    - Produced by Ofcom, published through ONS Explore Local Statistics
+    - All coverage figures refer to fixed line broadband only. Some of this data has been aggregated and may show differences to other published figures.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: superfast
+    name: Superfast broadband
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ofcom.org.uk/phones-and-broadband/coverage-and-speeds/infrastructure-research
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: superfast-broadband
+    notes:
+    - Percentage of premises with access to a superfast broadband service (download speed of at least 30 Mbit/s).
+    - Produced by Ofcom, published through ONS Explore Local Statistics
+    - All coverage figures refer to fixed line broadband only. Some of this data has been aggregated and may show differences to other published figures.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: ultrafast
+    name: Ultrafast broadband
+    topics:
+    - economy
+    unit: '%'
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ofcom.org.uk/phones-and-broadband/coverage-and-speeds/infrastructure-research
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: ultrafast-broadband
+    notes:
+    - Percentage of premises with access to a ultrafast broadband service (download speed of at least 300 Mbit/s).
+    - Produced by Ofcom, published through ONS Explore Local Statistics
+    - All coverage figures refer to fixed line broadband only. Some of this data has been aggregated and may show differences to other published figures.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: trafficflow
+    name: Motor vehicle flow
+    topics:
+    - transport
+    unit: vehicles per day (average)
+    kind: ratio
+    geography: Great Britain
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/road-traffic-estimates-tra#traffic-by-local-authority-tra89
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: motor-vehicle-flow
+      geo: K03000001
+    notes:
+    - Annual Average Daily Flow (AADF) which measures the average number of vehicles per mile of road on a typical day.
+    - Produced by Department for Transport, published through ONS Explore Local Statistics
+  - id: evchargers
+    name: Public electric vehicle chargers
+    topics:
+    - transport
+    unit: per 100,000 population
+    kind: rate
+    geography: UK
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/collections/electric-vehicle-charging-infrastructure-statistics
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: electric-vehicle-public-charging-devices
+    notes:
+    - Publicly available electric vehicle chargers at all speeds per 100,000 people.
+    - Produced by Department for Transport, sourced from Zapmap, published through ONS Explore Local Statistics
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: traveltimecycle
+    name: Travel time to employment centre by bicycle
+    topics:
+    - transport
+    unit: minutes
+    kind: rate
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/journey-time-statistics-data-tables-jts
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: average-travel-time-cycling
+      geo: E92000001
+    notes:
+    - Average travel time in minutes to nearest employment centre with 500+ jobs available.
+    - Produced by Department for Transport, published through ONS Explore Local Statistics
+    - Data is not available for 2018.
+  - id: traveltimedrive
+    name: Travel time to employment centre by car
+    topics:
+    - transport
+    unit: minutes
+    kind: rate
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/journey-time-statistics-data-tables-jts
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: average-travel-time-driving
+      geo: E92000001
+    notes:
+    - Average travel time in minutes to nearest employment centre with 500+ jobs available.
+    - Produced by Department for Transport, published through ONS Explore Local Statistics
+    - Data is not available for 2018.
+  - id: traveltimept
+    name: Travel time to employment centre by public transport and walking
+    topics:
+    - transport
+    unit: minutes
+    kind: rate
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/government/statistical-data-sets/journey-time-statistics-data-tables-jts
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: average-travel-time-public-transport-or-walking
+      geo: E92000001
+    notes:
+    - Average travel time in minutes to nearest employment centre with 500+ jobs available.
+    - Produced by Department for Transport, published through ONS Explore Local Statistics
+    - Data is not available for 2018.
+  - id: supermarkets
+    name: Supermarkets
+    topics:
+    - transport
+    unit: per 10,000 population
+    kind: rate
+    geography: UK
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/datasets/1numberofchainsupermarketsacrosslocalauthoritydistrictsladandsmallergeographicalareasintheuk
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: supermarkets
+    notes:
+    - Supermarkets per 10,000 people.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: sportsfac
+    name: Sports facilities
+    topics:
+    - transport
+    unit: per 10,000 population
+    kind: rate
+    geography: England
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/datasets/numberofsportsfacilitiesacrosslocalauthoritydistrictsladandmiddlelayersuperoutputareasmsoainenglandandwales
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: sports-facilities
+      geo: E92000001
+    notes:
+    - Sports facilities per 10,000 people.
+    - Per capita estimates are calculated using the usual resident population estimates from the most recent Census. Some of this data has been aggregated and may show differences to other published figures.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: museums
+    name: Museums
+    topics:
+    - transport
+    unit: per 100,000 population
+    kind: rate
+    geography: UK
+    year_basis: academic
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/datasets/numberofmuseumsacrosslocalauthoritydistrictsladintheunitedkingdom
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: museums
+    notes:
+    - Museums per 100,000 people.
+    - Per capita estimates are calculated using the usual resident population estimates from the most recent Census. These per capita estimates are not directly comparable between the different countries
+      because of the non-consistent census dates that the population estimates were taken on. Some of this data has been aggregated and may show differences to other published figures.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: walklibrary
+    name: Residents within a 30 minute walk of their nearest library
+    topics:
+    - transport
+    unit: '%'
+    kind: rate
+    geography: England and Wales
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/datasets/traveltimetolibrariesinlocalareasenglandandwales
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: walk-library
+      geo: K04000001
+    notes:
+    - Percentage of resident population within a 30 minute walk of their nearest library.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: walkstation
+    name: Residents within a 30 minute walk of their nearest railway station
+    topics:
+    - transport
+    unit: '%'
+    kind: rate
+    geography: England and Wales
+    year_basis: calendar
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/wellbeing/datasets/traveltimetorailwaystationsinlocalareasenglandandwales
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: walk-railway-station
+      geo: K04000001
+    notes:
+    - Percentage of resident population within a 30 minute walk of their nearest railway station.
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: arts
+    name: Engaged with the arts
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/guidance/community-and-engagement-survey-202526
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: engaged-with-arts
+      geo: E92000001
+    notes:
+    - Percentage of adults who reported engaging with the arts physically in the last 12 months.
+    - Produced by Department for Digital, Culture, Media and Sport, published through ONS Explore Local Statistics
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: heritage
+    name: Visited a heritage site
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/guidance/community-and-engagement-survey-202526
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: visited-heritage-site
+      geo: E92000001
+    notes:
+    - Percentage of adults who reported visiting a heritage site in person in the last 12 months.
+    - Produced by Department for Digital, Culture, Media and Sport, published through ONS Explore Local Statistics
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: museumvisit
+    name: Visited a museum or gallery
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/guidance/community-and-engagement-survey-202526
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: visited-museum-or-gallery
+      geo: E92000001
+    notes:
+    - Percentage of adults who reported visiting a museum or gallery in person in the last 12 months.
+    - Produced by Department for Digital, Culture, Media and Sport, published through ONS Explore Local Statistics
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: libraryvisit
+    name: Visited a public library
+    topics:
+    - health
+    unit: '%'
+    kind: rate
+    geography: England
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.gov.uk/guidance/community-and-engagement-survey-202526
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: visited-public-library
+      geo: E92000001
+    notes:
+    - Percentage of adults who reported visiting a public library building or mobile library in person in the last 12 months.
+    - Produced by Department for Digital, Culture, Media and Sport, published through ONS Explore Local Statistics
+    - Published for one or two years only, so it is a picture of where areas stand, not a trend — open it as a map
+    snapshot: true
+  - id: homicide
+    name: Homicide offences
+    topics:
+    - crime
+    unit: per million population
+    kind: rate
+    geography: England and Wales
+    year_basis: financial
+    source: ONS Explore Local Statistics
+    source_url: https://www.ons.gov.uk/peoplepopulationandcommunity/crimeandjustice/articles/homicideinenglandandwales/previousreleases#
+    publisher: ONS
+    source_type: els
+    fetch:
+      indicator: homicide-offences
+      geo: K04000001
+    notes:
+    - Homicide offences per million people.
+    - Pooled 3-year estimates, plotted at the first year of each band — a point summarises three years, not one

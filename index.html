@@ -3,41 +3,80 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="robots" content="noindex, nofollow">
 <title>Polyoptic — UK statistics, made comparable</title>
+<meta name="description" content="Official UK statistics, made comparable. Nearly 200 series from the ONS, NHS England, the Home Office and a dozen other publishers, charted together — with maps of every local area, the caveats the headlines leave out and a link back to every source.">
+<link rel="canonical" href="https://polyoptic.co/">
+<meta property="og:site_name" content="Polyoptic">
+<meta property="og:title" content="Polyoptic — UK statistics, made comparable">
+<meta property="og:description" content="Nearly 200 official UK series, charted together. Every figure links back to the release it came from, and the explorer shows the arithmetic behind any point you click.">
+<meta property="og:image" content="https://polyoptic.co/og/home.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Polyoptic — UK statistics, made comparable">
+<meta property="og:url" content="https://polyoptic.co/">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebSite","name":"Polyoptic",
+ "url":"https://polyoptic.co/",
+ "description":"Official UK statistics, made comparable — nearly 200 series from the ONS and a dozen other publishers, each linking back to its original release.",
+ "inLanguage":"en-GB",
+ "creator":{"@type":"Person","name":"Josh Morris","url":"https://morrisjb.com"},
+ "license":"https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"}
+</script>
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%226.5%204.5%2087%2087%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22c%22%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%20fill%3D%22none%22%20stroke%3D%22%234633A8%22%20stroke-width%3D%225%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cg%20clip-path%3D%22url%28%23c%29%22%20fill%3D%22%234633A8%22%3E%3Crect%20x%3D%2229.75%22%20y%3D%2246.56%22%20width%3D%226%22%20height%3D%2218.72%22%2F%3E%3Crect%20x%3D%2241.25%22%20y%3D%2236.48%22%20width%3D%226%22%20height%3D%2228.8%22%2F%3E%3Crect%20x%3D%2252.75%22%20y%3D%2242.6%22%20width%3D%226%22%20height%3D%2222.68%22%2F%3E%3Crect%20x%3D%2264.25%22%20y%3D%2230.72%22%20width%3D%226%22%20height%3D%2234.56%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="chart.css">
+<script src="chartkit.js"></script>
+<script>
+/* Light or dark, shared with the explorer through the same stored choice, and
+   applied before first paint so the page never flashes the wrong one. */
+(function(){ try{ if(localStorage.getItem("polyoptic-theme")==="dark") document.documentElement.dataset.theme="dark"; }catch(e){} })();
+</script>
 <style>
 :root{
-  --paper:#EDEFF1;--surface:#fff;--ink:#0F1419;--muted:#5C6672;--rule:#D3D8DD;
-  --purple:#4633A8;--purple-dk:#3A2A8C;--soft:#F4F2FA;--prule:#D8D2EC;--warm:#C2410C;
+  --paper:#EDEFF1;--surface:#fff;--hover:#FAFAFB;--ink:#0F1419;--muted:#5C6672;--rule:#D3D8DD;
+  --purple:#4633A8;--purple-dk:#3A2A8C;--soft:#F4F2FA;--prule:#D8D2EC;--warm:#C2410C;--warn:#B45309;
+  --wm:.085;
 }
+/* the explorer's dark theme, so the two pages are one site in either */
+html[data-theme="dark"]{
+  --paper:#0B0D12;--surface:#151823;--hover:#1C2130;--ink:#E8ECF1;--muted:#8A93A0;--rule:#262B36;
+  --purple:#8B6BFF;--purple-dk:#7355E8;--soft:#241E3E;--prule:#3A3260;--warm:#FB923C;--warn:#E0B45C;
+  --wm:.12;color-scheme:dark}
+/* the top bar keeps the brand purple in both */
+.topbar{--bar:#4633A8}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
-body{margin:0;background:var(--surface);color:var(--ink);font-family:"Public Sans",system-ui,sans-serif;font-size:16px;line-height:1.55}
-h1,h2,h3,h4{font-family:"Archivo";margin:0;letter-spacing:-0.034em;line-height:1.03}
+body{margin:0;background:var(--surface);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:16px;line-height:1.55}
+h1,h2,h3,h4{font-family:"IBM Plex Sans";margin:0;letter-spacing:-0.02em;line-height:1.03}
 svg{display:block}
 .wrap{max-width:1140px;margin:0 auto;padding:0 32px}
 
 /* purple top bar */
-.topbar{background:var(--purple);color:#fff}
+.topbar{background:var(--bar);color:#fff}
 .topbar .wrap{height:78px;display:flex;align-items:center;gap:26px}
 .brand{display:flex;align-items:center;gap:11px;text-decoration:none;flex-shrink:0}
 .brand svg{width:42px;height:31px}
-.wordmark{font-family:"Archivo";font-weight:800;font-size:25px;letter-spacing:-0.05em;color:#fff}
+.wordmark{font-family:"IBM Plex Sans";font-weight:800;font-size:25px;letter-spacing:-0.03em;color:#fff}
 .wordmark .b{font-weight:500;color:rgba(255,255,255,.66)}
 .topnav{margin-left:auto;display:flex;align-items:center;gap:26px}
 .topnav a{color:rgba(255,255,255,.74);text-decoration:none;font-size:14px;padding:4px 0;border-bottom:1px solid transparent;transition:.15s}
 .topnav a:hover{color:#fff;border-bottom-color:rgba(255,255,255,.5)}
-.topnav a.btn-invert{background:#fff;color:var(--purple);font-weight:700;font-size:14px;padding:11px 24px;border-radius:100px;border:0;border-bottom:0;text-decoration:none;white-space:nowrap;transition:.15s}
-.topnav a.btn-invert:hover{background:#F1EEFA;color:var(--purple-dk);border-bottom-color:transparent}
+.topnav a.btn-invert{background:#fff;color:#4633A8;font-weight:700;font-size:14px;padding:11px 24px;border-radius:100px;border:0;border-bottom:0;text-decoration:none;white-space:nowrap;transition:.15s}
+.topnav a.btn-invert:hover{background:#F1EEFA;color:#3A2A8C;border-bottom-color:transparent}
 /* second-tier call to action: outlined pill. Reads as important next to the
    solid white button without competing with it. */
 .topnav a.btn-ghost{border:1px solid rgba(255,255,255,.5);color:#fff;font-weight:600;font-size:14px;
   padding:10px 21px;border-radius:100px;white-space:nowrap;transition:.15s}
 .topnav a.btn-ghost:hover{background:rgba(255,255,255,.13);border-color:#fff}
+/* light/dark: the same eye as the explorer — open for light, shut for dark */
+.themebtn{display:flex;align-items:center;justify-content:center;width:42px;height:38px;flex-shrink:0;
+  border:1px solid rgba(255,255,255,.5);border-radius:100px;background:transparent;color:#fff;cursor:pointer;transition:.15s;padding:0}
+.themebtn:hover{background:rgba(255,255,255,.13);border-color:#fff}
+.themebtn svg{width:22px;height:16px}
 @media(max-width:820px){.topnav a:not(.btn-invert):not(.btn-ghost){display:none}.topbar .wrap{height:68px}}
 /* Below ~560px the brand plus both pills stop fitting, so the second-tier pill
    gives way to the primary one rather than pushing the page sideways. */
@@ -57,7 +96,7 @@ svg{display:block}
   width:min(620px,52vw);pointer-events:none;user-select:none;
   -webkit-mask-image:radial-gradient(ellipse 62% 62% at 50% 50%,#000 34%,transparent 78%);
           mask-image:radial-gradient(ellipse 62% 62% at 50% 50%,#000 34%,transparent 78%)}
-.watermark svg{width:100%;height:auto;opacity:.085}
+.watermark svg{width:100%;height:auto;opacity:var(--wm);color:var(--purple)}
 @media(max-width:900px){.watermark{right:-130px;width:78vw;opacity:.7}}
 @media(max-width:620px){.watermark{display:none}}
 .eyebrow{font-family:"IBM Plex Mono";font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--purple);margin-bottom:24px}
@@ -74,6 +113,58 @@ svg{display:block}
 section{padding:60px 0;border-top:1px solid var(--rule)}
 .slabel{display:flex;align-items:baseline;gap:13px;margin-bottom:24px;flex-wrap:wrap}
 section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
+.topiclinks{font-size:13.5px;color:var(--muted);margin:16px 0 0;line-height:1.7}
+.topiclinks a{color:var(--purple)}
+.lede.mono{font-family:"IBM Plex Mono";font-size:12px;letter-spacing:.02em;margin-top:-14px}
+/* the process: six steps left to right, the checks beneath the middle three */
+.flow{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));column-gap:30px;row-gap:0;margin-top:8px}
+.fstep{position:relative;background:var(--surface);border:1px solid var(--prule);border-radius:14px;padding:20px 17px 18px;
+  box-shadow:0 1px 0 rgba(70,51,168,.04)}
+.fstep:not(.fshare)::after{content:"";position:absolute;top:50%;right:-30px;width:30px;height:2px;background:var(--prule)}
+.fstep:not(.fshare)::before{content:"";position:absolute;top:calc(50% - 4px);right:-31px;border:5px solid transparent;border-left:7px solid var(--purple);
+  border-right:0;z-index:1}
+.fhead{padding-bottom:12px;margin-bottom:12px;border-bottom:1px solid var(--prule);transition:border-color .5s}
+.fstep h3{font-size:22px;font-weight:700;margin:0;letter-spacing:-.02em;line-height:1.15}
+.flead{font-size:12.5px;font-weight:500;color:var(--purple);margin-top:5px;line-height:1.35;transition:color .5s}
+.fstep p{font-size:13.5px;color:var(--muted);margin:0;line-height:1.55;transition:color .5s}
+.fstep ul{list-style:none;margin:0;padding:0;font-size:13.5px;color:var(--ink);line-height:1.5;display:grid;gap:5px;transition:color .5s}
+.fstep li{position:relative;padding-left:13px}
+.fstep li a{color:inherit;text-decoration:none;border-bottom:1px solid var(--prule)}
+.fstep li a:hover{color:var(--purple)}
+.fstep li::before{content:"";position:absolute;left:0;top:.62em;width:5px;height:5px;border-radius:50%;background:var(--purple);transition:background .5s}
+.fsub{display:inline-block;font-size:10.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--purple);
+  background:var(--soft);border:1px solid var(--prule);border-radius:100px;padding:1px 8px;margin:4px 0 7px;transition:color .5s,background .5s,border-color .5s}
+.fsub ~ .fsub{margin-top:12px}
+.fnote{font-size:11.5px;color:var(--muted);margin-top:12px;padding-top:9px;border-top:1px dashed var(--prule);transition:color .5s}
+/* the step being described: purple, lifted, and the arrow out of it lit, so
+   the highlight travels left to right along the process */
+.fstep{transition:background .5s,border-color .5s,color .5s,transform .5s,box-shadow .5s}
+.fstep.on{background:var(--purple);border-color:var(--purple);color:#fff;transform:translateY(-4px);box-shadow:0 12px 28px rgba(70,51,168,.28)}
+.fstep.on .fnote{color:rgba(255,255,255,.75);border-top-color:rgba(255,255,255,.3)}
+.fstep.on .fhead{border-bottom-color:rgba(255,255,255,.3)}
+.fstep.on .flead{color:rgba(255,255,255,.85)}
+.fstep.on .fsub{color:#fff;background:rgba(255,255,255,.14);border-color:rgba(255,255,255,.3)}
+.fstep.on p,.fstep.on ul{color:rgba(255,255,255,.92)}
+.fstep.on li::before{background:#fff}
+.fstep.on li a{border-bottom-color:rgba(255,255,255,.4)}
+.fstep::after{transition:background .5s}
+.fstep.on::after{background:var(--purple)}
+.fchecks{transition:background .5s,border-color .5s,box-shadow .5s}
+.fchecks.on{border-color:var(--purple);box-shadow:0 0 0 3px var(--prule)}
+.fconn{transition:border-color .5s}.fconn.on{border-left-color:var(--purple)}
+@media (prefers-reduced-motion: reduce){.fstep,.fstep.on{transition:none;transform:none}}
+.fconn{grid-row:2;height:40px;justify-self:center;border-left:1.5px dashed var(--prule)}
+.fchecks{grid-row:3;grid-column:2 / 5;background:var(--soft);border:1px solid var(--prule);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.5}
+.fprov{grid-row:4;grid-column:1 / -1;margin-top:22px;background:var(--hover);border:1px solid var(--rule);border-radius:12px;padding:14px 16px;font-size:13.5px;line-height:1.5}
+.fprov a{color:var(--purple)}
+.flabel{font-size:12px;font-weight:600;color:var(--purple);margin-bottom:4px}
+@media(max-width:980px){
+  .flow{grid-template-columns:1fr;row-gap:26px}
+  .fstep:not(.fshare)::after{top:auto;bottom:-26px;right:auto;left:28px;width:2px;height:26px}
+  .fstep:not(.fshare)::before{top:auto;bottom:-27px;right:auto;left:24px;border:5px solid transparent;border-top:7px solid var(--purple);border-bottom:0}
+  .fconn{display:none}
+  .fchecks,.fprov{grid-row:auto;grid-column:1;margin-top:0}
+}
 .lede{color:var(--muted);max-width:62ch;margin:-14px 0 30px}
 
 /* chart card */
@@ -82,71 +173,126 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .card-hd h3{font-size:18px;font-weight:700}
 .card-hd .sub{font-size:13px;color:var(--muted);margin-top:5px}
 .tagpill{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--purple);background:var(--soft);border:1px solid var(--prule);padding:4px 10px;border-radius:100px;height:fit-content;white-space:nowrap}
-.chips{display:flex;flex-wrap:wrap;gap:6px;padding:14px 22px 2px}
-.chip{font-family:"IBM Plex Mono";font-size:11.5px;padding:5px 12px;border:1px solid var(--rule);background:transparent;color:var(--muted);border-radius:100px;cursor:pointer;transition:.14s}
-.chip:hover{border-color:var(--ink);color:var(--ink)}
-.chip[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
 .card-bd{padding:16px 22px 6px}
-.card-ft{padding:11px 22px 14px;border-top:1px solid var(--rule);font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);display:flex;flex-wrap:wrap;gap:5px 18px}
-.gridline{stroke:var(--rule);stroke-width:1}
-.axlabel{font-family:"IBM Plex Mono";font-size:9.5px;fill:var(--muted)}
-.serieslabel{font-family:"IBM Plex Mono";font-size:10px;font-weight:500}
-.line{fill:none;stroke-width:2.3;stroke-linejoin:round;stroke-linecap:round}
-.ribbon-title{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);margin:10px 0 5px}
-.era rect{opacity:.84}.era:hover rect{opacity:1}
-.era text{font-family:"IBM Plex Mono";font-size:9px;fill:#fff;font-weight:500}
-.pmtick{stroke:var(--ink);stroke-width:1;stroke-dasharray:2 2;opacity:.32}
-.pmlabel{font-family:"IBM Plex Mono";font-size:8.5px;fill:var(--muted)}
+/* the explorer's chart footer: the sources, then the facts about this view */
+.card-ft{padding:11px 22px 14px;border-top:1px solid var(--rule);display:flex;flex-direction:column;gap:3px}
 
-/* showreel */
-.showreel{position:relative;overflow:hidden}
-.reel-bar{display:flex;align-items:center;justify-content:space-between;gap:16px;
-  padding:14px 22px 4px;flex-wrap:wrap}
-.reel-label{font-family:"Archivo";font-weight:700;font-size:15px;letter-spacing:-0.02em;color:var(--purple);min-height:22px}
-.reel-label span{display:inline-block;transition:opacity .32s ease, transform .32s ease}
-.reel-label.swap span{opacity:0;transform:translateY(-6px)}
-.reel-steps{display:flex;gap:7px;align-items:center}
+/* ── the explorer walkthrough ─────────────────────────────────────
+   A small working copy of the explorer that uses itself: a cursor picks
+   indicators, changes the settings and clicks a year to check the numbers.
+   Same chart code, same data, same theme as the real thing. */
+.demo{position:relative;overflow:hidden}
+.demo-cap{display:flex;align-items:center;gap:16px;padding:14px 22px;border-bottom:1px solid var(--rule);flex-wrap:wrap}
+.demo-steps{display:flex;gap:6px;align-items:center}
 .dot{width:26px;height:4px;border:0;padding:0;border-radius:100px;background:var(--rule);cursor:pointer;
   position:relative;overflow:hidden;transition:background .25s}
 .dot:hover{background:var(--prule)}
+.dot.done{background:var(--purple)}
 .dot[aria-pressed="true"]{background:var(--prule)}
-.dot i{position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);
-  background:var(--purple);display:block}
+.dot i{position:absolute;inset:0;transform-origin:left center;transform:scaleX(0);background:var(--purple);display:block}
 .dot[aria-pressed="true"] i{transform:scaleX(var(--p,0))}
-.reel-paused .dot i{background:var(--muted)}
-.zeroline{stroke:var(--muted);stroke-width:1;opacity:.5}
-@media (prefers-reduced-motion: reduce){.reel-label span{transition:none}}
+.demo.paused .dot i{background:var(--muted)}
+.demo-say{flex:1;min-width:220px;font-weight:700;font-size:15px;letter-spacing:-0.015em;color:var(--ink)}
+.demo-say #demoNum{font-family:"IBM Plex Mono";font-weight:500;font-size:11px;letter-spacing:.08em;color:var(--purple);margin-right:10px}
+.demo-say span{transition:opacity .3s}
+.demo-say.swap span{opacity:0}
 
-/* the featured chart crossfades between indicators. Morphing one indicator into
-   a different one would draw values that were never published, which is not a
-   thing this site should do even for 300ms — so only the normalisation card
-   below tweens, where every frame is the same number re-expressed. */
-.reel-stage{transition:opacity .26s ease}
-.reel-stage.out{opacity:0}
-@media (prefers-reduced-motion: reduce){.reel-stage{transition:none}}
-.reel-hd h3{transition:opacity .26s ease}
-.reel-hd.out h3,.reel-hd.out .sub{opacity:0}
-.reel-hd .sub{transition:opacity .26s ease}
+.demo-app{position:relative;display:grid;grid-template-columns:232px minmax(0,1fr)}
+@media(max-width:820px){.demo-app{grid-template-columns:1fr}}
 
-/* the strip of live sparklines doubles as the control: six real indicators on
-   screen at once, click one to promote it into the featured chart */
-.reelgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--rule);
-  border-top:1px solid var(--rule)}
-@media(max-width:1000px){.reelgrid{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:560px){.reelgrid{grid-template-columns:repeat(2,1fr)}}
-.rcard{background:var(--surface);border:0;padding:11px 12px 8px;cursor:pointer;text-align:left;
-  display:flex;flex-direction:column;gap:5px;transition:background .14s;min-width:0;
-  font-family:inherit}
-.rcard:hover{background:#FAFAFB}
-.rcard[aria-pressed="true"]{background:var(--soft)}
-.rcard .rn{font-family:"Archivo";font-weight:700;font-size:12.5px;letter-spacing:-0.015em;
-  line-height:1.2;color:var(--ink);display:-webkit-box;-webkit-line-clamp:2;
-  -webkit-box-orient:vertical;overflow:hidden}
-.rcard[aria-pressed="true"] .rn{color:var(--purple)}
-.rcard .rv{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.rcard .rspark{width:100%;height:24px}
-.spark{fill:none;stroke-width:1.7;stroke-linejoin:round;stroke-linecap:round}
+/* the explorer's left panel, in miniature */
+.demo-side{border-right:1px solid var(--rule);background:var(--surface);min-width:0}
+@media(max-width:820px){.demo-side{border-right:0;border-bottom:1px solid var(--rule);display:grid;grid-template-columns:1fr 1fr}
+  .demo-side .dsec:first-child{grid-column:1/-1}}
+.dsec{padding:13px 14px;border-bottom:1px solid var(--rule)}
+.dsec:last-child{border-bottom:0}
+.dlabel{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.dq{position:relative;height:34px;padding:0 10px;border:1px solid var(--rule);background:var(--paper);border-radius:3px;
+  display:flex;align-items:center;font-size:13px;color:var(--ink);overflow:hidden;white-space:nowrap}
+.dq.focus{outline:2px solid var(--purple);outline-offset:-1px}
+.dq .ph{color:var(--muted)}
+.dq .caret{display:none;width:1px;height:15px;background:var(--ink);margin-left:1px;animation:blink 1s steps(1) infinite}
+.dq.focus .caret{display:inline-block}
+.dq.focus .ph,.dq.typed .ph{display:none}
+@keyframes blink{50%{opacity:0}}
+.dlist{margin:8px -14px -13px;height:236px;overflow:hidden}
+.dci{display:flex;gap:9px;align-items:flex-start;padding:8px 14px 8px 11px;border-top:1px solid var(--rule);
+  border-left:3px solid transparent;transition:background .15s,border-color .15s}
+.dci .sw{width:10px;height:10px;flex-shrink:0;margin-top:3px;border:1.5px solid var(--rule);border-radius:2px;transition:.15s}
+.dci .cn{display:block;font-size:12.5px;font-weight:600;line-height:1.3}
+.dci .cm{display:block;font-size:11px;color:var(--muted);margin-top:2px}
+.dci.on{background:var(--soft);border-left-color:var(--purple)}
+.dci.hov{background:var(--hover)}
+.dci.in{animation:rise .3s ease both}
+@keyframes rise{from{opacity:0;transform:translateY(4px)}}
+.drow{display:flex;gap:5px;flex-wrap:wrap}
+.df{font-family:"IBM Plex Mono";font-size:10.5px;padding:5px 9px;border:1px solid var(--rule);color:var(--muted);border-radius:3px;transition:.15s;white-space:nowrap}
+.df.on{background:var(--purple);border-color:var(--purple);color:#fff}
+
+/* the chart card on the right */
+.demo-main{min-width:0;display:flex;flex-direction:column}
+.demo-phd{display:flex;align-items:flex-start;gap:12px;padding:14px 20px 10px}
+.dchart{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--purple);
+  border:1px solid var(--prule);background:var(--soft);padding:3px 8px;border-radius:3px;margin-top:2px;white-space:nowrap}
+.demo-tt h3{font-size:17px;font-weight:700;transition:opacity .25s}
+.demo-tt .sub{font-size:12.5px;color:var(--muted);margin-top:4px;transition:opacity .25s}
+.demo-body{display:grid;grid-template-columns:minmax(0,1fr) 0px;flex:1}
+.demo-body.work{grid-template-columns:minmax(0,1fr) 236px}
+@media(max-width:820px){.demo-body,.demo-body.work{grid-template-columns:1fr}}
+.demo-plot{position:relative;padding:6px 20px 8px;min-width:0;min-height:300px;display:flex;flex-direction:column;justify-content:center}
+.demo-empty{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);transition:opacity .3s}
+.demo-empty.gone{opacity:0;pointer-events:none}
+.demo-work{overflow:hidden;min-width:0}
+.demo-workin{width:222px;margin:4px 14px 12px 0;padding:12px 14px;background:var(--soft);border:1px solid var(--prule);border-radius:3px;
+  opacity:0;transform:translateX(12px);transition:opacity .35s .2s,transform .35s .2s}
+.demo-body.work .demo-workin{opacity:1;transform:none}
+@media(max-width:820px){.demo-work{max-height:0;transition:max-height .5s}.demo-body.work .demo-work{max-height:400px}
+  .demo-workin{width:auto;margin:0 20px 12px}}
+.wyear{font-weight:700;font-size:16px;letter-spacing:-.01em;margin-bottom:6px}
+.wyear span{font-weight:400;font-size:12px;color:var(--muted);margin-left:6px}
+.wblk{padding:9px 0;border-top:1px solid var(--prule)}
+.wblk:last-child{padding-bottom:0}
+.wname{display:flex;align-items:center;gap:8px;font-weight:600;font-size:12.5px;margin-bottom:7px}
+.wdot{width:13px;height:3px;flex-shrink:0}
+.wsum{display:flex;align-items:flex-start;flex-wrap:wrap;gap:5px 8px}
+.wc{display:flex;flex-direction:column;min-width:0}
+.wc b{font-family:"IBM Plex Mono";font-size:15px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.2}
+.wc span{font-size:10.5px;color:var(--muted);line-height:1.3;margin-top:2px}
+.wc.wout{background:var(--surface);border:1px solid var(--prule);border-radius:3px;padding:3px 8px}
+.wc.wout b{color:var(--purple)}
+.wo{font-family:"IBM Plex Mono";font-size:14px;color:var(--muted);padding-top:1px}
+.wsrc{font-size:11px;color:var(--muted);margin-top:6px}
+
+/* marks the walkthrough adds to the chart */
+.probeline{stroke:var(--purple);stroke-width:1.5;stroke-dasharray:4 3}
+.probedot{stroke:var(--surface);stroke-width:2}
+.drawin{stroke-dasharray:1;stroke-dashoffset:1;animation:draw 1.1s cubic-bezier(.4,0,.2,1) forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.fadein{animation:fade .6s ease both}
+@keyframes fade{from{opacity:0}}
+
+/* the cursor, and the ring it leaves where it clicks */
+.demo-cursor{position:absolute;left:0;top:0;z-index:5;pointer-events:none;opacity:0;
+  transition:transform .8s cubic-bezier(.45,0,.2,1),opacity .3s;will-change:transform}
+.demo-cursor.show{opacity:1}
+.demo-cursor svg{display:block;filter:drop-shadow(0 1px 2px rgba(0,0,0,.25));transition:transform .12s}
+.demo-cursor.press svg{transform:scale(.86)}
+.demo-cursor .ring{position:absolute;left:-9px;top:-9px;width:22px;height:22px;border-radius:50%;
+  border:2px solid var(--purple);opacity:0;transform:scale(.3)}
+.demo-cursor.press .ring{animation:ring .5s ease-out}
+@keyframes ring{0%{opacity:.9;transform:scale(.3)}100%{opacity:0;transform:scale(1.6)}}
+
+.demo-ft{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 22px;border-top:1px solid var(--rule);flex-wrap:wrap}
+.demo-btn{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.06em;text-transform:uppercase;padding:7px 12px;
+  border:1px solid var(--rule);background:transparent;color:var(--muted);border-radius:3px;cursor:pointer}
+.demo-btn:hover{border-color:var(--ink);color:var(--ink)}
+.demo-go{padding:10px 20px;font-size:14px}
+@media (prefers-reduced-motion: reduce){
+  .demo-cursor{display:none}
+  .demo-body,.demo-workin,.drawin,.fadein,.dci.in{transition:none;animation:none}
+  .drawin{stroke-dashoffset:0}
+}
 
 .chartfail{padding:34px 22px;text-align:center;color:var(--muted);font-size:14px}
 .chartfail b{color:var(--ink)}
@@ -155,36 +301,25 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
 @media(max-width:1000px){.tiles{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.tiles{grid-template-columns:1fr}}
-.tile{background:var(--surface);padding:20px;min-height:140px;text-decoration:none;display:flex;flex-direction:column;transition:.14s}
-.tile:hover{background:#FAFAFB}
+.tile{background:var(--surface);padding:20px;min-height:140px;text-decoration:none;color:var(--ink);display:flex;flex-direction:column;transition:.14s}
+.tile:hover{background:var(--hover)}
 .tile.live:hover{background:var(--soft)}
 .trow{display:flex;align-items:center;gap:9px}
-.tn{font-family:"Archivo";font-weight:700;font-size:17.5px;letter-spacing:-0.025em}
-.badge{font-family:"IBM Plex Mono";font-size:9px;letter-spacing:.1em;color:var(--purple);border:1px solid var(--prule);background:var(--soft);padding:2px 6px}
+.tico{display:inline-flex;width:30px;height:30px;border-radius:100px;background:var(--soft);color:var(--purple);align-items:center;justify-content:center;flex-shrink:0}
+.tico svg{width:17px;height:17px}
+.tn{font-family:"IBM Plex Sans";font-weight:700;font-size:17.5px;letter-spacing:-0.025em}
 .tc{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);margin-top:6px}
 .td{font-size:13.5px;color:var(--muted);margin-top:12px;line-height:1.45}
 .tile.soon{opacity:.66}
-
-/* transforms */
-.tf{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
-@media(max-width:900px){.tf{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:480px){.tf{grid-template-columns:1fr}}
-.tfc{background:var(--surface);padding:20px}
-.tfc h4{font-size:15.5px;font-weight:700;margin-bottom:7px}
-.tfc p{font-size:13.5px;color:var(--muted);margin:0}
-.tfc .ic{font-family:"IBM Plex Mono";font-size:10px;color:var(--purple);letter-spacing:.12em;margin-bottom:10px}
 
 /* pairings */
 .pairs{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
 @media(max-width:760px){.pairs{grid-template-columns:1fr}}
 .pair{background:var(--surface);padding:22px;text-decoration:none;transition:.14s}
 .pair:hover{background:var(--soft)}
-.pair .pq{font-family:"Archivo";font-weight:700;font-size:17px;letter-spacing:-0.025em;margin-bottom:8px}
+.pair .pq{font-family:"IBM Plex Sans";font-weight:700;font-size:17px;letter-spacing:-0.025em;margin-bottom:8px}
 .pair .pm{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);line-height:1.7}
 .pair .pm b{color:var(--purple);font-weight:500}
-
-.srcs{display:flex;flex-wrap:wrap;gap:8px}
-.src{font-family:"IBM Plex Mono";font-size:11.5px;border:1px solid var(--rule);background:var(--surface);padding:7px 14px;color:var(--muted);border-radius:100px}
 
 footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px solid var(--rule)}
 .fgrid{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap}
@@ -207,11 +342,14 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
       <span class="wordmark">poly<span class="b">optic</span></span>
     </a>
     <nav class="topnav">
-      <a href="#topics">Topics</a>
       <a href="#questions">Questions</a>
-      <a href="#method">Method</a>
+      <a href="#topics">Topics</a>
+      <a href="#process">How it works</a>
+      <a href="indicator/">Indicators</a>
+      <a href="about.html">About</a>
       <a class="btn-ghost" href="data.html">Verify</a>
       <a class="btn-invert" href="explore.html">Open the explorer</a>
+      <button class="themebtn" id="themeBtn" type="button"></button>
     </nav>
   </div>
 </div>
@@ -221,15 +359,15 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
     <div class="watermark" aria-hidden="true">
       <svg viewBox="6.5 16.5 87 63">
         <defs><clipPath id="wmc"><path d="M10 50 Q50 -10 90 50 Q50 102 10 50 Z"/></clipPath></defs>
-        <path d="M10 50 Q50 -10 90 50 Q50 102 10 50 Z" fill="none" stroke="#4633A8" stroke-width="4" stroke-linejoin="round"/>
-        <g clip-path="url(#wmc)" fill="#4633A8">
+        <path d="M10 50 Q50 -10 90 50 Q50 102 10 50 Z" fill="none" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/>
+        <g clip-path="url(#wmc)" fill="currentColor">
           <rect x="29.75" y="46.56" width="6" height="18.72"/><rect x="41.25" y="36.48" width="6" height="28.80"/>
           <rect x="52.75" y="42.60" width="6" height="22.68"/><rect x="64.25" y="30.72" width="6" height="34.56"/>
         </g>
       </svg>
     </div>
     <h1>Every UK statistic, <em>made comparable</em>.</h1>
-    <p>Government publishes thousands of figures across dozens of departments, in different units, on different calendars, for different parts of the country. Polyoptic brings them together and lets you rebase, adjust for inflation, compare and map them — and tells you when two numbers aren't measuring the same thing.</p>
+    <p>The government publishes thousands of figures across dozens of departments, in different units, on different calendars, for different parts of the country. Polyoptic brings them together and lets you rebase, adjust for inflation, compare and map them.</p>
     <div class="cta">
       <a class="pill solid" href="explore.html">To the Explorer</a>
       <a class="pill ghost" href="#topics">Browse the topics</a>
@@ -238,114 +376,129 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
 </div>
 
 <div class="wrap">
-  <div class="card showreel" id="reel">
-    <div class="card-hd reel-hd" id="reelHd">
-      <div>
-        <h3 id="reelTitle">&nbsp;</h3>
-        <div class="sub" id="reelSub">&nbsp;</div>
+  <div class="card demo" id="demo" aria-label="A walkthrough of the explorer">
+    <div class="demo-cap">
+      <div class="demo-steps" id="demoSteps" role="group" aria-label="Walkthrough steps"></div>
+      <div class="demo-say" aria-live="polite"><span id="demoNum"></span><span id="demoSay">&nbsp;</span></div>
+      <span class="tagpill">Live from the explorer</span>
+    </div>
+
+    <div class="demo-app" id="demoApp">
+      <div class="demo-side" aria-hidden="true">
+        <div class="dsec">
+          <div class="dlabel">Catalogue</div>
+          <div class="dq" id="dq"><span id="dqText"></span><i class="caret"></i><span class="ph" id="dqPh">Search 90+ indicators</span></div>
+          <div class="dlist" id="dlist"></div>
+        </div>
+        <div class="dsec">
+          <div class="dlabel">Transform</div>
+          <div class="drow" id="dtrans"></div>
+        </div>
+        <div class="dsec">
+          <div class="dlabel">Government</div>
+          <div class="drow" id="dgov"></div>
+        </div>
       </div>
-      <span class="tagpill">Live from the catalogue</span>
-    </div>
 
-    <div class="reel-bar">
-      <div class="reel-label"><span id="reelLabel">&nbsp;</span></div>
-      <div class="reel-steps" id="reelSteps" role="group" aria-label="Choose an indicator"></div>
-    </div>
+      <div class="demo-main">
+        <div class="demo-phd">
+          <span class="dchart">Chart 1</span>
+          <div class="demo-tt"><h3 id="demoTitle">&nbsp;</h3><div class="sub" id="demoSub">&nbsp;</div></div>
+        </div>
+        <div class="demo-body" id="demoBody">
+          <div class="demo-plot"><div id="chartA"></div><div class="demo-empty" id="demoEmpty">Pick an indicator on the left to start a chart</div></div>
+          <div class="demo-work" id="demoWork"><div class="demo-workin" id="demoWorkIn"></div></div>
+        </div>
+        <div class="card-ft" id="ftA"></div>
+      </div>
 
-    <div class="card-bd">
-      <div class="reel-stage" id="reelStage">
-        <div id="chartA"></div>
-        <div class="ribbon-title">Government in power</div>
-        <div id="ribbonA"></div>
+      <div class="demo-cursor" id="demoCursor" aria-hidden="true">
+        <svg viewBox="0 0 20 24" width="20" height="24"><path d="M2 2 L2 19 L6.5 15 L9.6 22 L12.8 20.6 L9.8 13.8 L16 13.6 Z" fill="#0F1419" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/></svg>
+        <i class="ring"></i>
       </div>
     </div>
 
-    <div class="reelgrid" id="reelCards" role="group" aria-label="Featured indicators"></div>
-
-    <div class="card-ft" id="ftA"></div>
+    <div class="demo-ft">
+      <button class="demo-btn" id="demoPlay" type="button">Pause</button>
+      <a class="pill solid demo-go" id="demoGo" href="explore.html">Open this chart in the explorer →</a>
+    </div>
   </div>
 </div>
+
+<!-- What the explorer does to a number, in order. The lists are the
+     explorer's own options and the publishers actually in the catalogue,
+     so this cannot promise a feature the tool does not have. -->
+<section id="process">
+  <div class="wrap">
+    <div class="slabel"><h2>From published figure to a chart you can defend</h2></div>
+    <div class="flow">
+      <div class="fstep"><div class="fhead"><h3>Source</h3><div class="flead">Official releases, fetched at source</div></div>
+        <ul id="flowSrc"></ul><div class="fnote" id="flowSrcNote">Refreshed every Monday</div></div>
+      <div class="fstep"><div class="fhead"><h3>Pick</h3><div class="flead">Up to four on one chart</div></div>
+        <p id="flowPick">Choose from the catalogue, across every topic and publisher.</p></div>
+      <div class="fstep"><div class="fhead"><h3>Transform</h3><div class="flead">Make different units comparable</div></div>
+        <ul><li>As published</li><li>Rebase to 100</li><li>Real terms</li><li>Per person</li><li>% of GDP</li><li>Year-on-year %</li><li>3-year average</li><li>Relative to another series</li></ul></div>
+      <div class="fstep"><div class="fhead"><h3>Chart</h3><div class="flead">Sixteen ways to draw it</div></div>
+        <div class="fsub">Over time</div><ul><li>Line, step, dots</li><li>Area and columns</li><li>Stacked, slope</li><li>Scatter</li><li>Small multiples</li></ul>
+        <div class="fsub">By area</div><ul><li>Map</li><li>Ranking, change, range</li><li>Heatmap</li></ul></div>
+      <div class="fstep"><div class="fhead"><h3>Context</h3><div class="flead">What else was going on</div></div>
+        <ul><li>Government in power, shaded</li><li>Or a ribbon by party, PM or election</li><li>Series breaks marked on the line</li><li>Click any year for the working</li></ul></div>
+      <div class="fstep fshare on"><div class="fhead"><h3>Share</h3><div class="flead">Sources attached, always</div></div>
+        <ul><li>Copy a link</li><li>Download CSV or PNG</li><li>Cite it, short or Harvard</li></ul></div>
+      <div class="fconn" style="grid-column:2"></div><div class="fconn" style="grid-column:3"></div><div class="fconn" style="grid-column:4"></div>
+      <div class="fchecks"><div class="flabel">Comparability checks</div>
+        Warns when geographies, year bases or units don’t match, or a series breaks — and offers the fix: rebase, cut at the break, or show it on a map.</div>
+      <div class="fprov">Source, licence, geography and years travel with the number into every link, CSV, PNG and citation. Every raw value is on
+        <a href="data.html">Explorer Verify</a>, next to the exact address it was fetched from.</div>
+    </div>
+  </div>
+</section>
+
+<!-- Questions above topics, deliberately. People arrive searching "has pay kept
+     up with inflation uk", never "polyoptic" — and a question is a better door
+     into a statistics site than a taxonomy is. -->
+<section id="questions">
+  <div class="wrap">
+    <div class="slabel"><h2>Questions worth asking</h2></div>
+    <p class="lede">Each one is a claim you have heard, the number behind it, and what that
+      number does and does not show. Open any of them in the explorer and change the
+      assumptions yourself.</p>
+    <div class="pairs">
+      <!-- These point at /q/ pages rather than straight into the explorer.
+           Chart state lives in the URL fragment, which never reaches a server,
+           so an explorer link cannot unfurl as the chart it opens — every one
+           of them would preview identically. A real URL per question gets a
+           real card, and a slug someone might actually search for. -->
+      <a class="pair" href="q/has-pay-kept-up-with-prices/"><div class="pq">Has pay kept up with prices?</div><div class="pm"><b>Average weekly earnings</b> × <b>CPIH</b>, both rebased<br>2000–2026 · UK</div></a>
+      <a class="pair" href="q/have-rents-outrun-pay/"><div class="pq">Have rents outrun pay?</div><div class="pm"><b>Private rents index</b> × <b>average weekly earnings</b>, both rebased<br>2015–2026 · UK</div></a>
+      <a class="pair" href="q/what-does-the-debt-cost-to-carry/"><div class="pq">What does the debt cost to carry?</div><div class="pm"><b>Public sector net debt</b> × <b>debt interest</b>, both rebased<br>1993–2026 · UK</div></a>
+      <a class="pair" href="q/did-lost-schooling-widen-the-gap/"><div class="pq">Did lost schooling widen the attainment gap?</div><div class="pm"><b>Persistent absence</b> × <b>disadvantage gap index</b>, both rebased<br>2010–2026 · England</div></a>
+    </div>
+  </div>
+</section>
 
 <section id="topics">
   <div class="wrap">
     <div class="slabel"><h2>Topics</h2></div>
     <div class="tiles">
-      <a class="tile" data-topic="economy" href="explore.html#t=economy"><div class="trow"><span class="tn">Economy</span></div><div class="tc"></div><div class="td">Prices, pay, employment, rents and the public finances.</div></a>
-      <a class="tile" data-topic="housing" href="explore.html#t=housing"><div class="trow"><span class="tn">Housing</span></div><div class="tc"></div><div class="td">Private rents now; prices, supply and homelessness to follow.</div></a>
-      <a class="tile" data-topic="education" href="explore.html#t=education"><div class="trow"><span class="tn">Education</span></div><div class="tc"></div><div class="td">Pupil numbers, absence and the disadvantage attainment gap.</div></a>
-      <a class="tile" data-topic="health" href="#"><div class="trow"><span class="tn">Health</span></div><div class="tc"></div><div class="td">Waiting lists, urgent care, workforce, life expectancy and mortality.</div></a>
-      <a class="tile" data-topic="crime" href="#"><div class="trow"><span class="tn">Crime &amp; Justice</span></div><div class="tc"></div><div class="td">Survey and recorded crime, charge rates, courts and prisons.</div></a>
-      <a class="tile" href="#"><div class="trow"><span class="tn">Transport</span></div><div class="tc"></div><div class="td">Rail, bus, road traffic, casualties and the switch to electric.</div></a>
-      <a class="tile" href="#"><div class="trow"><span class="tn">Environment &amp; Energy</span></div><div class="tc"></div><div class="td">Emissions, generation mix, energy prices, air and water quality.</div></a>
-      <a class="tile" data-topic="migration" href="#"><div class="trow"><span class="tn">Population &amp; Migration</span></div><div class="tc"></div><div class="td">Population, migration, births and deaths, visas and asylum.</div></a>
+      <a class="tile" data-topic="economy" href="explore.html#t=economy"><div class="trow"><span class="tico" data-icon="economy"></span><span class="tn">Economy</span></div><div class="tc"></div><div class="td">Prices, pay, jobs, productivity, business, trade and the public finances.</div></a>
+      <a class="tile" data-topic="housing" href="explore.html#t=housing"><div class="trow"><span class="tico" data-icon="housing"></span><span class="tn">Housing</span></div><div class="tc"></div><div class="td">Prices, rents, affordability, housebuilding, homelessness and waiting lists.</div></a>
+      <a class="tile" data-topic="education" href="explore.html#t=education"><div class="trow"><span class="tico" data-icon="education"></span><span class="tn">Education</span></div><div class="tc"></div><div class="td">Pupils, teachers, absence, GCSEs, early years, apprenticeships and NEET.</div></a>
+      <a class="tile" data-topic="health" href="#"><div class="trow"><span class="tico" data-icon="health"></span><span class="tn">Health</span></div><div class="tc"></div><div class="td">NHS waiting lists, A&amp;E, GPs, obesity, smoking, life expectancy and wellbeing.</div></a>
+      <a class="tile" data-topic="crime" href="#"><div class="trow"><span class="tico" data-icon="crime"></span><span class="tn">Crime &amp; Justice</span></div><div class="tc"></div><div class="td">Survey and recorded crime, charge rates, homicide, courts, prisons and police.</div></a>
+      <a class="tile" data-topic="transport" href="#"><div class="trow"><span class="tico" data-icon="transport"></span><span class="tn">Transport</span></div><div class="tc"></div><div class="td">Rail, buses, road traffic and casualties, travel times and electric cars.</div></a>
+      <a class="tile" data-topic="environment" href="#"><div class="trow"><span class="tico" data-icon="environment"></span><span class="tn">Environment &amp; Energy</span></div><div class="tc"></div><div class="td">Emissions, the electricity mix, energy use, recycling and sewage spills.</div></a>
+      <a class="tile" data-topic="migration" href="#"><div class="trow"><span class="tico" data-icon="migration"></span><span class="tn">Population &amp; Migration</span></div><div class="tc"></div><div class="td">Population, births, deaths and fertility, migration, visas and asylum.</div></a>
     </div>
-  </div>
-</section>
-
-<section id="method">
-  <div class="wrap">
-    <div class="slabel"><h2>Every chart is editable</h2></div>
-    <p class="lede">On the chart itself, not buried in a settings panel. These four change what a number actually means.</p>
-    <div class="tf">
-      <div class="tfc"><div class="ic">REBASE</div><h4>Index to 100</h4><p>Pick any year as the baseline and compare things measured in completely different units.</p></div>
-      <div class="tfc"><div class="ic">DEFLATE</div><h4>Real terms</h4><p>GDP deflator for spending, CPI for household figures. Cash terms is never the default.</p></div>
-      <div class="tfc"><div class="ic">NORMALISE</div><h4>Per person, % of GDP</h4><p>Population and GDP live centrally, so any series can be re-expressed on demand.</p></div>
-      <div class="tfc"><div class="ic">SMOOTH</div><h4>Rolling average</h4><p>Strip seasonality without hiding it — the raw series stays visible underneath.</p></div>
-    </div>
-  </div>
-</section>
-
-<div class="wrap" style="padding-bottom:60px">
-  <div class="card">
-    <div class="card-hd">
-      <div><h3 id="titleB">&nbsp;</h3><div class="sub">The same published number, four ways &mdash; each one changes what it means</div></div>
-      <span class="tagpill">Normalisation</span>
-    </div>
-    <div class="chips" role="group" aria-label="Normalisation">
-      <button class="chip n" aria-pressed="true"  data-n="cash">Cash terms</button>
-      <button class="chip n" aria-pressed="false" data-n="real">Real terms</button>
-      <button class="chip n" aria-pressed="false" data-n="head">Per person</button>
-      <button class="chip n" aria-pressed="false" data-n="gdp">% of GDP</button>
-    </div>
-    <div class="card-bd">
-      <div id="chartB"></div>
-      <div class="ribbon-title">Government in power</div>
-      <div id="ribbonB"></div>
-    </div>
-    <div class="card-ft" id="ftB"></div>
-  </div>
-</div>
-
-<section id="questions">
-  <div class="wrap">
-    <div class="slabel"><h2>Arguments worth having</h2></div>
-    <p class="lede">Pre-built comparisons, each one a permalink you can send to someone who disagrees with you.</p>
-    <div class="pairs">
-      <a class="pair" href="explore.html#p=rents,pay~line~index~2015~2026~pm"><div class="pq">Have rents outrun pay?</div><div class="pm"><b>Private rents index</b> × <b>average weekly earnings</b>, both rebased<br>2015–2026 · UK</div></a>
-      <a class="pair" href="explore.html#p=psnd,debtint~line~index~1993~2026~pm"><div class="pq">What does the debt cost to carry?</div><div class="pm"><b>Public sector net debt</b> × <b>debt interest</b>, both rebased<br>1993–2026 · UK</div></a>
-      <a class="pair" href="explore.html#p=pay,cpih~line~index~2000~2026~pm"><div class="pq">Has pay kept ahead of prices?</div><div class="pm"><b>Average weekly earnings</b> × <b>CPIH</b>, both rebased<br>2000–2026 · UK</div></a>
-      <a class="pair" href="explore.html#p=absence,gap~line~index~2010~2026~pm"><div class="pq">Did lost schooling widen the gap?</div><div class="pm"><b>Persistent absence</b> × <b>disadvantage gap index</b>, both rebased<br>2010–2026 · England</div></a>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <div class="slabel"><h2>Where it comes from</h2></div>
-    <p class="lede">We publish no data of our own. Every series links back to its original release, with the licence and the date it was pulled — and every raw value is on <a href="data.html" style="color:var(--purple)">Explorer Verify</a>, searchable by topic and source, next to the exact endpoint it was fetched from.</p>
-    <div class="srcs">
-      <span class="src">ONS</span><span class="src">HM Land Registry</span><span class="src">Bank of England</span>
-      <span class="src">MHCLG</span><span class="src">DfE Explore Education Statistics</span><span class="src">HM Treasury PESA</span>
-      <span class="src">HMRC</span><span class="src">DWP Stat-Xplore</span><span class="src">Nomis</span>
-      <span class="src">OBR</span><span class="src">UCAS</span><span class="src">Institute for Government</span>
-    </div>
+    <p class="topiclinks">Read about each indicator, with every published year and its source: <a href="topic/economy/">Economy</a> · <a href="topic/housing/">Housing</a> · <a href="topic/education/">Education</a> · <a href="topic/health/">Health</a> · <a href="topic/crime/">Crime &amp; justice</a> · <a href="topic/transport/">Transport</a> · <a href="topic/environment/">Environment &amp; energy</a> · <a href="topic/migration/">Population &amp; migration</a> · <a href="indicator/">all of them, A–Z</a></p>
   </div>
 </section>
 
 <footer>
   <div class="wrap fgrid">
     <p>Contains public sector information licensed under the Open Government Licence v3.0. Ministerial and party data from the Institute for Government Ministers Database, CC-BY-4.0.</p>
-    <p style="font-family:'IBM Plex Mono';font-size:11.5px">polyoptic.co<br>Built in the UK</p>
+    <p style="font-family:'IBM Plex Mono';font-size:11.5px">polyoptic.co<br>
+      Built in the UK by <a href="about.html" style="color:var(--purple)">Josh Morris</a></p>
   </div>
 </footer>
 
@@ -355,11 +508,14 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
    file the explorer and Explorer Verify read. Nothing is hardcoded,
    so nothing here can drift out of step with the catalogue.
    ══════════════════════════════════════════════════════════════ */
-const W=980,H=250,P={t:16,r:78,b:26,l:58};
-const COL=["#4633A8","#C2410C"];
+/* Charts are drawn through chartkit.js — the same rules as the explorer, so a
+   chart here looks like the chart you get when you open it there. */
+const W0=980,H0=280,P0={t:26+CK.BANDS_TOP,r:66,b:26,l:58};
+let P={...P0};
+const COL=i=>CK.pal(i);
 let DB=null;
 
-const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc=CK.esc;
 const fmt=n=>{
   if(n==null) return "–";
   const a=Math.abs(n);
@@ -390,13 +546,6 @@ const refAt=(k,y)=>{
   const i=y-r.start; return (i>=0&&i<r.values.length)?r.values[i]:null;
 };
 const refEnd=k=>{const r=DB.refs&&DB.refs[k];return r?r.start+r.values.length-1:Infinity;};
-/* the deflator is an index on some base year; find it rather than assume it */
-function deflatorBase(){
-  const r=DB.refs&&DB.refs.deflator; if(!r) return null;
-  let best=0,bd=Infinity;
-  r.values.forEach((v,i)=>{if(v==null)return;const d=Math.abs(v-100);if(d<bd){bd=d;best=i;}});
-  return r.start+best;
-}
 
 /* ── views ──────────────────────────────────────────────────────
    Each returns the transformed values plus an honest unit and label,
@@ -415,256 +564,321 @@ const VIEW={
     vals:v.map((_,i)=>{const w=v.slice(Math.max(0,i-2),i+1).filter(x=>x!=null);
       return w.length?w.reduce((a,b)=>a+b,0)/w.length:null;}),
     unit:s.unit,label:"Three-year average"}),
+  /* the explorer's real terms: every year re-expressed in 2024 prices */
   real:(v,x0,s)=>{
-    const by=deflatorBase();
+    const b=refAt("deflator",2024);
     return {vals:v.map((x,i)=>{const d=refAt("deflator",x0+i);
-              return (x==null||!d)?null:x/d*100;}),
-            unit:String(s.unit).replace(/,?\s*cash$/i,"")+`, ${by} prices`,
-            label:`Real terms, ${by} prices`};
+              return (x==null||!d||!b)?null:x*b/d;}),
+            unit:String(s.unit).replace(/,?\s*cash$/i,"")+", 2024 prices",
+            label:"Real terms, 2024 prices"};
   }
 };
 
-/* ── the featured reel ──────────────────────────────────────────
-   Six real indicators, each paired with the view that makes its point. */
-const FEATURED=[
-  {ids:["psnd"],view:"none",type:"area",title:"Public sector net debt",
-   sub:"Debt measured against everything the economy produces in a year"},
-  {ids:["cpih"],view:"yoy",type:"bar",title:"Inflation",
-   sub:"Year-on-year change in CPIH — the inflation rate, derived from the index itself"},
-  {ids:["csew","prc"],view:"index",type:"line",labels:["Survey","Recorded"],
-   title:"Two ways of counting crime",
-   sub:"The Crime Survey against police recorded crime, both rebased to their first shared year"},
-  {ids:["unemp"],view:"roll3",type:"area",title:"Unemployment",
-   sub:"Smoothed to three years — the raw series is noisy enough to argue with either way"},
-  {ids:["pay","cpih"],view:"index",type:"line",labels:["Pay","Prices"],
-   title:"Pay against prices",
-   sub:"Average weekly earnings and CPIH from a shared base; the gap is the real-terms story"},
-  {ids:["debtint"],view:"real",type:"area",title:"Debt interest",
-   sub:"What the debt costs to carry, in constant prices rather than cash"}
-];
-
-/* intersection of every series involved, so a rebase always shares a base year */
-function domainOf(e){
-  let x0=1997,x1=Infinity;
-  e.ids.forEach(id=>{const s=S(id);if(!s)return;
-    const [a,b]=realSpan(s);x0=Math.max(x0,a);x1=Math.min(x1,b);});
-  if(e.view==="real") x1=Math.min(x1,refEnd("deflator"));
-  return [x0,x1];
-}
-function build(e){
-  const [x0,x1]=domainOf(e);
-  const series=e.ids.map(id=>{
-    const s=S(id),t=VIEW[e.view](valsIn(s,x0,x1),x0,s);
-    return {s,vals:t.vals,unit:t.unit,label:t.label};
-  });
-  return {e,x0,x1,series};
-}
-
-function pathFor(vals,x0,sx,Y){
-  let d="",pen=false;
-  vals.forEach((v,i)=>{
-    if(v==null){pen=false;return;}
-    d+=(pen?"L":"M")+sx(x0+i).toFixed(1)+" "+Y(v).toFixed(1)+" ";pen=true;
-  });
-  return d.trim();
-}
-function axis(mn,mx,x0,x1,sx,Y,unit){
+/* the explorer's chart, drawn from a list of series
+   series: [{name, vals (aligned from x0), unit, colour, ds (discontinuities)}]
+   type: line | area | bar · base: the stronger reference line (100, 0) */
+/* w and h default to the shared size, which is scaled to fit; the walkthrough
+   passes the size it is shown at, so its labels stay full size when narrow */
+function drawChart(el,{x0,x1,series,type,base,label,aria,bands=true,fadeBands,fresh,probe,w:W=W0,h:H=H0}){
+  const pts=series.map(s=>s.vals.map((v,i)=>[x0+i,v]));
+  const all=series.flatMap(s=>s.vals).filter(v=>v!=null);
+  if(!all.length){el.innerHTML="";return;}
+  P={...P0};
+  if(type!=="bar") P.r=CK.gutterFor(series.map(s=>s.name),P0.r);
+  const sx=x=>P.l+((x-x0)/Math.max(1,x1-x0))*(W-P.l-P.r);
+  const ax=CK.yAxis(all,H-P.t-P.b,type==="bar"?0:base);
+  const Y=v=>P.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(H-P.t-P.b);
   const g=[];
-  for(let i=0;i<=4;i++){
-    const y=P.t+i*(H-P.t-P.b)/4,val=mx-(mx-mn)*i/4;
-    g.push(`<line class="gridline" x1="${P.l}" y1="${y}" x2="${W-P.r}" y2="${y}"/>`);
-    g.push(`<text class="axlabel" x="${P.l-9}" y="${y+3.5}" text-anchor="end">${fmt(val)}</text>`);
+  if(bands){
+    if(fadeBands) g.push('<g class="fadein">');
+    CK.bands({g,x0,x1,sx,top:P.t,bot:H-P.b,eras:DB.eras,pms:DB.pms});
+    if(fadeBands) g.push('</g>');
   }
-  const step=Math.max(1,Math.ceil((x1-x0)/6/5)*5);
-  for(let y=Math.ceil(x0/step)*step;y<=x1;y+=step)
-    g.push(`<text class="axlabel" x="${sx(y)}" y="${H-6}" text-anchor="middle">${y}</text>`);
-  if(mn<0&&mx>0)
-    g.push(`<line class="zeroline" x1="${P.l}" y1="${Y(0)}" x2="${W-P.r}" y2="${Y(0)}"/>`);
-  g.push(`<text class="axlabel" x="${P.l-9}" y="${P.t-5}" text-anchor="end">${esc(shortUnit(unit))}</text>`);
-  return g;
-}
-
-function paintA(d){
-  const sx=x=>P.l+((x-d.x0)/(d.x1-d.x0))*(W-P.l-P.r);
-  const all=d.series.flatMap(s=>s.vals).filter(v=>v!=null);
-  if(!all.length){document.getElementById("chartA").innerHTML="";return;}
-  let mn=Math.min(...all),mx=Math.max(...all);
-  const pad=(mx-mn)*0.16||1;mn-=pad;mx+=pad;
-  const Y=v=>P.t+(1-(v-mn)/(mx-mn))*(H-P.t-P.b);
-  const g=axis(mn,mx,d.x0,d.x1,sx,Y,d.series[0].unit);
-
-  if(d.e.type==="bar"){
-    const v=d.series[0].vals,slot=(W-P.l-P.r)/v.length,bw=slot*0.58;
-    const base=Y(Math.max(mn,Math.min(0,mx)));
-    v.forEach((x,i)=>{
-      if(x==null)return;
-      const y=Y(x),top=Math.min(y,base),h=Math.max(1,Math.abs(y-base));
-      g.push(`<rect x="${(P.l+i*slot+(slot-bw)/2).toFixed(1)}" y="${top.toFixed(1)}" `+
-             `width="${bw.toFixed(1)}" height="${h.toFixed(1)}" fill="${COL[0]}" opacity=".86"/>`);
+  CK.frame({g,ax,Y,x0,x1,sx,l:P.l,r:W-P.r,H,label,
+            base:base!=null?base:(ax.mn<0&&ax.mx>0?0:null)});
+  if(type==="bar"){
+    const slot=(W-P.l-P.r)/Math.max(1,x1-x0+1), bw=Math.max(1.5,slot*0.78);
+    pts[0].forEach(([yr,v])=>{ if(v==null) return;
+      const y0=Y(Math.max(0,v)), y1=Y(Math.min(0,v));
+      g.push(`<rect x="${(sx(yr)-bw/2).toFixed(1)}" y="${y0.toFixed(1)}" width="${Math.max(1,bw-1).toFixed(1)}" height="${Math.max(0.5,y1-y0).toFixed(1)}" rx="1.5" fill="${series[0].colour}"><title>${yr}: ${fmt(v)}</title></rect>`);
     });
   } else {
-    d.series.forEach((ser,k)=>{
-      const line=pathFor(ser.vals,d.x0,sx,Y);
-      if(!line)return;
-      if(d.e.type==="area"&&k===0){
-        const first=ser.vals.findIndex(x=>x!=null);
-        let lastIdx=ser.vals.length-1;while(lastIdx>=0&&ser.vals[lastIdx]==null)lastIdx--;
-        g.push(`<path d="M${sx(d.x0+first).toFixed(1)} ${(H-P.b).toFixed(1)} `+
-               line.replace(/^M/,"L")+` L${sx(d.x0+lastIdx).toFixed(1)} ${(H-P.b).toFixed(1)} Z" `+
-               `fill="${COL[0]}" opacity=".14"/>`);
-      }
-      g.push(`<path class="line" d="${line}" stroke="${COL[k]}"/>`);
-      let li=ser.vals.length-1;while(li>=0&&ser.vals[li]==null)li--;
-      if(li>=0){
-        g.push(`<circle cx="${sx(d.x0+li).toFixed(1)}" cy="${Y(ser.vals[li]).toFixed(1)}" r="4" fill="${COL[k]}"/>`);
-        if(d.e.labels)
-          g.push(`<text class="serieslabel" x="${W-P.r+9}" y="${Y(ser.vals[li])+3.5}" `+
-                 `fill="${COL[k]}">${esc(d.e.labels[k].toUpperCase())}</text>`);
-      }
+    const labels=[];
+    series.forEach((s,k)=>{
+      const seg=pts[k].filter(q=>q[1]!=null); if(!seg.length) return;
+      if(type==="area")
+        g.push(`<path d="M${sx(seg[0][0]).toFixed(1)} ${H-P.b} ${seg.map(q=>`L${sx(q[0]).toFixed(1)} ${Y(q[1]).toFixed(1)}`).join(" ")} L${sx(seg[seg.length-1][0]).toFixed(1)} ${H-P.b} Z" fill="${s.colour}" opacity="0.13"/>`);
+      const fr=fresh&&fresh.has(s.id);
+      g.push(`<path class="line${fr?" drawin":""}"${fr?' pathLength="1"':""} d="${CK.linePath(pts[k],sx,Y)}" stroke="${s.colour}"/>`);
+      const endBreak=CK.breaks({g,ds:s.ds,pts:pts[k],sx,Y,colour:s.colour,x0,x1});
+      const last=seg[seg.length-1], cx=sx(last[0]), cy=Y(last[1]);
+      CK.endPoint(g,cx,cy,s.colour,endBreak);
+      labels.push({colour:s.colour,cx,cy,name:s.name,val:fmt(last[1])+(last[0]<x1?` in ${last[0]}`:""),endBreak});
     });
+    CK.endLabels({g,labels,lx:W-P.r+12,floorY:H-P.b+4});
   }
-  document.getElementById("chartA").innerHTML=
-    `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" `+
-    `aria-label="${esc(d.e.title)} — ${esc(d.series[0].label)}">${g.join("")}</svg>`;
+  /* a picked year: the line down the chart and a dot on each series */
+  if(probe!=null&&probe>=x0&&probe<=x1){
+    const px=sx(probe).toFixed(1);
+    g.push(`<line class="probeline" x1="${px}" y1="${P.t-2}" x2="${px}" y2="${H-P.b}"/>`);
+    pts.forEach((q,k)=>{ const v=q[probe-x0]&&q[probe-x0][1];
+      if(v!=null) g.push(`<circle class="probedot" cx="${px}" cy="${Y(v).toFixed(1)}" r="5" fill="${series[k].colour}"/>`); });
+  }
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="${esc(aria)}">${g.join("")}</svg>`;
 }
 
-function sparkFor(d){
-  const w=120,h=24,pad=2,vals=d.series[0].vals,n=vals.length;
-  const ok=vals.filter(v=>v!=null);
-  if(!ok.length)return"";
-  const mn=Math.min(...ok),mx=Math.max(...ok),r=(mx-mn)||1;
-  const X=i=>pad+(n>1?(i/(n-1)):0.5)*(w-pad*2);
-  const Y=v=>pad+(1-(v-mn)/r)*(h-pad*2);
-  let p="",pen=false;
-  vals.forEach((v,i)=>{if(v==null){pen=false;return;}
-    p+=(pen?"L":"M")+X(i).toFixed(1)+" "+Y(v).toFixed(1)+" ";pen=true;});
-  return `<svg class="rspark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true">`+
-    `<path class="spark" d="${p.trim()}" stroke="currentColor" vector-effect="non-scaling-stroke"/></svg>`;
+/* the explorer's source line: sources in plain text, then this view's facts */
+function foot(el,metas,bits){
+  const srcs=[...new Set(metas.map(m=>m.source))].join("; ");
+  el.innerHTML=`<div class="psrc"><b>Source:</b> ${esc(srcs)}</div>`+
+    `<div class="pmeta">${esc(["Open Government Licence v3.0",...bits].filter(Boolean).join(" · "))}</div>`;
 }
-/* The card headline has to describe the line drawn beside it, not the raw
-   series — a card titled "Inflation" showing the CPIH index level (138) would
-   be quoting the wrong number entirely. So each view states itself: a rate for
-   year-on-year, a change against the base for a rebase, the value otherwise. */
-function cardValue(d){
-  const ser=d.series[0],v=ser.vals;
-  let i=v.length-1;while(i>=0&&v[i]==null)i--;
-  if(i<0)return "—";
-  const val=v[i],year=d.x0+i;
-  if(d.e.view==="yoy")   return `${val>=0?"+":""}${fmt(val)}% · ${year}`;
-  if(d.e.view==="index"){const ch=val-100;return `${ch>=0?"+":""}${fmt(ch)}% vs ${d.x0}`;}
-  return `${fmt(val)} ${shortUnit(ser.unit)} · ${year}`;
+/* ── the explorer walkthrough ──────────────────────────────────────
+   A small working copy of the explorer, driven by a script: a cursor picks
+   pay, rebases it, adds prices, shades who was in government and clicks a
+   year to show the working. Every frame is drawn by the same chart code from
+   the same bundle as the explorer, so it cannot show a chart the explorer
+   would not. The steps are states, not a recording: any dot jumps straight
+   to one, and the closing button opens the very chart on screen. */
+let still=false;
+const DEMO_LIST=["pay","cpih","unemp","houseprice","psnd"];
+const DEMO_X0=2000, DEMO_X1=2025, DEMO_YEAR=2022;
+const DEMO_TRANS=[["none","As published"],["index","Rebased"],["real","Real terms"]];
+const DEMO_GOV=[["off","Off"],["bands","Shaded"]];
+const DEMO_START={sel:[],trans:"none",gov:"off",probe:null,q:"",focus:false,hov:null};
+let D={...DEMO_START};
+
+const DEMO_STEPS=[
+  {say:"Pick any indicator from the catalogue", dur:5600, after:{sel:["pay"]},
+   async run(w){
+     await w.move(document.getElementById("dq"),.3,.5); await w.click();
+     D.focus=true; demoRender();
+     for(const c of "earnings"){ D.q+=c; demoRender(); await w.wait(85); }
+     await w.wait(350);
+     await w.move(demoItem("pay"),.4,.5); D.hov="pay"; demoRender(); await w.click();
+     D.sel=["pay"]; D.q=""; D.focus=false; D.hov=null; demoRender({fresh:["pay"]});
+     await w.wait(1900);
+   }},
+  {say:"Rebase it, so things in different units can share a chart", dur:3800, after:{sel:["pay"],trans:"index"},
+   async run(w){
+     await w.move(demoChip("dtrans","index")); await w.click();
+     const from=demoSets(); D.trans="index"; await demoTween(from,demoSets(),w);
+     await w.wait(1700);
+   }},
+  {say:"Add a second indicator to compare against", dur:4000, after:{sel:["pay","cpih"],trans:"index"},
+   async run(w){
+     await w.move(demoItem("cpih"),.4,.5); D.hov="cpih"; demoRender(); await w.click();
+     D.sel=["pay","cpih"]; D.hov=null; demoRender({fresh:["cpih"]});
+     await w.wait(2300);
+   }},
+  {say:"Shade in who was in government", dur:3600, after:{sel:["pay","cpih"],trans:"index",gov:"bands"},
+   async run(w){
+     await w.move(demoChip("dgov","bands")); await w.click();
+     D.gov="bands"; demoRender({fadeBands:true});
+     await w.wait(2000);
+   }},
+  {say:"Click any year to check the numbers behind it", dur:6400, after:{sel:["pay","cpih"],trans:"index",gov:"bands",probe:DEMO_YEAR},
+   async run(w){
+     await w.moveXY(...demoYearPoint(DEMO_YEAR)); await w.click();
+     D.probe=DEMO_YEAR; demoRender();
+     await w.wait(1200);
+     await w.move(document.getElementById("demoWorkIn"),.55,.75);
+     await w.wait(3200);
+   }}
+];
+
+let DW=W0, DH=300;
+/* names for the line ends when the chart is phone-width */
+const DEMO_SHORT={pay:"Pay",cpih:"Prices"};
+const demoItem=id=>document.querySelector(`#dlist .dci[data-id="${id}"]`);
+const demoChip=(row,k)=>document.querySelector(`#${row} .df[data-k="${k}"]`);
+
+function demoSets(st=D){
+  return st.sel.map((id,k)=>{
+    const s=S(id); if(!s) return null;
+    const t=VIEW[st.trans](valsIn(s,DEMO_X0,DEMO_X1),DEMO_X0,s);
+    return {s,id,raw:valsIn(s,DEMO_X0,DEMO_X1),vals:t.vals,unit:t.unit,label:t.label,colour:COL(k)};
+  }).filter(Boolean);
+}
+const demoHash=()=>D.sel.length
+  ? "explore.html#p="+encodeURIComponent([D.sel.join(","),"line",D.trans,DEMO_X0,DEMO_X1,D.gov==="bands"?"bands":"off"].join("~"))
+  : "explore.html";
+
+function demoPlot(sets,{fresh,fadeBands}={}){
+  const has=sets.length>0;
+  document.getElementById("demoEmpty").classList.toggle("gone",has);
+  const el=document.getElementById("chartA");
+  DW=Math.max(280,el.clientWidth||W0); DH=DW<560?240:300;
+  if(!has){ el.innerHTML=`<svg viewBox="0 0 ${DW} ${DH}" style="width:100%;height:auto"></svg>`; return; }
+  drawChart(el,{x0:DEMO_X0,x1:DEMO_X1,type:"line",w:DW,h:DH,
+    base:D.trans==="index"?100:null,label:sets[0].unit,bands:D.gov==="bands",fadeBands,
+    fresh:new Set(fresh||[]),probe:D.probe,
+    aria:sets.map(x=>x.s.name).join(" and ")+" — "+sets[0].label,
+    series:sets.map(x=>({id:x.id,name:DW<560&&DEMO_SHORT[x.id]||x.s.name,vals:x.vals,colour:x.colour,ds:x.s.discontinuities||[]}))});
 }
 
-function footA(d){
-  const pubs=[...new Set(d.series.map(x=>x.s.publisher||x.s.source))];
-  const s0=d.series[0].s;
-  document.getElementById("ftA").innerHTML=
-    `<span>SOURCE · ${esc(pubs.join(" + ").toUpperCase())}</span>`+
-    `<span>LICENCE · ${esc(String(s0.licence||"OGL v3.0").toUpperCase())}</span>`+
-    `<span>GEOGRAPHY · ${esc(String(s0.geography||"—").toUpperCase())}</span>`+
-    `<span>YEARS · ${d.x0}–${d.x1}</span>`+
-    `<span>VIEW · ${esc(d.series[0].label.toUpperCase())}</span>`;
+function demoRender(opts){
+  const sets=demoSets();
+  /* the catalogue: filtered as the search is typed */
+  const q=D.q.toLowerCase();
+  const items=DEMO_LIST.map(S).filter(s=>s&&(!q||s.name.toLowerCase().includes(q)||(s.unit||"").toLowerCase().includes(q)));
+  const list=document.getElementById("dlist"), prev=list.dataset.q;
+  list.innerHTML=items.map(s=>{
+    const k=D.sel.indexOf(s.id);
+    return `<div class="dci${k>=0?" on":""}${D.hov===s.id?" hov":""}${prev!==D.q?" in":""}" data-id="${s.id}">
+      <span class="sw" style="${k>=0?`background:${COL(k)};border-color:${COL(k)}`:""}"></span>
+      <span><span class="cn">${esc(s.name)}</span><span class="cm">${esc(s.source)} · ${esc(s.geography||"")}</span></span></div>`;
+  }).join("");
+  list.dataset.q=D.q;
+  const dq=document.getElementById("dq");
+  document.getElementById("dqText").textContent=D.q;
+  dq.classList.toggle("focus",D.focus); dq.classList.toggle("typed",!!D.q);
+  const chips=(id,opts,cur)=>document.getElementById(id).innerHTML=
+    opts.map(([k,l])=>`<span class="df${k===cur?" on":""}" data-k="${k}">${l}</span>`).join("");
+  chips("dtrans",DEMO_TRANS,D.trans); chips("dgov",DEMO_GOV,D.gov);
+
+  document.getElementById("demoTitle").textContent=sets.length?sets.map(x=>x.s.name).join(" and "):"New chart";
+  document.getElementById("demoSub").textContent=sets.length?`${sets[0].label} · UK · ${DEMO_X0}–${DEMO_X1}`:"Nothing on it yet";
+  document.getElementById("demoBody").classList.toggle("work",D.probe!=null&&sets.length>0);
+  demoPlot(sets,opts);
+  if(D.probe!=null&&sets.length) document.getElementById("demoWorkIn").innerHTML=demoWorking(sets,D.probe);
+  const ft=document.getElementById("ftA");
+  if(sets.length) foot(ft,sets.map(x=>x.s),[`${DEMO_X0}–${DEMO_X1}`,sets[0].label,D.gov==="bands"?"Government shaded":""]);
+  else ft.innerHTML=`<div class="pmeta">Sources appear here as you add indicators</div>`;
+  document.getElementById("demoGo").href=demoHash();
 }
 
-const HOLD=5200;
-let entries=[],cur=0,paused=false,manual=false,clock=0,last=0,still=false;
+/* the same sum the explorer shows: what was published, what was done to it,
+   and the number on the chart */
+function demoWorking(sets,year){
+  const cell=(v,cap,cls="")=>`<div class="wc ${cls}"><b>${v}</b><span>${cap}</span></div>`;
+  const op=t=>`<div class="wo">${t}</div>`;
+  return `<div class="wyear">${year}<span>annual figure</span></div>`+sets.map(x=>{
+    const i=year-DEMO_X0, pub=x.raw[i], out=x.vals[i];
+    if(pub==null) return "";
+    const unit=shortUnit(x.s.unit);
+    const sum = D.trans==="index"
+      ? cell(fmt(pub),"published")+op("÷")+cell(fmt(x.raw.find(v=>v!=null)),`in ${DEMO_X0}`)+op("× 100 =")+cell(fmt(out),"on the chart","wout")
+      : cell(fmt(pub),`published, ${esc(unit)}`,"wout");
+    return `<div class="wblk"><div class="wname"><span class="wdot" style="background:${x.colour}"></span>${esc(x.s.name)}</div>
+      <div class="wsum">${sum}</div><div class="wsrc">${esc(x.s.source)} ↗</div></div>`;
+  }).join("");
+}
 
-function show(n,instant){
-  cur=(n+entries.length)%entries.length;
-  const d=entries[cur],stage=document.getElementById("reelStage"),hd=document.getElementById("reelHd");
-  const swap=()=>{
-    document.getElementById("reelTitle").textContent=d.e.title;
-    document.getElementById("reelSub").textContent=d.e.sub;
-    document.getElementById("reelLabel").textContent=d.series[0].label;
-    paintA(d);ribbon(document.getElementById("ribbonA"),d.x0,d.x1);footA(d);
-    stage.classList.remove("out");hd.classList.remove("out");
+/* the change of units is a re-expression of the same published numbers, so it
+   may tween: every frame is a weighted mix of two honest views */
+function demoTween(a,b,w){
+  return new Promise(res=>{
+    const t0=performance.now(), T=750;
+    const tick=now=>{
+      if(w.dead()) return res();
+      const t=Math.min(1,(now-t0)/T), e=ease(t);
+      const mix=b.map((s,k)=>({...s,vals:s.vals.map((v,i)=>(v==null||a[k].vals[i]==null)?v:a[k].vals[i]+(v-a[k].vals[i])*e),
+        unit:t>.5?s.unit:a[k].unit}));
+      demoPlot(mix);
+      t<1?requestAnimationFrame(tick):(demoRender(),res());
+    };
+    requestAnimationFrame(tick);
+  });
+}
+
+/* where on screen a year sits on the chart, for the cursor to aim at */
+function demoYearPoint(year){
+  const svg=document.querySelector("#chartA svg"), r=svg.getBoundingClientRect();
+  const k=r.width/DW, x=P.l+((year-DEMO_X0)/(DEMO_X1-DEMO_X0))*(DW-P.l-P.r);
+  return [r.left+x*k, r.top+(P.t+(DH-P.t-P.b)*0.45)*k];
+}
+
+/* ── the player ──
+   One run at a time; jumping to a step bumps the run number, and the old run
+   notices at its next wait and stops. Waits only count down while the demo is
+   playing and on screen. */
+let demoRun=0, demoPaused=false, demoHidden=true, demoStep=0, demoClock=0;
+const demoCursor=()=>document.getElementById("demoCursor");
+function demoWaiter(id){
+  const dead=()=>id!==demoRun;
+  const wait=ms=>new Promise((res,rej)=>{
+    let left=ms, last=performance.now();
+    const tick=now=>{
+      if(dead()) return rej("stopped");
+      if(!demoPaused&&!demoHidden){ left-=now-last; demoClock+=now-last; }
+      last=now;
+      const dot=document.querySelector('#demoSteps .dot[aria-pressed="true"]');
+      if(dot) dot.style.setProperty("--p",Math.min(1,demoClock/DEMO_STEPS[demoStep].dur));
+      left<=0?res():requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
+  });
+  const moveXY=async(cx,cy)=>{
+    const app=document.getElementById("demoApp").getBoundingClientRect(), c=demoCursor();
+    c.classList.add("show");
+    c.style.transform=`translate(${(cx-app.left).toFixed(0)}px,${(cy-app.top).toFixed(0)}px)`;
+    await wait(850);
   };
-  if(instant||still){swap();}
-  else{stage.classList.add("out");hd.classList.add("out");setTimeout(swap,260);}
-  document.querySelectorAll("#reelSteps .dot").forEach((el,i)=>el.setAttribute("aria-pressed",i===cur));
-  document.querySelectorAll("#reelCards .rcard").forEach((el,i)=>el.setAttribute("aria-pressed",i===cur));
-  clock=0;
+  return {
+    dead, wait, moveXY,
+    move:(el,fx=.5,fy=.5)=>{ const r=el.getBoundingClientRect(); return moveXY(r.left+r.width*fx, r.top+r.height*fy); },
+    click:async()=>{ const c=demoCursor(); c.classList.remove("press"); void c.offsetWidth; c.classList.add("press");
+      await wait(160); setTimeout(()=>c.classList.remove("press"),420); }
+  };
 }
-
-function ribbon(el,x0,x1){
-  const sx=x=>P.l+((x-x0)/(x1-x0))*(W-P.l-P.r);
-  let g="";
-  (DB.eras||[]).forEach(e=>{
-    const f=Math.max(e.from,x0),t=Math.min(e.to,x1);
-    if(t<=f)return;
-    const x=sx(f),w=sx(t)-sx(f);
-    g+=`<g class="era"><title>${esc(e.party)}</title>`+
-       `<rect x="${x.toFixed(1)}" y="0" width="${w.toFixed(1)}" height="17" fill="${e.colour}"/>`;
-    if(w>82)g+=`<text x="${(x+w/2).toFixed(1)}" y="12" text-anchor="middle">${esc(e.party.toUpperCase())}</text>`;
-    g+=`</g>`;
-  });
-  (DB.pms||[]).forEach(([y,n])=>{
-    if(y<x0||y>x1)return;
-    g+=`<line class="pmtick" x1="${sx(y).toFixed(1)}" y1="17" x2="${sx(y).toFixed(1)}" y2="24"/>`+
-       `<text class="pmlabel" x="${sx(y).toFixed(1)}" y="34" text-anchor="middle">${esc(n)}</text>`;
-  });
-  el.innerHTML=`<svg viewBox="0 0 ${W} 38" style="width:100%;height:auto" role="img" `+
-    `aria-label="Governing party by year">${g}</svg>`;
+function demoMark(i){
+  demoStep=i; demoClock=0;
+  document.querySelectorAll("#demoSteps .dot").forEach((d,k)=>{
+    d.setAttribute("aria-pressed",k===i); d.classList.toggle("done",k<i); d.style.setProperty("--p",0); });
+  const say=document.querySelector(".demo-say");
+  say.classList.add("swap");
+  setTimeout(()=>{ document.getElementById("demoNum").textContent=`${i+1} / ${DEMO_STEPS.length}`;
+    document.getElementById("demoSay").textContent=DEMO_STEPS[i].say; say.classList.remove("swap"); }, still?0:200);
 }
-
-/* ── normalisation card ─────────────────────────────────────────
-   One real series, four ways. This one does tween: every frame is the
-   same published number re-expressed, so nothing invented appears. */
-const NORM={
-  cash:{label:"Cash terms",  f:(v,x0,s)=>({vals:v,unit:s.unit})},
-  real:{label:"Real terms",  f:VIEW.real},
-  head:{label:"Per person",  f:(v,x0,s)=>({vals:v.map((x,i)=>{const p=refAt("population",x0+i);
-          return (x==null||!p)?null:x*1e6/p;}),unit:"£ per person, cash"})},
-  gdp: {label:"% of GDP",    f:(v,x0,s)=>({vals:v.map((x,i)=>{const g=refAt("gdp",x0+i);
-          return (x==null||!g)?null:x/g*100;}),unit:"% of GDP"})}
-};
-const NORM_ID="debtint";
-let normB={},bx0=1997,bx1=2025,bFrom=null,bTo=null,bT=1;
-
-function snapB(k){
-  const o=normB[k],ok=o.vals.filter(v=>v!=null);
-  const mn=Math.min(...ok),mx=Math.max(...ok),pad=(mx-mn)*0.16||1;
-  return {vals:o.vals.slice(),unit:o.unit,mn:mn-pad,mx:mx+pad};
+function demoState(i){ D={...DEMO_START,...(i>0?DEMO_STEPS[i-1].after:{})}; }
+async function demoPlay(from){
+  const id=++demoRun, w=demoWaiter(id);
+  let i=from;
+  try{
+    for(;;){
+      demoMark(i);
+      await DEMO_STEPS[i].run(w);
+      i++;
+      if(i>=DEMO_STEPS.length){
+        /* the loop: the cursor leaves, the chart clears, and it starts over */
+        demoCursor().classList.remove("show");
+        await w.wait(500);
+        D.probe=null; demoRender();
+        await w.wait(700);
+        i=0; demoState(0); demoRender();
+        await w.wait(700);
+      }
+    }
+  }catch(e){ /* superseded by a newer run */ }
 }
-function blendB(a,b,t){
-  const L=(x,y)=>x+(y-x)*t;
-  return {vals:a.vals.map((v,i)=>(v==null||b.vals[i]==null)?null:L(v,b.vals[i])),
-          unit:t>0.5?b.unit:a.unit,mn:L(a.mn,b.mn),mx:L(a.mx,b.mx)};
+function demoJump(i){
+  demoState(i); demoRender();
+  if(still){ D={...DEMO_START,...DEMO_STEPS[i].after}; demoRender(); demoMark(i); return; }
+  demoPlay(i);
 }
-function paintB(s){
-  const sx=x=>P.l+((x-bx0)/(bx1-bx0))*(W-P.l-P.r);
-  const Y=v=>P.t+(1-(v-s.mn)/(s.mx-s.mn))*(H-P.t-P.b);
-  const g=axis(s.mn,s.mx,bx0,bx1,sx,Y,s.unit);
-  const line=pathFor(s.vals,bx0,sx,Y);
-  if(line){
-    const first=s.vals.findIndex(x=>x!=null);
-    let li=s.vals.length-1;while(li>=0&&s.vals[li]==null)li--;
-    g.push(`<path d="M${sx(bx0+first).toFixed(1)} ${(H-P.b).toFixed(1)} `+
-           line.replace(/^M/,"L")+` L${sx(bx0+li).toFixed(1)} ${(H-P.b).toFixed(1)} Z" `+
-           `fill="${COL[0]}" opacity=".13"/>`);
-    g.push(`<path class="line" d="${line}" stroke="${COL[0]}"/>`);
-    if(li>=0)g.push(`<circle cx="${sx(bx0+li).toFixed(1)}" cy="${Y(s.vals[li]).toFixed(1)}" r="4" fill="${COL[0]}"/>`);
+function demoBoot(){
+  if(!DEMO_LIST.every(id=>S(id))) { document.getElementById("demo").hidden=true; return; }
+  document.getElementById("demoSteps").innerHTML=DEMO_STEPS.map((s,i)=>
+    `<button class="dot" type="button" data-i="${i}" aria-pressed="${i===0}" aria-label="Step ${i+1}: ${esc(s.say)}"><i></i></button>`).join("");
+  document.querySelectorAll("#demoSteps .dot").forEach(b=>b.addEventListener("click",()=>demoJump(+b.dataset.i)));
+  const btn=document.getElementById("demoPlay"), card=document.getElementById("demo");
+  btn.addEventListener("click",()=>{ demoPaused=!demoPaused; btn.textContent=demoPaused?"Play":"Pause"; card.classList.toggle("paused",demoPaused); });
+  if(still){
+    /* no motion: the finished chart, with the dots to step through it */
+    btn.hidden=true; D={...DEMO_START,...DEMO_STEPS[DEMO_STEPS.length-1].after}; demoRender(); demoMark(DEMO_STEPS.length-1); return;
   }
-  document.getElementById("chartB").innerHTML=
-    `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" `+
-    `aria-label="Public sector debt interest">${g.join("")}</svg>`;
-}
-function footB(k){
-  const s=S(NORM_ID);
-  /* the reference series is named on its own, not concatenated onto the
-     publisher — both are ONS, and "ONS + ONS NOMINAL GDP" reads as a mistake */
-  const REF={real:"GDP DEFLATOR",head:"POPULATION",gdp:"NOMINAL GDP"};
-  document.getElementById("ftB").innerHTML=
-    `<span>SOURCE · ${esc(String(s.publisher||s.source).toUpperCase())}</span>`+
-    (REF[k]?`<span>DIVIDED BY · ${REF[k]}</span>`:"")+
-    `<span>LICENCE · ${esc(String(s.licence||"OGL v3.0").toUpperCase())}</span>`+
-    `<span>YEARS · ${bx0}–${bx1}</span>`+
-    `<span>MODE · ${esc(NORM[k].label.toUpperCase())}</span>`;
+  /* only plays while it can be seen */
+  new IntersectionObserver(es=>es.forEach(e=>demoHidden=!e.isIntersecting||document.hidden),{threshold:.35}).observe(card);
+  document.addEventListener("visibilitychange",()=>{ if(document.hidden) demoHidden=true; });
+  let rz; addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(()=>demoRender(),120); });
+  demoState(0); demoRender(); demoPlay(0);
 }
 
 /* ── topic tiles ────────────────────────────────────────────────
    Counted from the bundle, so a tile can't claim indicators we don't have. */
 function fillTiles(){
+  document.querySelectorAll(".tico").forEach(el=>el.innerHTML=CK.topicIcon(el.dataset.icon));
   const c={};
   DB.series.forEach(s=>(s.topics||[]).forEach(t=>c[t]=(c[t]||0)+1));
   /* every tile, not just the ones with a topic — a tile with no topic yet is a
@@ -674,17 +888,8 @@ function fillTiles(){
     el.querySelector(".tc").textContent=n?`${n} indicator${n===1?"":"s"}`:"In the roadmap";
     el.classList.toggle("live",n>0);
     el.classList.toggle("soon",n===0);
-    if(n>0){
-      el.setAttribute("href","explore.html#t="+el.dataset.topic);
-      if(!el.querySelector(".badge")){
-        const b=document.createElement("span");
-        b.className="badge";b.textContent="LIVE";
-        el.querySelector(".trow").appendChild(b);
-      }
-    } else {
-      el.removeAttribute("href");        /* nothing to open yet */
-      el.querySelector(".badge")?.remove();
-    }
+    if(n>0) el.setAttribute("href","explore.html#t="+el.dataset.topic);
+    else el.removeAttribute("href");        /* nothing to open yet */
   });
 }
 
@@ -693,85 +898,77 @@ function fail(){
   const msg=`<div class="chartfail"><b>Couldn't load the catalogue.</b><br>
     data/bundle.json isn't being served — the charts on this page are drawn from it.</div>`;
   document.getElementById("chartA").innerHTML=msg;
-  document.getElementById("chartB").innerHTML=msg;
 }
+
+/* The Source step lists the publishers actually in the catalogue, counted
+   from what built, and the Pick step says how many indicators there are. */
+/* The highlight walks the six steps, left to right, and lights the checks
+   while it is on the three they sit under. Only while the section is on
+   screen; with reduced motion it stays on the last step. */
+function animateFlow(){
+  if(still) return;
+  const steps=[...document.querySelectorAll("#process .fstep")];
+  const conns=[...document.querySelectorAll("#process .fconn")], checks=document.querySelector("#process .fchecks");
+  let i=steps.length-1, seen=false, held=null;
+  const show=k=>{
+    steps.forEach((el,j)=>el.classList.toggle("on",j===k));
+    const mid=k>=1&&k<=3;
+    checks.classList.toggle("on",mid);
+    conns.forEach((c,j)=>c.classList.toggle("on",j===k-1));
+  };
+  new IntersectionObserver(es=>es.forEach(e=>seen=e.isIntersecting),{threshold:.3}).observe(document.getElementById("process"));
+  steps.forEach((el,j)=>{
+    el.addEventListener("mouseenter",()=>{held=j;show(j);});
+    el.addEventListener("mouseleave",()=>{held=null;});
+  });
+  setInterval(()=>{ if(!seen||held!==null||document.hidden) return; i=(i+1)%steps.length; show(i); },1900);
+}
+
+function fillFlow(){
+  const pubs=DB.publishers||[], el=document.getElementById("flowSrc");
+  const top=pubs.slice(0,6);
+  el.innerHTML=top.map(p=>`<li title="${esc(p.full)} · ${p.series} series">${p.url?`<a href="${esc(p.url)}" target="_blank" rel="noopener">${esc(p.short)}</a>`:esc(p.short)}</li>`).join("")+
+    (pubs.length>top.length?`<li>and ${pubs.length-top.length} more</li>`:"");
+  const n=DB.series.length, t=new Set(DB.series.flatMap(x=>x.topics||[])).size;
+  document.getElementById("flowPick").textContent=`${n} indicators across ${t} topics, from ${pubs.length} publishers.`;
+}
+
+/* light/dark, shared with the explorer through the same stored choice */
+const EYE_OPEN='<svg viewBox="0 0 100 70" fill="none" stroke="currentColor" stroke-width="7" stroke-linejoin="round"><path d="M8 35 Q50 -12 92 35 Q50 82 8 35 Z"/><g fill="currentColor" stroke="none"><rect x="33" y="31" width="6" height="16" rx="1"/><rect x="44" y="23" width="6" height="24" rx="1"/><rect x="55" y="28" width="6" height="19" rx="1"/><rect x="66" y="19" width="6" height="28" rx="1"/></g></svg>';
+const EYE_SHUT='<svg viewBox="0 0 100 70" fill="none" stroke="currentColor" stroke-width="7" stroke-linecap="round"><path d="M8 30 Q50 66 92 30"/><path d="M22 47l-6 9M42 55v11M62 53l4 11M80 44l7 9" stroke-width="6"/></svg>';
+const themeBtn=document.getElementById("themeBtn");
+function syncTheme(){
+  const dark=document.documentElement.dataset.theme==="dark";
+  themeBtn.innerHTML=dark?EYE_SHUT:EYE_OPEN;
+  themeBtn.title=dark?"Switch to light mode":"Switch to dark mode";
+  themeBtn.setAttribute("aria-label",themeBtn.title);
+}
+themeBtn.onclick=()=>{
+  const dark=document.documentElement.dataset.theme==="dark";
+  if(dark) delete document.documentElement.dataset.theme; else document.documentElement.dataset.theme="dark";
+  try{ localStorage.setItem("polyoptic-theme",dark?"light":"dark"); }catch(e){}
+  syncTheme();
+  /* the line colours are stepped per theme, so the charts redraw */
+  if(DB) demoRender();
+};
+syncTheme();
 
 function boot(){
   still=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  /* only feature entries whose series actually exist in this build */
-  entries=FEATURED.filter(e=>e.ids.every(id=>{
-    const s=S(id);return s&&realSpan(s)[1]>=1998;
-  })).map(build).filter(d=>d.x1>d.x0);
-
-  if(!entries.length){fail();return;}
-
-  document.getElementById("reelSteps").innerHTML=
-    entries.map((d,i)=>`<button class="dot" data-i="${i}" aria-pressed="${i===0}" `+
-      `aria-label="${esc(d.e.title)}"><i></i></button>`).join("");
-  document.getElementById("reelCards").innerHTML=
-    entries.map((d,i)=>
-      `<button class="rcard" data-i="${i}" aria-pressed="${i===0}" `+
-      `style="color:${COL[0]}" aria-label="Show ${esc(d.e.title)}">
-        <span class="rn">${esc(d.e.title)}</span>
-        ${sparkFor(d)}
-        <span class="rv">${esc(cardValue(d))}</span>
-      </button>`).join("");
-
-  document.querySelectorAll("#reelSteps .dot,#reelCards .rcard").forEach(el=>
-    el.addEventListener("click",()=>{
-      manual=true;document.getElementById("reel").classList.add("reel-paused");
-      show(+el.dataset.i);
-    }));
-
-  const reelEl=document.getElementById("reel");
-  reelEl.addEventListener("mouseenter",()=>paused=true);
-  reelEl.addEventListener("mouseleave",()=>paused=false);
-
-  show(0,true);
-
-  /* normalisation card */
-  const s=S(NORM_ID);
-  if(s){
-    const [a,b]=realSpan(s);
-    bx0=Math.max(1997,a);
-    bx1=Math.min(b,refEnd("population"),refEnd("gdp"),refEnd("deflator"));
-    const raw=valsIn(s,bx0,bx1);
-    Object.keys(NORM).forEach(k=>{normB[k]=NORM[k].f(raw,bx0,s);});
-    document.getElementById("titleB").textContent=s.name;
-    bFrom=bTo=snapB("cash");
-    paintB(bTo);footB("cash");
-    document.querySelectorAll(".chip.n").forEach(c=>c.addEventListener("click",()=>{
-      document.querySelectorAll(".chip.n").forEach(o=>o.setAttribute("aria-pressed","false"));
-      c.setAttribute("aria-pressed","true");
-      const k=c.dataset.n;
-      bFrom=bT>=1?bTo:blendB(bFrom,bTo,bT);
-      bTo=snapB(k);bT=still?1:0;
-      if(still)paintB(bTo);
-      footB(k);
-    }));
-  }
+  fillFlow();
+  animateFlow();
+  demoBoot();
 
   fillTiles();
-  if(!still)requestAnimationFrame(frame);
 }
 
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
-function frame(now){
-  const dt=last?now-last:0;last=now;
 
-  if(bT<1){bT=Math.min(1,bT+dt/760);paintB(blendB(bFrom,bTo,ease(bT)));}
-
-  if(!paused&&!manual&&entries.length>1){
-    clock+=dt;
-    const dot=document.querySelector('#reelSteps .dot[aria-pressed="true"]');
-    if(dot)dot.style.setProperty("--p",Math.min(1,clock/HOLD));
-    if(clock>=HOLD)show(cur+1);
-  }
-  requestAnimationFrame(frame);
-}
-
-fetch("data/bundle.json").then(r=>r.ok?r.json():Promise.reject())
+/* no-cache means revalidate, not refetch — the browser still sends the ETag,
+   so this costs a 304 and stops a rebuilt bundle sitting invisible behind a
+   cached copy. The explorer has always done this; the homepage had not, which
+   is how it managed to show a 75-series build with no publishers block. */
+fetch("data/bundle.json",{cache:"no-cache"}).then(r=>r.ok?r.json():Promise.reject())
   .then(db=>{DB=db;boot();}).catch(fail);
 </script>
 </body>
