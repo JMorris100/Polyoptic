@@ -44,7 +44,9 @@ CONFIG = ROOT / "ingest" / "series.yaml"
 OUT = ROOT / "data" / "bundle.json"
 CACHE = ROOT / "ingest" / ".cache"
 
-UA = {"User-Agent": "polyoptic-ingest/0.1 (+https://polyoptic.co)"}
+# The usual form for an automated client: some servers (the Bank of England
+# database) refuse anything that does not start "Mozilla/5.0".
+UA = {"User-Agent": "Mozilla/5.0 (compatible; polyoptic-ingest/0.1; +https://polyoptic.co)"}
 TIMEOUT = 45
 
 
@@ -75,8 +77,45 @@ PUBLISHERS: dict[str, str] = {
     "OBR": "Office for Budget Responsibility",
     "DWP": "Department for Work and Pensions",
     "DHSC": "Department of Health and Social Care",
+    "DfT": "Department for Transport",
+    "DESNZ": "Department for Energy Security and Net Zero",
     "NHS England": "NHS England",
     "Institute for Government": "Institute for Government",
+    "Defra": "Department for Environment, Food & Rural Affairs",
+    "Environment Agency": "Environment Agency",
+    "Bank of England": "Bank of England",
+    "ORR": "Office of Rail and Road",
+}
+
+
+# Where each publisher's own statistics live. The homepage credits its sources
+# from this, rather than from a list typed into the HTML — that list had drifted
+# to naming eight organisations the catalogue does not actually use, which is a
+# bad look on a site whose whole argument is provenance.
+#
+# Verified 2026-08-18. Land Registry has no /about/statistics page; its
+# organisation page is the stable one.
+PUBLISHER_SITES: dict[str, str] = {
+    "ONS": "https://www.ons.gov.uk/",
+    "Home Office": "https://www.gov.uk/government/organisations/home-office/about/statistics",
+    "DfE": "https://explore-education-statistics.service.gov.uk/",
+    "MoJ": "https://www.gov.uk/government/organisations/ministry-of-justice/about/statistics",
+    "HMRC": "https://www.gov.uk/government/organisations/hm-revenue-customs/about/statistics",
+    "FCDO": "https://www.gov.uk/government/organisations/foreign-commonwealth-development-office/about/statistics",
+    "MHCLG": "https://www.gov.uk/government/organisations/ministry-of-housing-communities-and-local-government/about/statistics",
+    "HM Treasury": "https://www.gov.uk/government/organisations/hm-treasury/about/statistics",
+    "HM Land Registry": "https://www.gov.uk/government/organisations/land-registry",
+    "OBR": "https://obr.uk/data/",
+    "DWP": "https://www.gov.uk/government/organisations/department-for-work-pensions/about/statistics",
+    "DHSC": "https://www.gov.uk/government/organisations/department-of-health-and-social-care/about/statistics",
+    "DfT": "https://www.gov.uk/government/organisations/department-for-transport/about/statistics",
+    "DESNZ": "https://www.gov.uk/government/organisations/department-for-energy-security-and-net-zero/about/statistics",
+    "NHS England": "https://digital.nhs.uk/data-and-information",
+    "Institute for Government": "https://www.instituteforgovernment.org.uk/data",
+    "Defra": "https://www.gov.uk/government/organisations/department-for-environment-food-rural-affairs/about/statistics",
+    "Environment Agency": "https://www.gov.uk/government/organisations/environment-agency",
+    "Bank of England": "https://www.bankofengland.co.uk/boeapps/database/",
+    "ORR": "https://dataportal.orr.gov.uk/",
 }
 
 
@@ -99,6 +138,55 @@ def resolve_publisher(spec: dict) -> tuple[str, str]:
 # Schema
 # ─────────────────────────────────────────────────────────────
 
+# ─────────────────────────────────────────────────────────────
+# Caveat flags
+#
+# The verify page used to mark any series that had a note. Since almost every
+# series has a note, that marked almost every row, and a warning that fires on
+# everything tells you nothing — it is wallpaper.
+#
+# These tiers are named, ordered by how badly they can mislead, and derived
+# from what the caveats actually say. A series with notes but nothing matching
+# gets no flag, which is the point: the badge should mean something.
+#
+# `flags:` in series.yaml overrides the derivation outright when the wording
+# defeats it.
+# ─────────────────────────────────────────────────────────────
+
+FLAG_LABELS = {
+    "discontinued": "Discontinued",
+    "definition":   "Definition changed",
+    "partial":      "Partial period",
+    "provisional":  "Provisional",
+    "geography":    "Sub-UK coverage",
+}
+# Most misleading first. The badge shows the first that applies.
+FLAG_ORDER = ["discontinued", "definition", "partial", "provisional", "geography"]
+
+FLAG_PATTERNS = {
+    "discontinued": r"discontinu|replaced by|no longer (?:published|collected)|final year",
+    "definition":   r"definition|basis chang|change[sd]? the basis|recording practice|"
+                    r"reclassif|method(?:olog\w+)? chang|changed collection|transformed lfs|"
+                    r"re-?stated|series break|break in the series|not comparable",
+    "partial":      r"partial|part[- ]year|incomplete year|to date",
+    "provisional":  r"provisional|subject to revision|early estimate|revised later|"
+                    r"outcome-assignment lag|assignment lag",
+}
+
+
+def derive_flags(spec: dict, notes: list[str], discontinuities: list[dict], geography: str) -> list[str]:
+    if spec.get("flags") is not None:
+        return [f for f in spec["flags"] if f in FLAG_LABELS]
+    text = " ".join(notes + [d.get("note", "") for d in discontinuities]).lower()
+    found = {k for k, pat in FLAG_PATTERNS.items() if re.search(pat, text)}
+    # A declared discontinuity is a break whether or not anyone wrote the word.
+    if discontinuities:
+        found.add("definition")
+    if geography and geography != "UK":
+        found.add("geography")
+    return [f for f in FLAG_ORDER if f in found]
+
+
 @dataclass
 class Series:
     id: str
@@ -116,6 +204,11 @@ class Series:
     publisher: str = ""        # short agency, for facets — "ONS"
     publisher_full: str = ""   # corporate author, for citations
     published: str = ""        # edition year, where one is meaningful; else blank
+    areas: bool = False         # true when data/areas/<id>.json exists alongside
+    # One or two years only: a cross-section for the area views, not a trend.
+    # The explorer opens these on a map and says so on the time charts.
+    snapshot: bool = False
+    flags: list[str] = field(default_factory=list)   # named caveat tiers, worst first
     discontinuities: list[dict] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
     fetched: str = ""
@@ -129,7 +222,7 @@ class Series:
         if not self.values:
             raise ValueError(f"{self.id}: no observations")
         real = [v for v in self.values if v is not None]
-        if len(real) < 3:
+        if len(real) < (1 if self.snapshot else 3):
             raise ValueError(f"{self.id}: only {len(real)} usable observations")
 
 
@@ -424,6 +517,76 @@ def fetch_csv(cfg: dict) -> dict[int, float]:
 
 
 # ─────────────────────────────────────────────────────────────
+# Explore Local Statistics
+#
+# ONS's subnational service, and the only source here that is an ingest job
+# rather than a build: one endpoint, one indicator slug, and a whole history
+# comes back as CSV.
+#
+#   /explore-local-statistics/api/v1/data.csv?indicator=<slug>&geo=<codes>&time=all
+#
+# `time=all` is the load-bearing part. Leave `time` off and the service
+# returns the LATEST PERIOD ONLY, without complaint — a silent one-point
+# series. validate() catches that, but only because it insists on three
+# observations; don't remove the parameter and trust the shape.
+#
+# `geo` takes comma-separated area codes and K02000001 is the UK, so the
+# national spine and the local detail come out of the same endpoint. The
+# same call with no `geo` returns every area at once, which is what the
+# area build uses.
+#
+# Periods are ISO 8601 intervals — '2021-04-01/P1Y' for a financial year,
+# '2019-08-01/P1Y' for an academic one. to_year() reads the start date,
+# which is already this project's convention for both.
+# ─────────────────────────────────────────────────────────────
+
+ELS_API = "https://www.ons.gov.uk/explore-local-statistics/api/v1"
+ELS_UK = "K02000001"
+
+
+def els_data(indicator: str, geo: str | None = None, time: str = "all") -> tuple[str, list[dict]]:
+    """Rows from the ELS data endpoint, plus the exact URL they came from."""
+    import csv
+    import io
+
+    params: dict[str, str] = {"indicator": indicator, "time": time}
+    if geo:
+        params["geo"] = geo
+    r = get(f"{ELS_API}/data.csv", params)
+    return r.url, list(csv.DictReader(io.StringIO(r.text)))
+
+
+def fetch_els(cfg: dict) -> dict[int, float]:
+    """
+    One ELS indicator for one area, as an annual series.
+
+    Defaults to the UK. `filter:` narrows the multivariate indicators, which
+    carry extra `sex` / `age` columns — population-by-age-and-sex is the only
+    one in the catalogue today.
+    """
+    url, rows = els_data(cfg["indicator"], cfg.get("geo", ELS_UK), cfg.get("time", "all"))
+    cfg["_resolved_url"] = url
+
+    pairs: list[tuple[int, float]] = []
+    for row in rows:
+        for key, want in (cfg.get("filter") or {}).items():
+            if str(row.get(key, "")).strip() != str(want):
+                break
+        else:
+            year = to_year(row.get("period", ""), cfg.get("year_basis", "calendar"))
+            raw = row.get("value", "")
+            if year is None or raw in (None, "", ":", ".."):
+                continue
+            try:
+                pairs.append((year, float(str(raw).replace(",", ""))))
+            except ValueError:
+                continue
+    if not pairs:
+        raise ValueError(f"ELS returned no usable rows for {cfg['indicator']!r} at {cfg.get('geo', ELS_UK)}")
+    return to_annual(pairs, cfg.get("aggregate", "mean"))
+
+
+# ─────────────────────────────────────────────────────────────
 # Spreadsheet adapter
 #
 # Most of British government statistics is not an API. The Home Office, MoJ,
@@ -510,6 +673,18 @@ def _pick_sheet(names: list[str], sheet: str) -> str:
 
 
 def _parse_sheet(path: Path, sheet: str | None) -> list[list]:
+    # Old binary Excel, which NHS England still publishes some time series in.
+    # Dates come back as serial numbers unless converted here.
+    if path.suffix == ".xls":
+        import xlrd
+
+        book = xlrd.open_workbook(str(path))
+        names = book.sheet_names()
+        sh = book.sheet_by_name(_pick_sheet(names, sheet)) if sheet else book.sheet_by_index(0)
+        return [[xlrd.xldate.xldate_as_datetime(c.value, book.datemode) if c.ctype == xlrd.XL_CELL_DATE
+                 else (None if c.ctype == xlrd.XL_CELL_EMPTY else c.value)
+                 for c in sh.row(i)] for i in range(sh.nrows)]
+
     if path.suffix == ".ods":
         from odf.opendocument import load
         from odf.table import Table, TableRow, TableCell
@@ -614,7 +789,19 @@ def fetch_spreadsheet(cfg: dict) -> dict[int, float]:
 
     merged: dict[int, float] = {}
     for url in urls:
-        rows = _read_sheet(get_file(url), cfg.get("sheet"))
+        path = get_file(url)
+        # A workbook shipped inside a zip (the Environment Agency does this):
+        # `member` names the file to read from it.
+        if cfg.get("member"):
+            import zipfile
+            out = path.with_name(path.stem + "-" + Path(cfg["member"]).name)
+            if not out.exists():
+                with zipfile.ZipFile(path) as z:
+                    # matched on the file name, wherever it sits in the zip's folders
+                    name = next(n for n in z.namelist() if Path(n).name == Path(cfg["member"]).name)
+                    out.write_bytes(z.read(name))
+            path = out
+        rows = _read_sheet(path, cfg.get("sheet"))
         merged.update(_wide(cfg, rows) if cfg.get("layout", "long") == "wide"
                       else _long(cfg, rows))
 
@@ -633,7 +820,10 @@ def _long(cfg: dict, rows: list[list]) -> dict[int, float]:
     header_row = header_row - 1 if header_row else _find_header(rows, [year_col, value_col])
     header = [_clean(c) for c in rows[header_row]]
 
-    def index_of(name: str) -> int:
+    def index_of(name) -> int:
+        # a column number, for files whose headers are split across rows
+        if isinstance(name, int):
+            return name
         try:
             return header.index(_clean(name))
         except ValueError:
@@ -643,6 +833,9 @@ def _long(cfg: dict, rows: list[list]) -> dict[int, float]:
     pi = index_of(cfg["period_column"]) if cfg.get("period_column") else None
     keep = {index_of(k): v for k, v in (cfg.get("filter") or {}).items()}
     numer = {index_of(k): v for k, v in (cfg.get("rate") or {}).items()}
+    # `denominator_column`: a share of two columns on the same row (battery
+    # electric over all new cars), where `rate` divides rows by rows
+    di = index_of(cfg["denominator_column"]) if cfg.get("denominator_column") else None
 
     # (year, period) -> [denominator total, numerator total]
     buckets: dict[tuple[int, str], list[float]] = {}
@@ -656,6 +849,13 @@ def _long(cfg: dict, rows: list[list]) -> dict[int, float]:
         if year is None or value is None:
             continue
         slot = buckets.setdefault((year, _clean(row[pi]) if pi is not None else ""), [0.0, 0.0])
+        if di is not None:
+            den = _to_number(row[di])
+            if den is None:
+                continue
+            slot[0] += den
+            slot[1] += value
+            continue
         slot[0] += value
         if numer and all(_matches(row[i], want) for i, want in numer.items()):
             slot[1] += value
@@ -665,7 +865,7 @@ def _long(cfg: dict, rows: list[list]) -> dict[int, float]:
 
     ordered = sorted(buckets.items(), key=lambda kv: (kv[0][0], _period_key(kv[0][1])))
     how = cfg.get("aggregate", "sum")
-    if numer:
+    if numer or di is not None:
         # Collapse numerator and denominator to the year SEPARATELY, then
         # divide. Averaging four quarterly rates instead would weight a quiet
         # quarter the same as a busy one and quietly misstate the year.
@@ -741,8 +941,334 @@ ADAPTERS = {
     "ons_beta": fetch_ons_beta,
     "dfe_ees": fetch_dfe_ees,
     "csv": fetch_csv,
+    "els": fetch_els,
     "spreadsheet": fetch_spreadsheet,
 }
+
+
+# ─────────────────────────────────────────────────────────────
+# ELS catalogue generator
+#
+# The ELS metadata endpoint describes all 109 indicators in enough detail to
+# write most of a series.yaml entry — label, unit, source, coverage, and the
+# publisher's own caveats. Generating those blocks rather than hand-keying
+# them is the difference between "a geography roadmap" and an afternoon.
+#
+# It writes nothing. It prints candidate blocks for a human to read, edit and
+# paste, because the parts it cannot get right are the parts that matter: the
+# permalink id, the topic tags, and whether a caveat is worth a note.
+# ─────────────────────────────────────────────────────────────
+
+# ELS names its own topics; this catalogue's tags are narrower and older.
+# Sub-topic wins where it is more specific than the topic above it.
+ELS_TOPICS = {
+    "economy": "economy", "health and wellbeing": "health",
+    "education and skills": "education", "population": "population",
+    "housing": "housing", "environment": "environment", "crime": "crime",
+    "connectivity": "connectivity",
+}
+ELS_SUBTOPICS = {
+    "travel and transport": "transport", "digital connectivity": "digital",
+    "access to amenities": "amenities", "culture and heritage": "culture",
+    "pay and income": "economy", "employment": "economy",
+    "business": "economy", "productivity": "economy", "trade": "economy",
+}
+ELS_COUNTRIES = {
+    "ENSW": "UK", "ESW": "Great Britain", "EW": "England and Wales",
+    "E": "England", "S": "Scotland", "W": "Wales", "N": "Northern Ireland",
+    "ENW": "England, Wales and Northern Ireland",
+}
+ELS_BASIS = {"financial-year": "financial", "academic-year": "academic"}
+
+
+def els_kind(ind: dict) -> str:
+    unit = (ind.get("unit") or "").strip()
+    if ind.get("suffix") == "%" or unit == "%" or "%" in unit:
+        return "rate"
+    if ind.get("prefix") == "£" or unit.startswith("£"):
+        return "money_cash"
+    if unit.lower().startswith(("rate per", "count per")):
+        return "rate"
+    if unit.lower() in {"years", "yrs", "mins", "minutes"} or unit.lower().startswith("score"):
+        return "ratio"
+    return "count"
+
+
+def els_unit(ind: dict) -> str:
+    """
+    A unit string that reads on a chart axis, not a database column.
+
+    `unit` is the column heading ('Persons'), `subText` the human gloss
+    ('persons per square kilometre'). The gloss wins where there is one —
+    it is the difference between an axis that says what the number means
+    and one that says what type it is.
+    """
+    unit = (ind.get("unit") or "").strip()
+    sub = re.sub(r"^in\s+", "", (ind.get("subText") or "").strip())
+    if sub:
+        return f"% {sub}" if unit == "%" and "%" not in sub else sub
+    return unit or (ind.get("measure") or "").strip() or "value"
+
+
+def els_notes(ind: dict) -> list[str]:
+    """The publisher's caveats, plus the ones implied by the metadata."""
+    notes: list[str] = []
+    fmt = ind.get("periodFormat") or ""
+    m = re.match(r"^(\d+)-year$", fmt)
+    if m and m.group(1) != "1":
+        notes.append(
+            f"Pooled {m.group(1)}-year estimates, plotted at the first year of each band — "
+            f"a point here summarises {m.group(1)} years, not one")
+    titled = NATION_SUFFIX.search(ind.get("label", ""))
+    if titled and "K02" in (ind.get("geography") or {}).get("types", []):
+        notes.append(
+            f"ONS titles this indicator {titled.group(1)} but serves the top-level row as "
+            f"'United Kingdom'. Published here on the narrower claim in the title")
+    if ind.get("experimentalStatistic"):
+        notes.append("Published by ONS as an experimental statistic — the method is still under development")
+    srcs = ind.get("source") or []
+    if len(srcs) > 1:
+        who = ", ".join(s["name"] for s in srcs)
+        notes.append(f"Assembled by ONS from more than one collection ({who}), so the nations are not always on identical definitions")
+    for c in ind.get("caveats") or []:
+        for para in str(c).split("\n\n"):
+            para = " ".join(para.split())
+            if para:
+                notes.append(para)
+    return notes
+
+
+NATION_SUFFIX = re.compile(
+    r"\s*\((Great Britain|England and Wales|England|Wales|Scotland|Northern Ireland)\)\s*$")
+
+
+def els_geography(ind: dict) -> str:
+    """
+    Coverage, taking the indicator's own title over its country list.
+
+    These disagree, and not harmlessly: 'Employment rate (Great Britain)'
+    lists all four countries and serves a row labelled 'United Kingdom' at
+    K02000001. The title is the narrower claim, so it is the one to publish
+    — els_notes() records the discrepancy rather than hiding it.
+    """
+    titled = NATION_SUFFIX.search(ind.get("label", ""))
+    if titled:
+        return titled.group(1)
+    countries = "".join(sorted((ind.get("geography") or {}).get("countries", [])))
+    return ELS_COUNTRIES.get(countries, countries or "UK")
+
+
+def _yaml_str(s: str) -> str:
+    return '"' + str(s).replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def els_block(ind: dict, geo: str) -> str:
+    """One series.yaml entry, in the house style, ready to review."""
+    label = ind["label"]
+    # Labels carry their own coverage note — 'Employment rate (Great Britain)'.
+    # geography: already says that, so take it out of the name.
+    name = re.sub(r"\s*\((?:Great Britain|England|Wales|Scotland|Northern Ireland)\)\s*$", "", label)
+    topic = ELS_SUBTOPICS.get(ind.get("subTopic") or "") or ELS_TOPICS.get(ind.get("topic") or "", "economy")
+
+    srcs = ind.get("source") or [{}]
+    lead = srcs[0].get("name", "")
+    short = next((k for k, v in PUBLISHERS.items() if v == lead), None)
+
+    lines = [
+        f"  - id: {ind['slug']}",
+        f"    name: {name}",
+        f"    topics: [{topic}]",
+        f"    unit: {_yaml_str(els_unit(ind))}",
+        f"    kind: {els_kind(ind)}",
+        f"    geography: {els_geography(ind)}",
+        f"    year_basis: {ELS_BASIS.get(ind.get('periodFormat') or '', 'calendar')}",
+        "    source: ONS Explore Local Statistics",
+        f"    source_url: {srcs[0].get('href', '')}",
+    ]
+    if short:
+        lines.append(f"    publisher: {short}")
+    elif lead:
+        lines.append(f"    publisher: {lead.split()[0]}")
+        lines.append(f"    publisher_full: {_yaml_str(lead)}")
+    lines += [
+        "    source_type: els",
+        "    fetch:",
+        f"      indicator: {ind['slug']}",
+    ]
+    if geo != ELS_UK:
+        lines.append(f"      geo: {geo}")
+    if (ind.get("frequency") or "annual") != "annual":
+        lines.append("      aggregate: mean          # sub-annual source — check this is the right collapse")
+    if ind.get("isMultivariate"):
+        lines.append("      filter: {}               # multivariate: needs sex / age pinning")
+    notes = els_notes(ind)
+    if notes:
+        lines.append("    notes:")
+        lines += [f"      - {_yaml_str(n)}" for n in notes]
+    return "\n".join(lines)
+
+
+def els_catalogue(geo: str, min_span: int) -> int:
+    indicators = get(f"{ELS_API}/metadata/indicators").json()
+    wanted = geo[:3]
+    out, skipped = [], []
+    for ind in sorted(indicators, key=lambda i: (i.get("topic") or "", i["slug"])):
+        levels = (ind.get("geography") or {}).get("types", [])
+        domain = ind.get("periodDomain") or []
+        span = 0
+        if len(domain) >= 2:
+            years = [to_year(d, "calendar") for d in (domain[0], domain[-1])]
+            span = (years[1] - years[0] + 1) if all(y is not None for y in years) else 0
+        if wanted not in levels:
+            skipped.append((ind["slug"], f"no {wanted} area"))
+        elif not ind.get("hasTimeseries"):
+            skipped.append((ind["slug"], "no time series"))
+        elif span < min_span:
+            skipped.append((ind["slug"], f"{span}-year span"))
+        else:
+            out.append(els_block(ind, geo))
+
+    print(f"# {len(out)} ELS indicators at {geo}, {min_span}+ year span.")
+    print("# Review before pasting: `id` is a permalink token so keep it short,")
+    print("# `topics` are this catalogue's tags, and not every caveat needs a note.\n")
+    print("\n\n".join(out))
+    print(f"\n# skipped {len(skipped)}:", file=sys.stderr)
+    for slug, why in skipped:
+        print(f"#   {slug:<52} {why}", file=sys.stderr)
+    return 0
+
+
+# ─────────────────────────────────────────────────────────────
+# Area build
+#
+# The same ELS call without `geo` returns every area at once — around 400
+# of them, four nations, five levels — so a series that is already in the
+# catalogue gains its local detail for one extra request.
+#
+# It does not go in bundle.json. The bundle is what every visitor downloads
+# before they see a chart, and the area data is thirty times its size for a
+# view most visits never open. One file per series under data/areas/, plus a
+# small index the front end loads when someone actually asks for areas.
+#
+# Levels come from the code prefix rather than from the row, because ONS's
+# own area-level naming varies between the API and the published files while
+# the coding scheme itself is stable and documented.
+# ─────────────────────────────────────────────────────────────
+
+AREAS_DIR = ROOT / "data" / "areas"
+
+ELS_LEVELS = {
+    "K02": "uk", "K03": "uk", "K04": "uk", "K99": "uk",
+    "E92": "country", "W92": "country", "S92": "country", "N92": "country",
+    "E12": "region", "E13": "region",
+    # Combined authorities in England; the city-region and growth-deal bodies
+    # in Wales and Northern Ireland are the nearest equivalent, so they share
+    # the level rather than getting one row each of their own.
+    "E47": "cauth", "E48": "cauth", "W42": "cauth", "N34": "cauth",
+    "E10": "county", "E11": "county",
+    "E06": "la", "E08": "la", "E09": "la", "W06": "la", "S12": "la", "N09": "la",
+    "E07": "district",
+}
+
+# ITL — the UK's own replacement for NUTS, used by the regional accounts.
+# The level is the code's LENGTH, not its prefix: TLC, TLC3, TLC31.
+ITL_LEVELS = {3: "itl1", 4: "itl2", 5: "itl3"}
+
+LEVEL_NAMES = {
+    "uk": "UK and nation groupings", "country": "Countries", "region": "Regions",
+    "cauth": "Combined and city-region authorities", "county": "Counties",
+    "la": "Local authorities", "district": "Districts",
+    "itl1": "ITL1 regions", "itl2": "ITL2 areas", "itl3": "ITL3 areas",
+}
+
+# Coarsest first — the front end offers levels in this order.
+LEVEL_ORDER = ["uk", "country", "region", "itl1", "cauth", "county",
+               "itl2", "la", "district", "itl3", "other"]
+
+
+def els_level(code: str) -> str:
+    if code.startswith("TL"):
+        return ITL_LEVELS.get(len(code), "other")
+    return ELS_LEVELS.get(code[:3], "other")
+
+
+def build_areas(specs: list[dict], only: str | None = None) -> dict:
+    """Write data/areas/<id>.json for every ELS series, and an index of them."""
+    els = [s for s in specs if s.get("source_type") == "els"]
+    if only:
+        els = [s for s in els if s["id"] == only]
+    if not els:
+        return {}
+
+    AREAS_DIR.mkdir(parents=True, exist_ok=True)
+
+    registry: dict[str, dict] = {}
+    index: dict[str, dict] = {}
+
+    for spec in els:
+        sid, slug = spec["id"], spec["fetch"]["indicator"]
+        try:
+            url, rows = els_data(slug, None, "all")
+        except Exception as exc:                          # noqa: BLE001
+            print(f"  FAIL areas:{sid} — {exc}", file=sys.stderr)
+            continue
+
+        by_area: dict[str, dict[int, float]] = {}
+        for row in rows:
+            for key, want in (spec["fetch"].get("filter") or {}).items():
+                if str(row.get(key, "")).strip() != str(want):
+                    break
+            else:
+                code = (row.get("areacd") or "").strip()
+                year = to_year(row.get("period", ""), spec.get("year_basis", "calendar"))
+                raw = row.get("value", "")
+                # ELS occasionally serves a row coded literally 'na'. An area
+                # with no code cannot be identified, mapped or linked to, so
+                # it is dropped rather than shown under its name alone.
+                if not code or code == "na" or year is None or raw in (None, "", ":", ".."):
+                    continue
+                try:
+                    value = float(str(raw).replace(",", ""))
+                except ValueError:
+                    continue
+                # Rounded only enough to keep float noise ('533.9000000000001')
+                # out of the file. NOT to the indicator's decimalPlaces: that
+                # is a display hint, and these files get downloaded and joined,
+                # so they carry the figure as published and let the chart
+                # decide how many digits to show.
+                by_area.setdefault(code, {})[year] = round(value, 6)
+                registry.setdefault(code, {
+                    "n": (row.get("areanm") or code).strip(),
+                    "l": els_level(code),
+                })
+
+        if not by_area:
+            print(f"  FAIL areas:{sid} — no rows", file=sys.stderr)
+            continue
+
+        lo = min(y for v in by_area.values() for y in v)
+        hi = max(y for v in by_area.values() for y in v)
+        span = range(lo, hi + 1)
+        values = {code: [v.get(y) for y in span] for code, v in sorted(by_area.items())}
+
+        payload = {"id": sid, "indicator": slug, "start": lo,
+                   "source_api": url, "values": values}
+        (AREAS_DIR / f"{sid}.json").write_text(
+            json.dumps(payload, separators=(",", ":")), encoding="utf-8")
+
+        seen = {registry[c]["l"] for c in by_area}
+        levels = [lv for lv in LEVEL_ORDER if lv in seen]
+        index[sid] = {"start": lo, "end": hi, "areas": len(by_area), "levels": levels}
+        print(f"  ok   areas:{sid:<12} {lo}–{hi}  {len(by_area):>4} areas")
+
+    (AREAS_DIR / "index.json").write_text(json.dumps({
+        "generated": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+        "levelNames": LEVEL_NAMES,
+        "levelOrder": LEVEL_ORDER,
+        "areas": dict(sorted(registry.items())),
+        "series": index,
+    }, separators=(",", ":")), encoding="utf-8")
+    return index
 
 
 # ─────────────────────────────────────────────────────────────
@@ -764,8 +1290,11 @@ def build_series(spec: dict) -> Series:
         published=str(spec.get("published", "")),
         discontinuities=spec.get("discontinuities", []),
         notes=spec.get("notes", []),
+        flags=derive_flags(spec, spec.get("notes", []), spec.get("discontinuities", []),
+                           spec["geography"]),
         fetched=datetime.now(timezone.utc).isoformat(timespec="seconds"),
         source_api=spec["fetch"].get("_resolved_url", ""),
+        snapshot=bool(spec.get("snapshot", False)),
     )
     s.validate()
     return s
@@ -775,7 +1304,18 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--only", help="build a single series by id")
     ap.add_argument("--dry-run", action="store_true", help="fetch and validate, write nothing")
+    ap.add_argument("--els-catalogue", action="store_true",
+                    help="print candidate series.yaml blocks for the ONS Explore Local Statistics indicators")
+    ap.add_argument("--els-geo", default=ELS_UK, help="area code for --els-catalogue (default: UK)")
+    ap.add_argument("--els-min-span", type=int, default=6, help="shortest run of years worth offering (default: 6)")
+    ap.add_argument("--no-areas", action="store_true",
+                    help="skip the per-area files under data/areas/")
+    ap.add_argument("--areas-only", action="store_true",
+                    help="rebuild data/areas/ and leave bundle.json alone")
     args = ap.parse_args()
+
+    if args.els_catalogue:
+        return els_catalogue(args.els_geo, args.els_min_span)
 
     config = yaml.safe_load(CONFIG.read_text(encoding="utf-8"))
     specs = config["series"]
@@ -784,6 +1324,9 @@ def main() -> int:
         if not specs:
             print(f"no series with id {args.only!r}", file=sys.stderr)
             return 1
+
+    if args.areas_only:
+        return 0 if build_areas(specs, args.only) else 1
 
     built, failed = [], []
     for spec in specs:
@@ -808,6 +1351,20 @@ def main() -> int:
             print("       transforms depending on this reference will be unavailable", file=sys.stderr)
 
     ok = {s.id for s in built}
+
+    # Areas are built after the series so a series that failed its national
+    # fetch cannot advertise local detail the explorer would then load.
+    areas: dict[str, dict] = {}
+    if not (args.no_areas or args.dry_run):
+        areas = build_areas([s for s in specs if s["id"] in ok], args.only)
+        for s in built:
+            s.areas = s.id in areas
+    elif not args.dry_run:
+        # Skipping the area BUILD must not strip the area FLAGS: the files are
+        # still on disk and the explorer still offers them. Read what's there.
+        for s in built:
+            s.areas = (AREAS_DIR / f"{s.id}.json").exists()
+
     bundle = {
         "meta": {
             "provenance": "live" if not failed else "partial",
@@ -816,13 +1373,15 @@ def main() -> int:
         },
         "eras": config["eras"],
         "pms": config["pms"],
-        # Modes are emitted with only the series that actually built, so a
-        # failed fetch can never leave the front end asking for a missing id.
-        "modes": {
-            key: {**mode, "series": [sid for sid in mode.get("series", []) if sid in ok]}
-            for key, mode in config.get("modes", {}).items()
-        },
         "refs": refs,
+        # Who the catalogue actually draws on, counted from what built rather
+        # than from a list anyone has to remember to update.
+        "publishers": [
+            {"short": short, "full": full, "url": PUBLISHER_SITES.get(short, ""),
+             "series": sum(1 for s in built if s.publisher == short)}
+            for short, full in sorted({(s.publisher, s.publisher_full) for s in built},
+                                      key=lambda pf: -sum(1 for s in built if s.publisher == pf[0]))
+        ],
         "series": [asdict(s) for s in built],
     }
 

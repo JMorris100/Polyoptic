@@ -1,5 +1,8 @@
-# Placeholder data is live on this site. Keep it out of the index until the
-# ingest has run for real, then delete this file and the noindex meta tags
-# in index.html and explore.html.
 User-agent: *
-Disallow: /
+Allow: /
+
+# A working page, not a published one. It also carries a noindex meta tag —
+# this line only saves the crawl, the tag is what does the work.
+Disallow: /board.html
+
+Sitemap: https://polyoptic.co/sitemap.xml

@@ -8,11 +8,19 @@ GitHub repo.
 
 ```
 polyoptic/
-├── index.html                  home — tiles and featured charts
+├── index.html                  home — explorer walkthrough, process, questions, topics
+├── indicator/, topic/          plain pages for search, written by ingest/pages.py
 ├── explore.html                the explorer — compare, transform, export
+├── chartkit.js, chart.css      the chart drawing rules every page shares
 ├── data.html                   provenance — every raw value, source and API endpoint
+├── about.html                  who builds it, and what it deliberately doesn't do
+├── q/<slug>/index.html         one landing page per featured comparison
+├── og/
+│   └── build.html              draws the 1200×630 share images (see below)
+├── sitemap.xml                 board.html is deliberately absent
 ├── data/
-│   └── bundle.json             written by the ingest, committed to git
+│   ├── bundle.json             written by the ingest, committed to git
+│   └── areas/                  per-series local figures, lazily fetched
 ├── ingest/
 │   ├── ingest.py               pipeline: fetch → normalise → validate → write
 │   ├── series.yaml             the whole catalogue, declarative
@@ -94,13 +102,25 @@ power per-person, real-terms and %-of-GDP everywhere.
 
 ## What the explorer does
 
-- Up to four series on one chart, from any topics
-- **Line · Bars · Area · Scatter · Small multiples**
-- **Rebase to 100 · Year-on-year % · 3-year average · Real terms · Per person · % of GDP**
-- Era ribbon showing governing party and PM, on every time-series chart
+- Up to four series on one chart, from any topics; filter the catalogue by topic and by what it
+  covers (UK, Great Britain, England…, or series with local-area figures)
+- **Over time:** line, step, dots, area, gap between two, columns, stacked
+  area, stacked columns, slope, scatter, small multiples. **By area:** map,
+  ranking, change, range, heatmap
+- **Rebase to 100 · Relative to last series · Year-on-year % · 3-year average · Real terms · Per person · % of GDP**
+- Rebasing uses the first year every series on the chart has a value, so all
+  the lines start together at 100; the chart starts at that year
+- Each prime minister shaded behind the chart in their party's colour
+- Line charts name each series at its end and draw breaks on the line itself;
+  give a discontinuity a short `label` in `series.yaml` for the on-chart text
 - Scatter colours each point by the government of the day
+- Click any point for its working; **Check the numbers** tables every year's
+  published figure, the plotted value and the sum between them
+- Everything about a chart — type, transform, government shading, how its
+  sources are credited (short, Harvard or off), range, width — is in its
+  settings
 - Every view is a permalink — the URL hash carries the whole state
-- CSV export with sources and licence in the header
+- CSV and PNG export with sources and licence, following the chart's setting
 
 ### The warnings are the product
 
@@ -120,7 +140,7 @@ compare across mismatches:
 
 ## Adding an indicator
 
-Add an entry to `ingest/series.yaml`. No code changes. Five adapters cover
+Add an entry to `ingest/series.yaml`. No code changes. Six adapters cover
 almost everything published in the UK:
 
 | `source_type` | Use for |
@@ -129,7 +149,47 @@ almost everything published in the UK:
 | `ons_beta` | ONS Beta API at `api.beta.ons.gov.uk/v1`. Open, no key. More stable, but you must know each dataset's dimension names |
 | `dfe_ees` | DfE Explore Education Statistics API. POST queries; note not every EES dataset is exposed through the API |
 | `csv` | Anything published as a plain CSV file. Unglamorous, and you'll use it more than you expect |
+| `els` | ONS Explore Local Statistics. One indicator slug, whole history, and the same call returns every local area — see below |
 | `spreadsheet` | `.xlsx` / `.ods` workbooks — the Home Office, MoJ, HMRC, FCDO and the ONS crime team publish nothing else |
+
+### The Explore Local Statistics adapter
+
+ONS's subnational service, and the one source here that is an ingest job
+rather than a build. A series needs one line:
+
+```yaml
+source_type: els
+fetch: {indicator: gross-median-weekly-pay}
+```
+
+`geo` defaults to `K02000001`, the UK. `time=all` is sent for you and is not
+optional in spirit — without it the service returns the latest period only,
+silently, and you get a one-point series.
+
+Two things come free with an `els` entry:
+
+**Candidate entries.** `python ingest/ingest.py --els-catalogue` reads ONS's
+own indicator metadata and prints ready-made `series.yaml` blocks — name,
+unit, coverage, publisher, and the release's caveats as `notes`. Review before
+pasting: it cannot pick a short permalink `id`, choose this catalogue's topic
+tags, or judge which caveats are worth carrying. `--els-geo` and
+`--els-min-span` narrow what it offers.
+
+**Local detail.** The same indicator is fetched for every area into
+`data/areas/<id>.json`, with `data/areas/index.json` holding the area registry
+and which series have local figures. These are deliberately *not* in
+`bundle.json`: together they are around 1.8 MB against the bundle's 100 KB,
+for a view most visits never open, so the explorer fetches them the first time
+someone asks for areas. `--areas-only` rebuilds them without touching the
+bundle; `--no-areas` skips them.
+
+Levels come from the area code, not the row: `E07…` is a district, `TLC31` is
+ITL3. ONS's own level naming differs between the API and the published files
+while the coding scheme is stable.
+
+One trap worth knowing: an indicator's metadata can list a geography level it
+does not actually serve. `urban-heat-regulating` claims UK coverage, 400s when
+you ask for it, and is published here as England.
 
 ### The spreadsheet adapter
 
@@ -173,14 +233,6 @@ Downloads and parsed sheets are both cached under `ingest/.cache`. The Home
 Office crime-outcomes workbooks are 700,000 rows and take about 90 seconds each
 to parse, so the first build of those series is slow and every later one isn't.
 
-### Modes
-
-A **mode** is a named subset of the catalogue that the explorer swaps to
-wholesale, defined at the top of `series.yaml`. Series listed in a mode appear
-only in that mode; everything unclaimed is the default catalogue. `brexit` is
-the one that exists — reachable from a deliberately unlabelled strip down the
-far right edge of the explorer.
-
 ---
 
 ## Status — read this before trusting anything
@@ -188,8 +240,18 @@ far right edge of the explorer.
 **The pipeline is live.** Every identifier in `series.yaml` was verified
 against the live catalogues on 2026-08-05, and the spreadsheet sources on
 2026-08-06. `data/bundle.json` is built from real releases: the original
-9 series (housing, economy, education) plus the Brexit-mode set — borders
-and migration, money, crime and justice — and the three reference series.
+9 series (housing, economy, education), borders and migration, money, crime
+and justice, transport, environment, local statistics, headline ONS economic
+and labour-market series (GDP, inflation, employment, productivity, public
+finances, trade), and the three reference series — 198 indicators in one
+catalogue, filed under the homepage's eight topics. Of those, 116 come from
+ONS Explore Local Statistics with figures for every local area, and 27 of
+those are `snapshot` series, published for one or two years only, which the
+explorer opens as a map rather than a trend. National series added in
+October 2026 (NHS performance, homelessness, housebuilding, prisons and
+police, emissions, Bank Rate, births and deaths, teachers, NEET, rail,
+electric cars) were verified against their published headline figures on
+2026-10-18.
 The placeholder data embedded in `explore.html` is still invented — it only
 shows if `data/bundle.json` fails to load, and it is labelled as such.
 
@@ -203,6 +265,11 @@ shows if `data/bundle.json` fails to load, and it is labelled as such.
 - `dfe_ees` works, but the catalogue is thinner than the site: school
   funding is not exposed through the API at all, which is why the education
   set is absence, KS2 disadvantage gap and pupil numbers.
+- `els` (Explore Local Statistics) added 33 UK-level series in one go —
+  population, business demography, wellbeing, healthy life expectancy,
+  natural capital — and local figures for all of them. Its metadata
+  endpoint describes each indicator well enough to generate most of a
+  `series.yaml` entry, caveats included.
 - `spreadsheet` now carries everything the APIs don't: Home Office
   immigration and returns, MoJ prison population, HMRC non-doms, FCDO aid,
   ONS crime, Home Office crime outcomes. Traps worth knowing, all of which
@@ -235,11 +302,56 @@ shows if `data/bundle.json` fails to load, and it is labelled as such.
   measure.
 - The MHCLG housing series and the HMT financial-year deflator are now
   unblocked by the spreadsheet adapter but not yet added.
-- No local-authority or regional breakdowns — the schema takes a single
-  national series per id. Adding a `geography` dimension is the next real
-  piece of architecture, and it's the one that unlocks maps.
+- Local breakdowns exist only for the 33 `els` series. The other 42 are still
+  a single national figure per id, and the schema still has no general
+  `geography` dimension — the area files sit beside the bundle rather than
+  inside the series objects.
+- The map uses ONS ultra-generalised boundaries (`data/geo/`, built by
+  `python ingest/geo.py`), fetched only when a map is opened — about 200 KB
+  per level. They are current boundaries, so areas abolished in past
+  reorganisations have a figure but no shape and are left off the map.
 - No sub-annual data. Everything collapses to years at ingest.
 - No tests.
+
+---
+
+## Sharing and search
+
+Every published page carries a description, canonical URL, Open Graph and
+`twitter:card` tags, and JSON-LD. `robots.txt` allows crawling and points at
+`sitemap.xml`; `board.html` is the one exception, excluded from both and
+carrying `noindex`.
+
+**Chart state lives in the URL fragment**, and fragments never reach a server,
+so an unfurler cannot tell one explorer link from another — every one of them
+previews with the same card. That is why the four featured comparisons have
+real URLs under `/q/<slug>/`, each with its own metadata and its own image.
+Making arbitrary explorer links unfurl as themselves would mean moving state
+into the query string and rendering images on demand, which needs a server this
+site does not have.
+
+**A plain page for every indicator.** The explorer is an app and its HTML is
+nearly empty until the script runs, so `ingest/pages.py` writes pages a search
+engine can read without running anything: `indicator/<slug>/` for every series
+(latest figure, a chart drawn as SVG, every published year, the source, notes
+and breaks, the highest and lowest local areas where there are any, and a
+`data.csv`), `topic/<topic>/` for each of the eight topics, an A–Z at
+`indicator/`, and `sitemap.xml` with all of them. Indicator pages carry
+schema.org `Dataset` markup, so they can appear in Google Dataset Search. The
+weekly refresh runs it after `ingest.py`; run it by hand after a manual
+rebuild. Slugs come from the series name and are written to `data/pages.json`.
+
+**The share images are generated in a browser**, not by the build: open
+`og/build.html` from the dev server, click *Download all*, and drop the sixteen
+PNGs into `og/` (four for the main pages, eight for the topics, four for the
+questions). Filenames match the `og:image` tags — don't rename them. They
+are drawn on a canvas from `bundle.json`, so the comparison cards show the real
+current chart, and they need re-running when a chart changes materially.
+
+Source names on the homepage are set in Polyoptic's own type rather than
+reproduced as departmental logos: OGL v3.0 licenses the *information* and
+specifically excludes crests and logos, so the logos are the one thing on the
+site that the licence would not cover.
 
 ---
 
