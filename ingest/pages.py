@@ -501,7 +501,7 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
         "spatialCoverage": {"@type": "Place", "name": "United Kingdom" if geo == "UK" else geo},
         "variableMeasured": {"@type": "PropertyValue", "name": s["name"], "unitText": unit},
         "distribution": [{"@type": "DataDownload", "encodingFormat": "text/csv", "contentUrl": f"{SITE}/{url}data.csv"}],
-        "includedInDataCatalog": {"@type": "DataCatalog", "name": "Polyoptic", "url": f"{SITE}/data.html"},
+        "includedInDataCatalog": {"@type": "DataCatalog", "name": "Polyoptic", "url": f"{SITE}/data"},
         **({"isBasedOn": s["source_url"]} if s.get("source_url") else {}),
         **({"dateModified": s["fetched"][:10]} if s.get("fetched") else {}),
     }, breadcrumb_ld([(tname, f"topic/{topic}/"), (s["name"], url)])]
@@ -1060,9 +1060,13 @@ def main() -> None:
     for d in ("indicator", "topic"):
         shutil.rmtree(ROOT / d, ignore_errors=True)
     today = datetime.now(timezone.utc).date().isoformat()
-    entries = [("", today, "weekly", "1.0"), ("explore.html", today, "weekly", "0.9"),
-               ("indicator/", today, "weekly", "0.8"), ("data.html", today, "weekly", "0.7"),
-               ("about.html", today, "monthly", "0.5")]
+    # The host serves /explore, /data and /about, and redirects the .html
+    # addresses to them, so the sitemap names the addresses that answer
+    # directly. Links between pages keep .html, which also works from a
+    # local file server.
+    entries = [("", today, "weekly", "1.0"), ("explore", today, "weekly", "0.9"),
+               ("indicator/", today, "weekly", "0.8"), ("data", today, "weekly", "0.7"),
+               ("about", today, "monthly", "0.5")]
     entries.append(("q/", today, "weekly", "0.8"))
     entries += [(f"q/{p.parent.name}/", today, "weekly", "0.7") for p in sorted((ROOT / "q").glob("*/index.html"))]
 
