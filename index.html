@@ -94,12 +94,12 @@ svg{display:block}
 .top{position:relative;overflow-x:clip}
 .top > .wrap{position:relative;z-index:1}
 .hero{padding:52px 0 62px;position:relative}
-.watermark{position:absolute;z-index:0;top:-10px;right:max(-160px,calc((100% - 1440px)/2 - 160px));
-  width:min(1040px,72vw);pointer-events:none;user-select:none;
+.watermark{position:absolute;z-index:0;top:6px;right:max(-24px,calc((100% - 1440px)/2 - 24px));
+  width:min(800px,56vw);pointer-events:none;user-select:none;
   -webkit-mask-image:radial-gradient(ellipse 62% 62% at 50% 50%,#000 40%,transparent 80%);
           mask-image:radial-gradient(ellipse 62% 62% at 50% 50%,#000 40%,transparent 80%)}
 .watermark svg{width:100%;height:auto;opacity:var(--wm);color:var(--purple)}
-@media(max-width:900px){.watermark{right:-130px;width:90vw;opacity:.7}}
+@media(max-width:900px){.watermark{right:-110px;width:78vw;opacity:.7}}
 @media(max-width:620px){.watermark{display:none}}
 .eyebrow{font-family:"IBM Plex Mono";font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--purple);margin-bottom:24px}
 .hero h1{font-size:clamp(40px,6.4vw,68px);font-weight:800;max-width:17ch}
@@ -148,8 +148,6 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .rbody li::before{content:"";position:absolute;left:0;top:.6em;width:5px;height:5px;border-radius:50%;background:#fff}
 .rbody li a{color:inherit}
 .rbody p{margin:9px 0 2px;padding-top:9px;border-top:1px solid rgba(255,255,255,.3);font-size:13px;line-height:1.45}
-.rprov{font-size:12.5px;color:var(--muted);line-height:1.5;margin:10px 0 0 40px}
-.rprov a{color:var(--purple)}
 @media (prefers-reduced-motion: reduce){.rbody,.rcard,.rnum{transition:none}}
 .lede{color:var(--muted);max-width:62ch;margin:-14px 0 30px}
 
@@ -296,59 +294,135 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .chartfail{padding:34px 22px;text-align:center;color:var(--muted);font-size:14px}
 .chartfail b{color:var(--ink)}
 
-/* ── topics as a mind map ────────────────────────────────────────
-   The eye opens, then the topics branch out of it along drawn lines.
-   Positions are set by script from the width; under 1200px it is a list. */
-.mind{position:relative;height:700px;margin-top:6px}
-.mlinks{position:absolute;inset:0;width:100%;height:100%;overflow:visible;pointer-events:none}
-.mlink{fill:none;stroke:var(--prule);stroke-width:1.6;stroke-dasharray:1;stroke-dashoffset:1;
-  transition:stroke-dashoffset .8s cubic-bezier(.4,0,.2,1),stroke .25s,stroke-width .25s;transition-delay:var(--d,0s),0s,0s}
-.mind.open .mlink{stroke-dashoffset:0}
-.mlink.hot{stroke:var(--purple);stroke-width:2.4}
-.meye{position:absolute;left:50%;top:50%;width:200px;transform:translate(-50%,-50%);color:var(--purple);text-align:center;z-index:2}
+/* ── topics: the eye blinks open and the topics come out of it ──────
+   The eye starts shut, a closed lid with its lashes. When the section
+   arrives it blinks open, its bars rise, a soft beam falls from it and the
+   topic cards fly out of the pupil into place. Each card's start offset is
+   set by script, so the same motion works at any width. */
+.mind{position:relative;margin-top:4px;padding-top:4px}
+.meye{position:relative;width:176px;margin:0 auto;color:var(--purple);text-align:center;z-index:2;cursor:pointer;background:none;border:0;padding:0;font:inherit;display:block}
 .meye svg{display:block;width:100%;height:auto;overflow:visible}
-/* the lid: the eye starts shut and opens as the section arrives */
-.meye .lid{transform-origin:50% 50%;transform-box:fill-box;transform:scaleY(.06);transition:transform .7s cubic-bezier(.3,1.4,.5,1)}
-.mind.open .meye .lid{transform:scaleY(1)}
-.meye .bar{transform-origin:50% 100%;transform-box:fill-box;transform:scaleY(0);transition:transform .5s cubic-bezier(.3,1.3,.5,1)}
-.mind.open .meye .bar{transform:scaleY(1)}
-.meye .mlbl{font-size:12px;font-weight:600;color:var(--muted);margin-top:8px;opacity:0;transition:opacity .5s .5s}
-.mind.open .meye .mlbl{opacity:1}
-.node{position:absolute;left:50%;top:50%;width:250px;z-index:3;text-decoration:none;color:var(--ink);
-  background:var(--surface);border:1px solid var(--prule);border-radius:14px;padding:14px 16px;
-  transform:translate(-50%,-50%) scale(.35);opacity:0;
-  transition:transform .75s cubic-bezier(.3,1.25,.5,1),opacity .4s,background .2s,border-color .2s,box-shadow .2s;transition-delay:var(--d,0s),var(--d,0s),0s,0s,0s}
-.mind.open .node{transform:translate(-50%,-50%) translate(var(--tx,0),var(--ty,0));opacity:1}
-.node.live:hover{border-color:var(--purple);box-shadow:0 10px 26px rgba(70,51,168,.18)}
-.node.soon{opacity:.6}
-.mind.open .node.soon{opacity:.6}
-.trow{display:flex;align-items:center;gap:9px}
-.tico{display:inline-flex;width:30px;height:30px;border-radius:100px;background:var(--soft);color:var(--purple);align-items:center;justify-content:center;flex-shrink:0}
+.meye .bar{transform-origin:50% 100%;transform-box:fill-box;transform:scaleY(.55);transition:transform .55s cubic-bezier(.3,1.5,.5,1)}
+.mind.lit .meye .bar{transform:scaleY(1)}
+.meye .mlbl{font-size:12.5px;font-weight:600;color:var(--muted);margin-top:6px;opacity:0;transition:opacity .5s}
+.mind.lit .meye .mlbl{opacity:1}
+/* the beam: the eye's gaze falling on the topics */
+.mbeam{position:absolute;left:0;right:0;top:70px;bottom:0;pointer-events:none;z-index:0;opacity:0;transition:opacity 1.1s .1s}
+.mind.lit .mbeam{opacity:1}
+.mbeam svg{width:100%;height:100%;display:block}
+.mgrid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:30px}
+@media(max-width:980px){.mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.mgrid{grid-template-columns:1fr}}
+.node{display:block;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--prule);border-radius:14px;padding:15px 17px;
+  opacity:0;transform:translate(var(--fx,0),var(--fy,0)) scale(.15);
+  transition:transform .85s cubic-bezier(.22,1.12,.42,1),opacity .4s,background .2s,border-color .2s,box-shadow .2s;transition-delay:var(--d,0s),var(--d,0s),0s,0s,0s}
+.mind.out .node{opacity:1;transform:none}
+.mind.out .node.live:hover{border-color:var(--purple);box-shadow:0 10px 26px rgba(70,51,168,.16);transform:translateY(-2px);transition-delay:0s}
+.mind.out .node.soon{opacity:.6}
+.trow{display:flex;align-items:center;gap:10px}
+.tico{display:inline-flex;width:32px;height:32px;border-radius:100px;background:var(--soft);color:var(--purple);align-items:center;justify-content:center;flex-shrink:0;transition:.2s}
+.node.live:hover .tico{background:var(--purple);color:#fff}
 .tico svg{width:17px;height:17px}
 .tn{font-family:"IBM Plex Sans";font-weight:700;font-size:16.5px;letter-spacing:-0.02em;line-height:1.2}
 .tc{font-size:12px;font-weight:600;color:var(--purple);margin-top:1px}
-.td{font-size:13px;color:var(--muted);margin-top:8px;line-height:1.4}
-@media(max-width:1199px){
-  .mind{height:auto;display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .mlinks{display:none}
-  .meye{position:static;transform:none;grid-column:1/-1;width:150px;margin:0 auto 6px}
-  .node{position:static;width:auto;transform:translateY(10px);transition:transform .5s,opacity .5s;transition-delay:var(--d,0s)}
-  .mind.open .node{transform:none}
-}
-@media(min-width:760px) and (max-width:1199px){.mind{grid-template-columns:repeat(3,1fr)}}
-@media(max-width:560px){.mind{grid-template-columns:1fr}}
-@media (prefers-reduced-motion: reduce){.mlink,.node,.meye .lid,.meye .bar,.meye .mlbl{transition:none!important}}
+.td{font-size:13px;color:var(--muted);margin-top:9px;line-height:1.4}
+@media (prefers-reduced-motion: reduce){.node,.meye .bar,.meye .mlbl,.mbeam{transition:none!important}}
 
-/* pairings */
-.pairs{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--rule);border:1px solid var(--rule)}
-@media(min-width:1180px){.pairs{grid-template-columns:repeat(4,1fr)}}
-@media(max-width:760px){.pairs{grid-template-columns:1fr}}
-.pair{background:var(--surface);padding:22px;text-decoration:none;transition:.14s}
-.pair:hover{background:var(--soft)}
-.pair{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;min-height:118px;color:var(--ink)}
-.pair .pq{font-family:"IBM Plex Sans";font-weight:700;font-size:21px;line-height:1.2;letter-spacing:-0.025em}
-.pair::after{content:"→";font-size:20px;color:var(--purple);transition:transform .15s}
-.pair:hover::after{transform:translateX(4px)}
+/* ── questions ──────────────────────────────────────────────────────
+   Four featured questions with their own pages, each card carrying a
+   thumbnail of its chart; then a drawer of many more, answered in place,
+   that can be filtered by the kind of question or the kind of chart. */
+#questions .slabel{justify-content:center;text-align:center}
+#questions .lede{margin:-14px auto 32px;text-align:center}
+.pairs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+@media(max-width:1100px){.pairs{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.pairs{grid-template-columns:1fr}}
+.pair{position:relative;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;
+  padding:18px 20px;background:var(--surface);border:1px solid var(--rule);border-radius:14px;text-decoration:none;color:var(--ink);
+  transition:border-color .2s,box-shadow .2s,transform .2s}
+.pair:hover{border-color:var(--purple);box-shadow:0 12px 28px rgba(70,51,168,.14);transform:translateY(-3px)}
+.pkick{font-size:11.5px;font-weight:600;color:var(--purple);display:flex;align-items:center;gap:6px}
+.pkick svg{width:20px;height:14px}
+.pspark{width:100%;height:76px;border-radius:9px;background:var(--soft);padding:10px 12px}
+.pspark svg{width:100%;height:100%;overflow:visible}
+.pq{font-family:"IBM Plex Sans";font-weight:700;font-size:19px;line-height:1.22;letter-spacing:-0.022em;flex:1;display:flex;align-items:center;justify-content:center}
+.pgo{font-size:13px;font-weight:600;color:var(--purple);display:flex;align-items:center;gap:6px}
+.pgo i{font-style:normal;transition:transform .15s}
+.pair:hover .pgo i{transform:translateX(4px)}
+
+.qmore-btn{display:flex;align-items:center;gap:10px;margin:30px auto 0;font:inherit;font-weight:600;font-size:15px;color:var(--purple);
+  background:var(--surface);border:1.5px solid var(--prule);border-radius:100px;padding:12px 24px;cursor:pointer;transition:.15s}
+.qmore-btn:hover{border-color:var(--purple);background:var(--soft)}
+.qmore-btn b{font-weight:700;background:var(--purple);color:#fff;border-radius:100px;font-size:12px;padding:2px 9px}
+.qmore-btn svg{width:14px;height:14px;transition:transform .3s}
+.qmore-btn[aria-expanded="true"] svg{transform:rotate(180deg)}
+.qdrawer{display:grid;grid-template-rows:0fr;transition:grid-template-rows .55s ease}
+.qdrawer.open{grid-template-rows:1fr}
+.qdrawer > div{overflow:hidden;min-height:0}
+.qdin{padding-top:30px}
+
+/* the kinds of question, then the chart guide: what each chart is good for */
+.qfilt{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-bottom:16px}
+.qchip{font:inherit;font-size:13px;font-weight:600;color:var(--muted);background:var(--surface);border:1px solid var(--rule);border-radius:100px;padding:7px 15px;cursor:pointer;transition:.15s}
+.qchip:hover{border-color:var(--purple);color:var(--purple)}
+.qchip[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
+.qchip span{font-weight:400;opacity:.75;margin-left:4px}
+.qguide-t{text-align:center;font-size:12.5px;color:var(--muted);margin:0 0 10px}
+.qguide{display:grid;grid-template-columns:repeat(auto-fill,minmax(158px,1fr));gap:8px;margin-bottom:24px}
+.qtype{font:inherit;text-align:left;display:flex;flex-direction:column;gap:4px;padding:11px 12px;border:1px solid var(--rule);border-radius:10px;
+  background:var(--surface);color:var(--ink);cursor:pointer;transition:.15s}
+.qtype:hover{border-color:var(--purple)}
+.qtype[aria-pressed="true"]{border-color:var(--purple);background:var(--soft);box-shadow:inset 0 0 0 1px var(--purple)}
+.qtype .qti{display:flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px}
+.qtype .qti span{font-weight:500;font-size:11.5px;color:var(--muted);margin-left:auto}
+.qtype svg{width:26px;height:18px;color:var(--purple);flex-shrink:0}
+.qtype .qtb{font-size:11.5px;color:var(--muted);line-height:1.35}
+
+.qlist{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;grid-auto-flow:row dense}
+@media(max-width:900px){.qlist{grid-template-columns:1fr}}
+.qitem{border:1px solid var(--rule);border-radius:12px;background:var(--surface);transition:border-color .2s,box-shadow .2s;min-width:0;scroll-margin-top:16px}
+.qitem[hidden]{display:none}
+.qitem.open{grid-column:1/-1;border-color:var(--purple);box-shadow:0 14px 34px rgba(70,51,168,.12)}
+.qhead{width:100%;font:inherit;color:inherit;text-align:left;background:transparent;border:0;cursor:pointer;display:flex;align-items:center;gap:14px;padding:13px 16px}
+.qhead:hover .qt{color:var(--purple)}
+.qicon{width:42px;height:42px;border-radius:10px;background:var(--soft);color:var(--purple);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.qicon svg{width:26px;height:18px}
+.qitem.myth .qicon{background:color-mix(in srgb,var(--warm) 12%,var(--surface));color:var(--warm)}
+.qt{font-weight:700;font-size:16px;letter-spacing:-.015em;line-height:1.25;transition:color .15s}
+.qm{font-size:12px;color:var(--muted);margin-top:3px}
+.qm b{font-weight:600;color:var(--purple)}
+.qitem.myth .qm b{color:var(--warm)}
+.qchev{margin-left:auto;width:16px;height:16px;flex-shrink:0;color:var(--muted);transition:transform .3s}
+.qitem.open .qchev{transform:rotate(180deg);color:var(--purple)}
+.qbody{display:none;padding:0 16px 18px}
+.qitem.open .qbody{display:grid;grid-template-columns:minmax(0,1fr) 330px;gap:26px;animation:fade .45s ease both}
+@media(max-width:980px){.qitem.open .qbody{grid-template-columns:1fr;gap:16px}}
+.qchart{min-width:0;border-top:1px solid var(--rule);padding-top:12px}
+.qchart .qsub{font-size:12.5px;color:var(--muted);margin:0 0 8px}
+.qkey{display:inline-flex;align-items:center;gap:5px;margin-right:10px;font-weight:600;color:var(--ink)}
+.qkey i{width:9px;height:9px;border-radius:2px}
+.qside{border-top:1px solid var(--rule);padding-top:12px;display:flex;flex-direction:column;gap:14px}
+@media(max-width:980px){.qside{border-top:0;padding-top:0}}
+.qside h4{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple);margin:0 0 4px;line-height:1.3}
+.qside p{margin:0;font-size:14px;line-height:1.5}
+.qans p{font-size:15px}
+.qwhy{background:var(--soft);border:1px solid var(--prule);border-radius:10px;padding:11px 13px}
+.qwhy h4{display:flex;align-items:center;gap:7px}
+.qwhy svg{width:22px;height:15px}
+.qwhy p{font-size:13.5px}
+.qcare h4{color:var(--warn)}
+.qcare p{font-size:13px;color:var(--muted)}
+.qlink{align-self:flex-start;font-size:14px;padding:11px 20px}
+.qsrc{font-size:11.5px;color:var(--muted);line-height:1.45}
+.qempty{text-align:center;color:var(--muted);font-size:14px;padding:20px 0}
+/* marks the question charts add */
+.qdot{stroke:var(--surface);stroke-width:1.2}
+.qslope{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11.5px;font-variant-numeric:tabular-nums;fill:var(--muted)}
+.qslope.n{font-weight:600}
+.qyr{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:10.5px;font-variant-numeric:tabular-nums;fill:var(--muted)}
+.qmean{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:5 4;opacity:.5}
+.qnote{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11px;font-weight:600;fill:var(--muted)}
+.qsmt{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:12px;font-weight:700}
 
 footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px solid var(--rule)}
 .fgrid{display:flex;justify-content:space-between;gap:28px;flex-wrap:wrap}
@@ -478,7 +552,6 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
       <li class="rstep" data-go="5"><span class="rnum">7</span><button class="rcard" type="button"><h3>Answer &amp; share</h3><div class="rlead">Sources attached, always</div>
         <div class="rbody"><div><ul><li>Copy a link</li><li>Download CSV or PNG</li><li>Cite it, short or Harvard</li></ul></div></div></button></li>
     </ol>
-    <p class="rprov">Every raw value is on <a href="data.html">Explorer Verify</a>, next to the exact address it was fetched from.</p>
   </aside>
 </div>
 </div>
@@ -491,17 +564,32 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
   <div class="wrap">
     <div class="slabel"><h2>Questions worth asking</h2></div>
     <p class="lede">Questions people actually ask, answered with the official numbers. Open one for the chart, the caveats and the working.</p>
-    <div class="pairs">
+    <div class="pairs" id="pairs">
       <!-- These point at /q/ pages rather than straight into the explorer.
            Chart state lives in the URL fragment, which never reaches a server,
            so an explorer link cannot unfurl as the chart it opens — every one
            of them would preview identically. A real URL per question gets a
-           real card, and a slug someone might actually search for. -->
-      <a class="pair" href="q/has-pay-kept-up-with-prices/"><div class="pq">Has pay kept up with prices?</div></a>
-      <a class="pair" href="q/have-rents-outrun-pay/"><div class="pq">Have rents outrun pay?</div></a>
-      <a class="pair" href="q/what-does-the-debt-cost-to-carry/"><div class="pq">What does the debt cost to carry?</div></a>
-      <a class="pair" href="q/did-lost-schooling-widen-the-gap/"><div class="pq">Did lost schooling widen the attainment gap?</div></a>
+           real card, and a slug someone might actually search for. The
+           thumbnails are drawn from data/questions.json, the numbers each
+           page's own chart draws. -->
+      <a class="pair" href="q/has-pay-kept-up-with-prices/" data-q="has-pay-kept-up-with-prices"><div class="pkick"></div><div class="pspark"></div><div class="pq">Has pay kept up with prices?</div><div class="pgo">Read the answer <i>→</i></div></a>
+      <a class="pair" href="q/have-rents-outrun-pay/" data-q="have-rents-outrun-pay"><div class="pkick"></div><div class="pspark"></div><div class="pq">Have rents outrun pay?</div><div class="pgo">Read the answer <i>→</i></div></a>
+      <a class="pair" href="q/what-does-the-debt-cost-to-carry/" data-q="what-does-the-debt-cost-to-carry"><div class="pkick"></div><div class="pspark"></div><div class="pq">What does the debt cost to carry?</div><div class="pgo">Read the answer <i>→</i></div></a>
+      <a class="pair" href="q/did-lost-schooling-widen-the-gap/" data-q="did-lost-schooling-widen-the-gap"><div class="pkick"></div><div class="pspark"></div><div class="pq">Did lost schooling widen the attainment gap?</div><div class="pgo">Read the answer <i>→</i></div></a>
     </div>
+    <!-- More questions, answered in place: each chart is drawn from the
+         bundle when it is opened, so its numbers follow the data. -->
+    <button class="qmore-btn" id="qmoreBtn" type="button" aria-expanded="false" aria-controls="qdrawer" hidden>
+      More questions <b id="qmoreN"></b>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg>
+    </button>
+    <div class="qdrawer" id="qdrawer"><div><div class="qdin">
+      <div class="qfilt" id="qgroups" role="group" aria-label="Kinds of question"></div>
+      <p class="qguide-t">Or pick a kind of chart — each is good at a different job</p>
+      <div class="qguide" id="qguide" role="group" aria-label="Kinds of chart"></div>
+      <div class="qlist" id="qlist"></div>
+      <p class="qempty" id="qempty" hidden>No questions of that kind yet.</p>
+    </div></div></div>
   </div>
 </section>
 
@@ -510,27 +598,30 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
     <div class="slabel"><h2>Topics</h2></div>
     <p class="lede">Every indicator sits in a topic. Open one to see everything in it.</p>
     <div class="mind" id="mind">
-      <svg class="mlinks" id="mlinks" aria-hidden="true"></svg>
-      <div class="meye" aria-hidden="true">
-        <svg viewBox="6 14 88 72">
-          <defs><clipPath id="mec"><path d="M10 50 Q50 -10 90 50 Q50 102 10 50 Z"/></clipPath></defs>
-          <g class="lid"><path d="M10 50 Q50 -10 90 50 Q50 102 10 50 Z" fill="var(--surface)" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/>
+      <div class="mbeam" id="mbeam" aria-hidden="true"></div>
+      <button class="meye" id="meye" type="button" aria-label="Blink">
+        <svg viewBox="6 12 88 76" aria-hidden="true">
+          <defs><clipPath id="mec"><path id="mclip" d="M10 50 Q50 102 90 50 Q50 102 10 50 Z"/></clipPath></defs>
+          <path id="mlid" d="M10 50 Q50 102 90 50 Q50 102 10 50 Z" fill="var(--surface)" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/>
+          <g id="mlash" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"><path d="M24 66l-5 8"/><path d="M40 73.5l-2 9"/><path d="M60 73.5l2 9"/><path d="M76 66l5 8"/></g>
           <g clip-path="url(#mec)" fill="currentColor">
-            <rect class="bar" style="transition-delay:.55s" x="29.75" y="46.56" width="6" height="18.72"/><rect class="bar" style="transition-delay:.62s" x="41.25" y="36.48" width="6" height="28.80"/>
-            <rect class="bar" style="transition-delay:.69s" x="52.75" y="42.60" width="6" height="22.68"/><rect class="bar" style="transition-delay:.76s" x="64.25" y="30.72" width="6" height="34.56"/>
-          </g></g>
+            <rect class="bar" style="transition-delay:.05s" x="29.75" y="46.56" width="6" height="18.72"/><rect class="bar" style="transition-delay:.12s" x="41.25" y="36.48" width="6" height="28.80"/>
+            <rect class="bar" style="transition-delay:.19s" x="52.75" y="42.60" width="6" height="22.68"/><rect class="bar" style="transition-delay:.26s" x="64.25" y="30.72" width="6" height="34.56"/>
+          </g>
         </svg>
         <div class="mlbl" id="mindCount">&nbsp;</div>
+      </button>
+      <div class="mgrid" id="mgrid">
+        <a class="node" data-topic="work" href="topic/work/"><div class="trow"><span class="tico" data-icon="work"></span><span class="tn">Work, pay &amp; living standards</span></div><div class="tc"></div><div class="td">Jobs, pay, prices, household income, child poverty and the cost of living.</div></a>
+        <a class="node" data-topic="economy" href="topic/economy/"><div class="trow"><span class="tico" data-icon="economy"></span><span class="tn">Economy &amp; public finances</span></div><div class="tc"></div><div class="td">Growth, productivity, business, trade, investment, borrowing, debt and tax.</div></a>
+        <a class="node" data-topic="housing" href="topic/housing/"><div class="trow"><span class="tico" data-icon="housing"></span><span class="tn">Housing</span></div><div class="tc"></div><div class="td">Prices, rents, affordability, housebuilding, homelessness and waiting lists.</div></a>
+        <a class="node" data-topic="education" href="topic/education/"><div class="trow"><span class="tico" data-icon="education"></span><span class="tn">Education</span></div><div class="tc"></div><div class="td">Pupils, teachers, absence, GCSEs, early years, apprenticeships and NEET.</div></a>
+        <a class="node" data-topic="health" href="topic/health/"><div class="trow"><span class="tico" data-icon="health"></span><span class="tn">Health</span></div><div class="tc"></div><div class="td">NHS waiting lists, A&amp;E, GPs, obesity, smoking, life expectancy and wellbeing.</div></a>
+        <a class="node" data-topic="crime" href="topic/crime/"><div class="trow"><span class="tico" data-icon="crime"></span><span class="tn">Crime &amp; Justice</span></div><div class="tc"></div><div class="td">Survey and recorded crime, charge rates, homicide, courts, prisons and police.</div></a>
+        <a class="node" data-topic="transport" href="topic/transport/"><div class="trow"><span class="tico" data-icon="transport"></span><span class="tn">Transport</span></div><div class="tc"></div><div class="td">Rail, buses, road traffic and casualties, travel times and electric cars.</div></a>
+        <a class="node" data-topic="environment" href="topic/environment/"><div class="trow"><span class="tico" data-icon="environment"></span><span class="tn">Environment &amp; Energy</span></div><div class="tc"></div><div class="td">Emissions, the electricity mix, energy use, recycling and sewage spills.</div></a>
+        <a class="node" data-topic="migration" href="topic/migration/"><div class="trow"><span class="tico" data-icon="migration"></span><span class="tn">Population &amp; Migration</span></div><div class="tc"></div><div class="td">Population, births, deaths and fertility, migration, visas and asylum.</div></a>
       </div>
-      <a class="node" data-topic="work" href="topic/work/"><div class="trow"><span class="tico" data-icon="work"></span><span class="tn">Work, pay &amp; living standards</span></div><div class="tc"></div><div class="td">Jobs, pay, prices, household income, child poverty and the cost of living.</div></a>
-      <a class="node" data-topic="economy" href="topic/economy/"><div class="trow"><span class="tico" data-icon="economy"></span><span class="tn">Economy &amp; public finances</span></div><div class="tc"></div><div class="td">Growth, productivity, business, trade, investment, borrowing, debt and tax.</div></a>
-      <a class="node" data-topic="housing" href="topic/housing/"><div class="trow"><span class="tico" data-icon="housing"></span><span class="tn">Housing</span></div><div class="tc"></div><div class="td">Prices, rents, affordability, housebuilding, homelessness and waiting lists.</div></a>
-      <a class="node" data-topic="education" href="topic/education/"><div class="trow"><span class="tico" data-icon="education"></span><span class="tn">Education</span></div><div class="tc"></div><div class="td">Pupils, teachers, absence, GCSEs, early years, apprenticeships and NEET.</div></a>
-      <a class="node" data-topic="health" href="topic/health/"><div class="trow"><span class="tico" data-icon="health"></span><span class="tn">Health</span></div><div class="tc"></div><div class="td">NHS waiting lists, A&amp;E, GPs, obesity, smoking, life expectancy and wellbeing.</div></a>
-      <a class="node" data-topic="crime" href="topic/crime/"><div class="trow"><span class="tico" data-icon="crime"></span><span class="tn">Crime &amp; Justice</span></div><div class="tc"></div><div class="td">Survey and recorded crime, charge rates, homicide, courts, prisons and police.</div></a>
-      <a class="node" data-topic="transport" href="topic/transport/"><div class="trow"><span class="tico" data-icon="transport"></span><span class="tn">Transport</span></div><div class="tc"></div><div class="td">Rail, buses, road traffic and casualties, travel times and electric cars.</div></a>
-      <a class="node" data-topic="environment" href="topic/environment/"><div class="trow"><span class="tico" data-icon="environment"></span><span class="tn">Environment &amp; Energy</span></div><div class="tc"></div><div class="td">Emissions, the electricity mix, energy use, recycling and sewage spills.</div></a>
-      <a class="node" data-topic="migration" href="topic/migration/"><div class="trow"><span class="tico" data-icon="migration"></span><span class="tn">Population &amp; Migration</span></div><div class="tc"></div><div class="td">Population, births, deaths and fertility, migration, visas and asylum.</div></a>
     </div>
   </div>
 </section>
@@ -1030,54 +1121,646 @@ function fillTiles(){
   });
 }
 
-/* ── topics as a mind map ──────────────────────────────────────────
-   The topics sit evenly round an ellipse about the eye, the first straight
-   above it, and each is joined to the eye by a curve. When the
-   section comes into view the eye opens and the topics branch out of it, one
-   after another. Below 1200px it is a plain list, so nothing is laid out here. */
+/* ── topics: the eye blinks open and the topics come out of it ─────
+   The eye starts shut — the closed lid and its lashes. When the section
+   comes into view it half opens, blinks, opens wide, its bars rise, a soft
+   beam falls from it, and the topics fly out of the pupil into the grid.
+   The lid is one path whose upper curve is moved by script, and the bars
+   are clipped to the same shape, so a shut eye shows no bars. */
 function mindMap(){
-  const box=document.getElementById("mind"), svg=document.getElementById("mlinks");
-  const nodes=[...box.querySelectorAll(".node")];
-  const n=DB.series.length;
-  document.getElementById("mindCount").textContent=`${n} indicators, ${nodes.length} topics`;
-  const wide=matchMedia("(min-width:1200px)");
-  function lay(){
-    nodes.forEach((el,i)=>el.style.setProperty("--d",(still?0:.35+i*.09)+"s"));
-    if(!wide.matches){ svg.innerHTML=""; return; }
-    const W=box.clientWidth, H=box.clientHeight, cx=W/2, cy=H/2;
-    const rx=Math.min(W*.37,560), ry=H*.40;
-    svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
-    const paths=nodes.map((el,i)=>{
-      const a=(-90+i*360/nodes.length)*Math.PI/180;
-      const dx=rx*Math.cos(a), dy=ry*Math.sin(a);
-      el.style.setProperty("--tx",dx.toFixed(1)+"px"); el.style.setProperty("--ty",dy.toFixed(1)+"px");
-      /* a mind-map curve out of the eye: sideways to the topics at the sides,
-         up or down to the ones above and below it */
-      const sxn=Math.abs(dx)<1?0:Math.sign(dx), syn=Math.sign(dy), nh=el.offsetHeight/2, nw=el.offsetWidth/2;
-      let d;
-      if(Math.abs(Math.cos(a))>.6){
-        const x0=cx+sxn*84, ex=cx+dx-sxn*nw, ey=cy+dy;
-        d=`M${x0} ${cy} C${x0+(ex-x0)*.6} ${cy} ${x0+(ex-x0)*.4} ${ey} ${ex} ${ey}`;
-      } else {
-        const x0=cx+sxn*22, y0=cy+syn*34, ex=cx+dx, ey=cy+dy-syn*nh;
-        d=`M${x0} ${y0} C${x0} ${y0+(ey-y0)*.6} ${ex} ${y0+(ey-y0)*.4} ${ex} ${ey}`;
-      }
-      return `<path class="mlink" data-i="${i}" pathLength="1" style="--d:${(still?0:.25+i*.09).toFixed(2)}s" d="${d.replace(/-?\d+\.\d+/g,v=>(+v).toFixed(1))}"/>`;
+  const box=document.getElementById("mind"), grid=document.getElementById("mgrid");
+  const nodes=[...grid.querySelectorAll(".node")];
+  document.getElementById("mindCount").textContent=`${DB.series.length} indicators, ${nodes.length} topics`;
+  const lid=document.getElementById("mlid"), clip=document.getElementById("mclip"), lash=document.getElementById("mlash");
+  /* 0 is shut (the upper lid lies on the lower one), 1 is wide open */
+  let lidAt=0;
+  const setLid=o=>{ lidAt=o; const d=`M10 50 Q50 ${(102-112*o).toFixed(2)} 90 50 Q50 102 10 50 Z`;
+    lid.setAttribute("d",d); clip.setAttribute("d",d); lash.style.opacity=Math.max(0,1-o*2.4).toFixed(2); };
+  const lidTo=(to,ms)=>new Promise(res=>{ const from=lidAt,t0=performance.now();
+    const f=now=>{ const t=Math.min(1,(now-t0)/ms); setLid(from+(to-from)*ease(t)); t<1?requestAnimationFrame(f):res(); };
+    requestAnimationFrame(f); });
+  const pause=ms=>new Promise(r=>setTimeout(r,ms));
+  /* the beam: two soft wedges from the eye down over the grid */
+  document.getElementById("mbeam").innerHTML=`<svg viewBox="0 0 100 100" preserveAspectRatio="none">
+    <defs><linearGradient id="mbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--purple)" stop-opacity=".11"/><stop offset=".6" stop-color="var(--purple)" stop-opacity=".025"/><stop offset="1" stop-color="var(--purple)" stop-opacity="0"/></linearGradient></defs>
+    <polygon points="46,0 54,0 96,100 4,100" fill="url(#mbg)"/><polygon points="48.5,0 51.5,0 72,100 28,100" fill="url(#mbg)" opacity=".7"/></svg>`;
+  /* where each card starts: on the eye, measured from its place in the grid */
+  function aim(){
+    const e=document.getElementById("meye").getBoundingClientRect(), g=grid.getBoundingClientRect();
+    const ex=e.left+e.width/2-g.left, ey=e.top+e.height*.42-g.top;
+    nodes.forEach((el,i)=>{
+      el.style.setProperty("--fx",(ex-(el.offsetLeft+el.offsetWidth/2)).toFixed(0)+"px");
+      el.style.setProperty("--fy",(ey-(el.offsetTop+el.offsetHeight/2)).toFixed(0)+"px");
+      el.style.setProperty("--d",(still?0:i*.075).toFixed(3)+"s");
     });
-    svg.innerHTML=paths.join("");
   }
-  lay();
-  let rz; addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(lay,120); });
-  wide.addEventListener?.("change",lay);
-  /* the topic under the pointer lights its branch */
-  nodes.forEach((el,i)=>{
-    el.addEventListener("mouseenter",()=>svg.querySelector(`[data-i="${i}"]`)?.classList.add("hot"));
-    el.addEventListener("mouseleave",()=>svg.querySelector(`[data-i="${i}"]`)?.classList.remove("hot"));
+  let busy=false;
+  const blink=async()=>{ if(busy||still) return; busy=true; await lidTo(.04,110); await lidTo(1,190); busy=false; };
+  async function wake(){
+    busy=true;
+    await pause(250);
+    await lidTo(.45,420);               /* half open… */
+    await pause(260);
+    await lidTo(.03,120);               /* …a blink… */
+    await lidTo(1,300);                 /* …and wide awake */
+    box.classList.add("lit");
+    await pause(380);
+    box.classList.add("out");
+    busy=false;
+    /* now and then, a blink while it is on screen */
+    const idle=()=>setTimeout(()=>{ if(!document.hidden&&onScreen) blink(); idle(); },6500+Math.random()*4000);
+    idle();
+  }
+  let onScreen=false;
+  document.getElementById("meye").addEventListener("click",blink);
+  aim();
+  if(still||!("IntersectionObserver" in window)){ setLid(1); box.classList.add("lit","out"); return; }
+  setLid(0);
+  let started=false;
+  new IntersectionObserver(es=>es.forEach(e=>{
+    onScreen=e.isIntersecting;
+    if(e.isIntersecting&&!started){ started=true; aim(); wake(); }
+  }),{threshold:.18}).observe(box);
+  let rz; addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(()=>{ if(!box.classList.contains("out")) aim(); },120); });
+}
+
+/* ══════════════════════════════════════════════════════════════
+   QUESTIONS
+   The four featured questions have pages of their own. The rest are
+   answered here, in a drawer: each one names its indicators, the chart
+   that answers it best and why, and writes its answer from the bundle
+   when it is opened, so the sentence and the chart follow the data.
+   ══════════════════════════════════════════════════════════════ */
+
+/* The explorer's chart glyphs, so a chart type looks the same in both */
+const QG=(...p)=>`<svg viewBox="0 0 26 18" aria-hidden="true">${p.join("")}</svg>`;
+const QICON={
+  line:   QG(`<path d="M2 14 L8 8 L13 11 L18 4 L24 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>`),
+  dots:   QG(`<g fill="currentColor">${[[3,14],[9,8],[14,11],[19,4],[24,7]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.9"/>`).join("")}</g>`),
+  small:  QG(`<g fill="none" stroke="currentColor" stroke-width="1.4"><path d="M2 8 L5 5 L8 7 L11 3"/><path d="M15 8 L18 4 L21 7 L24 5"/><path d="M2 16 L5 13 L8 15 L11 12"/><path d="M15 16 L18 12 L21 15 L24 13"/></g>`),
+  stack:  QG(`<path d="M2 15 L8 10 L14 12 L20 7 L24 9 V15 Z" fill="currentColor" opacity=".8"/><path d="M2 10 L8 6 L14 8 L20 3 L24 5 L24 9 L20 7 L14 12 L8 10 L2 15 Z" fill="currentColor" opacity=".35"/>`),
+  slope:  QG(`<path d="M5 13 L21 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M5 5 L21 11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" opacity=".5"/><g fill="currentColor"><circle cx="5" cy="13" r="2"/><circle cx="21" cy="4" r="2"/><circle cx="5" cy="5" r="2" opacity=".5"/><circle cx="21" cy="11" r="2" opacity=".5"/></g>`),
+  bar:    QG(`<g fill="currentColor">${[[3,7],[8,4],[13,9],[18,2],[23,6]].map(([x,y])=>`<rect x="${x}" y="${y}" width="3" height="${15-y}" rx="1.2"/>`).join("")}</g>`),
+  gap:    QG(`<path d="M2 12 L8 9 L13 9 L18 6 L24 3 L24 10 L18 11 L13 12 L8 12 Z" fill="currentColor" opacity=".3"/><path d="M2 12 L8 9 L13 9 L18 6 L24 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><path d="M2 12 L8 12 L13 12 L18 11 L24 10" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" opacity=".55"/>`),
+  scatter:QG(`<g fill="currentColor">${[[5,12],[9,7],[12,13],[15,5],[18,9],[22,3]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="1.8"/>`).join("")}</g>`)
+};
+/* each kind of chart, and the job it is good at */
+const QTYPES=[
+  ["line","Line","Change over time, and how several series move together."],
+  ["dots","Dots","Separate yearly measurements, where a line would suggest a smooth path."],
+  ["small","Small multiples","Several measures in different units, each on its own scale."],
+  ["stack","Stacked area","Parts that add up to a whole, and how the mix shifts."],
+  ["slope","Slope","Just the start and the end: who rose most, in rank order."],
+  ["bar","Columns","One total per year, and anything that can fall below zero."],
+  ["gap","Gap","The difference between two series, shaded so you read it directly."],
+  ["scatter","Scatter","Whether two things move together — or don’t."]
+];
+const QTYPE_NAME=Object.fromEntries(QTYPES.map(([k,n])=>[k,n]));
+const QGROUPS=[["all","All"],["many","Several trends at once"],["myth","Looks like a trend — isn’t"],["long","The long view"]];
+
+/* ── reading the bundle for an answer ── */
+/* A year still in progress is left out: these answers set whole years
+   against whole years, and the explorer shows the part year, labelled. */
+const val=(id,y)=>{ const s=S(id); if(!s||(s.partial&&s.partial.year===y)) return null; const i=y-s.start; return (i>=0&&i<s.values.length)?s.values[i]:null; };
+const WORDS=["no","one","two","three","four","five","six","seven","eight","nine"];
+const nw=n=>n<10?WORDS[n]:String(n);
+const yrs=(id,a,b)=>{ const out=[]; for(let y=a;y<=b;y++) if(val(id,y)!=null) out.push(y); return out; };
+/* a year as the series counts it: 2019/20 for a school year, 2019-20 for a financial one */
+const yl=(id,y)=>{ const b=(S(id)||{}).year_basis; return b==="academic"?`${y}/${String((y+1)%100).padStart(2,"0")}`:b==="financial"?`${y}-${String((y+1)%100).padStart(2,"0")}`:String(y); };
+const big=v=>Math.abs(v)>=1e6?`${(v/1e6).toFixed(1)} million`:Math.round(v).toLocaleString("en-GB");
+const thou=v=>(Math.round(v/1000)*1000).toLocaleString("en-GB");
+const d1=v=>v.toFixed(1), d2=v=>v.toFixed(2);
+const pc=(a,b)=>{ const c=(b/a-1)*100; return `${c>=0?"+":"−"}${Math.abs(c).toFixed(0)}%`; };
+const pcw=(a,b)=>{ const c=(b/a-1)*100; return `${c>=0?"up":"down"} ${Math.abs(c).toFixed(0)}%`; };
+const argmax=(id,a,b,f=v=>v)=>yrs(id,a,b).reduce((m,y)=>m==null||f(val(id,y))>f(val(id,m))?y:m,null);
+const argmin=(id,a,b)=>argmax(id,a,b,v=>-v);
+const lastY=(id,a,b)=>{ const y=yrs(id,a,b); return y[y.length-1]; };
+const firstY=(id,a,b)=>yrs(id,a,b)[0];
+const capf=t=>t[0].toUpperCase()+t.slice(1);
+
+/* The questions. Each names the explorer chart that answers it, why that
+   chart, the caveat that matters, and writes its answer from the data.
+   `myth` questions are the ones where the trend people expect is not
+   there, or is not what it seems. */
+const QS=[
+  {key:"nhs", group:"many", q:"Is the NHS under more strain than before the pandemic?",
+   ids:["rttwaitlist","ae4hour","ambcat2","gpfte"], chart:"small", trans:"none", from:2010, to:2026, era:"bands",
+   short:{rttwaitlist:"Waiting list (pathways)",ae4hour:"A&E seen within 4 hours (%)",ambcat2:"Ambulance, Category 2 (minutes)",gpfte:"Fully qualified GPs (FTE)"},
+   say(){
+     const w=lastY("rttwaitlist",2010,2026), wp=argmax("rttwaitlist",2019,2026);
+     const a=lastY("ae4hour",2010,2026), m=lastY("ambcat2",2010,2026), mw=argmax("ambcat2",2017,2026);
+     const g0=firstY("gpfte",2010,2026), g=lastY("gpfte",2010,2026);
+     return `The waiting list was ${big(val("rttwaitlist",2019))} in 2019 and ${big(val("rttwaitlist",w))} in ${w}`+
+       (wp!==w?`, having peaked at ${big(val("rttwaitlist",wp))} in ${wp}`:"")+`. `+
+       `The share of A&E patients seen within four hours went from ${d1(val("ae4hour",2018))}% in ${yl("ae4hour",2018)} to ${d1(val("ae4hour",a))}% in ${yl("ae4hour",a)}. `+
+       `Category 2 ambulances — strokes, heart attacks — averaged ${Math.round(val("ambcat2",2018))} minutes in ${yl("ambcat2",2018)}, ${Math.round(val("ambcat2",mw))} at the worst in ${yl("ambcat2",mw)}, and ${Math.round(val("ambcat2",m))} in ${yl("ambcat2",m)}. `+
+       `Fully qualified GPs have barely changed in number: ${big(val("gpfte",g))} full-time equivalents in ${g}, against ${big(val("gpfte",g0))} in ${g0}.`;
+   },
+   why:"Four measures in four units — patients, a percentage, minutes, doctors. Small multiples give each its own scale on the same timeline, so you compare the shape and timing of each without pretending they share an axis.",
+   care:"Every one of these has breaks in it: pathways dropped from the waiting list in 2013 and 2024, A&E trial sites left out from 2019 to 2023, new ambulance standards in 2017. They are marked on the lines in the explorer."},
+
+  {key:"life", group:"many", q:"Are we living longer — and healthier?",
+   ids:["lefemale","lemale","hlefemale","hlemale"], chart:"line", trans:"none", from:2001, to:2022, era:"off",
+   short:{lefemale:"Women",lemale:"Men",hlefemale:"Women, in good health",hlemale:"Men, in good health"},
+   say(){
+     const e=lastY("lemale",2001,2022), h0=firstY("hlemale",2001,2022), h=lastY("hlemale",2001,2022);
+     const gap0=val("lefemale",h0)-val("hlefemale",h0), gap=val("lefemale",h)-val("hlefemale",h);
+     return `Life expectancy at birth rose by ${d1(val("lemale",2011)-val("lemale",2001))} years for men and ${d1(val("lefemale",2011)-val("lefemale",2001))} for women between 2001 and 2011, then all but stopped: by ${e} it was ${d1(val("lemale",e))} for men and ${d1(val("lefemale",e))} for women. `+
+       `Healthy life expectancy — the years expected in good health — fell, from ${d1(val("hlemale",h0))} to ${d1(val("hlemale",h))} for men and ${d1(val("hlefemale",h0))} to ${d1(val("hlefemale",h))} for women. `+
+       `So the years a woman can expect to spend in poor health grew from ${d1(gap0)} to ${d1(gap)}.`;
+   },
+   why:"All four are in years, so they can honestly share one axis — and the space between each pair of lines is the story: the years lived in poor health.",
+   care:"Period life expectancy assumes this year’s death rates hold for a whole lifetime: it summarises mortality now rather than forecasting it. Healthy life expectancy rests on people rating their own health in a survey."},
+
+  {key:"power", group:"many", q:"Where does our electricity come from now?",
+   ids:["renewshare","lowcarbon","fossilshare"], chart:"line", trans:"none", from:1998, to:2025, era:"off",
+   short:{renewshare:"Renewables",lowcarbon:"Low-carbon, incl. nuclear",fossilshare:"Fossil fuels"},
+   say(){
+     const f=firstY("fossilshare",1998,2025), l=lastY("renewshare",1998,2025);
+     const cross=(a,b)=>yrs(a,1998,2025).find(y=>val(a,y)>val(b,y));
+     const c1=cross("lowcarbon","fossilshare"), c2=cross("renewshare","fossilshare");
+     return `In ${f} fossil fuels made ${d1(val("fossilshare",f))}% of the UK’s electricity and renewables ${d1(val("renewshare",f))}%. `+
+       (c1?`Low-carbon sources — renewables plus nuclear — overtook fossil fuels in ${c1}`:"")+
+       (c2?`, and renewables alone did so in ${c2}. `:". ")+
+       `By ${l} renewables made ${d1(val("renewshare",l))}% against fossil fuels’ ${d1(val("fossilshare",l))}%.`;
+   },
+   why:"Shares of the same total over a quarter of a century. A line shows exactly when one source overtook another, which a stacked chart would bury in its middle bands.",
+   care:"Low-carbon includes renewables, so those two lines overlap by design — they are not slices that add up to 100%. The space between them is nuclear."},
+
+  {key:"ageing", group:"many", q:"Is the population getting older?",
+   ids:["pop015","pop1664","pop65"], chart:"stack", trans:"none", from:1991, to:2024, era:"off",
+   short:{pop015:"Under 16",pop1664:"16 to 64",pop65:"65 and over"},
+   say(){
+     const f=firstY("pop65",1991,2024), l=lastY("pop65",1991,2024);
+     const c=yrs("pop65",1991,2024).find(y=>val("pop65",y)>val("pop015",y)), pk=argmax("pop1664",1991,2024);
+     return `In ${f} under-16s were ${d1(val("pop015",f))}% of the UK population and over-65s ${d1(val("pop65",f))}%. `+
+       (c?`The over-65s overtook the under-16s in ${c}, and by ${l} were ${d1(val("pop65",l))}% against ${d1(val("pop015",l))}%. `:"")+
+       `The working-age share peaked at ${d1(val("pop1664",pk))}% in ${pk} and is ${d1(val("pop1664",l))}% now.`;
+   },
+   why:"The three age groups add up to the whole population, and a stacked area shows that: each band is a share of 100%. Its weakness is that only the bottom band sits on a flat baseline — the moment the over-65s overtake the under-16s is easier to see as a line, one click away in the explorer.",
+   care:"These are shares, not numbers. The population grew throughout, so a smaller share of under-16s does not have to mean fewer children."},
+
+  {key:"travel", group:"many", q:"Have trains, buses and cars recovered from lockdown?",
+   ids:["railjourneys","busjourneys","traffic"], chart:"line", trans:"index", from:2010, to:2025, era:"off",
+   short:{railjourneys:"Rail journeys",busjourneys:"Bus journeys",traffic:"Road traffic"},
+   say(Q,sets){
+     const at=(id,y)=>{ const p=sets.find(s=>s.id===id).pts.find(q=>q[0]===y); return p&&p[1]; };
+     const lo=id=>argmin(id,2019,2025), l=lastY("railjourneys",2010,2025);
+     const n=v=>Math.round(v);
+     return `Set each to ${Q.from} = 100. Before the pandemic, in ${yl("railjourneys",2018)}, rail journeys stood at ${n(at("railjourneys",2018))} and road traffic at ${n(at("traffic",2018))}, while bus journeys had fallen to ${n(at("busjourneys",2018))}. `+
+       `Lockdown took rail down to ${n(at("railjourneys",lo("railjourneys")))} and buses to ${n(at("busjourneys",lo("busjourneys")))}. `+
+       `By ${yl("railjourneys",l)} rail was back to ${n(at("railjourneys",l))} and traffic ${n(at("traffic",lastY("traffic",2010,2025)))}, but buses only ${n(at("busjourneys",lastY("busjourneys",2010,2025)))}.`;
+   },
+   why:"Journeys, journeys and vehicle miles: three units at three very different sizes. Rebasing each to 100 in the same year puts them on one axis as growth, so ‘back to normal’ means the same thing for all three.",
+   care:"Rail and bus figures are April-to-March years and road traffic is calendar years, so the pandemic dip lands a few months apart. Rail has several changes of method, marked in the explorer."},
+
+  {key:"rise", group:"many", q:"Since 2015, what has risen fastest: pay, prices, rents or house prices?",
+   ids:["pay","cpih","rents","houseprice"], chart:"slope", trans:"index", from:2015, to:2025, era:"off",
+   short:{pay:"Pay",cpih:"Prices (CPIH)",rents:"Private rents",houseprice:"House prices"},
+   say(Q,sets){
+     const lc=n=>n[0].toLowerCase()+n.slice(1);
+     const end=sets.map(s=>({s,v:[...s.pts].reverse().find(q=>q[1]!=null)})).sort((a,b)=>b.v[1]-a.v[1]);
+     const list=end.map(e=>`${lc(e.s.name)} ${pc(100,e.v[1])}`);
+     return `Rebased to ${Q.from} = 100, by ${Q.to}: ${list.slice(0,-1).join(", ")} and ${list[list.length-1]}. `+
+       `${end[0].s.name} rose most and ${lc(end[end.length-1].s.name)} least.`;
+   },
+   why:"When the question is ‘where did each one end up?’, the years in between are noise. A slope chart keeps just the start and the end, so the ranking and the size of each rise read at a glance.",
+   care:"A slope chart hides the route: two series can take very different paths and finish level. Switch to a line in the explorer to see each year. The rents index starts in 2015, which is why this does too."},
+
+  {key:"migration", group:"many", q:"Is net migration driven by students or workers?",
+   ids:["netmig","visastudy","visawork","visahcw"], chart:"line", trans:"none", from:2012, to:2025, era:"off",
+   short:{netmig:"Net migration",visastudy:"Study visas",visawork:"Work visas",visahcw:"Health and care visas"},
+   say(){
+     const n=argmax("netmig",2012,2025), nl=lastY("netmig",2012,2025);
+     const w=argmax("visawork",2012,2025), s=argmax("visastudy",2012,2025), h=argmax("visahcw",2012,2025);
+     return `Net migration was ${thou(val("netmig",2019))} in 2019, peaked at ${thou(val("netmig",n))} in ${n} and was ${thou(val("netmig",nl))} in ${nl}. `+
+       `Study visas peaked first, at ${thou(val("visastudy",s))} in ${s}; work visas at ${thou(val("visawork",w))} in ${w}, when ${thou(val("visahcw",h))} health and care visas were granted. `+
+       `Both routes have fallen since, in step with the headline number.`;
+   },
+   why:"All four count people, so one axis is fair — and putting the routes beside the headline number shows which of them moved with it, and when.",
+   care:"A visa granted is not a person settling: visas include short stays, study visas here exclude dependants, and net migration subtracts everyone who left. ONS changed how it estimates net migration in 2020."},
+
+  {key:"obesity", group:"many", q:"Are children getting heavier?",
+   ids:["obeserec","obesey6"], chart:"dots", trans:"none", from:2006, to:2024, era:"off", zero:true,
+   short:{obeserec:"Reception, age 4–5",obesey6:"Year 6, age 10–11"},
+   say(){
+     const f=firstY("obesey6",2006,2024), l=lastY("obesey6",2006,2024);
+     return `Obesity among reception children was ${d1(val("obeserec",f))}% in ${yl("obeserec",f)} and ${d1(val("obeserec",l))}% in ${yl("obeserec",l)} — little changed. `+
+       `Among Year 6 children it went from ${d1(val("obesey6",f))}% to ${d1(val("obesey6",l))}%. `+
+       `Children now leave primary school about ${d1(val("obesey6",l)/val("obeserec",l))} times as likely to be obese as when they start it.`;
+   },
+   why:"Each dot is one school year’s measurement. Dots rather than a line make plain that this is a yearly check, and stop one odd year from dragging a line up and down with it.",
+   care:"England only. The 2020/21 figures come from a much smaller sample of schools measured during the pandemic, so that year’s jump should be read with care."},
+
+  {key:"homes", group:"long", q:"Are we building as many homes as we used to?",
+   ids:["homecompletions"], chart:"bar", trans:"none", from:1946, to:2025, era:"off", note:true,
+   say(){
+     const pk=argmax("homecompletions",1946,2025), l=lastY("homecompletions",1946,2025), p30=argmax("homecompletions",l-29,l);
+     return `England completed ${thou(val("homecompletions",pk))} new homes in ${pk}, the most in any year since the war. `+
+       `In the last thirty years the most in a single year was ${thou(val("homecompletions",p30))}, in ${p30}, and in ${l} it was ${thou(val("homecompletions",l))} — ${Math.round(val("homecompletions",l)/val("homecompletions",pk)*100)}% of the ${pk} peak.`;
+   },
+   why:"Homes completed is a count for each year, so each column is one year’s output and its height the total. Columns make the size of the post-war peak against today plain in a way a thin line does not.",
+   care:"These are completions counted by councils and building control in England. They miss conversions and changes of use, which the ‘net additions’ measure includes, so they understate how many homes the stock gains."},
+
+  {key:"borrow", group:"long", q:"When did the government last balance the books?",
+   ids:["psnb"], chart:"bar", trans:"pctgdp", from:1946, to:2025, era:"bands", signs:["Borrowing","Surplus"], note:true,
+   say(Q,sets){
+     const p=sets[0].pts.filter(q=>q[1]!=null), surp=p.filter(q=>q[1]<0), pk=p.reduce((m,q)=>q[1]>m[1]?q:m), l=p[p.length-1];
+     return `The government borrowed in ${p.length-surp.length} of the ${p.length} years from ${p[0][0]} to ${l[0]}. `+
+       (surp.length?`The last surplus was in ${surp[surp.length-1][0]}. `:"")+
+       `Borrowing peaked at ${d1(pk[1])}% of GDP in ${pk[0]}; in ${l[0]} it was ${d1(l[1])}%.`;
+   },
+   why:"Borrowing is one total per year and can go below zero when there is a surplus. Columns above and below the line show each year’s sign at a glance — and as a share of GDP, 1950 and 2020 compare fairly.",
+   care:"In cash terms every recent year would dwarf the past, which is why this is a share of the economy. A surplus here is the whole public sector’s, before any one-off transfers are taken out."},
+
+  {key:"births", group:"long", q:"Are deaths about to overtake births?",
+   ids:["births","deaths"], chart:"gap", trans:"none", from:1938, to:2025, era:"off",
+   short:{births:"Births",deaths:"Deaths"},
+   say(){
+     const ys=yrs("births",1938,2025).filter(y=>val("deaths",y)!=null), gap=y=>val("births",y)-val("deaths",y);
+     const pk=ys.reduce((m,y)=>gap(y)>gap(m)?y:m), l=ys[ys.length-1], neg=ys.filter(y=>gap(y)<0);
+     return `In ${pk} births outnumbered deaths in England and Wales by ${thou(gap(pk))}. In ${l} the gap was ${thou(gap(l))}: ${thou(val("births",l))} births against ${thou(val("deaths",l))} deaths. `+
+       (neg.length?`Deaths last outnumbered births in ${neg[neg.length-1]}${neg.length>1?`, one of only ${nw(neg.length)} years since ${ys[0]} when they did`:""}.`:`Deaths have not outnumbered births in any year since ${ys[0]}.`);
+   },
+   why:"The question is about the difference between two lines. A gap chart shades it, so you read births minus deaths — the natural change in the population — directly, and see how close the lines have come.",
+   care:"England and Wales only. With the gap this narrow, population growth now comes almost entirely from migration."},
+
+  {key:"prod", group:"long", q:"Did productivity stop growing after 2008?",
+   ids:["productivity"], chart:"line", trans:"none", from:1971, to:2025, era:"bands",
+   short:{productivity:"Output per hour"},
+   say(){
+     const f=firstY("productivity",1971,2025), l=lastY("productivity",1971,2025);
+     const r=(a,b)=>(Math.pow(val("productivity",b)/val("productivity",a),1/(b-a))-1)*100;
+     const proj=val("productivity",2007)*Math.pow(1+r(f,2007)/100,l-2007);
+     return `Output per hour grew by ${d1(r(f,2007))}% a year on average from ${f} to 2007, and ${d1(r(2007,l))}% a year from 2007 to ${l}. `+
+       `Had the old rate carried on, the index would be about ${Math.round(proj)} today rather than ${Math.round(val("productivity",l))} — roughly ${Math.round((proj/val("productivity",l)-1)*100)}% higher.`;
+   },
+   why:"One series over half a century. A line shows the change of slope — the bend at 2008 — and the bend is the whole story.",
+   care:"Productivity is output per hour worked across the whole economy. It is hard to measure and is revised often, so the last year or two may move."},
+
+  {key:"crime", group:"myth", q:"Has crime gone up?",
+   ids:["csew","prc"], chart:"line", trans:"index", from:2002, to:2025, era:"bands",
+   short:{csew:"Crime Survey",prc:"Police recorded"},
+   say(){
+     const lo=argmin("prc",2002,2025), l=lastY("prc",2002,2025), cl=lastY("csew",2002,2025), cp=argmax("csew",1981,2025);
+     return `Police-recorded crime has risen ${pc(val("prc",lo),val("prc",l)).replace("+","")} since its low in ${yl("prc",lo)} — the rise most headlines report. `+
+       `The Crime Survey, which asks people what happened to them and does not depend on what the police record, shows crime ${pcw(val("csew",2002),val("csew",cl))} since ${yl("csew",2002)}, and ${pcw(val("csew",cp),val("csew",cl)).replace("down ","")} lower than its peak in ${yl("csew",cp)}.`;
+   },
+   why:"Two measures of the same thing at very different sizes. Rebasing both to 100 shows the direction of each, and the year they part ways.",
+   care:"Police figures rose from 2014 largely because recording was tightened after inspectors found crimes going unrecorded. The survey misses crimes against businesses, only counts fraud from 2016, and paused in 2020."},
+
+  {key:"happy", group:"myth", q:"Is Britain getting unhappier?",
+   ids:["wbhappy","wbsatisfied","wbworthwhile","wbanxiety"], chart:"dots", trans:"none", from:2011, to:2022, era:"off", domain:[0,10],
+   short:{wbhappy:"Happiness",wbsatisfied:"Life satisfaction",wbworthwhile:"Feeling worthwhile",wbanxiety:"Anxiety"},
+   say(){
+     const h=yrs("wbhappy",2011,2022).map(y=>val("wbhappy",y)), l=lastY("wbanxiety",2011,2022);
+     return `On a scale of 0 to 10, average happiness moved between ${d2(Math.min(...h))} and ${d2(Math.max(...h))} over ${h.length} years — ${d2(Math.max(...h)-Math.min(...h))} of a point. `+
+       `The biggest move came in the pandemic: anxiety rose from ${d2(val("wbanxiety",2018))} in ${yl("wbanxiety",2018)} to ${d2(val("wbanxiety",2020))} in ${yl("wbanxiety",2020)}, and was ${d2(val("wbanxiety",l))} in ${yl("wbanxiety",l)}. `+
+       `Drawn from zero, as here, the lines are close to flat. Cut the axis to fit the data and the same numbers look like a collapse.`;
+   },
+   why:"The scale runs from 0 to 10, so the axis does too. Zoom in to fit the data — as most charts, and the explorer by default, do — and a quarter-point wobble fills the frame.",
+   care:"These are averages of a very large survey, so a tenth of a point is a real change across the population, even if no one person would notice it. Lower is better for anxiety."},
+
+  {key:"deaths", group:"myth", q:"Are more people dying than ever?",
+   ids:["deaths"], chart:"line", trans:"none", from:1900, to:2025, era:"off", zero:true,
+   short:{deaths:"Deaths registered"},
+   say(){
+     const lo=argmin("deaths",1900,2025), hi=argmax("deaths",1900,2025), l=lastY("deaths",1900,2025);
+     const p0=refAt("population",1971), pr=DB.refs.population, pl=pr.start+pr.values.length-1, p1=refAt("population",Math.min(l,pl));
+     return `Deaths in England and Wales have stayed between ${thou(val("deaths",lo))} (${lo}) and ${thou(val("deaths",hi))} (${hi}) every year since 1900. In ${l} there were ${thou(val("deaths",l))}. `+
+       (p0&&p1?`Since 1971 the UK population has grown by ${Math.round((p1/p0-1)*100)}%, yet deaths in ${l} were within ${Math.max(1,Math.ceil(Math.abs(val("deaths",l)/val("deaths",1971)-1)*100))}% of the ${thou(val("deaths",1971))} in 1971.`:"");
+   },
+   why:"The axis starts at zero, which shows a flat line for what it is. Why it is flat is the surprise: far more people, each living far longer.",
+   care:"These are deaths registered in the year, which can lag the death itself — most of all when a coroner is involved."},
+
+  {key:"saving", group:"myth", q:"Has Britain stopped saving?",
+   ids:["saving"], chart:"line", trans:"none", from:1963, to:2025, era:"bands", mean:true, zero:true,
+   short:{saving:"Saving ratio"},
+   say(){
+     const ys=yrs("saving",1963,2025), v=ys.map(y=>val("saving",y)), m=v.reduce((a,b)=>a+b,0)/v.length;
+     const lo=argmin("saving",1963,2025), hi=argmax("saving",1963,2025), l=ys[ys.length-1];
+     return `Households have saved between ${d1(val("saving",lo))}% (${lo}) and ${d1(val("saving",hi))}% (${hi}) of their disposable income since ${ys[0]}, ${d1(m)}% on average. `+
+       `In ${l} it was ${d1(val("saving",l))}%, ${Math.abs(val("saving",l)-m)<1?"close to":val("saving",l)>m?"above":"below"} that average. `+
+       `The highs line up with recessions and the 2020 lockdown, when spending fell — there is no long slide.`;
+   },
+   why:"A dashed line at the long-run average turns ‘is it low?’ into something you can see: the ratio crosses it again and again, which is what no trend looks like.",
+   care:"The saving ratio is what is left of disposable income after spending, so it falls when spending rises as well as when income falls. It is revised heavily, often years later."},
+
+  {key:"trade", group:"myth", q:"Did Brexit tip Britain into a trade deficit?",
+   ids:["tradebal"], chart:"bar", trans:"pctgdp", from:1948, to:2025, era:"bands", signs:["Surplus","Deficit"], note:true,
+   say(Q,sets){
+     const p=sets[0].pts.filter(q=>q[1]!=null), pre=p.filter(q=>q[0]>=1998&&q[0]<=2015), post=p.filter(q=>q[0]>=2016);
+     const def=a=>a.filter(q=>q[1]<0).length, avg=a=>a.reduce((s,q)=>s+q[1],0)/a.length;
+     const of=(n,a)=>n===a.length?`every one of the ${a.length} years`:`${nw(n)} of the ${a.length} years`;
+     return `The UK ran a trade deficit in ${of(def(pre),pre)} from 1998 to 2015, before the referendum, and in ${of(def(post),post)} since. `+
+       `It averaged ${d1(Math.abs(avg(pre)))}% of GDP a year before the vote and ${d1(Math.abs(avg(post)))}% after. The deficit is decades old.`;
+   },
+   why:"A balance can sit either side of zero. Columns above and below the line show each year’s surplus or deficit, and as a share of GDP 1950 and 2020 compare fairly.",
+   care:"This is goods and services together: a long-standing deficit in goods is partly offset by a surplus in services. Trade figures are revised often, and trade in precious metals can swing a single year."},
+
+  {key:"police", group:"myth", q:"Do more police officers mean more crimes charged?",
+   ids:["policeofficers","chargerate"], chart:"scatter", trans:"none", from:2014, to:2025, era:"off",
+   short:{policeofficers:"Police officers (FTE)",chargerate:"Charge rate, % of offences"},
+   say(Q,sets){
+     const [X,Y]=sets, pr=X.pts.map((q,i)=>[q[0],q[1],Y.pts[i][1]]).filter(q=>q[1]!=null&&q[2]!=null);
+     const mx=pr.reduce((s,q)=>s+q[1],0)/pr.length, my=pr.reduce((s,q)=>s+q[2],0)/pr.length;
+     const r=pr.reduce((s,q)=>s+(q[1]-mx)*(q[2]-my),0)/Math.sqrt(pr.reduce((s,q)=>s+(q[1]-mx)**2,0)*pr.reduce((s,q)=>s+(q[2]-my)**2,0));
+     const lo=pr.reduce((m,q)=>q[1]<m[1]?q:m), hi=pr.reduce((m,q)=>q[1]>m[1]?q:m), cl=pr.reduce((m,q)=>q[2]<m[2]?q:m), l=pr[pr.length-1];
+     return `Across these ${pr.length} years, if anything the years with more officers had lower charge rates (a correlation of ${r<0?"−":""}${Math.abs(r).toFixed(2)}). `+
+       `Officer numbers fell to ${thou(lo[1])} in ${lo[0]} and rose to ${thou(hi[1])} by ${hi[0]}; the charge rate fell from ${d1(pr[0][2])}% to ${d1(cl[2])}% in ${yl("chargerate",cl[0])}, and is back to ${d1(l[2])}%. `+
+       `Both moved with time, for their own reasons — the dots trace a loop, not a line.`;
+   },
+   why:"Each dot is a year, placed by officer numbers across and charge rate up. If more officers meant more charges the dots would climb to the right. Joining them in time order shows what is really going on.",
+   care:"A scatter of yearly totals cannot show cause either way. Charge rates also depend on how crimes are recorded and what kinds are reported, and both changed over these years. Officers are counted at March, charge rates by financial year."}
+];
+
+/* ── the numbers for one question: the explorer's transforms ── */
+function qSets(Q){
+  let base=null;
+  if(Q.trans==="index"){ for(let y=Q.from;y<=Q.to&&base==null;y++) if(Q.ids.every(id=>val(id,y)!=null)) base=y; }
+  return Q.ids.map((id,k)=>{
+    const s=S(id), pts=[];
+    for(let y=Q.from;y<=Q.to;y++){
+      let v=val(id,y);
+      if(v!=null&&Q.trans==="index") v=v/val(id,base)*100;
+      if(v!=null&&Q.trans==="pctgdp"){ const g=refAt("gdp",y); v=g?v/g*100:null; }
+      pts.push([y,v]);
+    }
+    return {id,s,name:(Q.short||{})[id]||s.name,colour:COL(k),pts};
   });
-  if(still||!("IntersectionObserver" in window)){ box.classList.add("open"); return; }
-  /* opens as soon as a little of it shows, so no topic is ever left hidden */
-  const io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting){ box.classList.add("open"); io.disconnect(); } }),{threshold:.12});
-  io.observe(box);
+}
+const qUnit=(Q,sets)=>Q.trans==="index"?`index, ${Q.from} = 100`:Q.trans==="pctgdp"?"% of GDP":
+  [...new Set(sets.map(x=>shortUnit(x.s.unit)))].join(" · ");
+/* trim a series to the years it has, so lines don't start in empty space */
+const qSpan=sets=>{ const ys=sets.flatMap(s=>s.pts.filter(q=>q[1]!=null).map(q=>q[0])); return [Math.min(...ys),Math.max(...ys)]; };
+const qHash=Q=>"explore.html#p="+encodeURIComponent([Q.ids.join(","),Q.chart,Q.trans,Q.from,Q.to,Q.era].join("~"));
+
+/* ── drawing ── each takes the measured width so labels stay full size */
+function qDraw(el,Q){
+  const sets=qSets(Q), W=Math.max(300,el.clientWidth||700), narrow=W<560;
+  const f={line:qLine,dots:qLine,gap:qLine,small:qSmall,stack:qStack,slope:qSlope,bar:qBar,scatter:qScatter}[Q.chart];
+  const H=Q.chart==="small"?(narrow?4*150:2*170):narrow?280:340;
+  const g=[]; f(g,Q,sets,W,H,narrow);
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;overflow:visible" role="img" aria-label="${esc(Q.q)} — ${esc(sets.map(s=>s.s.name).join(", "))}">${g.join("")}</svg>`;
+  return sets;
+}
+function qAxis(Q,vals,plotH,incl){
+  if(Q.domain){ const [mn,mx]=Q.domain, st=CK.niceStep((mx-mn)/5), ticks=[]; for(let t=mn;t<=mx+st/2;t+=st) ticks.push(+t.toFixed(10)); return {mn,mx,ticks,st}; }
+  return CK.yAxis(Q.zero?[...vals,0]:vals,plotH,incl);
+}
+/* line, dots and gap: one shared axis, names at the line ends */
+function qLine(g,Q,sets,W,H){
+  const [x0,x1]=qSpan(sets), bands=Q.era==="bands";
+  const P={t:26+(bands?CK.BANDS_TOP:0),r:CK.gutterFor(sets.map(s=>s.name),60),b:26,l:52};
+  const sx=x=>P.l+((x-x0)/Math.max(1,x1-x0))*(W-P.l-P.r);
+  const ax=qAxis(Q,sets.flatMap(s=>s.pts.map(q=>q[1])),H-P.t-P.b,Q.trans==="index"?100:null);
+  const Y=v=>P.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(H-P.t-P.b);
+  if(bands) CK.bands({g,x0,x1,sx,top:P.t,bot:H-P.b,eras:DB.eras,pms:DB.pms});
+  CK.frame({g,ax,Y,x0,x1,sx,l:P.l,r:W-P.r,H,label:qUnit(Q,sets),base:Q.trans==="index"?100:(ax.mn<0&&ax.mx>0?0:null)});
+  if(Q.chart==="gap"&&sets.length===2){
+    /* the space between the lines, in the colour of whichever is higher */
+    const [A,B]=sets;
+    for(let i=0;i<A.pts.length-1;i++){
+      const [ya,a0]=A.pts[i],[yb,a1]=A.pts[i+1], b0=B.pts[i][1], b1=B.pts[i+1][1];
+      if([a0,a1,b0,b1].some(v=>v==null)) continue;
+      const seg=(xa,pa,qa,xb,pb,qb)=>g.push(`<path d="M${sx(xa).toFixed(1)} ${Y(pa).toFixed(1)} L${sx(xb).toFixed(1)} ${Y(pb).toFixed(1)} L${sx(xb).toFixed(1)} ${Y(qb).toFixed(1)} L${sx(xa).toFixed(1)} ${Y(qa).toFixed(1)} Z" fill="${(pa+pb)/2>=(qa+qb)/2?A.colour:B.colour}" opacity=".2"/>`);
+      if((a0-b0)*(a1-b1)<0){ const t=(a0-b0)/((a0-b0)-(a1-b1)), xm=ya+t, vm=a0+(a1-a0)*t; seg(ya,a0,b0,xm,vm,vm); seg(xm,vm,vm,yb,a1,b1); }
+      else seg(ya,a0,b0,yb,a1,b1);
+    }
+  }
+  if(Q.mean){
+    const v=sets[0].pts.map(q=>q[1]).filter(x=>x!=null), m=v.reduce((a,b)=>a+b,0)/v.length;
+    g.push(`<line class="qmean" x1="${P.l}" x2="${W-P.r}" y1="${Y(m).toFixed(1)}" y2="${Y(m).toFixed(1)}"/>`);
+    g.push(`<text class="qnote" x="${P.l+6}" y="${(Y(m)-6).toFixed(1)}">Average, ${m.toFixed(1)}</text>`);
+  }
+  const labels=[];
+  sets.forEach(s=>{
+    const seg=s.pts.filter(q=>q[1]!=null); if(!seg.length) return;
+    if(Q.chart==="dots"){
+      seg.forEach(q=>g.push(`<circle class="qdot" cx="${sx(q[0]).toFixed(1)}" cy="${Y(q[1]).toFixed(1)}" r="4" fill="${s.colour}"><title>${yl(s.id,q[0])}: ${fmt(q[1])}</title></circle>`));
+    } else {
+      g.push(`<path class="line" d="${CK.linePath(s.pts,sx,Y)}" stroke="${s.colour}"/>`);
+      CK.breaks({g,ds:(s.s.discontinuities||[]).filter(b=>b.year>x0&&b.year<=x1),pts:s.pts,sx,Y,colour:s.colour,x0,x1});
+    }
+    const last=seg[seg.length-1], cx=sx(last[0]), cy=Y(last[1]);
+    if(Q.chart!=="dots") CK.endPoint(g,cx,cy,s.colour,null);
+    labels.push({colour:s.colour,cx,cy,name:s.name,val:fmt(last[1])+(last[0]<x1?` in ${last[0]}`:"")});
+  });
+  CK.endLabels({g,labels,lx:W-P.r+12,floorY:H-P.b+4});
+}
+/* small multiples: each series its own scale, on one timeline */
+function qSmall(g,Q,sets,W,H,narrow){
+  const cols=narrow?1:2, rows=Math.ceil(sets.length/cols), cw=W/cols, ch=H/rows;
+  const [x0,x1]=[Q.from,Q.to];
+  sets.forEach((s,k)=>{
+    const ox=(k%cols)*cw, oy=Math.floor(k/cols)*ch;
+    const P={t:oy+34,b:oy+ch-26,l:ox+48,r:ox+cw-(cols>1&&k%cols===0?34:16)};
+    const sx=x=>P.l+((x-x0)/Math.max(1,x1-x0))*(P.r-P.l);
+    /* a series in the millions is drawn in millions, so its ticks fit */
+    const mil=Math.max(...s.pts.map(q=>q[1]??0))>=1e6;
+    if(mil) s={...s,name:s.name.replace(/\)$/,", millions)"),pts:s.pts.map(([y,v])=>[y,v==null?null:v/1e6])};
+    const ax=CK.yAxis(s.pts.map(q=>q[1]),P.b-P.t,null);
+    const Y=v=>P.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(P.b-P.t);
+    if(Q.era==="bands") CK.bands({g,x0,x1,sx,top:P.t,bot:P.b,eras:DB.eras,pms:[]});
+    const sub=[]; CK.frame({g:sub,ax,Y,x0,x1,sx,l:P.l,r:P.r,H:P.b+20});
+    g.push(...sub);
+    g.push(`<text class="qsmt" x="${ox+2}" y="${oy+14}" fill="${s.colour}">${esc(s.name)}</text>`);
+    g.push(`<path class="line" d="${CK.linePath(s.pts,sx,Y)}" stroke="${s.colour}"/>`);
+    CK.breaks({g,ds:[],pts:s.pts,sx,Y,colour:s.colour,x0,x1});
+    const last=[...s.pts].reverse().find(q=>q[1]!=null);
+    if(last){ CK.endPoint(g,sx(last[0]),Y(last[1]),s.colour,null);
+      g.push(`<text class="endval" x="${(sx(last[0])-6).toFixed(1)}" y="${(Y(last[1])-8).toFixed(1)}" text-anchor="end">${fmt(last[1])}</text>`); }
+  });
+}
+/* stacked area: the bands add up to the whole */
+function qStack(g,Q,sets,W,H){
+  const [x0,x1]=qSpan(sets), P={t:26,r:CK.gutterFor(sets.map(s=>s.name),60),b:26,l:52};
+  const sx=x=>P.l+((x-x0)/Math.max(1,x1-x0))*(W-P.l-P.r);
+  const years=[]; for(let y=x0;y<=x1;y++) years.push(y);
+  const at=(s,y)=>{ const q=s.pts.find(q=>q[0]===y); return q&&q[1]!=null?q[1]:0; };
+  const tops=years.map(y=>sets.reduce((a,s)=>a+at(s,y),0));
+  /* shares of a whole stop at 100, not the next round number past it */
+  const ax=tops.every(t=>Math.abs(t-100)<1.5)?{mn:0,mx:100,ticks:[0,25,50,75,100],st:25}:CK.yAxis([0,...tops],H-P.t-P.b,0);
+  const Y=v=>P.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(H-P.t-P.b);
+  CK.frame({g,ax,Y,x0,x1,sx,l:P.l,r:W-P.r,H,label:qUnit(Q,sets),base:0});
+  let lower=years.map(()=>0); const labels=[];
+  sets.forEach(s=>{
+    const upper=years.map((y,i)=>lower[i]+at(s,y));
+    const d="M"+years.map((y,i)=>`${sx(y).toFixed(1)} ${Y(upper[i]).toFixed(1)}`).join(" L")+" L"+
+      [...years].reverse().map((y,j)=>{const i=years.length-1-j; return `${sx(y).toFixed(1)} ${Y(lower[i]).toFixed(1)}`;}).join(" L")+" Z";
+    g.push(`<path d="${d}" fill="${s.colour}" opacity=".78" stroke="var(--surface)" stroke-width="1"/>`);
+    const n=years.length-1;
+    labels.push({colour:s.colour,cx:sx(x1),cy:Y((upper[n]+lower[n])/2),name:s.name,val:fmt(at(s,x1))+"%"});
+    lower=upper;
+  });
+  CK.endLabels({g,labels,lx:W-P.r+12,floorY:H-P.b+4});
+}
+/* slope: the first year and the last, nothing in between */
+function qSlope(g,Q,sets,W,H,narrow){
+  const [a,b]=[Q.from,Q.to], P={t:40,b:24,l:narrow?70:150,r:CK.gutterFor(sets.map(s=>s.name),70)+(narrow?0:60)};
+  const ends=sets.map(s=>({s,v0:(s.pts.find(q=>q[0]===a)||[])[1],v1:(s.pts.find(q=>q[0]===b)||[])[1]})).filter(e=>e.v0!=null&&e.v1!=null);
+  const ax=CK.yAxis(ends.flatMap(e=>[e.v0,e.v1]),H-P.t-P.b,Q.trans==="index"?100:null);
+  const Y=v=>P.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(H-P.t-P.b), XA=P.l, XB=W-P.r;
+  g.push(`<text class="axunit" x="0" y="11">${esc(qUnit(Q,sets))}</text>`);
+  [[XA,a],[XB,b]].forEach(([x,y])=>{ g.push(`<line class="gridline" x1="${x}" x2="${x}" y1="${P.t-8}" y2="${H-P.b}"/>`);
+    g.push(`<text class="axlabel" x="${x}" y="${P.t-14}" text-anchor="middle" style="font-weight:600;fill:var(--ink)">${y}</text>`); });
+  /* the start values, nudged apart where they would overlap */
+  const left=ends.map(e=>({e,y:Y(e.v0)})).sort((p,q)=>p.y-q.y);
+  left.forEach((l,i)=>{ if(i&&l.y-left[i-1].y<14) l.y=left[i-1].y+14; });
+  const seen=new Set();
+  left.forEach(l=>{ const t=fmt(l.e.v0); if(seen.has(t)) return; seen.add(t);
+    g.push(`<text class="qslope" x="${XA-10}" y="${(l.y+4).toFixed(1)}" text-anchor="end">${t}</text>`); });
+  const labels=[];
+  ends.forEach(e=>{
+    g.push(`<line class="line" x1="${XA}" y1="${Y(e.v0).toFixed(1)}" x2="${XB}" y2="${Y(e.v1).toFixed(1)}" stroke="${e.s.colour}" stroke-width="2.5"/>`);
+    g.push(`<circle cx="${XA}" cy="${Y(e.v0).toFixed(1)}" r="4" fill="${e.s.colour}" class="enddot"/><circle cx="${XB}" cy="${Y(e.v1).toFixed(1)}" r="4.5" fill="${e.s.colour}" class="enddot"/>`);
+    labels.push({colour:e.s.colour,cx:XB,cy:Y(e.v1),name:e.s.name,val:`${fmt(e.v1)}  (${pc(e.v0,e.v1)})`});
+  });
+  CK.endLabels({g,labels,lx:XB+14,floorY:H-P.b+4});
+}
+/* columns: one per year, coloured by which side of zero they fall */
+function qBar(g,Q,sets,W,H){
+  const s=sets[0], [x0,x1]=qSpan(sets), bands=Q.era==="bands";
+  const P={t:26+(bands?CK.BANDS_TOP:0),r:20,b:26,l:56};
+  const slot=(W-P.l-P.r)/(x1-x0+1), sx=x=>P.l+slot*(x-x0+.5);
+  const ax=CK.yAxis(s.pts.map(q=>q[1]),H-P.t-P.b,0);
+  const Y=v=>P.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(H-P.t-P.b);
+  if(bands) CK.bands({g,x0:x0-.5,x1:x1+.5,sx,top:P.t,bot:H-P.b,eras:DB.eras,pms:DB.pms});
+  CK.frame({g,ax,Y,x0,x1,sx,l:P.l,r:W-P.r,H,label:`${s.s.name}, ${qUnit(Q,sets)}`,base:0});
+  const neg=COL(Q.signs?1:0), bw=Math.max(1.2,slot*.78);
+  s.pts.forEach(([y,v])=>{ if(v==null) return;
+    const a=Y(Math.max(0,v)), b=Y(Math.min(0,v));
+    g.push(`<rect x="${(sx(y)-bw/2).toFixed(1)}" y="${a.toFixed(1)}" width="${bw.toFixed(1)}" height="${Math.max(.6,b-a).toFixed(1)}" rx="${Math.min(1.5,bw/3).toFixed(1)}" fill="${v<0?neg:s.colour}"><title>${y}: ${fmt(v)}</title></rect>`); });
+  if(Q.note){ /* name the most extreme year and the latest */
+    const p=s.pts.filter(q=>q[1]!=null), ext=p.reduce((m,q)=>Math.abs(q[1])>Math.abs(m[1])?q:m);
+    [ext].forEach(q=>{
+      const x=sx(q[0]), y=q[1]>=0?Y(q[1])-7:Y(q[1])+15, anc=x>W-P.r-60?"end":x<P.l+60?"start":"middle";
+      g.push(`<text class="qnote" x="${x.toFixed(1)}" y="${y.toFixed(1)}" text-anchor="${anc}" style="fill:var(--ink)">${q[0]}: ${fmt(q[1])}</text>`); });
+  }
+}
+/* scatter: each year a dot, joined in time order */
+function qScatter(g,Q,sets,W,H){
+  const [X,Yv]=sets, pr=X.pts.map((q,i)=>[q[0],q[1],Yv.pts[i][1]]).filter(q=>q[1]!=null&&q[2]!=null);
+  const P={t:28,r:24,b:40,l:52};
+  const axX=CK.yAxis(pr.map(q=>q[1]),W-P.l-P.r,null), axY=CK.yAxis(pr.map(q=>q[2]),H-P.t-P.b,null);
+  const PX=v=>P.l+(v-axX.mn)/(axX.mx-axX.mn)*(W-P.l-P.r), PY=v=>P.t+(1-(v-axY.mn)/(axY.mx-axY.mn))*(H-P.t-P.b);
+  axY.ticks.forEach(v=>{ g.push(`<line class="gridline" x1="${P.l}" x2="${W-P.r}" y1="${PY(v).toFixed(1)}" y2="${PY(v).toFixed(1)}"/>`);
+    g.push(`<text class="axlabel" x="${P.l-9}" y="${(PY(v)+4).toFixed(1)}" text-anchor="end">${CK.tickFmt(v,axY.st)}</text>`); });
+  const xt=axX.ticks.length>7?axX.ticks.filter((_,i)=>i%2===0):axX.ticks;
+  xt.forEach(v=>{ g.push(`<line class="gridline" x1="${PX(v).toFixed(1)}" x2="${PX(v).toFixed(1)}" y1="${P.t}" y2="${H-P.b}" opacity=".5"/>`);
+    g.push(`<text class="axlabel" x="${PX(v).toFixed(1)}" y="${H-P.b+16}" text-anchor="middle">${CK.tickFmt(v,axX.st)}</text>`); });
+  g.push(`<text class="axunit" x="0" y="11">${esc(Yv.name)} ↑</text>`);
+  g.push(`<text class="axunit" x="${W-P.r}" y="${H-4}" text-anchor="end">${esc(X.name)} →</text>`);
+  g.push(`<path d="${pr.map((q,i)=>`${i?"L":"M"}${PX(q[1]).toFixed(1)} ${PY(q[2]).toFixed(1)}`).join(" ")}" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="3 3" opacity=".6"/>`);
+  pr.forEach((q,i)=>{
+    const t=pr.length>1?i/(pr.length-1):1, x=PX(q[1]), y=PY(q[2]);
+    g.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5" fill="${COL(0)}" opacity="${(.3+.7*t).toFixed(2)}" class="qdot"><title>${q[0]}: ${fmt(q[1])} officers, ${fmt(q[2])}%</title></circle>`);
+    g.push(`<text class="qyr" x="${(x+8).toFixed(1)}" y="${(y-6).toFixed(1)}">${q[0]}</text>`);
+  });
+}
+
+/* ── the featured cards: a thumbnail of each page's own chart ── */
+function qSpark(el,q){
+  const W=200,H=56, sets=q.sets||[];
+  const all=sets.flatMap(s=>s.pts.map(p=>p[1])).filter(v=>v!=null); if(!all.length) return;
+  const mn=Math.min(...all), mx=Math.max(...all), x0=q.start, x1=q.end;
+  const X=y=>(y-x0)/Math.max(1,x1-x0)*W, Y=v=>H-(v-mn)/Math.max(1e-9,mx-mn)*H;
+  const g=[];
+  if(q.band){ const [a,b]=q.band; g.push(`<rect x="${X(a-.5)}" y="0" width="${X(b-.5)-X(a-.5)}" height="${H}" fill="var(--prule)" opacity=".7"/>`); }
+  sets.forEach((s,k)=>{ g.push(`<path d="${CK.linePath(s.pts,X,Y)}" fill="none" stroke="${COL(k)}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`);
+    const l=[...s.pts].reverse().find(p=>p[1]!=null); if(l) g.push(`<circle cx="${X(l[0])}" cy="${Y(l[1])}" r="3.2" fill="${COL(k)}"/>`); });
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">${g.join("")}</svg>`;
+}
+let QFEAT=null;
+function qFeatured(){
+  const draw=()=>document.querySelectorAll("#pairs .pair").forEach(a=>{
+    const q=QFEAT&&QFEAT[a.dataset.q]; if(!q) return;
+    a.querySelector(".pkick").innerHTML=`${QICON.line}${q.sets.length} indicators · ${q.start}–${q.end}`;
+    qSpark(a.querySelector(".pspark"),q);
+  });
+  if(QFEAT) return draw();
+  fetch("data/questions.json",{cache:"no-cache"}).then(r=>r.ok?r.json():null).then(j=>{ QFEAT=j||{}; draw(); }).catch(()=>{});
+}
+
+/* ── the drawer ── */
+let qGroup="all", qType=null, qOpen=null;
+function qBoot(){
+  const live=QS.filter(Q=>Q.ids.every(id=>S(id)));
+  if(!live.length) return;
+  const btn=document.getElementById("qmoreBtn"), dr=document.getElementById("qdrawer");
+  btn.hidden=false;
+  document.getElementById("qmoreN").textContent=live.length;
+  const setOpen=o=>{ dr.classList.toggle("open",o); btn.setAttribute("aria-expanded",o); };
+  btn.addEventListener("click",()=>setOpen(btn.getAttribute("aria-expanded")!=="true"));
+  const count=(k,v)=>live.filter(Q=>Q[k]===v).length;
+  document.getElementById("qgroups").innerHTML=QGROUPS.map(([k,n])=>
+    `<button class="qchip" type="button" data-g="${k}" aria-pressed="${k==="all"}">${n}<span>${k==="all"?live.length:count("group",k)}</span></button>`).join("");
+  document.getElementById("qguide").innerHTML=QTYPES.filter(([k])=>count("chart",k)).map(([k,n,b])=>
+    `<button class="qtype" type="button" data-t="${k}" aria-pressed="false"><span class="qti">${QICON[k]}${n}<span>${count("chart",k)}</span></span><span class="qtb">${b}</span></button>`).join("");
+  document.getElementById("qlist").innerHTML=live.map(Q=>`
+    <div class="qitem${Q.group==="myth"?" myth":""}" id="q-${Q.key}" data-key="${Q.key}">
+      <button class="qhead" type="button" aria-expanded="false" aria-controls="qb-${Q.key}">
+        <span class="qicon">${QICON[Q.chart]}</span>
+        <span><span class="qt" style="display:block">${esc(Q.q)}</span>
+          <span class="qm"><b>${Q.group==="myth"?"Looks like a trend — isn’t":Q.group==="long"?"The long view":`${Q.ids.length} indicators`}</b> · ${QTYPE_NAME[Q.chart]}${Q.trans==="index"?", rebased":Q.trans==="pctgdp"?", % of GDP":""}</span></span>
+        <svg class="qchev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg>
+      </button>
+      <div class="qbody" id="qb-${Q.key}"></div>
+    </div>`).join("");
+  document.querySelectorAll("#qgroups .qchip").forEach(b=>b.addEventListener("click",()=>{ qGroup=b.dataset.g; qType=null; qFilter(); }));
+  document.querySelectorAll("#qguide .qtype").forEach(b=>b.addEventListener("click",()=>{ qType=qType===b.dataset.t?null:b.dataset.t; qGroup="all"; qFilter(); }));
+  document.querySelectorAll("#qlist .qitem").forEach(el=>el.querySelector(".qhead").addEventListener("click",()=>qToggle(el.dataset.key)));
+  /* a link to one question opens the drawer on it */
+  const want=location.hash.match(/^#q-([a-z0-9]+)$/);
+  if(want&&live.some(Q=>Q.key===want[1])){ setOpen(true); qToggle(want[1],true); }
+  let rz; addEventListener("resize",()=>{ clearTimeout(rz); rz=setTimeout(qRedraw,140); });
+}
+function qFilter(){
+  document.querySelectorAll("#qgroups .qchip").forEach(b=>b.setAttribute("aria-pressed",b.dataset.g===qGroup&&!qType));
+  document.querySelectorAll("#qguide .qtype").forEach(b=>b.setAttribute("aria-pressed",b.dataset.t===qType));
+  let n=0;
+  document.querySelectorAll("#qlist .qitem").forEach(el=>{
+    const Q=QS.find(q=>q.key===el.dataset.key);
+    const show=qType?Q.chart===qType:(qGroup==="all"||Q.group===qGroup);
+    el.hidden=!show; if(show) n++;
+  });
+  document.getElementById("qempty").hidden=n>0;
+}
+function qToggle(key,scroll){
+  const was=qOpen; qOpen=was===key?null:key;
+  document.querySelectorAll("#qlist .qitem").forEach(el=>{
+    const on=el.dataset.key===qOpen;
+    el.classList.toggle("open",on);
+    el.querySelector(".qhead").setAttribute("aria-expanded",on);
+    if(!on) el.querySelector(".qbody").innerHTML="";
+  });
+  if(!qOpen){ if(location.hash.startsWith("#q-")) history.replaceState(null,"",location.pathname+location.search); return; }
+  qFill(qOpen);
+  history.replaceState(null,"","#q-"+qOpen);
+  const el=document.getElementById("q-"+qOpen);
+  if(scroll||el.getBoundingClientRect().top<0) setTimeout(()=>el.scrollIntoView({block:"start",behavior:still?"auto":"smooth"}),scroll?600:30);
+}
+function qFill(key){
+  const Q=QS.find(q=>q.key===key), body=document.getElementById("qb-"+key);
+  const [x0,x1]=(()=>{ const s=qSets(Q); return qSpan(s); })();
+  const geos=[...new Set(Q.ids.map(id=>S(id).geography).filter(Boolean))].join(", ");
+  body.innerHTML=`
+    <div class="qchart"><p class="qsub">${esc(QTYPE_NAME[Q.chart])} · ${esc(qUnit(Q,qSets(Q)))} · ${geos} · ${x0}–${x1}${Q.signs?
+      ` · <span class="qkey"><i style="background:${COL(0)}"></i>${esc(Q.signs[0])}</span><span class="qkey"><i style="background:${COL(1)}"></i>${esc(Q.signs[1])}</span>`:""}</p><div class="qsvg"></div></div>
+    <div class="qside">
+      <div class="qans"><h4>${Q.group==="myth"?"What the numbers say":"The answer"}</h4><p class="qsay"></p></div>
+      <div class="qwhy"><h4>${QICON[Q.chart]}Why ${/^[aeiou]/i.test(QTYPE_NAME[Q.chart])?"an":"a"} ${esc(QTYPE_NAME[Q.chart].toLowerCase())}${Q.chart==="small"?"":" chart"}</h4><p>${esc(Q.why)}</p></div>
+      <div class="qcare"><h4>Read it carefully</h4><p>${esc(Q.care)}</p></div>
+      <a class="pill solid qlink" href="${qHash(Q)}">Open this in the explorer →</a>
+      <div class="qsrc"><b>Source:</b> ${esc([...new Set(Q.ids.map(id=>S(id).source))].join("; "))}. Open Government Licence v3.0.</div>
+    </div>`;
+  const sets=qDraw(body.querySelector(".qsvg"),Q);
+  try{ body.querySelector(".qsay").textContent=Q.say(Q,sets); }
+  catch(e){ body.querySelector(".qsay").textContent="The chart shows the latest published figures; open it in the explorer for the numbers behind each year."; }
+}
+function qRedraw(){
+  if(qOpen){ const el=document.querySelector(`#qb-${qOpen} .qsvg`); if(el) qDraw(el,QS.find(q=>q.key===qOpen)); }
+  if(QFEAT) qFeatured();
 }
 
 /* ── boot ───────────────────────────────────────────────────────── */
@@ -1114,7 +1797,7 @@ themeBtn.onclick=()=>{
   try{ localStorage.setItem("polyoptic-theme",dark?"light":"dark"); }catch(e){}
   syncTheme();
   /* the line colours are stepped per theme, so the charts redraw */
-  if(DB) demoRender();
+  if(DB){ demoRender(); qRedraw(); }
 };
 syncTheme();
 
@@ -1124,6 +1807,8 @@ function boot(){
   demoBoot();
   fillTiles();
   mindMap();
+  qFeatured();
+  qBoot();
 }
 
 const ease=t=>t<.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;

@@ -8,7 +8,7 @@ GitHub repo.
 
 ```
 polyoptic/
-├── index.html                  home — explorer walkthrough, process, questions, topics
+├── index.html                  home — explorer walkthrough, process, questions (and a drawer of more), topics
 ├── indicator/, topic/          plain pages for search, written by ingest/pages.py
 ├── explore.html                the explorer — compare, transform, export
 ├── chartkit.js, chart.css      the chart drawing rules every page shares
@@ -329,6 +329,17 @@ real URLs under `/q/<slug>/`, each with its own metadata and its own image.
 Making arbitrary explorer links unfurl as themselves would mean moving state
 into the query string and rendering images on demand, which needs a server this
 site does not have.
+
+**More questions, answered in place.** Under the four featured questions, the
+homepage has a drawer of eighteen more. Each one is listed in `QS` in
+`index.html`: its indicators, the explorer chart that answers it (line, dots,
+small multiples, stacked area, slope, columns, gap or scatter), why that chart,
+the caveat that matters, and a `say()` that writes its answer from
+`bundle.json` when it is opened, leaving out any year still in progress. Some
+are marked `myth`: questions where the trend people expect isn't there.
+`#q-<key>` links open the drawer on one question. Their charts are drawn in the
+page, not as images, so they have no share cards of their own. A question that
+deserves one should get a `/q/` page.
 
 **A plain page for every indicator.** The explorer is an app and its HTML is
 nearly empty until the script runs, so `ingest/pages.py` writes pages a search

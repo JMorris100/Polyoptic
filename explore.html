@@ -28,7 +28,7 @@
 <link rel="icon" href="data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%226.5%204.5%2087%2087%22%3E%3Cdefs%3E%3CclipPath%20id%3D%22c%22%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%2F%3E%3C%2FclipPath%3E%3C%2Fdefs%3E%3Cpath%20d%3D%22M10%2050%20Q50%20-10%2090%2050%20Q50%20102%2010%2050%20Z%22%20fill%3D%22none%22%20stroke%3D%22%234633A8%22%20stroke-width%3D%225%22%20stroke-linejoin%3D%22round%22%2F%3E%3Cg%20clip-path%3D%22url%28%23c%29%22%20fill%3D%22%234633A8%22%3E%3Crect%20x%3D%2229.75%22%20y%3D%2246.56%22%20width%3D%226%22%20height%3D%2218.72%22%2F%3E%3Crect%20x%3D%2241.25%22%20y%3D%2236.48%22%20width%3D%226%22%20height%3D%2228.8%22%2F%3E%3Crect%20x%3D%2252.75%22%20y%3D%2242.6%22%20width%3D%226%22%20height%3D%2222.68%22%2F%3E%3Crect%20x%3D%2264.25%22%20y%3D%2230.72%22%20width%3D%226%22%20height%3D%2234.56%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="chart.css">
 <script src="chartkit.js"></script>
 <style>
@@ -46,7 +46,7 @@ html[data-theme="dark"] input{color-scheme:dark}
 
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;transition:background-color .2s}
+body{background:var(--paper);color:var(--ink);font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:15px;line-height:1.5;font-variant-numeric:tabular-nums;transition:background-color .2s}
 h1,h2,h3,h4{font-family:"IBM Plex Sans";margin:0;letter-spacing:-0.015em;line-height:1.05}
 svg{display:block}
 button{font-family:inherit}
@@ -60,11 +60,15 @@ header{position:sticky;top:0;z-index:40;background:#4633A8;color:#fff}
 .brand svg{width:36px;height:26px}
 .wm{font-family:"IBM Plex Sans";font-weight:800;font-size:21px;letter-spacing:-0.03em;color:#fff}
 .wm .b{font-weight:500;color:rgba(255,255,255,.66)}
-.crumb{font-family:"IBM Plex Mono";font-size:11px;color:rgba(255,255,255,.6);letter-spacing:.1em;text-transform:uppercase;margin-left:6px}
+/* "Explorer" beside the wordmark, set off by a rule and centred on it: the
+   capitals have no descenders, so a line-height of 1 keeps them on the
+   wordmark's middle rather than sitting low in a taller line box */
+.crumb{display:flex;align-items:center;height:24px;padding:1px 0 0 15px;margin-left:5px;border-left:1.5px solid rgba(255,255,255,.32);
+  font-family:"IBM Plex Sans";font-weight:600;font-size:15px;line-height:1;color:rgba(255,255,255,.82);letter-spacing:.1em;text-transform:uppercase}
 .hact{margin-left:auto;display:flex;gap:8px}
 /* on a phone the header has room for the brand and the three buttons only */
 @media(max-width:520px){.hrow{padding:0 16px;gap:10px}.crumb{display:none}.hb{padding:8px 11px}}
-.hb{font-family:"IBM Plex Mono";font-size:11.5px;padding:8px 16px;border:1px solid rgba(255,255,255,.34);border-radius:2px;background:transparent;color:#fff;cursor:pointer;transition:.15s}
+.hb{font-family:"IBM Plex Sans";font-size:12.5px;padding:8px 16px;border:1px solid rgba(255,255,255,.34);border-radius:2px;background:transparent;color:#fff;cursor:pointer;transition:.15s}
 .hb:hover{background:#fff;color:var(--purple);border-color:#fff}
 .hb.solid{background:#fff;color:var(--purple);border-color:#fff;font-weight:500}
 .hb.solid:hover{background:#F1EEFA}
@@ -122,19 +126,19 @@ body.side-collapsed .siderail{display:block}
   body.side-open .mobpanel{display:none}
 }
 @media (max-width:760px) and (prefers-reduced-motion:reduce){.side{transition:none}}
-/* The old look — small mono capitals for labels, thin rules, square-ish
+/* The old look — small capitals for labels, thin rules, square-ish
    chips, purple for what's selected — in a panel that runs the full height
    of the left edge. */
 .panelbox{padding:0 0 14px}
 .psec{padding:16px 18px;border-bottom:1px solid var(--rule)}
 .psec:last-child{border-bottom:0}
 .phead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:-4px 0 8px}
-.plabel{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.plabel{font-family:"IBM Plex Sans";font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
 .phead .plabel{margin-bottom:0}
 
 /* which chart am I editing */
 .pswitch{display:flex;gap:5px;flex-wrap:wrap}
-.ps{font-family:"IBM Plex Mono";font-size:11px;padding:6px 11px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:3px;transition:.13s}
+.ps{font-family:"IBM Plex Sans";font-size:12px;padding:6px 11px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:3px;transition:.13s}
 .ps:hover{border-color:var(--ink);color:var(--ink)}
 .ps[aria-pressed="true"]{background:var(--purple);border-color:var(--purple);color:#fff}
 
@@ -151,8 +155,8 @@ body.side-collapsed .siderail{display:block}
 #q:focus{outline:2px solid var(--purple);outline-offset:-1px}
 .filters{display:flex;flex-direction:column;gap:9px;margin-top:12px}
 .frow{display:flex;gap:5px;flex-wrap:wrap;align-items:center}
-.flabel{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);width:100%;margin-bottom:1px}
-.f{font-family:"IBM Plex Mono";font-size:10.5px;padding:5px 11px 5px 8px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:100px;transition:.13s;
+.flabel{font-family:"IBM Plex Sans";font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);width:100%;margin-bottom:1px}
+.f{font-family:"IBM Plex Sans";font-size:11.5px;padding:5px 11px 5px 8px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:100px;transition:.13s;
   display:inline-flex;align-items:center;gap:6px}
 .f .fic{width:14px;height:14px;flex-shrink:0}
 .f .fic.geo{width:11px;height:15px}
@@ -168,7 +172,7 @@ body.side-collapsed .siderail{display:block}
 .browse button{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;padding:10px 12px;border:1px solid var(--rule);
   border-radius:8px;background:var(--surface);color:var(--ink);font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-align:left}
 .browse button:hover{border-color:var(--purple);color:var(--purple)}
-.browse button span{font-family:"IBM Plex Mono";font-size:10.5px;font-weight:400;color:var(--muted)}
+.browse button span{font-family:"IBM Plex Sans";font-size:11.5px;font-weight:400;color:var(--muted)}
 .browse .bhint{font-size:12px;color:var(--muted);line-height:1.4}
 
 /* The drawer: one topic's indicators, opened from the filters and laid out
@@ -190,7 +194,7 @@ body.side-collapsed .siderail{display:block}
 .dtabs{display:flex;gap:5px;flex-wrap:wrap;padding:10px 20px;border-bottom:1px solid var(--rule)}
 .dbody{flex:1;overflow-y:auto;padding:6px 20px 24px;scrollbar-width:thin;overscroll-behavior:contain}
 .dgrp{margin-top:14px}
-.dgh{display:flex;align-items:center;gap:7px;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+.dgh{display:flex;align-items:center;gap:7px;font-family:"IBM Plex Sans";font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
 .dgh svg{width:13px;height:13px}.dgh .gicon{width:10px;height:14px}
 .dgh i{font-style:normal;opacity:.7}
 .dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:6px}
@@ -201,9 +205,9 @@ body.side-collapsed .siderail{display:block}
 .dcard .sw{width:11px;height:11px;flex-shrink:0;margin-top:3px;border:1.5px solid var(--rule);border-radius:3px}
 .dcard .cn{display:block;font-size:12.5px;font-weight:600;line-height:1.3}
 .dcard .cm{display:block;font-size:11px;color:var(--muted);margin-top:3px}
-.dcard .tag{display:inline-block;font-family:"IBM Plex Mono";font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--purple);
+.dcard .tag{display:inline-block;font-family:"IBM Plex Sans";font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--purple);
   border:1px solid var(--prule);border-radius:100px;padding:0 6px;margin-left:5px;vertical-align:1px}
-.dfoot{padding:10px 20px;border-top:1px solid var(--rule);font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);display:flex;justify-content:space-between;gap:10px}
+.dfoot{padding:10px 20px;border-top:1px solid var(--rule);font-family:"IBM Plex Sans";font-size:11.5px;color:var(--muted);display:flex;justify-content:space-between;gap:10px}
 body.side-collapsed .drawer{display:none}
 @media(max-width:1040px){.drawer{left:0;top:0;width:100vw;z-index:60}}
 .ci{padding:11px 18px 11px 15px;border-bottom:1px solid var(--rule-soft);border-left:3px solid transparent;cursor:pointer;display:flex;gap:10px;align-items:flex-start;transition:background .12s}
@@ -216,7 +220,7 @@ body.side-collapsed .drawer{display:none}
 .ci .cm{display:block;margin-top:3px;font-size:11.5px;line-height:1.4;color:var(--muted)}
 .ci .cm .sep{opacity:.5;padding:0 3px}
 .empty{padding:18px;font-size:13px;color:var(--muted)}
-.foot{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);padding:12px 18px 0}
+.foot{font-family:"IBM Plex Sans";font-size:11.5px;color:var(--muted);padding:12px 18px 0}
 
 /* ── panels ── */
 .stack{display:grid;grid-template-columns:repeat(12,1fr);gap:16px;align-items:start}
@@ -231,7 +235,8 @@ body.side-collapsed .drawer{display:none}
   .pmain.has-work .working{margin:14px 16px 12px 0;padding:11px 12px}
   .pmain.has-work .wyear{font-size:15px;margin-bottom:4px}
   .pmain.has-work .wyear span{display:block;margin:1px 0 0;font-size:11.5px}
-  .pmain.has-work .wblk{padding:8px 0}
+  .pmain.has-work .wblks{grid-template-columns:1fr}
+  .pmain.has-work .wblk{padding:8px 0 9px}
   .pmain.has-work .wname{font-size:12.5px;margin-bottom:5px}
   .pmain.has-work .wsum{gap:2px 6px;align-items:baseline}
   .pmain.has-work .wc b{font-size:14px}
@@ -252,7 +257,7 @@ body.side-collapsed .drawer{display:none}
 .grip:hover{color:var(--purple);border-color:var(--purple);border-style:solid;background:var(--soft)}
 .grip:focus-visible{outline:2px solid var(--purple);outline-offset:1px}
 body.dragging,body.dragging *{cursor:grabbing!important}
-.pnum{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;
+.pnum{font-family:"IBM Plex Sans";font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;white-space:nowrap;
   color:var(--purple);background:var(--soft);border:1px solid var(--prule);padding:3px 8px;border-radius:2px}
 .pcard.is-focus .pnum{background:var(--purple);color:#fff;border-color:var(--purple)}
 .pi.pen{width:24px;height:24px;border-color:transparent;background:transparent}
@@ -261,7 +266,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
   border:1px dashed var(--purple);background:var(--surface-2);color:var(--ink);padding:3px 9px;border-radius:2px;outline:none}
 .ptitle{font-size:16px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pacts{display:flex;gap:5px;flex-shrink:0}
-.pa{font-family:"IBM Plex Mono";font-size:11px;padding:5px 9px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px}
+.pa{font-family:"IBM Plex Sans";font-size:12px;padding:5px 9px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px}
 .pa:hover{border-color:var(--purple);color:var(--purple)}
 .pa.danger:hover{border-color:#B91C1C;color:#B91C1C}
 /* icon-only panel buttons — quiet until hovered so the title stays the loudest thing */
@@ -277,7 +282,7 @@ body.dragging,body.dragging *{cursor:grabbing!important}
   background:var(--surface);border:1px solid var(--rule);box-shadow:var(--shadow);padding:5px;border-radius:2px}
 .menupanel[hidden]{display:none}
 .mi{display:flex;align-items:center;gap:9px;width:100%;text-align:left;padding:8px 10px;border:0;background:transparent;
-  color:var(--ink);cursor:pointer;font-family:"IBM Plex Mono";font-size:11.5px;border-radius:2px}
+  color:var(--ink);cursor:pointer;font-family:"IBM Plex Sans";font-size:12.5px;border-radius:2px}
 .mi:hover{background:var(--soft);color:var(--purple)}
 .mi.danger:hover{background:#FEF2F2;color:#B91C1C}
 html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
@@ -289,7 +294,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 /* Chart picker. Tiles rather than a dropdown: fourteen types in a select is a
    list you scroll past, and the area views live at the bottom of it. */
 .ctgroup{grid-column:1/-1}
-.ctghead{display:block;font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.14em;
+.ctghead{display:block;font-family:"IBM Plex Sans";font-size:11px;letter-spacing:.14em;
   text-transform:uppercase;color:var(--muted);margin:0 0 7px}
 .ctgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:5px}
 .ct{display:flex;flex-direction:column;align-items:center;gap:4px;padding:7px 2px 6px;
@@ -309,7 +314,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .cfgrule{grid-column:1/-1;height:1px;background:var(--rule-soft)}
 .dd{position:relative;display:flex;width:100%}
 .dd select{appearance:none;-webkit-appearance:none;width:100%;
-  font-family:"IBM Plex Mono";font-size:11.5px;padding:7px 26px 7px 10px;
+  font-family:"IBM Plex Sans";font-size:12.5px;padding:7px 26px 7px 10px;
   border:1px solid var(--rule);background:var(--surface-2);color:var(--ink);cursor:pointer;border-radius:2px}
 .dd select:hover{border-color:var(--ink)}
 .dd select:focus{outline:2px solid var(--purple);outline-offset:-1px}
@@ -317,8 +322,8 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   border-right:1.5px solid var(--muted);border-bottom:1.5px solid var(--muted);transform:translateY(-70%) rotate(45deg)}
 .dd select option{background:var(--surface);color:var(--ink)}
 .dd select option:disabled{color:var(--muted)}
-.rng{display:flex;align-items:center;gap:8px;font-family:"IBM Plex Mono";font-size:11px;color:var(--muted)}
-.rng input{width:64px;padding:6px 7px;border:1px solid var(--rule);font-family:"IBM Plex Mono";font-size:11px;background:var(--surface-2);color:var(--ink);border-radius:2px}
+.rng{display:flex;align-items:center;gap:8px;font-family:"IBM Plex Sans";font-size:12px;color:var(--muted)}
+.rng input{width:64px;padding:6px 7px;border:1px solid var(--rule);font-family:"IBM Plex Sans";font-size:12px;background:var(--surface-2);color:var(--ink);border-radius:2px}
 .pa.on{background:var(--purple);border-color:var(--purple);color:#fff}
 .pa.on:hover{border-color:var(--purple);color:#fff}
 
@@ -331,16 +336,16 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   box-shadow:var(--shadow);transform:rotate(.4deg) scale(1.01);border-color:var(--purple)}
 .dropslot{grid-column:span var(--span,12);border:2px dashed var(--purple);background:var(--soft);
   display:flex;align-items:center;justify-content:center;color:var(--purple);
-  font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+  font-family:"IBM Plex Sans";font-size:11.5px;letter-spacing:.1em;text-transform:uppercase}
 
 .warn{background:var(--warnbg);border-bottom:1px solid var(--warnrule);padding:9px 16px;font-size:12.5px;color:var(--warn-ink)}
-/* Show-your-working. Monospace and selectable: the numbers are meant to be
+/* Show-your-working. Even-width figures and selectable: the numbers are meant to be
    read against the source and copied out, not just glanced at. */
 .hit{fill:transparent;cursor:pointer}
 .hit:hover{fill:currentColor;fill-opacity:.14}
 .working{margin:2px 16px 12px;padding:10px 12px;background:var(--soft);
   border:1px solid var(--prule);border-radius:3px;
-  font-family:"IBM Plex Mono";font-size:11.5px;line-height:1.7;color:var(--ink);
+  font-family:"IBM Plex Sans";font-size:12.5px;line-height:1.7;color:var(--ink);
   user-select:text;position:relative}
 .working .wtop{font-weight:600;font-size:12.5px}
 .working .wop{display:block;overflow-wrap:anywhere}
@@ -359,25 +364,33 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .working:has(.wyear){font-family:"IBM Plex Sans",system-ui,sans-serif;line-height:1.4;padding:12px 14px}
 .working .wyear{font-family:"IBM Plex Sans",sans-serif;font-weight:700;font-size:17px;letter-spacing:-.01em;margin-bottom:8px}
 .working .wyear span{font-family:"IBM Plex Sans",sans-serif;font-weight:400;font-size:12.5px;color:var(--muted);letter-spacing:0;margin-left:6px}
-.working .wblk{padding:10px 0;border-top:1px solid var(--prule)}
-.working .wblk:last-child{padding-bottom:0}
-.working .wname{display:flex;align-items:center;gap:8px;font-weight:600;font-size:13px;margin-bottom:8px}
-.working .wdot{width:13px;height:3px;flex-shrink:0}
+/* a receipt per line: label left, figure right, the plotted figure last */
+.working .wblks{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));column-gap:22px}
+.working .wblk{padding:9px 0 10px;border-top:1px solid var(--prule)}
+.working .wname{display:flex;align-items:flex-start;gap:8px;font-weight:600;font-size:13px;line-height:1.3;margin-bottom:6px}
+.working .wdot{width:13px;height:3px;flex-shrink:0;margin-top:.55em}
+.wrows{display:grid;gap:3px}
+.wr{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:12px;line-height:1.35;color:var(--muted)}
+.wr > span i{display:block;font-style:normal;font-size:11px;line-height:1.3;opacity:.85}
+.wr.wtot > span i{font-weight:400;color:var(--muted)}
+.wr b{font-size:13.5px;font-weight:500;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.wr.wtot{margin-top:2px;padding-top:5px;border-top:1px dashed var(--prule);color:var(--ink);font-weight:600}
+.wr.wtot b{font-size:18px;font-weight:700;letter-spacing:-.01em;color:var(--c,var(--purple))}
 .wsum{display:flex;align-items:flex-start;flex-wrap:wrap;gap:6px 10px}
 .wc{display:flex;flex-direction:column;min-width:0;max-width:220px}
-.wc b{font-family:"IBM Plex Mono";font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.2}
+.wc b{font-family:"IBM Plex Sans";font-size:18px;font-weight:500;font-variant-numeric:tabular-nums;line-height:1.2}
 .wc span{font-size:11.5px;color:var(--muted);line-height:1.3;margin-top:2px}
 .wc.wstep b{color:var(--muted)}
 .wc.wout{background:var(--surface);border:1px solid var(--prule);border-radius:3px;padding:4px 9px}
 .wc.wout b{color:var(--purple)}
-.wo{font-family:"IBM Plex Mono";font-size:16px;color:var(--muted);padding-top:2px}
-.working .wsrc{font-size:12px;color:var(--muted);margin-top:8px}
+.wo{font-family:"IBM Plex Sans";font-size:16px;color:var(--muted);padding-top:2px}
+.working .wsrc{font-size:11.5px;color:var(--muted);margin-top:7px}
 .working .wcap{display:none;font-size:11px;color:var(--muted);line-height:1.35;margin-top:4px}
 .working .wnote{font-size:12px;margin-top:6px}
-.workhint{margin:0 16px 10px;font-family:"IBM Plex Mono";font-size:10px;
+.workhint{margin:0 16px 10px;font-family:"IBM Plex Sans";font-size:11px;
   letter-spacing:.09em;text-transform:uppercase;color:var(--muted)}
 .warn b{color:var(--warn-ink-b)}
-.warn button,.warn .wlink{margin-left:8px;font-family:"IBM Plex Mono";font-size:10.5px;background:transparent;border:1px solid var(--warnrule);padding:3px 8px;cursor:pointer;color:var(--warn-ink);border-radius:2px;text-decoration:none;display:inline-block;white-space:nowrap}
+.warn button,.warn .wlink{margin-left:8px;font-family:"IBM Plex Sans";font-size:11.5px;background:transparent;border:1px solid var(--warnrule);padding:3px 8px;cursor:pointer;color:var(--warn-ink);border-radius:2px;text-decoration:none;display:inline-block;white-space:nowrap}
 .warn button:hover,.warn .wlink:hover{background:var(--warnrule);color:var(--warn-ink-b)}
 .pbody{padding:14px 16px 6px}
 .pbody.scrolls{overflow:auto;scrollbar-width:thin;padding-top:0}
@@ -385,7 +398,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .tbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:9px 16px 0;
   font-size:12px;color:var(--muted)}
 .tbar button{margin-left:auto;display:inline-flex;align-items:center;gap:6px;
-  font-family:"IBM Plex Mono";font-size:10.5px;background:var(--soft);color:var(--purple);
+  font-family:"IBM Plex Sans";font-size:11.5px;background:var(--soft);color:var(--purple);
   border:1px solid var(--prule);padding:5px 10px;border-radius:2px;cursor:pointer}
 .tbar button:hover{border-color:var(--purple)}
 .tbar button svg{width:13px;height:13px}
@@ -397,11 +410,11 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .thsort{font:inherit;font-weight:600;color:inherit;background:transparent;border:0;padding:0;cursor:pointer}
 .thsort:hover{color:var(--purple)}
 .thsort.on{color:var(--purple)}
-.ptable th i{display:block;font-family:"IBM Plex Mono";font-size:9.5px;font-style:normal;
+.ptable th i{display:block;font-family:"IBM Plex Sans";font-size:10.5px;font-style:normal;
   color:var(--muted);font-weight:400;letter-spacing:.04em}
 .ptable td{padding:5px 10px;border-bottom:1px solid var(--rule-soft)}
-.ptable td.num,.ptable th.num{text-align:right;font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums}
-.ptable td.mono{font-family:"IBM Plex Mono";color:var(--muted)}
+.ptable td.num,.ptable th.num{text-align:right;font-family:"IBM Plex Sans";font-variant-numeric:tabular-nums}
+.ptable td.mono{font-family:"IBM Plex Sans";color:var(--muted)}
 .ptable tr.brk td{border-bottom:1px dashed var(--warn)}
 .ptable tr:hover td{background:var(--hover)}
 /* the area views scale with the card down to a floor, below which the panel
@@ -419,12 +432,12 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .mapring{fill:none;stroke:var(--purple);stroke-width:2;vector-effect:non-scaling-stroke;pointer-events:none}
 .mapring.halo{stroke:var(--surface);stroke-width:5}
 .mapbox{fill:none;stroke:var(--muted);stroke-width:1;vector-effect:non-scaling-stroke;stroke-dasharray:3 3}
-.maplbl{font-family:"IBM Plex Mono",ui-monospace,monospace;fill:var(--muted)}
+.maplbl{font-family:"IBM Plex Sans",system-ui,sans-serif;fill:var(--muted)}
 .mapside{flex:1;min-width:220px;max-width:340px;display:flex;flex-direction:column;gap:2px;padding-top:4px}
 .msfind{display:flex;flex-direction:column;gap:5px;margin-bottom:10px}
-.mslbl{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.mslbl{font-family:"IBM Plex Sans";font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .msfind{position:relative}
-.msfind label{font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
+.msfind label{font-family:"IBM Plex Sans";font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
 .mfq{font:inherit;font-size:13px;padding:8px 10px;border:1px solid var(--rule);background:var(--paper);color:var(--ink);border-radius:3px;width:100%}
 .mfq:focus{outline:2px solid var(--purple);outline-offset:-1px}
 .mfq::placeholder{color:var(--muted)}
@@ -432,7 +445,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
   border-radius:3px;box-shadow:0 8px 24px rgba(0,0,0,.14);max-height:280px;overflow-y:auto;padding:4px}
 .mfhit{display:flex;justify-content:space-between;gap:10px;width:100%;padding:7px 9px;border:0;background:transparent;color:var(--ink);
   font:inherit;font-size:12.5px;text-align:left;cursor:pointer;border-radius:2px}
-.mfhit b{font-family:"IBM Plex Mono";font-weight:400;font-size:11px;color:var(--muted)}
+.mfhit b{font-family:"IBM Plex Sans";font-weight:400;font-size:12px;color:var(--muted)}
 .mfhit:hover,.mfhit.on{background:var(--soft)}
 .mfnone{padding:8px 9px;font-size:12.5px;color:var(--muted)}
 .mslbl{margin:10px 0 4px}
@@ -442,21 +455,21 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .msrow.on{background:var(--soft);border-left-color:var(--purple)}
 .msw{width:11px;height:11px;border-radius:2px;flex-shrink:0}
 .msn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.msv{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted)}
+.msv{font-family:"IBM Plex Sans";font-size:12px;color:var(--muted)}
 .msnote{font-size:11.5px;color:var(--muted);line-height:1.45;margin-top:12px}
 @container (max-width:620px){.mapwrap{flex-direction:column}.mapsvg{max-width:100%;margin:0 auto}.mapside{max-width:none;width:100%}}
-/* the area views: names in the text face, values in mono, faint stripes */
+/* the area views: names and values in the text face, faint stripes */
 .arealbl{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:12px;fill:var(--ink)}
-.areaval{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10.5px;fill:var(--muted)}
-.areahead{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;fill:var(--muted)}
+.areaval{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11.5px;fill:var(--muted)}
+.areahead{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11px;fill:var(--muted)}
 .azebra{fill:var(--ink);opacity:.025}
 .asel{fill:var(--purple);opacity:.12}
 .aref{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:4 3;opacity:.55}
-.arefl{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:10px;fill:var(--ink)}
+.arefl{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11px;fill:var(--ink)}
 .legend{display:flex;gap:16px;flex-wrap:wrap;padding:0 16px 12px}
 .lg{display:flex;align-items:center;gap:7px;font-size:12.5px}
 .lg .d{width:13px;height:3px;flex-shrink:0}
-.lg .u{font-family:"IBM Plex Mono";font-size:10px;color:var(--muted)}
+.lg .u{font-family:"IBM Plex Sans";font-size:11px;color:var(--muted)}
 /* Sources read as prose; metadata recedes. No all-caps mono — small caps at
    low contrast is the least legible treatment available, and this is the
    component carrying the site's entire trust claim. */
@@ -478,7 +491,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .stackempty{grid-column:span 12;background:var(--surface);border:1px dashed var(--prule);
   padding:52px 24px;text-align:center;color:var(--muted)}
 .stackempty h3{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
-.hpill{position:absolute;right:12px;bottom:18px;font-family:"IBM Plex Mono";font-size:10px;
+.hpill{position:absolute;right:12px;bottom:18px;font-family:"IBM Plex Sans";font-size:11px;
   background:var(--ink);color:var(--paper);padding:3px 7px;border-radius:2px;opacity:0;transition:opacity .15s;pointer-events:none}
 .pcard.is-resizing .hpill{opacity:1;background:var(--purple);color:#fff;font-size:12px;padding:5px 11px;bottom:22px;right:16px}
 
@@ -492,11 +505,11 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 .blank{padding:56px 24px;text-align:center;color:var(--muted)}
 .blank h3{font-size:18px;font-weight:700;color:var(--ink);margin-bottom:8px}
 .sug{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:18px}
-.sg{font-family:"IBM Plex Mono";font-size:11.5px;padding:8px 13px;border:1px solid var(--prule);background:var(--soft);color:var(--purple);cursor:pointer;border-radius:2px}
+.sg{font-family:"IBM Plex Sans";font-size:12.5px;padding:8px 13px;border:1px solid var(--prule);background:var(--soft);color:var(--purple);cursor:pointer;border-radius:2px}
 .sg:hover{background:var(--soft-hover)}
 
 .addbar{display:flex;justify-content:center;align-items:center;gap:14px;padding:16px 0 0;flex-wrap:wrap}
-.addbtn{font-family:"IBM Plex Mono";font-size:12px;padding:11px 24px;border:1px dashed var(--prule);
+.addbtn{font-family:"IBM Plex Sans";font-size:13px;padding:11px 24px;border:1px dashed var(--prule);
   background:var(--surface);color:var(--purple);cursor:pointer;border-radius:2px;width:100%;transition:.14s}
 .addbtn:hover{background:var(--soft);border-color:var(--purple);border-style:solid}
 
@@ -521,7 +534,7 @@ html[data-theme="dark"] .mi.danger:hover{background:#3A1214}
 @media (max-width:560px){.srcfacts{grid-template-columns:1fr 1fr}}
 /* in the narrow right-hand column the facts stack under each name */
 @container (max-width:620px){.srcitem{grid-template-columns:1fr}.srcfacts{margin-left:21px;grid-template-columns:1fr 1fr}}
-.fchip{font-family:"IBM Plex Mono";font-size:9px;letter-spacing:.05em;text-transform:uppercase;
+.fchip{font-family:"IBM Plex Sans";font-size:9.5px;letter-spacing:.05em;text-transform:uppercase;
   padding:1px 5px;border-radius:2px;border:1px solid var(--rule);color:var(--muted)}
 .fchip.f-discontinued{color:#9B1C1C;border-color:#E9B7B7;background:#FDF0F0}
 .fchip.f-definition{color:#92400E;border-color:#EBCFA6;background:#FFF6EA}
@@ -535,9 +548,9 @@ html[data-theme="dark"] .fchip.f-development{color:#A9C2DE;border-color:#2C3C50;
 .sdnote{padding:9px 12px;background:var(--warnbg);border-left:3px solid var(--warn);
   color:var(--warn-ink);font-size:12.5px;line-height:1.45;margin-bottom:11px}
 .sdmeta{display:flex;flex-wrap:wrap;gap:8px 26px;margin-bottom:8px;font-size:12px;color:var(--muted)}
-.sdmeta i{display:block;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.09em;
+.sdmeta i{display:block;font-family:"IBM Plex Sans";font-size:10.5px;letter-spacing:.09em;
   text-transform:uppercase;color:var(--muted);font-style:normal}
-.sdvals{display:flex;flex-wrap:wrap;gap:3px 14px;font-family:"IBM Plex Mono";font-size:10.5px;
+.sdvals{display:flex;flex-wrap:wrap;gap:3px 14px;font-family:"IBM Plex Sans";font-size:11.5px;
   max-height:132px;overflow:auto;padding:2px 0 8px;scrollbar-width:thin}
 .sdvals .rv{display:flex;gap:6px}
 .sdvals .rv i{font-style:normal;color:var(--muted)}
@@ -545,7 +558,7 @@ html[data-theme="dark"] .fchip.f-development{color:#A9C2DE;border-color:#2C3C50;
 .sdvals .rv.gap b{color:var(--muted);font-weight:400}
 .sdvals .rv.brk{border-bottom:1px dashed var(--warn)}
 .sdlinks{display:flex;flex-wrap:wrap;gap:7px}
-.sdlinks a{font-family:"IBM Plex Mono";font-size:10.5px;text-decoration:none;color:var(--purple);
+.sdlinks a{font-family:"IBM Plex Sans";font-size:11.5px;text-decoration:none;color:var(--purple);
   border:1px solid var(--prule);background:var(--soft);padding:4px 9px;border-radius:2px}
 .sdlinks a:hover{border-color:var(--purple)}
 .ph{display:inline-block;font-size:11px;font-weight:500;background:var(--warnbg);border:1px solid var(--warnrule);color:var(--warn);padding:0 6px;border-radius:2px}
@@ -575,10 +588,10 @@ html[data-theme="dark"] .fchip.f-development{color:#A9C2DE;border-color:#2C3C50;
 .vtbl thead tr:last-child th{border-bottom:1px solid var(--rule)}
 .vtbl .vser{text-align:left;white-space:normal;min-width:140px}
 .vtbl .vser .d,.vsrc .d{display:inline-block;width:13px;height:3px;vertical-align:middle;margin-right:7px}
-.vu{display:block;font-family:"IBM Plex Mono";font-size:10px;font-weight:400;color:var(--muted);white-space:normal}
-.vtbl .vy{text-align:left;font-family:"IBM Plex Mono";font-weight:500;color:var(--ink);position:sticky;left:0;background:var(--surface)}
+.vu{display:block;font-family:"IBM Plex Sans";font-size:11px;font-weight:400;color:var(--muted);white-space:normal}
+.vtbl .vy{text-align:left;font-family:"IBM Plex Sans";font-weight:500;color:var(--ink);position:sticky;left:0;background:var(--surface)}
 .vtbl thead .vy{z-index:3}
-.vn{font-family:"IBM Plex Mono";font-variant-numeric:tabular-nums;color:var(--ink)}
+.vn{font-family:"IBM Plex Sans";font-variant-numeric:tabular-nums;color:var(--ink)}
 .vout{background:var(--soft)}
 .vhow{display:block;font-size:10px;color:var(--muted);margin-top:1px}
 .vnone{color:var(--muted)}
@@ -630,7 +643,7 @@ html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px col
   border-bottom:1px solid var(--rule)}
 .ghd h2{font-family:"IBM Plex Sans",sans-serif;font-size:14.5px;font-weight:700;margin:0;color:var(--ink);
   letter-spacing:-0.01em}
-.gstep{font-family:"IBM Plex Mono";font-size:10.5px;color:var(--muted);margin-left:auto}
+.gstep{font-family:"IBM Plex Sans";font-size:11.5px;color:var(--muted);margin-left:auto}
 .gx{border:0;background:none;color:var(--muted);font-size:19px;line-height:1;cursor:pointer;
   padding:0 2px}
 .gx:hover{color:var(--ink)}
@@ -643,7 +656,7 @@ html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px col
 .gbody li .gi{flex-shrink:0;width:17px;height:17px;color:var(--purple);margin-top:1px}
 .gbody li .gi svg{width:17px;height:17px}
 .gbody li b{font-weight:600}
-.gbody li .kbd{font-family:"IBM Plex Mono";font-size:11.5px;background:var(--soft);
+.gbody li .kbd{font-family:"IBM Plex Sans";font-size:12.5px;background:var(--soft);
   border:1px solid var(--prule);border-radius:2px;padding:0 5px;color:var(--purple);
   white-space:nowrap}
 .gft{display:flex;align-items:center;gap:10px;padding:11px 14px;border-top:1px solid var(--rule);
@@ -653,7 +666,7 @@ html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px col
   transition:.15s;cursor:pointer}
 .gdots i.on{background:var(--purple);transform:scale(1.25)}
 .gnav{margin-left:auto;display:flex;gap:6px}
-.gnav button{font-family:"IBM Plex Mono";font-size:11.5px;padding:6px 13px;cursor:pointer;
+.gnav button{font-family:"IBM Plex Sans";font-size:12.5px;padding:6px 13px;cursor:pointer;
   border:1px solid var(--rule);background:var(--surface);color:var(--ink);border-radius:2px;
   transition:.14s}
 .gnav button:hover{border-color:var(--purple);color:var(--purple)}
@@ -1059,29 +1072,35 @@ function working(p,set,xk){
     const b=raw.find(q=>q[0]>=(base??p.from)&&q[1]!=null);
     if(b&&pub!=null) step.op=`${vfmt(pub)} ÷ ${vfmt(b[1])} × 100`,
                      step.why=`rebased on the ${Math.floor(b[0])} figure`,
-                     step.mid=["÷",`${vfmt(b[1])} × 100`], step.cap=`its ${Math.floor(b[0])} value, set to 100`;
+                     step.mid=["÷",`${vfmt(b[1])} × 100`], step.cap=`its ${Math.floor(b[0])} value, set to 100`,
+                     step.rows=[[`÷ the ${Math.floor(b[0])} figure, × 100`,vfmt(b[1])]];
   } else if(t==="yoy"){
     const prev=raw[i-per];
     if(prev&&prev[1]!=null&&pub!=null)
       step.op=`(${vfmt(pub)} − ${vfmt(prev[1])}) ÷ ${vfmt(prev[1])} × 100`,
       step.why=`against ${Math.floor(prev[0])}`,
-      step.mid=["vs",vfmt(prev[1])], step.cap=`the ${Math.floor(prev[0])} value; % change`;
+      step.mid=["vs",vfmt(prev[1])], step.cap=`the ${Math.floor(prev[0])} value; % change`,
+      step.rows=[[`against ${Math.floor(prev[0])}, as a % change`,vfmt(prev[1])]];
   } else if(t==="roll3"){
     const w=raw.slice(Math.max(0,i-(3*per-1)),i+1).filter(q=>q[1]!=null);
     if(w.length) step.op=`mean of ${w.length} ${w.length===1?"point":"points"}, ${Math.floor(w[0][0])}–${year}`,
-      step.mid=["→",`mean of ${w.map(q=>vfmt(q[1])).join(", ")}`], step.cap=`${Math.floor(w[0][0])}–${year}`;
+      step.mid=["→",`mean of ${w.map(q=>vfmt(q[1])).join(", ")}`], step.cap=`${Math.floor(w[0][0])}–${year}`,
+      step.rows=w.slice(0,-1).map(q=>[`averaged with ${Math.floor(q[0])}`,vfmt(q[1])]);
   } else if(!skipped&&t==="real"){
     const b=refAt("deflator",2024), d=refAt("deflator",year);
     if(b&&d&&pub!=null) step.op=`${vfmt(pub)} × (${vfmt(b)} ÷ ${vfmt(d)})`, step.ref="deflator",
-      step.mid=["×",`${vfmt(b)} ÷ ${vfmt(d)}`], step.cap=`GDP deflator, 2024 ÷ ${year}`;
+      step.mid=["×",`${vfmt(b)} ÷ ${vfmt(d)}`], step.cap=`GDP deflator, 2024 ÷ ${year}`,
+      step.rows=[[`× inflation, ${year} to 2024`,(b/d).toFixed(3)]];
   } else if(!skipped&&t==="percap"){
     const q=refAt("population",year);
     if(q&&pub!=null) step.op=`${vfmt(pub)} ÷ ${vfmt(q)}`, step.ref="population",
-      step.mid=["÷",vfmt(q)], step.cap=`UK population, ${year}`;
+      step.mid=["÷",vfmt(q)], step.cap=`UK population, ${year}`,
+      step.rows=[[`÷ UK population, ${year}`,vfmt(q)]];
   } else if(!skipped&&t==="pctgdp"){
     const gv=refAt("gdp",year);
     if(gv&&pub!=null) step.op=`${vfmt(pub)} ÷ ${vfmt(gv)} × 100`, step.ref="gdp",
-      step.mid=["÷",`${vfmt(gv)} × 100`], step.cap=`nominal GDP, ${year}`;
+      step.mid=["÷",`${vfmt(gv)} × 100`], step.cap=`nominal GDP, ${year}`,
+      step.rows=[[`÷ GDP in ${year}, × 100`,vfmt(gv)]];
   }
   return {year, xk, pub, shown, step, skipped,
           interpolated: per!==1 && Math.abs(xk-year)>1e-9,
@@ -1153,46 +1172,49 @@ function yearWorkingHtml(p,sets){
   const pr=state.probe;
   if(!pr||pr.key!==p.key||pr.code||pr.x==null) return "";
   const year=Math.floor(pr.x);
-  const link=(m,label)=>[m.source_url?`<a href="${esc(m.source_url)}" target="_blank" rel="noopener">${label||esc(m.source)} ↗</a>`:esc(m.source),
+  const link=(m,label)=>[m.source_url?`<a href="${esc(m.source_url)}" target="_blank" rel="noopener" title="${esc(m.source)}">${label||esc(m.source)} ↗</a>`:esc(m.source),
     m.source_api?`<a href="${esc(m.source_api)}" target="_blank" rel="noopener">API ↗</a>`:""].filter(Boolean).join(" · ");
+  /* Each line's working reads like a receipt: the published figure, the
+     step applied to it, and the number on the chart, in that line's colour.
+     How the year was made and the source links share one quiet line. */
+  const row=(label,v,cls="")=>`<div class="wr ${cls}"><span>${label}</span><b>${v}</b></div>`;
+  const srcLine=(bits,m)=>`<div class="wsrc">${[...bits,link(m,"Source")].filter(Boolean).join(" · ")}</div>`;
   const blocks=sets.map(set=>{
-    const head=`<div class="wname"><span class="wdot" style="background:${set.colour}"></span>${esc(set.name)}</div>`;
+    const head=`<div class="wname"><span class="wdot" style="background:${set.colour}"></span><span>${esc(set.name)}</span></div>`;
     if(set.metas){
       const [m0,m1]=set.metas, ip={...p,trans:"index"};
       const at=m=>{const q=transform(m,ip).find(q=>q[0]===pr.x); return q?q[1]:null;};
       const v=(set.pts.find(q=>q[0]===pr.x)||[])[1], a=at(m0), b=at(m1);
       if(v==null) return "";
       const by=indexBase(p), byl=by==null?"first year":Math.floor(by);
-      return `<div class="wblk">${head}<div class="wsum">
-        ${cell(vfmt(a),`${esc(m0.name)}, ${byl} = 100`)}${opc("÷")}
-        ${cell(vfmt(b),`${esc(m1.name)}, ${byl} = 100`)}${opc("× 100 =")}
-        ${cell(vfmt(v),"on the chart","wout")}</div>
-        <div class="wcap">${esc(m0.name)} ÷ ${esc(m1.name)}, both ${byl} = 100</div>
-        <div class="wsrc">${link(m0)} · ${link(m1)}</div></div>`;
+      return `<div class="wblk" style="--c:${set.colour}">${head}<div class="wrows">
+        ${row(`${esc(m0.name)}, ${byl} = 100`,vfmt(a))}
+        ${row(`÷ ${esc(m1.name)}, ${byl} = 100, × 100`,vfmt(b))}
+        ${row("On the chart",vfmt(v),"wtot")}</div>
+        <div class="wsrc">${link(m0,"Source")} · ${link(m1,"Source")}</div></div>`;
     }
     const w=working(p,set,pr.x);
     if(!w) return "";
     const s=set.meta;
-    const pubCell=cell(vfmt(w.pub),`published, ${esc(w.unitPub)}`);
-    const sum = w.step.mid
-      ? `${pubCell}${opc(esc(w.step.mid[0]))}${cell(esc(w.step.mid[1]),esc(w.step.cap),"wstep")}${opc("=")}${cell(vfmt(w.shown),`on the chart, ${esc(w.unitShown)}`,"wout")}`
-      : `${cell(vfmt(w.shown),`published and plotted as is, ${esc(w.unitPub)}`,"wout")}`;
-    const ref=w.step.ref&&refHref(w.step.ref)?` · <a href="${esc(refHref(w.step.ref))}" target="_blank" rel="noopener">${esc(REF_META[w.step.ref].name)}${refCdid(w.step.ref)?" ("+refCdid(w.step.ref)+")":""} ↗</a>`:"";
-    const notes=[];
-    if(w.skipped) notes.push(`Not adjusted: ${esc(s.name)} is already a rate or index, so this is the published figure.`);
-    /* a monthly or quarterly source: say which published figure this year is */
+    const steps=w.step.rows||[];
+    const rows = steps.length
+      ? row(`Published<i>${esc(w.unitPub)}</i>`,vfmt(w.pub))+steps.map(([l,v])=>row(esc(l),v)).join("")+
+        row("On the chart",vfmt(w.shown),"wtot")
+      : row(`Published, plotted as is<i>${esc(w.unitPub)}</i>`,vfmt(w.shown),"wtot");
+    const ref=w.step.ref&&refHref(w.step.ref)?`<a href="${esc(refHref(w.step.ref))}" target="_blank" rel="noopener" title="${esc(REF_META[w.step.ref].name)}">${w.step.ref==="deflator"?"Deflator":w.step.ref==="gdp"?"GDP":"Population"} ↗</a>`:"";
+    const warn=[];
+    if(w.skipped) warn.push(`Not adjusted: ${esc(s.name)} is already a rate or index, so this is the published figure.`);
+    if(w.interpolated) warn.push(`Between two annual figures — estimated for the ${esc(p.gran)} view, not published.`);
+    /* how this year's figure was made from a monthly or quarterly source */
+    let how="";
     if(s.annual){ const a=s.annual, per=a.per===12?"monthly":"quarterly",
         endM={financial:"March",academic:"August"}[s.year_basis]||"December";
-      notes.push(a.how==="mean"?`The average of the ${per} figures for the year.`:
-                 a.how==="sum"?`The total of the ${per} figures for the year.`:
-                 a.how==="last"?(a.per===12?`The ${endM} figure — the last month of the year.`:"The last quarter of the year."):""); }
-    if(w.interpolated) notes.push(`Between two annual figures — estimated for the ${esc(p.gran)} view, not published.`);
-    /* one short line saying what the numbers are, used when the working sits
-       beside the chart and the per-number labels are hidden to save height */
-    const capLine = w.step.mid ? `published ${esc(w.unitPub)}, ${esc(w.step.cap)}` : `as published, ${esc(w.unitPub)}`;
-    return `<div class="wblk">${head}<div class="wsum">${sum}</div><div class="wcap">${capLine}</div>
-      ${notes.map(n=>`<div class="wnote">${n}</div>`).join("")}
-      <div class="wsrc">${link(s)}${ref}</div></div>`;
+      how=a.how==="mean"?`Average of the ${per} figures`:
+          a.how==="sum"?`Total of the ${per} figures`:
+          a.how==="last"?(a.per===12?`The ${endM} figure`:"The last quarter"):""; }
+    return `<div class="wblk" style="--c:${set.colour}">${head}<div class="wrows">${rows}</div>
+      ${warn.map(n=>`<div class="wnote">${n}</div>`).join("")}
+      ${srcLine([how,ref],s)}</div>`;
   }).filter(Boolean);
   if(!blocks.length) return "";
   const MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"], fr=pr.x-year;
@@ -1201,7 +1223,7 @@ function yearWorkingHtml(p,sets){
             : p.gran==="days"?`${year}, day ${Math.round(fr*365)+1}`
             : String(year);
   return `<div class="working"><button class="wx" data-act="unprobe" title="Close" aria-label="Close working">×</button>
-    <div class="wyear">${label} <span>how each number on the chart was worked out</span></div>${blocks.join("")}</div>`;
+    <div class="wyear">${label} <span>the working behind each line</span></div><div class="wblks">${blocks.join("")}</div></div>`;
 }
 
 /* Charts that show the working. The time charts take a click anywhere and
