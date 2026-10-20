@@ -859,6 +859,8 @@ const TRANSFORMS = [["none","As published"],["index","Rebase to 100"],["rel","Re
 /* government in power: shaded behind the data, a ribbon under it, or off */
 const ERA_MODES = [["bands","Shaded behind chart"],["party","Ribbon: party"],["pm","Ribbon: party and PMs"],["elections","Ribbon: elections"],["off","Off"]];
 const RIBBONS = new Set(["party","pm","elections"]);
+/* key events (wars, crashes, the pandemic): marked behind the data, a ribbon under it, or off */
+const EVENT_MODES = [["marks","Marked on chart"],["ribbon","Ribbon under chart"],["off","Off"]];
 const TOPICS = [["work","Work, pay & living standards"],["economy","Economy & public finances"],["housing","Housing"],["education","Education"],["health","Health"],
   ["crime","Crime & justice"],["transport","Transport"],["environment","Environment & energy"],["migration","Population & migration"]];
 const topicName=t=>t==="all"?"All":((TOPICS.find(x=>x[0]===t)||[])[1]||t.charAt(0).toUpperCase()+t.slice(1));
@@ -876,7 +878,7 @@ let SRCSTYLE=(()=>{ try{ const v=localStorage.getItem("polyoptic-srcstyle");
 
 let uid=0;
 const mkPanel = (sel=[], over={}) =>
-  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"bands", src:SRCSTYLE, gran:"years", h:H_DEF, w:12, title:null, lvl:"", asort:"desc", table:false, ...over});
+  ({key:++uid, sel:sel.slice(), chart:"line", trans:"index", from:1997, to:2026, era:"bands", ev:"marks", src:SRCSTYLE, gran:"years", h:H_DEF, w:12, title:null, lvl:"", asort:"desc", table:false, ...over});
 
 const state = { panels:[ mkPanel(["rents","pay"]) ], active:0, focus:null, q:"", topic:"all", geo:"all", drawer:false, openCfg:null, openMenu:null, renaming:null,
   /* the point whose working is open: {key, id, x} — one at a time, site-wide */
@@ -1264,7 +1266,18 @@ function setLayout(p,sets){
   Object.assign(M,M0);
   if(isLineish(p)&&sets.length) M.r=CK.gutterFor(sets.map(s=>s.name),M0.r);
   if(p.era==="bands"&&BANDED.has(p.chart)) M.t+=CK.BANDS_TOP;
+  /* key events: one or two rows of names above the plot, laid out now so the
+     margin fits them */
+  evItems=null;
+  if(p.ev==="marks"&&BANDED.has(p.chart)){
+    evItems=CK.eventLayout({x0:p.from,x1:p.to,sx:y=>px(p,y),l:M.l,r:W-M.r});
+    evLblBot=M.t-(p.era==="bands"?CK.BANDS_TOP:0)-4;
+    const rows=CK.eventRows(evItems);
+    M.t+=rows*CK.EVENTS_ROW;
+    evLblBot+=rows*CK.EVENTS_ROW;
+  }
 }
+let evItems=null, evLblBot=0;
 
 /* The drawing rules are shared with the homepage — see chartkit.js. These
    wrappers give them the panel's own scale. */
@@ -1292,8 +1305,10 @@ const wrapSvg=(p,g)=>{
 };
 
 function bandsLayer(p,g){
-  if(p.era!=="bands") return;
-  CK.bands({g,x0:p.from,x1:p.to,sx:y=>px(p,y),top:M.t,bot:p.h-M.b,eras:DB.eras,pms:DB.pms});
+  if(p.era==="bands")
+    CK.bands({g,x0:p.from,x1:p.to,sx:y=>px(p,y),top:M.t,bot:p.h-M.b,eras:DB.eras,pms:DB.pms});
+  if(p.ev==="marks"&&evItems)
+    CK.events({g,items:evItems,top:M.t,bot:p.h-M.b,lblBot:evLblBot});
 }
 
 const lastPt=s=>[...s.pts].reverse().find(q=>q[1]!=null);
@@ -2127,7 +2142,9 @@ function drawChart(p,sets){
   /* drawn straight after the chart, with the same margins, so it lines up */
   const rib = RIBBONS.has(p.era)&&BANDED.has(p.chart)
     ? CK.ribbon({mode:p.era,x0:v.from,x1:v.to,sx:y=>px(v,y),l:M.l,r:W-M.r,W,eras:DB.eras,pms:DB.pms}) : "";
-  return statsFor(v,vs)+chart+rib;
+  const evRib = p.ev==="ribbon"&&BANDED.has(p.chart)
+    ? CK.eventRibbon({x0:v.from,x1:v.to,sx:y=>px(v,y),l:M.l,r:W-M.r,W}) : "";
+  return statsFor(v,vs)+chart+rib+evRib;
 }
 
 function warningsFor(p,sets){
@@ -2379,6 +2396,7 @@ function panelHtml(p,i){
     ${areaCtrl}
     <div class="cfgrule"></div>
     <span class="plabel">Government</span>${sel("era",ERA_MODES,p.era)}
+    <span class="plabel">Events</span>${sel("ev",EVENT_MODES,p.ev)}
     <span class="plabel">Sources</span>${sel("src",SRC_STYLES,p.src)}
     <span class="plabel">Range</span><div class="rng">
       <input type="number" data-act="from" value="${p.from}" min="1980" max="2026" aria-label="From year"> — <input type="number" data-act="to" value="${p.to}" min="1980" max="2026" aria-label="To year">
@@ -2793,7 +2811,7 @@ document.getElementById("stack").addEventListener("click",e=>{
   state.active=i; state.focus=i;
 
   /* selects and inputs inside the settings popover are handled on change */
-  if(["chart","trans","era","src","from","to","title","mapq"].includes(act)) return;
+  if(["chart","trans","era","ev","src","from","to","title","mapq"].includes(act)) return;
 
   if(act==="cfg"){ state.openCfg = state.openCfg===p.key ? null : p.key; state.openMenu=null; }
   else if(act==="menu"){ state.openMenu = state.openMenu===p.key ? null : p.key; state.openCfg=null; }
@@ -2816,7 +2834,7 @@ document.getElementById("stack").addEventListener("click",e=>{
   else if(act==="tsort") p.asort=actEl.dataset.k;
   else if(act==="charttile") p.chart=actEl.dataset.v;
   else if(act==="pair") p.sel=actEl.dataset.v.split(",");
-  else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,src:p.src,gran:p.gran,h:p.h,w:p.w,lvl:p.lvl,asort:p.asort,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
+  else if(act==="dup"){ state.openMenu=null; state.panels.splice(i+1,0,mkPanel(p.sel,{chart:p.chart,trans:p.trans,from:p.from,to:p.to,era:p.era,ev:p.ev,src:p.src,gran:p.gran,h:p.h,w:p.w,lvl:p.lvl,asort:p.asort,title:p.title?p.title+" (copy)":null})); state.active=i+1; }
   else if(act==="del"){ state.openMenu=null; state.panels.splice(i,1); lockedKeys.delete(p.key); if(state.openCfg===p.key) state.openCfg=null; state.active=Math.max(0,Math.min(state.active,state.panels.length-1)); state.focus=null; }
   else if(act==="csv"){ state.openMenu=null; exportCsv(i); render(); return; }
   else if(act==="png"){ state.openMenu=null; exportPng(i); render(); return; }
@@ -2891,6 +2909,7 @@ document.getElementById("stack").addEventListener("change",e=>{
   else if(act==="lvl") p.lvl=e.target.value;
   else if(act==="asort") p.asort=e.target.value;
   else if(act==="era"){ p.era=e.target.value; }
+  else if(act==="ev"){ p.ev=e.target.value; }
   else if(act==="src"){ p.src=e.target.value;
     /* remembered as the default for the next new chart — except "off", which
        should be a choice made per chart, never one inherited by accident */
@@ -3263,6 +3282,12 @@ const exportCss=th=>`
   .band{fill-opacity:${th.bg==="#ffffff"?.07:.09}}
   .banddiv{stroke:${th.grid};stroke-width:1}
   .bandlbl{font-size:10px;font-weight:500;fill:${th.muted}}
+  .evspan{fill:${th.ink};opacity:.06}
+  .evline{stroke:${th.ink};stroke-width:1;stroke-dasharray:3 3;opacity:.4}
+  .evtick{stroke:${th.ink};stroke-width:1;opacity:.18}
+  .evlbl{font-size:10px;font-weight:500;fill:${th.ink};opacity:.72;paint-order:stroke;stroke:${th.bg};stroke-width:3px;stroke-linejoin:round}
+  .evbar,.evdot{fill:${th.muted};opacity:.7}
+  .evhit{fill:transparent}
   .stat{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:24px}
   .ttl{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-weight:700;font-size:19px;fill:${th.ink}}
   .sub{font-size:11px;fill:${th.muted}}
@@ -3354,7 +3379,7 @@ function writeHash(){
      link made before the area view existed still reads, and gets the
      defaults for the two it does not carry. */
   /* sourcing is per chart now, so it rides on the end of each panel */
-  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||""),p.lvl,p.asort,p.table?1:0,p.src].join("~")).join(";");
+  const enc=state.panels.map(p=>[p.sel.join(","),p.chart,p.trans,p.from,p.to,p.era,p.h,p.w,p.gran,encodeURIComponent(p.title||""),p.lvl,p.asort,p.table?1:0,p.src,p.ev].join("~")).join(";");
   /* the open topic rides along, so a copied link keeps the topic it was opened on */
   const t=state.drawer&&state.topic&&state.topic!=="all"?"&t="+encodeURIComponent(state.topic):"";
   history.replaceState(null,"","#p="+encodeURIComponent(enc)+"&a="+state.active+t);
@@ -3368,12 +3393,14 @@ function readHash(){
   const pageSrc=SRC_STYLES.some(s=>s[0]===q.get("src"))?q.get("src"):SRCSTYLE;
   if(q.get("p")){
     const panels=decodeURIComponent(q.get("p")).split(";").map(chunk=>{
-      const [sel,chart,trans,from,to,era,h,w,gran,ttl,lvl,asort,tbl,src]=chunk.split("~");
+      const [sel,chart,trans,from,to,era,h,w,gran,ttl,lvl,asort,tbl,src,ev]=chunk.split("~");
       /* the oldest links stored the government setting as 1/0 */
       const eraMode = era==="0" ? "off" : ERA_MODES.some(m=>m[0]===era) ? era : "bands";
       return mkPanel((sel||"").split(",").filter(id=>S(id)),
         {chart:chart||"line",trans:trans||"index",from:+from||1997,to:+to||2026,
-         era:eraMode,src:SRC_STYLES.some(x=>x[0]===src)?src:pageSrc,/* every series is published annually, so charts are always drawn in
+         era:eraMode,
+         /* links made before key events existed open without them, as they were drawn */
+         ev:EVENT_MODES.some(m=>m[0]===ev)?ev:"off",src:SRC_STYLES.some(x=>x[0]===src)?src:pageSrc,/* every series is published annually, so charts are always drawn in
             years; older links that asked for finer steps open in years */
          gran:"years",
          title:ttl?decodeURIComponent(ttl):null,
@@ -3443,7 +3470,7 @@ const GUIDE=[
   {t:"What's on this chart", sel:["#tray"],
    li:[["",`The indicators on the chart you're editing right now. The <span class="kbd">×</span> on each one removes it.`]]},
   {t:"Chart settings", sel:['.pcard [data-act="cfg"]'], setup:()=>{state.openCfg=null;},
-   li:[[gi(IC.sliders),`Everything about this chart lives behind this button — chart type, transforms, who was in power, how its sources are credited and the year range. Width is set by dragging the chart's corner.`]]},
+   li:[[gi(IC.sliders),`Everything about this chart lives behind this button — chart type, transforms, who was in power, key events, how its sources are credited and the year range. Width is set by dragging the chart's corner.`]]},
   {t:"Sixteen ways to draw it", sel:['.cfgpanel .ctgrid','.cfgpanel'],
    setup:()=>{const p=P0(); if(p) state.openCfg=p.key;},
    li:[["",`Lines, columns, slopes and small multiples under <b>Over time</b>. Under <b>By area</b>, the same indicator broken down to local authorities — a ranking, the change between two years, or a heatmap.`],
@@ -3452,6 +3479,7 @@ const GUIDE=[
    setup:()=>{const p=P0(); if(p) state.openCfg=p.key;},
    li:[["",`<b>Government</b> shades each prime minister behind the chart in their party's colour, or switches it off.`],
        ["",`It can also be a ribbon under the chart instead — by party, with prime ministers, or with general elections marked.`],
+       ["",`<b>Events</b> marks wars, crashes and the pandemic on the chart — or as a ribbon underneath, or off. Hover a mark for its date.`],
        ["",`<b>Sources</b> sets how this chart credits its data — a short line, full Harvard citations, or off. It applies to the chart's PNG and CSV as well.`]]},
   {t:"Check the numbers", sel:['.pcard [data-act="tabletoggle"]'], setup:()=>{state.openCfg=null;},
    li:[[gi(IC.table),`Opens a table under the chart: every year's published figure, the value plotted, and the sum in between — with links to the source.`]]},

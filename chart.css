@@ -44,3 +44,13 @@ html[data-theme="dark"] .band{fill-opacity:.09}
 .pmlabel{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:10px;fill:var(--muted)}
 .eralabel{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:9.5px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;fill:var(--muted)}
 .elect{fill:var(--purple)}
+
+/* key events: a faint span or a dashed line, named above the plot */
+.evspan{fill:var(--ink);opacity:.06}
+.evline{stroke:var(--ink);stroke-width:1;stroke-dasharray:3 3;opacity:.4}
+.evtick{stroke:var(--ink);stroke-width:1;opacity:.18}
+.evlbl{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:10px;font-weight:500;fill:var(--ink);opacity:.72;paint-order:stroke;stroke:var(--surface);stroke-width:3px;stroke-linejoin:round}
+.ev:hover .evspan{opacity:.11}.ev:hover .evline{opacity:.75}.ev:hover .evlbl{opacity:1}
+.evbar,.evdot{fill:var(--muted);opacity:.7}
+.evhit{fill:transparent}
+.ev:hover .evbar,.ev:hover .evdot{opacity:1}
