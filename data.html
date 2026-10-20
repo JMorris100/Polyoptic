@@ -66,36 +66,36 @@ svg{display:block}
   .topnav a.btn-ghost{display:none}
 }
 
-.hero{padding:44px 0 6px}
-.hero h1{font-size:clamp(42px,6.4vw,72px);font-weight:800;letter-spacing:-0.042em}
-.hero p.deck{font-family:"IBM Plex Sans";font-size:clamp(21px,2.7vw,29px);font-weight:600;
-  color:var(--purple);letter-spacing:-0.022em;line-height:1.14;margin:14px 0 0;max-width:38ch}
-.hero p.sub{max-width:76ch;color:var(--muted);font-size:15.5px;margin:16px 0 0}
-.hero p.sub a{color:var(--purple)}
-
-/* build status — hairline grid. Borders sit on the cells so a row that doesn't
-   fill leaves white space rather than a grey gap where a cell would have been. */
-.statrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));
-  margin:26px 0 0;max-width:860px;
-  border-top:1px solid var(--rule);border-left:1px solid var(--rule)}
-.stat{background:var(--surface);padding:11px 15px 12px;min-width:0;
-  border-right:1px solid var(--rule);border-bottom:1px solid var(--rule)}
-.stat .k{display:block;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.15em;
-  text-transform:uppercase;color:var(--muted);margin-bottom:5px}
-.stat .v{display:flex;align-items:center;gap:8px;font-family:"IBM Plex Mono";font-size:12.5px;
-  font-weight:500;color:var(--ink);line-height:1.3;overflow-wrap:break-word;min-width:0}
-.stat .v a{color:var(--purple);text-decoration:none;border-bottom:1px solid var(--prule)}
-.stat .v a:hover{border-bottom-color:var(--purple)}
+/* ── the header: one band ─────────────────────────────────────────
+   The page is the table, so the top is kept to a line of title, a line of
+   what it is, and the build's status, with everything else a tab away. */
+.vhead{display:flex;align-items:flex-end;justify-content:space-between;gap:10px 28px;flex-wrap:wrap;padding:30px 0 18px}
+.vhead h1{font-size:clamp(28px,3.6vw,38px);font-weight:800;letter-spacing:-0.035em}
+.vhead .deck{margin:7px 0 0;font-size:15px;color:var(--muted);max-width:70ch}
+.vhead .deck b{color:var(--purple);font-weight:600}
+.vstat{display:flex;align-items:center;flex-wrap:wrap;gap:6px 16px;font-family:"IBM Plex Mono";font-size:11.5px;color:var(--muted);padding-bottom:3px}
+.vstat span{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}
+.vstat b{color:var(--ink);font-weight:500}
+.vstat a{color:var(--purple);text-decoration:none;border-bottom:1px solid var(--prule)}
+.vstat a:hover{border-bottom-color:var(--purple)}
 .dot{width:7px;height:7px;border-radius:50%;background:#1a7f37;flex-shrink:0;
   box-shadow:0 0 0 3px rgba(26,127,55,.15)}
 .dot.warn{background:var(--warm);box-shadow:0 0 0 3px rgba(194,65,12,.15)}
-.stat.alert{background:#FFF8F5}
-.stat.alert .v{color:var(--warm);font-size:11.5px}
+/* only when a refresh fell short: which series, and since when */
+.valert{border:1px solid #F2C9B8;background:#FFF8F5;padding:9px 14px;font-size:13px;margin:0 0 14px;line-height:1.45}
+.valert b{color:var(--warm)}
 
-section{padding:36px 0 0;margin-top:34px;border-top:1px solid var(--rule)}
-section h2{font-size:clamp(22px,2.6vw,27px);font-weight:700}
-.lede{color:var(--muted);max-width:74ch;margin:10px 0 22px;font-size:15px}
-.lede .flag{margin-left:0;margin-right:2px}
+/* three views, one at a time */
+.vtabs{display:flex;gap:4px;border-bottom:1px solid var(--rule);margin-bottom:16px;overflow-x:auto}
+.vtab{font:inherit;font-size:14.5px;font-weight:600;color:var(--muted);background:none;border:0;border-bottom:2px solid transparent;
+  padding:10px 14px 9px;margin-bottom:-1px;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:8px}
+.vtab:hover{color:var(--ink)}
+.vtab[aria-selected="true"]{color:var(--purple);border-bottom-color:var(--purple)}
+.vtab span{font-family:"IBM Plex Mono";font-size:11px;font-weight:500;background:var(--paper);color:var(--muted);border-radius:100px;padding:1px 8px}
+.vtab[aria-selected="true"] span{background:var(--soft);color:var(--purple)}
+section[role="tabpanel"]{padding:0;margin:0;border:0}
+section[role="tabpanel"][hidden]{display:none}
+.lede{color:var(--muted);max-width:74ch;margin:0 0 16px;font-size:14.5px}
 .steps{margin:0;padding:0;list-style:none;counter-reset:st;
   display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
 .steps li{counter-increment:st;background:var(--surface);border:1px solid var(--rule);
@@ -104,6 +104,8 @@ section h2{font-size:clamp(22px,2.6vw,27px);font-weight:700}
 .steps li::before{content:counter(st);position:absolute;left:15px;top:14px;
   font-family:"IBM Plex Mono";font-size:12px;font-weight:600;color:var(--purple)}
 .steps code{font-size:11.5px}
+.browse{font-size:13px;color:var(--muted);margin:14px 0 0;line-height:1.7}
+.browse a{color:var(--purple)}
 
 /* ── the tool bar ─────────────────────────────────────────────────
    Sticks to the top of the viewport so the filters stay reachable however
@@ -136,9 +138,12 @@ section h2{font-size:clamp(22px,2.6vw,27px);font-weight:700}
   border:1px solid var(--prule);padding:7px 12px;border-radius:100px;cursor:pointer;margin-left:auto}
 #qreset:hover{border-color:var(--purple);background:#ECE8F8}
 #qreset[hidden]{display:none}
-.fcount{font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);padding:8px 14px;
-  background:#FAFAFB}
+.fcount{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:6px 16px;
+  font-family:"IBM Plex Mono";font-size:11px;color:var(--muted);padding:7px 14px;background:#FAFAFB}
 .fcount b{color:var(--ink);font-weight:500}
+/* the caveat badges, named once, each with what it means on hover */
+.legend{display:flex;align-items:center;flex-wrap:wrap;gap:4px}
+.legend .flag{margin-left:0}
 
 /* ── the indicator table ──────────────────────────────────────────
    One row per indicator at 37px, so a few dozen fit on a screen instead of a
@@ -161,10 +166,11 @@ td.cx{width:30px;padding:0 0 0 10px}
 .exp{border:0;background:none;color:var(--muted);cursor:pointer;padding:2px 4px;font-size:11px;
   line-height:1;transition:transform .15s}
 tr.irow.open .exp{transform:rotate(90deg);color:var(--purple)}
-td.cname{white-space:normal;min-width:230px;font-weight:500;line-height:1.3}
+/* table.idx in front: without it the table's nowrap wins, a long name never
+   wraps, and the last three columns are pushed off the right of the screen */
+table.idx td.cname{white-space:normal;min-width:230px;font-weight:500;line-height:1.3;padding-top:6px;padding-bottom:6px}
 td.cname a.pglink{color:inherit;text-decoration:underline;text-decoration-color:var(--prule);text-underline-offset:3px}
 td.cname a.pglink:hover{color:var(--purple);text-decoration-color:var(--purple)}
-.lede.browse a{color:var(--purple)}
 /* Named tiers, not a bare "!". A mark that fires on nearly every row tells you
    nothing; one that says "Definition changed" tells you what to go and read. */
 .flag{display:inline-block;font-family:"IBM Plex Mono";font-size:9.5px;letter-spacing:.05em;
@@ -177,6 +183,7 @@ td.cname a.pglink:hover{color:var(--purple);text-decoration-color:var(--purple)}
 .flag.f-development {background:#EEF4FB;color:#2B4A6F;border:1px solid #CFDDED}
 .flag.f-geography   {background:#EEF3F8;color:#2F5273;border:1px solid #CFDEEB}
 .flag.more{background:none;border:1px dashed var(--rule);color:var(--muted)}
+.fgrp{white-space:nowrap}
 html[data-theme="dark"] .flag.f-discontinued{background:#3A1414;color:#F5A3A3;border-color:#5C2222}
 html[data-theme="dark"] .flag.f-definition  {background:#3A2708;color:#F0C08A;border-color:#5A3E12}
 html[data-theme="dark"] .flag.f-partial     {background:#332A08;color:#E8D18A;border-color:#4E4114}
@@ -237,15 +244,12 @@ tr.drow>td{padding:0;height:auto;background:var(--soft);border-bottom:1px solid 
   color:var(--muted);font-size:14.5px}
 .noresult b{color:var(--ink)}
 
-/* The collapsed fold this replaced is gone: "How to verify" is now a numbered
-   strip near the top, because a page whose purpose is checkability should not
-   hide the instructions for checking. */
 .steps code{background:var(--soft);border:1px solid var(--prule);padding:1px 5px}
 
 footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
 .fgrid{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;color:var(--muted);font-size:13px}
 .fgrid p{max-width:62ch;margin:0}
-#loadfail{display:none;background:#FFF3F0;border:1px solid #E8B3A8;padding:14px 18px;font-size:14px;margin-top:24px;max-width:840px}
+#loadfail{display:none;background:#FFF3F0;border:1px solid #E8B3A8;padding:14px 18px;font-size:14px;margin:0 0 16px;max-width:840px}
 @media(max-width:700px){
   .fsel select{max-width:100%;width:100%}
   .fsel{flex:1 1 140px}
@@ -281,74 +285,28 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
 </div>
 
 <div class="wrap">
-  <div class="hero">
-    <h1>Explorer Verify</h1>
-    <p class="deck">Every number, and where it came from.</p>
-    <p class="sub">This is the reference copy, not the front door — the page to land on when
-       you are deciding whether to rely on any of this. Polyoptic publishes no data of its own.
-       Every indicator carries its source release, the exact machine endpoint the values were
-       pulled from, the date they were pulled, and every value as ingested, gaps and breaks
-       included. Charts live in the <a href="explore.html">explorer</a>.</p>
-    <div class="statrow" id="meta"></div>
-    <!-- filled only if loading fails, so crawlers and link previews never see it -->
-    <div id="loadfail" role="alert"></div>
+  <header class="vhead">
+    <div>
+      <h1>Explorer Verify</h1>
+      <p class="deck"><b>Every number, and where it came from.</b> Each indicator with its source release,
+        the exact endpoint its values were pulled from, when, and every value as fetched.</p>
+    </div>
+    <div class="vstat" id="meta" aria-live="polite"></div>
+  </header>
+  <div id="alerts"></div>
+  <!-- filled only if loading fails, so crawlers and link previews never see it -->
+  <div id="loadfail" role="alert"></div>
+
+  <!-- The table is the page. The two things that support it — the series
+       every transform divides by, and how to check a number yourself — are a
+       tab away rather than stacked above it. -->
+  <div class="vtabs" role="tablist" aria-label="Explorer Verify">
+    <button class="vtab" role="tab" id="t-catalogue" aria-controls="catalogue" aria-selected="true" data-tab="catalogue">Indicators <span id="nInd">–</span></button>
+    <button class="vtab" role="tab" id="t-refs" aria-controls="refs" aria-selected="false" data-tab="refs" tabindex="-1">Reference series <span>3</span></button>
+    <button class="vtab" role="tab" id="t-verify" aria-controls="verify" aria-selected="false" data-tab="verify" tabindex="-1">How to verify</button>
   </div>
 
-  <!-- Promoted above the catalogue. This is the one block that tells someone
-       landing here what the page is for; collapsed at the bottom, under the
-       reference series, it was the last thing anyone would find. -->
-  <section id="verify" style="border-top:0;margin-top:26px">
-    <h2>How to verify a number</h2>
-    <p class="lede">Four steps, none of which require taking our word for anything.</p>
-    <ol class="steps">
-      <li><b>Open the indicator</b> below and hit its <b>API endpoint</b> — the same
-        address the pipeline called, at the source, not a copy we host.</li>
-      <li><b>Compare the year you care about</b> with the raw values in the expanded row.
-        Monthly and quarterly sources become one value a year — an average, the last
-        month of a stock, or a total — and the expanded row says which, so you know which
-        published figure to compare against.</li>
-      <li><b>Read the source release</b> for context. Definitions, revisions and footnotes
-        live there, and the caveat badges on each row point at what to look for.</li>
-      <li><b>Or reproduce the whole thing.</b> Clone <a href="https://github.com/JMorris100/Polyoptic">the repository</a> and run
-        <code>python ingest/ingest.py --dry-run</code>: it fetches everything fresh and
-        reports what it got. Nothing is computed at ingest beyond collapsing to years, and
-        holding back a part-year total until its year is complete — every transform
-        happens in your browser, from the values on this page.</li>
-    </ol>
-    <p class="lede" style="margin-top:16px">Found a mismatch? The bundle records when it was
-      fetched, and sources revise their own history — that is normal for official statistics.
-      If the current release disagrees with the bundle, the weekly refresh will pick it up.
-      Anything else is a bug, and worth telling us about.</p>
-  </section>
-
-  <section id="refs">
-    <h2>Reference series</h2>
-    <p class="lede">Three series power every transform on the site: population behind
-      <b>per person</b>, the GDP deflator behind <b>real terms</b>, and nominal GDP behind
-      <b>% of GDP</b>. If a transformed number looks wrong, check these first — a transform
-      is only ever as good as its denominator.</p>
-    <div id="refstbl"></div>
-  </section>
-
-  <section id="catalogue">
-    <h2>Indicator search</h2>
-    <p class="lede">Filter down, then expand a row to verify it. Badges name the caveat that
-       applies — <span class="flag f-discontinued">Discontinued</span>
-       <span class="flag f-definition">Definition changed</span>
-       <span class="flag f-partial">Partial period</span>
-       <span class="flag f-provisional">Provisional</span>
-       <span class="flag f-development">In development</span>
-       <span class="flag f-geography">Sub-UK coverage</span> — so a marked row tells you what
-       to go and read, rather than only that something exists to read.</p>
-    <p class="lede browse">Each name opens that indicator's own page — the latest figure, a chart,
-       every published year and its local highs and lows. Or browse them by topic:
-       <a href="topic/work/">Work, pay &amp; living standards</a> · <a href="topic/economy/">Economy &amp; public finances</a> ·
-       <a href="topic/housing/">Housing</a> ·
-       <a href="topic/education/">Education</a> · <a href="topic/health/">Health</a> ·
-       <a href="topic/crime/">Crime &amp; justice</a> · <a href="topic/transport/">Transport</a> ·
-       <a href="topic/environment/">Environment &amp; energy</a> ·
-       <a href="topic/migration/">Population &amp; migration</a> · <a href="indicator/">all, A–Z</a></p>
-
+  <section id="catalogue" role="tabpanel" aria-labelledby="t-catalogue">
     <div class="toolbar">
       <div class="sfield">
         <svg class="sicon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
@@ -359,10 +317,41 @@ footer{border-top:1px solid var(--rule);padding:30px 0 40px;margin-top:46px}
         <button id="qclear" hidden aria-label="Clear search">×</button>
       </div>
       <div class="fbar" id="fbar"></div>
-      <div class="fcount" id="qcount" aria-live="polite"></div>
+      <div class="fcount"><span id="qcount" aria-live="polite"></span><span class="legend" id="legend"></span></div>
     </div>
 
     <div id="tbl"></div>
+    <p class="browse">Each name opens that indicator’s own page. Or browse by topic:
+       <a href="topic/work/">Work, pay &amp; living standards</a> · <a href="topic/economy/">Economy &amp; public finances</a> ·
+       <a href="topic/housing/">Housing</a> · <a href="topic/education/">Education</a> · <a href="topic/health/">Health</a> ·
+       <a href="topic/crime/">Crime &amp; justice</a> · <a href="topic/transport/">Transport</a> ·
+       <a href="topic/environment/">Environment &amp; energy</a> · <a href="topic/migration/">Population &amp; migration</a> ·
+       <a href="indicator/">all, A–Z</a></p>
+  </section>
+
+  <section id="refs" role="tabpanel" aria-labelledby="t-refs" hidden>
+    <p class="lede">The three series every transform divides by: population for <b>per person</b>, the GDP
+      deflator for <b>real terms</b>, nominal GDP for <b>% of GDP</b>. If a transformed number looks wrong,
+      check these first.</p>
+    <div id="refstbl"></div>
+  </section>
+
+  <section id="verify" role="tabpanel" aria-labelledby="t-verify" hidden>
+    <p class="lede">Four steps, none of which require taking our word for anything.</p>
+    <ol class="steps">
+      <li><b>Open the indicator</b> and hit its <b>API endpoint</b> — the same
+        address the pipeline called, at the source, not a copy we host.</li>
+      <li><b>Compare the year you care about</b> with the raw values in the expanded row.
+        Monthly and quarterly sources become one value a year — an average, the last
+        month of a stock, or a total — and the expanded row says which.</li>
+      <li><b>Read the source release</b> for context. Definitions, revisions and footnotes
+        live there, and the caveat badges on each row point at what to look for.</li>
+      <li><b>Or reproduce the whole thing.</b> Clone <a href="https://github.com/JMorris100/Polyoptic">the repository</a> and run
+        <code>python ingest/ingest.py --dry-run</code>: it fetches everything fresh and
+        reports what it got. Every transform happens in your browser, from the values here.</li>
+    </ol>
+    <p class="lede" style="margin-top:16px">Found a mismatch? Sources revise their own history, which is normal
+      for official statistics, and the weekly refresh picks that up. Anything else is a bug, and worth telling us about.</p>
   </section>
 
 </div>
@@ -558,6 +547,33 @@ const COLS=[
 ];
 let setFacet=()=>{};
 
+/* ── the three tabs ──
+   #refs and #verify open their tab; a series id (data.html#cpih) opens the
+   indicators with that row expanded, and a reference series id (#gdp) opens
+   the reference tab with it expanded. */
+const TABS=["catalogue","refs","verify"];
+function showTab(name,focus){
+  TABS.forEach(t=>{
+    const on=t===name, b=document.getElementById("t-"+t);
+    b.setAttribute("aria-selected",on); b.tabIndex=on?0:-1;
+    document.getElementById(t).hidden=!on;
+    if(on&&focus) b.focus();
+  });
+}
+document.querySelector(".vtabs").addEventListener("click",e=>{
+  const b=e.target.closest(".vtab"); if(!b) return;
+  showTab(b.dataset.tab);
+  history.replaceState(null,"",b.dataset.tab==="catalogue"?location.pathname:"#"+b.dataset.tab);
+});
+document.querySelector(".vtabs").addEventListener("keydown",e=>{
+  const i=TABS.indexOf(document.activeElement.dataset.tab); if(i<0) return;
+  const k={ArrowRight:1,ArrowLeft:-1}[e.key]; if(!k) return;
+  e.preventDefault(); showTab(TABS[(i+k+TABS.length)%TABS.length],true);
+});
+function tabFromHash(){ const h=location.hash.slice(1); if(h==="refs"||h==="verify"||h==="catalogue") showTab(h); }
+addEventListener("hashchange",tabFromHash);
+tabFromHash();
+
 function mountTool(all){
   const st={q:"",topic:"all",source:"all",geography:"all",unit:"all",measure:"all",
             sort:"name",dir:1,open:new Set()};
@@ -601,12 +617,12 @@ function mountTool(all){
       return `<tr class="irow${open?" open":""}" data-id="${esc(s.id)}">
         <td class="cx"><button class="exp" aria-expanded="${open}"
             aria-label="${open?"Collapse":"Expand"} ${esc(s.name)}">▶</button></td>
-        <td class="cname">${PAGES[s.id]?`<a class="pglink" href="indicator/${esc(PAGES[s.id])}/">${esc(s.name)}</a>`:esc(s.name)}${flagBadges(s,false)}</td>
+        <td class="cname">${PAGES[s.id]?`<a class="pglink" href="indicator/${esc(PAGES[s.id])}/">${esc(s.name)}</a>`:esc(s.name)}${flagsOf(s).length?`<span class="fgrp">${flagBadges(s,false)}</span>`:""}</td>
         <td>${esc(pubOf(s))}</td>
         <td>${esc(s.geography||"—")}</td>
         <td class="cunit" title="${esc(s.unit||"")}">${esc(s.unit||"—")}</td>
         <td><span class="tag">${esc(mlabel(s.kind))}</span></td>
-        <td class="cmono">${s.start}–${end}</td>
+        <td class="cmono">${s.start===end?s.start:`${s.start}–${end}`}</td>
         <td class="cid">${esc(s.id||"—")}</td>
       </tr>
       <tr class="drow" data-for="${esc(s.id)}"${open?"":" hidden"}><td colspan="8">${
@@ -670,6 +686,7 @@ function mountTool(all){
 
   /* a topic pill inside an expanded row drives the dropdown above */
   setFacet=(key,val)=>{
+    showTab("catalogue");
     st[key]=val; draw();
     document.getElementById("catalogue").scrollIntoView({behavior:"smooth",block:"start"});
   };
@@ -680,6 +697,7 @@ function mountTool(all){
   function openFromHash(){
     const id=decodeURIComponent(location.hash.slice(1));
     if(!id||!all.some(s=>s.id===id)) return;
+    showTab("catalogue");
     st.open.add(id); draw();
     const tr=tbl.querySelector(`tr.irow[data-id="${CSS.escape(id)}"]`);
     if(tr) tr.scrollIntoView({block:"center",
@@ -697,26 +715,21 @@ let PAGES={};
 fetch("data/pages.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({})).then(p=>{PAGES=p||{};})
 .then(()=>fetch("data/bundle.json",{cache:"no-cache"})).then(r=>r.ok?r.json():Promise.reject()).then(db=>{
   const m=db.meta||{}, prov=(m.provenance||"unknown");
-  const stats=[
-    ["Data",`<span class="dot${prov==="live"?"":" warn"}"></span>${esc(cap(prov))}`],
-    ["Last build",esc(stamp(m.generated,true))],
-    ["Indicators",String(db.series.length)],
-    ["Raw bundle",`<a href="data/bundle.json">bundle.json ↗</a>`],
-  ];
   document.getElementById("meta").innerHTML=
-    stats.map(([k,v])=>`<div class="stat"><span class="k">${esc(k)}</span><span class="v">${v}</span></div>`).join("")+
-    /* a failed fetch keeps the last good copy, so say which ones and from when */
-    ((m.stale||[]).length
-      ? `<div class="stat alert"><span class="k">Couldn’t refresh — showing the last good copy</span>
-           <span class="v">${m.stale.map(id=>{const s=db.series.find(x=>x.id===id);
-             return esc((s?s.name:id)+(s&&s.fetched?` (fetched ${stamp(s.fetched)})`:""));}).join(", ")}</span></div>` : "")+
-    ((m.dropped||[]).length
-      ? `<div class="stat alert"><span class="k">Not available yet</span>
-           <span class="v">${esc(m.dropped.join(", "))}</span></div>` : "")+
-    /* bundles from before the last-good-copy change only list failures */
-    (!m.stale&&(m.failed||[]).length
-      ? `<div class="stat alert"><span class="k">Failed this refresh</span>
-           <span class="v">${esc(m.failed.join(", "))}</span></div>` : "");
+    `<span><i class="dot${prov==="live"?"":" warn"}"></i><b>${esc(cap(prov))}</b></span>`+
+    `<span>Built <b>${esc(stamp(m.generated,true))}</b></span>`+
+    `<span><a href="data/bundle.json">bundle.json ↗</a></span>`;
+  document.getElementById("nInd").textContent=db.series.length;
+  /* a failed fetch keeps the last good copy, so say which ones and from when */
+  const warn=[];
+  if((m.stale||[]).length) warn.push(`<b>Couldn’t refresh, showing the last good copy:</b> ${m.stale.map(id=>{const s=db.series.find(x=>x.id===id);
+      return esc((s?s.name:id)+(s&&s.fetched?` (fetched ${stamp(s.fetched)})`:""));}).join(", ")}`);
+  if((m.dropped||[]).length) warn.push(`<b>Not available yet:</b> ${esc(m.dropped.join(", "))}`);
+  /* bundles from before the last-good-copy change only list failures */
+  if(!m.stale&&(m.failed||[]).length) warn.push(`<b>Failed this refresh:</b> ${esc(m.failed.join(", "))}`);
+  document.getElementById("alerts").innerHTML=warn.map(w=>`<div class="valert">${w}</div>`).join("");
+  document.getElementById("legend").innerHTML=Object.keys(FLAG_LABEL).map(k=>
+    `<span class="flag f-${k}" title="${esc(FLAG_WHY[k])}">${esc(FLAG_LABEL[k])}</span>`).join("");
 
   const SER={};
   db.series.forEach(s=>{SER[s.id]=s});
@@ -739,10 +752,17 @@ fetch("data/pages.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>
         return `<tr class="irow" data-ref="${esc(s.id)}">
           <td class="cx"><button class="exp" aria-expanded="false" aria-label="Expand ${esc(s.name)}">▶</button></td>
           <td class="cname">${esc(s.name)}</td><td>ONS</td>
-          <td class="cmono">${s.start}–${end}</td><td class="cid">${esc(s.id)}</td></tr>
+          <td class="cmono">${s.start===end?s.start:`${s.start}–${end}`}</td><td class="cid">${esc(s.id)}</td></tr>
         <tr class="drow" data-reffor="${esc(s.id)}" hidden><td colspan="5"></td></tr>`;
       }).join("")}</tbody></table></div>`;
 
+  const openRef=id=>{
+    const tr=document.querySelector(`#refstbl tr[data-ref="${CSS.escape(id)}"]`); if(!tr) return false;
+    if(!tr.classList.contains("open")) tr.click();
+    return true;
+  };
+  const refFromHash=()=>{ const id=decodeURIComponent(location.hash.slice(1)); if(id&&db.refs[id]){ showTab("refs"); openRef(id); } };
+  addEventListener("hashchange",refFromHash);
   document.getElementById("refstbl").addEventListener("click",e=>{
     if(e.target.closest(".detail")) return;
     const tr=e.target.closest("tr.irow"); if(!tr) return;
@@ -752,6 +772,7 @@ fetch("data/pages.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>
     d.hidden=!open; tr.classList.toggle("open",open);
     tr.querySelector(".exp").setAttribute("aria-expanded",String(open));
   });
+  refFromHash();
 
   /* delegated: the table re-renders on every keystroke, sort and filter change,
      so per-button handlers would not survive the first one */
