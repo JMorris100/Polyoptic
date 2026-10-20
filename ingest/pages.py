@@ -10,6 +10,9 @@ readable with no JavaScript at all, plus an A–Z index and the sitemap:
     indicator/<slug>/data.csv     the same values, for Dataset Search
     indicator/index.html          every indicator, A–Z
     topic/<topic>/index.html      one topic's indicators
+    q/<slug>/index.html           one page per question in ingest/questions.py
+    q/index.html                  every question, featured and not
+    data/questions-more.json      the same questions, worked out, for the homepage
     sitemap.xml                   all of the above and the hand-written pages
 
 Run after ingest.py (the weekly refresh does both):
@@ -27,6 +30,8 @@ import re
 import shutil
 from datetime import datetime, timezone
 from pathlib import Path
+
+import questions as more_questions   # the questions answered in the homepage drawer
 
 ROOT = Path(__file__).resolve().parent.parent
 SITE = "https://polyoptic.co"
@@ -245,7 +250,7 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex San
 .topnav a{color:#fff;text-decoration:none;font-size:14px;opacity:.9}
 .topnav .btn{background:#fff;color:#4633A8;padding:7px 14px;border-radius:100px;font-size:13.5px;font-weight:600;opacity:1}
 @media(max-width:820px){.topnav a:not(.btn){display:none}}
-main{padding:40px 0 10px}
+main.wrap{padding-top:40px;padding-bottom:10px}
 .crumbs{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.06em;color:var(--muted);margin:0 0 14px}
 .crumbs a{color:var(--muted)}
 h1{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-0.02em;line-height:1.1;margin:0 0 8px}
@@ -291,7 +296,7 @@ LOGO = """<svg viewBox="6.5 16.5 87 63" role="img" aria-label="Polyoptic"><defs>
 
 
 def page(*, path: str, depth: int, title: str, desc: str, og_image: str, og_alt: str,
-         ld: list[dict], body: str, explore: str = "explore.html") -> str:
+         ld: list[dict], body: str, explore: str = "explore.html", css: str = "") -> str:
     up = "../" * depth
     url = f"{SITE}/{path}"
     topics = " · ".join(f'<a href="{up}topic/{k}/">{esc(n)}</a>' for k, n, _ in TOPICS)
@@ -319,7 +324,7 @@ def page(*, path: str, depth: int, title: str, desc: str, og_image: str, og_alt:
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
-<style>{CSS}</style>
+<style>{CSS}{css}</style>
 </head>
 <body>
 <div class="topbar"><div class="wrap">
@@ -483,7 +488,7 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
 {local}
 {data_tbl}
 </div>{side}</div>
-{f'<h2 style="margin-top:44px">More on {esc(tname.lower())}</h2><ul class="list">{rel}</ul>' if rel else ''}"""
+{asked_list(ASKED.get(s['id'], []), 2, "Questions this figure helps answer")}{f'<h2 style="margin-top:44px">More on {esc(tname.lower())}</h2><ul class="list">{rel}</ul>' if rel else ''}"""
 
     ld = [{
         "@context": "https://schema.org", "@type": "Dataset",
@@ -531,7 +536,7 @@ def topic_page(k: str, name: str, blurb: str, series: list[dict], slugs: dict) -
 <h1>{esc(name)} statistics</h1>
 <p class="sub">{esc(blurb)} {len(series)} official indicators, each with every published year, its source and its caveats.</p>
 <a class="cta" href="../../explore.html#t={k}">Chart them in the explorer →</a>
-""" + "".join(f'<div class="grp">{esc(g)} · {len(groups[g])}</div><ul class="list">'
+{asked_list([q for q in ALL_QUESTIONS if k in q["topics"]], 2, f"Questions about {name.lower()}")}""" + "".join(f'<div class="grp">{esc(g)} · {len(groups[g])}</div><ul class="list">'
               + "".join(card(s, f'../../indicator/{slugs[s["id"]]}/') for s in groups[g]) + "</ul>" for g in order)
     url = f"topic/{k}/"
     ld = [{"@context": "https://schema.org", "@type": "CollectionPage", "name": f"{name} statistics", "url": f"{SITE}/{url}",
@@ -770,6 +775,8 @@ def write_questions(by_id: dict, refs: dict) -> dict:
     out = {}
     for p in sorted((ROOT / "q").glob("*/index.html")):
         slug = p.parent.name
+        if GENERATED in p.read_text(encoding="utf-8"):
+            continue                       # a drawer question's page, written below
         q = build_question(slug, by_id, refs)
         if not q:
             print(f"  question {slug}: not configured or series missing, left as it was")
@@ -792,6 +799,206 @@ def write_questions(by_id: dict, refs: dict) -> dict:
     # the share-image builder draws the same numbers
     (ROOT / "data" / "questions.json").write_text(json.dumps(out, separators=(",", ":")), encoding="utf-8")
     return out
+
+
+# ── the drawer's questions, each a page of its own ──────────────────
+# The homepage shows these in a drawer, drawn in the page; that is the
+# better way to browse them, but a search engine sees one URL for all of
+# them and a shared link previews as the homepage. So each also gets a
+# plain page here, written from the same computed answer and numbers: the
+# question as its heading, the answer first, the chart drawn as SVG, the
+# caveat, and links to its indicators and to the other questions.
+
+# every question, featured and not, and the questions each indicator is in;
+# filled by write_more_questions before the indicator and topic pages
+ALL_QUESTIONS: list[dict] = []
+ASKED: dict[str, list[dict]] = {}
+GENERATED = "<!-- written by ingest/pages.py from ingest/questions.py: edit there, not here -->"
+
+Q_CSS = """
+:root{--s1:#6D4AE0;--s2:#0E9384;--s3:#D97706;--s4:#DB2777}
+html[data-theme="dark"]{--s1:#8367E8;--s2:#17A394;--s3:#C58207;--s4:#DE5A96}
+.kick{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:0 0 10px}
+.tag{font-weight:600;color:var(--purple);background:var(--soft);border:1px solid var(--prule);border-radius:100px;padding:2px 10px}
+.tag.myth{color:#C2410C;background:#FFF4EC;border-color:#F6D3BB}
+html[data-theme="dark"] .tag.myth{color:#FB923C;background:#2A1C12;border-color:#5A3A22}
+h1{max-width:24ch}
+.lead{font-size:18.5px;line-height:1.55;max-width:66ch;margin:6px 0 24px}
+.card .cap.top{margin:0 0 8px}
+.key{display:inline-flex;align-items:center;gap:5px;margin-right:12px;font-weight:600;color:var(--ink)}
+.key i{width:9px;height:9px;border-radius:2px;display:inline-block}
+.card .gridline{stroke:var(--rule);stroke-width:1;opacity:.7}
+.card .baseline{stroke:var(--muted);stroke-width:1;opacity:.75}
+.card .axlabel,.card .axunit,.card .endlbl,.card .endval,.card .bandlbl,.card .qnote,.card .qsmt,.card .qyr{font-family:"IBM Plex Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+.card .axlabel{font-size:11.5px;fill:var(--muted)}.card .axlabel.strong{font-weight:600;fill:var(--ink)}
+.card .axunit{font-size:11.5px;font-weight:500;fill:var(--muted)}
+.card .line{fill:none;stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.card .endlbl{font-size:11px;font-weight:600}.card .endval{font-size:11px;fill:var(--muted)}
+.card .enddot,.card .qdot{stroke:var(--surface);stroke-width:1.5}.card .hollow{fill:var(--surface)}
+.card .leader{fill:none;stroke-width:1;opacity:.45}
+.card .band{fill-opacity:.07}html[data-theme="dark"] .card .band{fill-opacity:.09}
+.card .banddiv{stroke:var(--rule);stroke-width:1}.card .bandlbl{font-size:10px;font-weight:500;fill:var(--muted)}
+.card .qmean{stroke:var(--ink);stroke-width:1.2;stroke-dasharray:5 4;opacity:.5}
+.card .qnote{font-size:11px;font-weight:600;fill:var(--muted)}.card .qnote.strong{fill:var(--ink)}
+.card .qsmt{font-size:12px;font-weight:700}.card .qyr{font-size:10.5px;fill:var(--muted)}
+.why{background:var(--soft);border:1px solid var(--prule);border-radius:12px;padding:14px 16px;margin:0 0 6px}
+.why h2{margin:0 0 6px;font-size:16px}
+.care h2{color:var(--warn)}
+.list .tg{color:var(--purple);font-weight:600}
+/* the chart is drawn twice at build time, wide and phone-sized, so its
+   labels stay readable rather than shrinking with the screen */
+.qnarrow{display:none}
+@media(max-width:600px){.qwide{display:none}.qnarrow{display:block}.card{padding:14px 12px}}
+"""
+
+
+def asked_list(items: list[dict], depth: int, heading: str) -> str:
+    if not items:
+        return ""
+    up = "../" * depth
+    li = "".join(f'<li><a href="{up}q/{q["slug"]}/"><b>{esc(q["title"])}</b>'
+                 f'<span>{esc(more_questions.GROUP_NAME.get(q["group"], "Answered in depth"))}</span></a></li>'
+                 for q in items)
+    return f'<h2 style="margin-top:44px">{esc(heading)}</h2><ul class="list">{li}</ul>'
+
+
+def question_page(q: dict, db: dict, by_id: dict, slugs: dict) -> str:
+    url = f'q/{q["slug"]}/'
+    tname = more_questions.TYPE_NAME[q["chart"]]
+    geos = ", ".join(q["geos"])
+    keys = ""
+    if q.get("signs"):
+        keys = "".join(f'<span class="key"><i style="background:var(--s{k + 1})"></i>{esc(n)}</span>'
+                       for k, n in enumerate(q["signs"]))
+    series = [by_id[i] for i in q["ids"]]
+    inds = "".join(card(s, f'../../indicator/{slugs[s["id"]]}/') for s in series)
+    def src_dd(x: dict) -> str:
+        name = esc(x.get("source", ""))
+        return f'<dd><a href="{esc(x["source_url"])}">{name}</a></dd>' if x.get("source_url") else f"<dd>{name}</dd>"
+    src = "".join(src_dd(x) for x in {x.get("source"): x for x in series}.values())
+    others = [x for x in ALL_QUESTIONS if x["slug"] != q["slug"]]
+    others.sort(key=lambda x: (x["group"] != q["group"], not set(x["topics"]) & set(q["topics"]), x["title"]))
+    an = "an" if tname[0].lower() in "aeiou" else "a"
+    body = f"""{GENERATED}
+{crumbs(2, [("Questions", "q/"), (q["title"], None)])}
+<p class="kick"><span class="tag{' myth' if q['group'] == 'myth' else ''}">{esc(more_questions.GROUP_NAME[q['group']])}</span>{esc(tname)} chart · {esc(geos)} · {q['x0']}–{q['x1']}</p>
+<h1>{esc(q['title'])}</h1>
+<p class="lead">{esc(q['sentence'])}</p>
+<div class="card">{f'<p class="cap top">{keys}</p>' if keys else ''}
+<div class="qwide">{more_questions.svg(q, db)}</div><div class="qnarrow">{more_questions.svg(q, db, 420)}</div>
+<p class="cap">Source: {esc("; ".join(q['sources']))} · Open Government Licence v3.0{' · a year still in progress is left out' if any(s.get('partial') for s in series) else ''}</p></div>
+<a class="cta" href="../../explore.html#p={q['explore']}">Open this in the explorer →</a>
+<a class="cta ghost" href="../../index.html#q-{q['key']}">See it with the other questions</a>
+<div class="cols"><div>
+<div class="why"><h2>Why {an} {esc(tname.lower())}{'' if q['chart'] == 'small' else ' chart'}</h2><p>{esc(q['why'])}</p></div>
+<h2 style="margin-top:28px">The indicators</h2>
+<ul class="list">{inds}</ul>
+</div>
+<aside class="side care"><h2>Read it carefully</h2><p>{esc(q['care'])}</p><dl>
+<dt>Covers</dt><dd>{esc(geos)}</dd>
+<dt>Years</dt><dd>{q['x0']}–{q['x1']}</dd>
+<dt>Shown as</dt><dd>{esc(q['unit'])}</dd>
+<dt>Sources</dt>{src}
+<dt>Licence</dt><dd><a href="{OGL}">Open Government Licence v3.0</a></dd>
+</dl></aside></div>
+{asked_list(others[:9], 2, "More questions")}
+<p style="margin-top:14px"><a href="../">Every question →</a></p>"""
+    og = f'og/{q["slug"]}.png' if (ROOT / "og" / f'{q["slug"]}.png').exists() else "og/home.png"
+    ld = [{"@context": "https://schema.org", "@type": "WebPage", "name": q["title"], "url": f"{SITE}/{url}",
+           "description": q["description"], "inLanguage": "en-GB", "license": OGL,
+           "primaryImageOfPage": {"@type": "ImageObject", "url": f"{SITE}/{og}", "width": 1200, "height": 630},
+           "about": [{"@type": "Dataset", "name": f'{s["name"]} ({s.get("geography", "UK")})',
+                      "url": f'{SITE}/indicator/{slugs[s["id"]]}/'} for s in series],
+           "isPartOf": {"@type": "WebSite", "name": "Polyoptic", "url": f"{SITE}/"}},
+          {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{
+              "@type": "Question", "name": q["title"],
+              "acceptedAnswer": {"@type": "Answer", "text": q["sentence"]}}]},
+          breadcrumb_ld([("Questions", "q/"), (q["title"], url)])]
+    return page(path=url, depth=2, title=f'{q["title"]} | Polyoptic', desc=q["description"], og_image=og,
+                og_alt=q["title"], ld=ld, body=body, explore=f'explore.html#p={q["explore"]}', css=Q_CSS)
+
+
+def hub_page() -> str:
+    groups = [("featured", "Answered in depth", [q for q in ALL_QUESTIONS if q["group"] == "featured"])] + [
+        (k, n, [q for q in ALL_QUESTIONS if q["group"] == k]) for k, n in more_questions.GROUP_NAME.items()]
+    body = f"""{GENERATED}
+{crumbs(1, [("Questions", None)])}
+<h1>Questions worth asking</h1>
+<p class="sub">{len(ALL_QUESTIONS)} questions people actually ask about the UK, answered with the official numbers: each with its chart, the caveats and a link to the working.</p>
+""" + "".join(f'<div class="grp">{esc(n)} · {len(qs)}</div><ul class="list">'
+              + "".join(f'<li><a href="{q["slug"]}/"><b>{esc(q["title"])}</b><span>{esc(q["description"])}</span></a></li>' for q in qs)
+              + "</ul>" for k, n, qs in groups if qs)
+    ld = [{"@context": "https://schema.org", "@type": "CollectionPage", "name": "Questions worth asking", "url": f"{SITE}/q/",
+           "description": "Questions about the UK answered with official statistics.",
+           "isPartOf": {"@type": "WebSite", "name": "Polyoptic", "url": f"{SITE}/"}},
+          breadcrumb_ld([("Questions", "q/")])]
+    return page(path="q/", depth=1, title="Questions worth asking about the UK, answered with official statistics | Polyoptic",
+                desc=f"{len(ALL_QUESTIONS)} questions about the UK — crime, the NHS, migration, housing, pay and more — answered with official statistics, each with its chart and caveats.",
+                og_image="og/home.png", og_alt="Polyoptic", ld=ld, body=body)
+
+
+def write_more_questions(db: dict, by_id: dict, slugs: dict, featured: dict) -> None:
+    """The drawer's questions: data for the homepage, a page each, a hub page,
+    and the lists of questions on the homepage and the featured pages."""
+    qs = more_questions.build(db)
+    (ROOT / "data" / "questions-more.json").write_text(
+        json.dumps({"questions": qs}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
+
+    # every question, so indicator, topic and question pages can link to them
+    ALL_QUESTIONS.clear()
+    for p in sorted((ROOT / "q").glob("*/index.html")):
+        text = p.read_text(encoding="utf-8")
+        if GENERATED in text:
+            continue
+        t = re.search(r"<h1>(.*?)</h1>", text, re.S)
+        f = featured.get(p.parent.name) or {}
+        ids = [s["id"] for s in f.get("sets", []) if s["id"] in by_id] or \
+              (QUESTIONS.get(p.parent.name) or {}).get("ids", [])
+        ALL_QUESTIONS.append({"slug": p.parent.name, "title": html.unescape(t.group(1)) if t else p.parent.name,
+                              "group": "featured", "ids": ids, "description": more_questions.description(f.get("sentence", "")),
+                              "topics": list(dict.fromkeys(tp for i in ids for tp in (by_id[i].get("topics") or []) if i in by_id))})
+    ALL_QUESTIONS.extend(qs)
+    ASKED.clear()
+    for q in ALL_QUESTIONS:
+        for i in q["ids"]:
+            ASKED.setdefault(i, []).append(q)
+
+    # a question taken out of ingest/questions.py takes its page with it
+    live = {q["slug"] for q in qs}
+    for p in sorted((ROOT / "q").glob("*/index.html")):
+        if p.parent.name not in live and GENERATED in p.read_text(encoding="utf-8"):
+            shutil.rmtree(p.parent)
+    for q in qs:
+        out = ROOT / "q" / q["slug"]
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "index.html").write_text(question_page(q, db, by_id, slugs), encoding="utf-8")
+    (ROOT / "q" / "index.html").write_text(hub_page(), encoding="utf-8")
+
+    # The homepage builds its drawer from the JSON, but a crawler that does
+    # not run scripts should still find every question: the same links,
+    # written into the drawer's list, which the script then replaces.
+    home = ROOT / "index.html"
+    text = home.read_text(encoding="utf-8")
+    links = "".join(f'\n        <a class="qstatic" href="q/{q["slug"]}/">{esc(q["title"])}</a>' for q in qs)
+    new = re.sub(r"(<!-- more-questions -->).*?(\s*<!-- /more-questions -->)",
+                 lambda m: m.group(1) + links + m.group(2), text, count=1, flags=re.S)
+    if new != text:
+        home.write_text(new, encoding="utf-8")
+
+    # the featured pages list a few of the others under their own questions
+    for p in sorted((ROOT / "q").glob("*/index.html")):
+        text = p.read_text(encoding="utf-8")
+        if GENERATED in text or "<!-- more-questions -->" not in text:
+            continue
+        me = next((x for x in ALL_QUESTIONS if x["slug"] == p.parent.name), {"topics": []})
+        pick = sorted((x for x in qs), key=lambda x: (not set(x["topics"]) & set(me["topics"]), x["title"]))[:6]
+        items = "".join(f'<li><a href="../{x["slug"]}/">{esc(x["title"])}</a></li>' for x in pick)
+        new = re.sub(r"(<!-- more-questions -->).*?(<!-- /more-questions -->)",
+                     lambda m: f'{m.group(1)}{items}<li><a href="../">Every question →</a></li>{m.group(2)}',
+                     text, count=1, flags=re.S)
+        if new != text:
+            p.write_text(new, encoding="utf-8")
+    print(f"  questions: {len(qs)} answered in the drawer, {len(ALL_QUESTIONS)} in all")
 
 
 # Indicator pages whose address changed when the series was renamed or
@@ -847,7 +1054,8 @@ def main() -> None:
             sl = f'{sl}-{s["id"]}'
         seen.add(sl); slugs[s["id"]] = sl
 
-    write_questions(by_id, db.get("refs", {}))
+    featured = write_questions(by_id, db.get("refs", {}))
+    write_more_questions(db, by_id, slugs, featured)
 
     for d in ("indicator", "topic"):
         shutil.rmtree(ROOT / d, ignore_errors=True)
@@ -855,6 +1063,7 @@ def main() -> None:
     entries = [("", today, "weekly", "1.0"), ("explore.html", today, "weekly", "0.9"),
                ("indicator/", today, "weekly", "0.8"), ("data.html", today, "weekly", "0.7"),
                ("about.html", today, "monthly", "0.5")]
+    entries.append(("q/", today, "weekly", "0.8"))
     entries += [(f"q/{p.parent.name}/", today, "weekly", "0.7") for p in sorted((ROOT / "q").glob("*/index.html"))]
 
     for k, name, blurb in TOPICS:

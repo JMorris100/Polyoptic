@@ -34,7 +34,7 @@ jobs:
               print(f"::error::refresh would drop {a - b} series ({', '.join(lost[:20])}); not committing")
               sys.exit(1)
           PY
-      # the plain pages search engines read: one per indicator and topic, and the sitemap
+      # the plain pages search engines read: one per indicator, topic and question, and the sitemap
       - run: python ingest/pages.py
       - name: Commit if changed
         run: |
@@ -44,6 +44,8 @@ jobs:
           # rebuilt by the same run, and staging only the bundle would leave
           # the explorer's local detail frozen at whenever it was last built
           # by hand.
-          git add data indicator topic sitemap.xml
+          # q/ and index.html too: pages.py rewrites every question's answer
+          # and the homepage's list of question links from the new figures
+          git add data indicator topic q index.html sitemap.xml
           git diff --staged --quiet || git commit -m "data: scheduled refresh"
           git push
