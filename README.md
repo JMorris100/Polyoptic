@@ -112,6 +112,8 @@ power per-person, real-terms and %-of-GDP everywhere.
 - Rebasing uses the first year every series on the chart has a value, so all
   the lines start together at 100; the chart starts at that year
 - Each prime minister shaded behind the chart in their party's colour
+- Key events (wars, crashes, the pandemic) marked on the chart or as a ribbon under it, from
+  `EVENTS` in `chartkit.js`; on for new charts, off for links made before it existed
 - Line charts name each series at its end and draw breaks on the line itself;
   give a discontinuity a short `label` in `series.yaml` for the on-chart text
 - Scatter colours each point by the government of the day
