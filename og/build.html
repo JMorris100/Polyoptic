@@ -29,7 +29,7 @@ canvas{width:100%;height:auto;display:block;border:1px solid #D3D8DD}
 <body>
 <div class="wrap">
   <h1>Share images</h1>
-  <p>Seventeen 1200×630 cards, drawn here because this machine has no image tooling.
+  <p>A 1200×630 card for every page that has one, drawn here because this machine has no image tooling.
     Click <b>Download all</b>, then move the files into <code>og/</code> next to this page.
     The filenames already match the <code>og:image</code> tags on each page — don't rename them.</p>
   <p><button id="all">Download all</button>
@@ -39,7 +39,7 @@ canvas{width:100%;height:auto;display:block;border:1px solid #D3D8DD}
 
 <script>
 const W=1200,H=630,PURPLE="#4633A8",INK="#0F1419",MUTED="#5C6672",RULE="#D3D8DD",
-      S1="#6D4AE0",S2="#0E9384";
+      S1="#6D4AE0",S2="#0E9384",PAL=["#6D4AE0","#0E9384","#D97706","#DB2777"],WARM="#C2410C";
 
 /* Brand cards get the purple ground; comparison cards stay white so the chart
    is the loudest thing on them — a chart at thumbnail size is unreadable, and
@@ -180,6 +180,123 @@ function drawQ(ctx,c,db,qs){
   ctx.textAlign="left";
 }
 
+
+/* ── the drawer's questions (data/questions-more.json, written by pages.py) ──
+   One card per question page, drawn as that question's own kind of chart
+   from the numbers its page shows. */
+const GROUP={many:"Several trends at once",myth:"Looks like a trend — isn’t",long:"The long view"};
+function niceStep(r){const e=Math.pow(10,Math.floor(Math.log10(r))),f=r/e;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e;}
+function scaleOf(vals,incl){
+  const v=vals.filter(x=>x!=null); if(incl!=null) v.push(incl);
+  let a=Math.min(...v),b=Math.max(...v); if(a===b){a-=1;b+=1;}
+  const st=niceStep((b-a)/4); return {mn:Math.floor(a/st+1e-9)*st,mx:Math.ceil(b/st-1e-9)*st,st};
+}
+function grid(ctx,ax,Y,L,R){
+  ctx.strokeStyle=RULE; ctx.lineWidth=1.2; ctx.font="400 17px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=MUTED; ctx.textAlign="right";
+  for(let t=ax.mn;t<=ax.mx+ax.st/2;t+=ax.st){ const y=Y(t); ctx.beginPath(); ctx.moveTo(L,y); ctx.lineTo(R,y); ctx.stroke();
+    const lab=Math.abs(t)>=1000?Math.round(t).toLocaleString("en-GB"):+t.toFixed(4); ctx.fillText(String(lab).replace("-","−"),L-10,y+6); }
+  ctx.textAlign="left";
+}
+function linePts(ctx,pts,PX,PY){ ctx.beginPath(); let pen=false;
+  pts.forEach(([x,v])=>{ if(v==null){pen=false;return;} pen?ctx.lineTo(PX(x),PY(v)):ctx.moveTo(PX(x),PY(v)); pen=true; }); ctx.stroke(); }
+function drawMore(ctx,q){
+  ctx.fillStyle="#fff"; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle=PURPLE; ctx.fillRect(0,0,W,10);
+  mark(ctx,74,44,0.42,PURPLE); wordmark(ctx,122,80,PURPLE,22);
+  /* the kind of question, as a pill on the right */
+  ctx.font="600 18px 'IBM Plex Sans', sans-serif";
+  const tag=GROUP[q.group]||"", tw=ctx.measureText(tag).width, myth=q.group==="myth";
+  ctx.fillStyle=myth?"#FFF4EC":"#F4F2FA"; ctx.strokeStyle=myth?"#F6D3BB":"#D8D2EC"; ctx.lineWidth=1.5;
+  ctx.beginPath(); ctx.roundRect(W-74-tw-32,52,tw+32,36,18); ctx.fill(); ctx.stroke();
+  ctx.fillStyle=myth?WARM:PURPLE; ctx.fillText(tag,W-74-tw-16,76);
+
+  let size=50; ctx.font=`700 ${size}px 'IBM Plex Sans', sans-serif`;
+  let lines=wrap(ctx,q.title,W-148);
+  if(lines.length>2){ size=42; ctx.font=`700 ${size}px 'IBM Plex Sans', sans-serif`; lines=wrap(ctx,q.title,W-148); }
+  ctx.fillStyle=INK; lines.forEach((l,i)=>ctx.fillText(l,74,160+i*(size+8)));
+  const top=176+lines.length*(size+8), bot=H-104, L=140, R=W-290;
+  const sets=q.sets.map((s,i)=>({...s,colour:PAL[i%4]}));
+  const x0=q.x0,x1=q.x1, PX=x=>L+(x-x0)/Math.max(1,x1-x0)*(R-L);
+  ctx.lineJoin="round"; ctx.lineCap="round";
+  const ends=[];
+  if(q.chart==="small"){
+    const cols=2, cw=(W-148)/cols, rows=Math.ceil(sets.length/cols), ch=(bot-top+30)/rows;
+    sets.forEach((s,k)=>{
+      const ox=74+(k%cols)*cw, oy=top-10+Math.floor(k/cols)*ch, l=ox, r=ox+cw-40, t=oy+28, b=oy+ch-12;
+      const v=s.pts.map(p=>p[1]).filter(x=>x!=null), mn=Math.min(...v), mx=Math.max(...v);
+      const px=x=>l+(x-q.from)/Math.max(1,q.to-q.from)*(r-l), py=y=>b-(y-mn)/Math.max(1e-9,mx-mn)*(b-t);
+      ctx.font="600 19px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=s.colour; ctx.fillText(s.name,l,oy+16);
+      ctx.strokeStyle=RULE; ctx.lineWidth=1.2; ctx.beginPath(); ctx.moveTo(l,b); ctx.lineTo(r,b); ctx.stroke();
+      ctx.strokeStyle=s.colour; ctx.lineWidth=4; linePts(ctx,s.pts,px,py);
+    });
+  } else if(q.chart==="slope"){
+    const v=sets.flatMap(s=>[s.pts.find(p=>p[0]===q.from)[1],s.pts.find(p=>p[0]===q.to)[1]]);
+    const ax=scaleOf(v,100), Y=y=>bot-(y-ax.mn)/(ax.mx-ax.mn)*(bot-top), XA=260, XB=W-360;
+    ctx.font="600 20px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=INK; ctx.textAlign="center";
+    ctx.fillText(q.from,XA,top+4); ctx.fillText(q.to,XB,top+4); ctx.textAlign="left";
+    const T=top+20;
+    const Y2=y=>bot-(y-ax.mn)/(ax.mx-ax.mn)*(bot-T);
+    sets.forEach(s=>{ const a=s.pts.find(p=>p[0]===q.from)[1], b=s.pts.find(p=>p[0]===q.to)[1];
+      ctx.strokeStyle=s.colour; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(XA,Y2(a)); ctx.lineTo(XB,Y2(b)); ctx.stroke();
+      ends.push({c:s.colour,x:XB,y:Y2(b),t:`${s.name} ${b>=a?"+":"−"}${Math.abs(b/a*100-100).toFixed(0)}%`}); });
+    ctx.font="500 20px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=MUTED; ctx.textAlign="right"; ctx.fillText("100",XA-14,Y2(100)+7); ctx.textAlign="left";
+  } else if(q.chart==="scatter"){
+    const [X,Yv]=sets, pr=X.pts.map((p,i)=>[p[0],p[1],Yv.pts[i][1]]).filter(p=>p[1]!=null&&p[2]!=null);
+    const ax=scaleOf(pr.map(p=>p[1])), ay=scaleOf(pr.map(p=>p[2]));
+    const px=v=>L+(v-ax.mn)/(ax.mx-ax.mn)*(R-L), py=v=>bot-(v-ay.mn)/(ay.mx-ay.mn)*(bot-top);
+    grid(ctx,ay,py,L,R);
+    ctx.strokeStyle=MUTED; ctx.lineWidth=2; ctx.setLineDash([6,6]); ctx.beginPath(); pr.forEach((p,i)=>i?ctx.lineTo(px(p[1]),py(p[2])):ctx.moveTo(px(p[1]),py(p[2]))); ctx.stroke(); ctx.setLineDash([]);
+    pr.forEach((p,i)=>{ ctx.globalAlpha=.35+.65*i/Math.max(1,pr.length-1); ctx.fillStyle=PAL[0];
+      ctx.beginPath(); ctx.arc(px(p[1]),py(p[2]),9,0,7); ctx.fill(); ctx.globalAlpha=1;
+      if(i===0||i===pr.length-1){ ctx.font="600 18px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=INK; ctx.fillText(p[0],px(p[1])+14,py(p[2])-10); } });
+    ctx.font="500 18px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=MUTED;
+    ctx.fillText(`${Yv.name} ↑`,74,top-14); ctx.textAlign="right"; ctx.fillText(`${X.name} →`,R,bot+30); ctx.textAlign="left";
+  } else if(q.chart==="bar"){
+    const s=sets[0], ax=scaleOf(s.pts.map(p=>p[1]),0), Y=y=>bot-(y-ax.mn)/(ax.mx-ax.mn)*(bot-top);
+    grid(ctx,ax,Y,L,W-80);
+    const slot=(W-80-L)/(x1-x0+1), neg=q.signs?PAL[1]:PAL[0];
+    s.pts.forEach(([x,v])=>{ if(v==null) return; ctx.fillStyle=v<0?neg:PAL[0];
+      const a=Y(Math.max(0,v)), b=Y(Math.min(0,v)); ctx.fillRect(L+slot*(x-x0)+slot*.12,a,Math.max(1.5,slot*.76),Math.max(1,b-a)); });
+  } else if(q.chart==="stack"){
+    const years=[]; for(let y=x0;y<=x1;y++) years.push(y);
+    const at=(s,y)=>(s.pts.find(p=>p[0]===y)||[])[1]||0;
+    const Y=v=>bot-v/100*(bot-top); grid(ctx,{mn:0,mx:100,st:25},Y,L,R);
+    let lower=years.map(()=>0);
+    sets.forEach(s=>{ const upper=years.map((y,i)=>lower[i]+at(s,y));
+      ctx.fillStyle=s.colour; ctx.globalAlpha=.8; ctx.beginPath();
+      years.forEach((y,i)=>i?ctx.lineTo(PX(y),Y(upper[i])):ctx.moveTo(PX(y),Y(upper[i])));
+      [...years].reverse().forEach((y,j)=>ctx.lineTo(PX(y),Y(lower[years.length-1-j])));
+      ctx.closePath(); ctx.fill(); ctx.globalAlpha=1;
+      ends.push({c:s.colour,x:R,y:Y((upper[upper.length-1]+lower[lower.length-1])/2),t:`${s.name} ${at(s,x1).toFixed(0)}%`}); lower=upper; });
+  } else {
+    const all=sets.flatMap(s=>s.pts.map(p=>p[1]));
+    const ax=q.domain?{mn:q.domain[0],mx:q.domain[1],st:q.domain[1]>5?2:1}:scaleOf(q.zero?[...all,0]:all,q.trans==="index"?100:null);
+    const Y=y=>bot-(y-ax.mn)/(ax.mx-ax.mn)*(bot-top);
+    grid(ctx,ax,Y,L,R);
+    if(q.chart==="gap"&&sets.length===2){ const [A,B]=sets;
+      ctx.fillStyle=A.colour; ctx.globalAlpha=.16; ctx.beginPath();
+      A.pts.forEach((p,i)=>i?ctx.lineTo(PX(p[0]),Y(p[1])):ctx.moveTo(PX(p[0]),Y(p[1])));
+      [...B.pts].reverse().forEach(p=>ctx.lineTo(PX(p[0]),Y(p[1]))); ctx.closePath(); ctx.fill(); ctx.globalAlpha=1; }
+    if(q.mean){ const v=sets[0].pts.map(p=>p[1]).filter(x=>x!=null), m=v.reduce((a,b)=>a+b,0)/v.length;
+      ctx.strokeStyle=INK; ctx.globalAlpha=.5; ctx.lineWidth=2; ctx.setLineDash([10,8]); ctx.beginPath(); ctx.moveTo(L,Y(m)); ctx.lineTo(R,Y(m)); ctx.stroke(); ctx.setLineDash([]); ctx.globalAlpha=1; }
+    sets.forEach(s=>{
+      if(q.chart==="dots"){ ctx.fillStyle=s.colour; s.pts.forEach(([x,v])=>{ if(v==null) return; ctx.beginPath(); ctx.arc(PX(x),Y(v),6.5,0,7); ctx.fill(); }); }
+      else { ctx.strokeStyle=s.colour; ctx.lineWidth=4.5; linePts(ctx,s.pts,PX,Y); }
+      const l=[...s.pts].reverse().find(p=>p[1]!=null); if(l) ends.push({c:s.colour,x:PX(l[0]),y:Y(l[1]),t:s.name});
+    });
+  }
+  /* names at the right, kept apart */
+  ends.sort((a,b)=>a.y-b.y); for(let i=1;i<ends.length;i++) if(ends[i].y-ends[i-1].y<26) ends[i].y=ends[i-1].y+26;
+  for(let i=ends.length-1;i>=0;i--) if(ends[i].y>bot+10) { ends[i].y=bot+10-(ends.length-1-i)*26; }
+  ctx.font="600 19px 'IBM Plex Sans', sans-serif";
+  ends.forEach(e=>{ ctx.fillStyle=e.c; ctx.fillText(e.t,e.x+16,e.y+7); });
+  if(q.chart==="bar"&&q.signs){ let lx=74; ctx.font="500 20px 'IBM Plex Sans', sans-serif";
+    q.signs.forEach((n,i)=>{ ctx.fillStyle=PAL[i]; ctx.fillRect(lx,H-72,13,13); ctx.fillStyle=INK; ctx.fillText(n,lx+21,H-60); lx+=ctx.measureText(n).width+58; }); }
+  else if(q.chart==="bar"){ ctx.font="500 20px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=INK; ctx.fillText(`${sets[0].name||""}, ${q.unit}`,74,H-60); }
+  ctx.font="400 19px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=MUTED; ctx.textAlign="right";
+  ctx.fillText(`${q.unit} · ${x0}–${x1} · ${q.geos.join(", ")} · polyoptic.co`,W-74,H-24); ctx.textAlign="left";
+}
+
 const made=[];
 function panel(file,draw){
   const box=document.createElement("div"); box.className="card";
@@ -202,12 +319,14 @@ const status=document.getElementById("status");
 Promise.all([
   document.fonts.ready,
   fetch("../data/bundle.json",{cache:"no-cache"}).then(r=>r.ok?r.json():Promise.reject()),
-  fetch("../data/questions.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({}))
-]).then(([,db,qs])=>{
+  fetch("../data/questions.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({})),
+  fetch("../data/questions-more.json",{cache:"no-cache"}).then(r=>r.ok?r.json():{}).catch(()=>({}))
+]).then(([,db,qs,more])=>{
   /* Fonts must be loaded before anything is drawn — canvas silently falls back
      to a system face and the card ships in the wrong typeface. */
   BRAND.forEach(c=>panel(c.file,ctx=>drawBrand(ctx,c)));
   QS.forEach(c=>panel(c.file,ctx=>drawQ(ctx,c,db,qs)));
+  ((more||{}).questions||[]).forEach(q=>panel(q.slug,ctx=>drawMore(ctx,q)));
   status.textContent=`${made.length} cards ready`;
   document.getElementById("all").onclick=()=>{
     made.forEach((m,i)=>setTimeout(()=>save(m.file,m.cv),i*450));

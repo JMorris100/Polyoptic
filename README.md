@@ -14,7 +14,7 @@ polyoptic/
 ├── chartkit.js, chart.css      the chart drawing rules every page shares
 ├── data.html                   provenance — every raw value, source and API endpoint
 ├── about.html                  who builds it, and what it deliberately doesn't do
-├── q/<slug>/index.html         one landing page per featured comparison
+├── q/<slug>/index.html         one page per question: four written by hand, the rest by pages.py
 ├── og/
 │   └── build.html              draws the 1200×630 share images (see below)
 ├── sitemap.xml                 board.html is deliberately absent
@@ -24,6 +24,7 @@ polyoptic/
 ├── ingest/
 │   ├── ingest.py               pipeline: fetch → normalise → validate → write
 │   ├── series.yaml             the whole catalogue, declarative
+│   ├── questions.py            the questions in the homepage drawer, and their answers
 │   └── requirements.txt
 └── .github/workflows/
     └── refresh.yml             weekly refresh, commits if anything changed
@@ -324,22 +325,36 @@ carrying `noindex`.
 
 **Chart state lives in the URL fragment**, and fragments never reach a server,
 so an unfurler cannot tell one explorer link from another — every one of them
-previews with the same card. That is why the four featured comparisons have
-real URLs under `/q/<slug>/`, each with its own metadata and its own image.
+previews with the same card. The same goes for `#q-<key>` on the homepage. That
+is why every question has a real URL under `/q/<slug>/`, each with its own
+metadata and its own image.
 Making arbitrary explorer links unfurl as themselves would mean moving state
 into the query string and rendering images on demand, which needs a server this
 site does not have.
 
-**More questions, answered in place.** Under the four featured questions, the
-homepage has a drawer of eighteen more. Each one is listed in `QS` in
-`index.html`: its indicators, the explorer chart that answers it (line, dots,
-small multiples, stacked area, slope, columns, gap or scatter), why that chart,
-the caveat that matters, and a `say()` that writes its answer from
-`bundle.json` when it is opened, leaving out any year still in progress. Some
-are marked `myth`: questions where the trend people expect isn't there.
-`#q-<key>` links open the drawer on one question. Their charts are drawn in the
-page, not as images, so they have no share cards of their own. A question that
-deserves one should get a `/q/` page.
+**More questions: answered in place, and each a page of its own.** Under
+the four featured questions, the homepage has a drawer of eighteen more. They
+are written once, in `ingest/questions.py`: each names its indicators, the
+explorer chart that answers it (line, dots, small multiples, stacked area,
+slope, columns, gap or scatter), why that chart, the caveat that matters, and
+a `say()` that writes the answer from the bundle, leaving out any year still in
+progress. Some are marked `myth`: questions where the trend people expect isn't
+there. `pages.py` works them all out and writes:
+
+- `data/questions-more.json`, which the drawer reads and draws in place;
+- `q/<slug>/` for each one, with the answer first, the chart drawn as SVG, the
+  caveat, links to its indicators and `FAQPage` markup, so every question can
+  be found by search and shared with its own preview;
+- `q/`, a page listing every question, featured and not;
+- the plain links inside the drawer's list in `index.html`, for crawlers that
+  don't run scripts, and a "More questions" list on the four featured pages;
+- a "Questions this figure helps answer" list on each indicator page, and the
+  questions about each topic on its topic page.
+
+The drawer and the page draw the same computed numbers, so they cannot
+disagree. To add a question, add an entry to `QUESTIONS` in `questions.py`,
+run `pages.py`, and draw its share image (below). `#q-<key>` on the homepage
+opens the drawer on one question.
 
 **A plain page for every indicator.** The explorer is an app and its HTML is
 nearly empty until the script runs, so `ingest/pages.py` writes pages a search
@@ -353,9 +368,10 @@ weekly refresh runs it after `ingest.py`; run it by hand after a manual
 rebuild. Slugs come from the series name and are written to `data/pages.json`.
 
 **The share images are generated in a browser**, not by the build: open
-`og/build.html` from the dev server, click *Download all*, and drop the seventeen
-PNGs into `og/` (four for the main pages, nine for the topics, four for the
-questions). Filenames match the `og:image` tags — don't rename them. They
+`og/build.html` from the dev server, click *Download all*, and drop the PNGs
+into `og/` (four for the main pages, nine for the topics, and one for each
+question, featured and not). A question page with no image yet falls back to
+the homepage card. Filenames match the `og:image` tags — don't rename them. They
 are drawn on a canvas from `bundle.json`, so the comparison cards show the real
 current chart, and they need re-running when a chart changes materially.
 

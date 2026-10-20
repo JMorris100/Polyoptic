@@ -415,6 +415,13 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 .qlink{align-self:flex-start;font-size:14px;padding:11px 20px}
 .qsrc{font-size:11.5px;color:var(--muted);line-height:1.45}
 .qempty{text-align:center;color:var(--muted);font-size:14px;padding:20px 0}
+.qacts{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.qpage{font-size:13.5px;font-weight:600;color:var(--purple);text-decoration:none}
+.qpage:hover{text-decoration:underline}
+.qall{text-align:center;margin:22px 0 0;font-size:14px;font-weight:600}
+.qall a{color:var(--purple)}
+/* the plain links the build writes for crawlers, replaced once the script runs */
+.qstatic{display:block;padding:10px 16px;border:1px solid var(--rule);border-radius:12px;color:var(--ink);text-decoration:none;font-weight:600}
 /* marks the question charts add */
 .qdot{stroke:var(--surface);stroke-width:1.2}
 .qslope{font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:11.5px;font-variant-numeric:tabular-nums;fill:var(--muted)}
@@ -587,8 +594,28 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
       <div class="qfilt" id="qgroups" role="group" aria-label="Kinds of question"></div>
       <p class="qguide-t">Or pick a kind of chart — each is good at a different job</p>
       <div class="qguide" id="qguide" role="group" aria-label="Kinds of chart"></div>
-      <div class="qlist" id="qlist"></div>
+      <div class="qlist" id="qlist"><!-- more-questions -->
+        <a class="qstatic" href="q/is-the-nhs-under-more-strain-than-before-the-pandemic/">Is the NHS under more strain than before the pandemic?</a>
+        <a class="qstatic" href="q/are-people-in-the-uk-living-longer-and-healthier/">Are people in the UK living longer — and healthier?</a>
+        <a class="qstatic" href="q/where-does-uk-electricity-come-from-now/">Where does UK electricity come from now?</a>
+        <a class="qstatic" href="q/is-the-uk-population-getting-older/">Is the UK population getting older?</a>
+        <a class="qstatic" href="q/have-trains-buses-and-road-traffic-recovered-from-lockdown/">Have UK trains, buses and road traffic recovered from lockdown?</a>
+        <a class="qstatic" href="q/pay-prices-rents-or-house-prices-what-has-risen-fastest-since-2015/">Pay, prices, rents or house prices: what has risen fastest in the UK since 2015?</a>
+        <a class="qstatic" href="q/is-uk-net-migration-driven-by-students-or-workers/">Is UK net migration driven by students or workers?</a>
+        <a class="qstatic" href="q/are-children-in-england-getting-heavier/">Are children in England getting heavier?</a>
+        <a class="qstatic" href="q/is-england-building-as-many-homes-as-it-used-to/">Is England building as many homes as it used to?</a>
+        <a class="qstatic" href="q/when-did-the-uk-government-last-balance-the-books/">When did the UK government last balance the books?</a>
+        <a class="qstatic" href="q/are-deaths-about-to-overtake-births-in-england-and-wales/">Are deaths about to overtake births in England and Wales?</a>
+        <a class="qstatic" href="q/did-uk-productivity-stop-growing-after-2008/">Did UK productivity stop growing after 2008?</a>
+        <a class="qstatic" href="q/has-crime-gone-up-in-england-and-wales/">Has crime gone up in England and Wales?</a>
+        <a class="qstatic" href="q/is-britain-getting-unhappier/">Is Britain getting unhappier?</a>
+        <a class="qstatic" href="q/are-more-people-dying-than-ever-in-england-and-wales/">Are more people dying than ever in England and Wales?</a>
+        <a class="qstatic" href="q/has-britain-stopped-saving/">Has Britain stopped saving?</a>
+        <a class="qstatic" href="q/did-brexit-tip-britain-into-a-trade-deficit/">Did Brexit tip Britain into a trade deficit?</a>
+        <a class="qstatic" href="q/do-more-police-officers-mean-more-crimes-charged/">Do more police officers mean more crimes charged?</a><!-- /more-questions -->
+      </div>
       <p class="qempty" id="qempty" hidden>No questions of that kind yet.</p>
+      <p class="qall"><a href="q/">Every question, each on its own page →</a></p>
     </div></div></div>
   </div>
 </section>
@@ -1218,282 +1245,22 @@ const QTYPES=[
 const QTYPE_NAME=Object.fromEntries(QTYPES.map(([k,n])=>[k,n]));
 const QGROUPS=[["all","All"],["many","Several trends at once"],["myth","Looks like a trend — isn’t"],["long","The long view"]];
 
-/* ── reading the bundle for an answer ── */
-/* A year still in progress is left out: these answers set whole years
-   against whole years, and the explorer shows the part year, labelled. */
-const val=(id,y)=>{ const s=S(id); if(!s||(s.partial&&s.partial.year===y)) return null; const i=y-s.start; return (i>=0&&i<s.values.length)?s.values[i]:null; };
-const WORDS=["no","one","two","three","four","five","six","seven","eight","nine"];
-const nw=n=>n<10?WORDS[n]:String(n);
-const yrs=(id,a,b)=>{ const out=[]; for(let y=a;y<=b;y++) if(val(id,y)!=null) out.push(y); return out; };
+/* ── the questions ──
+   Written once, in ingest/questions.py. The build works out each answer and
+   its numbers from the bundle and saves them to data/questions-more.json,
+   and writes the same answer and chart into a page of its own at
+   q/<slug>/ — so this drawer and that page cannot disagree. Here they are
+   drawn in place, from those numbers. */
+let QS=[];
 /* a year as the series counts it: 2019/20 for a school year, 2019-20 for a financial one */
 const yl=(id,y)=>{ const b=(S(id)||{}).year_basis; return b==="academic"?`${y}/${String((y+1)%100).padStart(2,"0")}`:b==="financial"?`${y}-${String((y+1)%100).padStart(2,"0")}`:String(y); };
-const big=v=>Math.abs(v)>=1e6?`${(v/1e6).toFixed(1)} million`:Math.round(v).toLocaleString("en-GB");
-const thou=v=>(Math.round(v/1000)*1000).toLocaleString("en-GB");
-const d1=v=>v.toFixed(1), d2=v=>v.toFixed(2);
 const pc=(a,b)=>{ const c=(b/a-1)*100; return `${c>=0?"+":"−"}${Math.abs(c).toFixed(0)}%`; };
-const pcw=(a,b)=>{ const c=(b/a-1)*100; return `${c>=0?"up":"down"} ${Math.abs(c).toFixed(0)}%`; };
-const argmax=(id,a,b,f=v=>v)=>yrs(id,a,b).reduce((m,y)=>m==null||f(val(id,y))>f(val(id,m))?y:m,null);
-const argmin=(id,a,b)=>argmax(id,a,b,v=>-v);
-const lastY=(id,a,b)=>{ const y=yrs(id,a,b); return y[y.length-1]; };
-const firstY=(id,a,b)=>yrs(id,a,b)[0];
-const capf=t=>t[0].toUpperCase()+t.slice(1);
-
-/* The questions. Each names the explorer chart that answers it, why that
-   chart, the caveat that matters, and writes its answer from the data.
-   `myth` questions are the ones where the trend people expect is not
-   there, or is not what it seems. */
-const QS=[
-  {key:"nhs", group:"many", q:"Is the NHS under more strain than before the pandemic?",
-   ids:["rttwaitlist","ae4hour","ambcat2","gpfte"], chart:"small", trans:"none", from:2010, to:2026, era:"bands",
-   short:{rttwaitlist:"Waiting list (pathways)",ae4hour:"A&E seen within 4 hours (%)",ambcat2:"Ambulance, Category 2 (minutes)",gpfte:"Fully qualified GPs (FTE)"},
-   say(){
-     const w=lastY("rttwaitlist",2010,2026), wp=argmax("rttwaitlist",2019,2026);
-     const a=lastY("ae4hour",2010,2026), m=lastY("ambcat2",2010,2026), mw=argmax("ambcat2",2017,2026);
-     const g0=firstY("gpfte",2010,2026), g=lastY("gpfte",2010,2026);
-     return `The waiting list was ${big(val("rttwaitlist",2019))} in 2019 and ${big(val("rttwaitlist",w))} in ${w}`+
-       (wp!==w?`, having peaked at ${big(val("rttwaitlist",wp))} in ${wp}`:"")+`. `+
-       `The share of A&E patients seen within four hours went from ${d1(val("ae4hour",2018))}% in ${yl("ae4hour",2018)} to ${d1(val("ae4hour",a))}% in ${yl("ae4hour",a)}. `+
-       `Category 2 ambulances — strokes, heart attacks — averaged ${Math.round(val("ambcat2",2018))} minutes in ${yl("ambcat2",2018)}, ${Math.round(val("ambcat2",mw))} at the worst in ${yl("ambcat2",mw)}, and ${Math.round(val("ambcat2",m))} in ${yl("ambcat2",m)}. `+
-       `Fully qualified GPs have barely changed in number: ${big(val("gpfte",g))} full-time equivalents in ${g}, against ${big(val("gpfte",g0))} in ${g0}.`;
-   },
-   why:"Four measures in four units — patients, a percentage, minutes, doctors. Small multiples give each its own scale on the same timeline, so you compare the shape and timing of each without pretending they share an axis.",
-   care:"Every one of these has breaks in it: pathways dropped from the waiting list in 2013 and 2024, A&E trial sites left out from 2019 to 2023, new ambulance standards in 2017. They are marked on the lines in the explorer."},
-
-  {key:"life", group:"many", q:"Are we living longer — and healthier?",
-   ids:["lefemale","lemale","hlefemale","hlemale"], chart:"line", trans:"none", from:2001, to:2022, era:"off",
-   short:{lefemale:"Women",lemale:"Men",hlefemale:"Women, in good health",hlemale:"Men, in good health"},
-   say(){
-     const e=lastY("lemale",2001,2022), h0=firstY("hlemale",2001,2022), h=lastY("hlemale",2001,2022);
-     const gap0=val("lefemale",h0)-val("hlefemale",h0), gap=val("lefemale",h)-val("hlefemale",h);
-     return `Life expectancy at birth rose by ${d1(val("lemale",2011)-val("lemale",2001))} years for men and ${d1(val("lefemale",2011)-val("lefemale",2001))} for women between 2001 and 2011, then all but stopped: by ${e} it was ${d1(val("lemale",e))} for men and ${d1(val("lefemale",e))} for women. `+
-       `Healthy life expectancy — the years expected in good health — fell, from ${d1(val("hlemale",h0))} to ${d1(val("hlemale",h))} for men and ${d1(val("hlefemale",h0))} to ${d1(val("hlefemale",h))} for women. `+
-       `So the years a woman can expect to spend in poor health grew from ${d1(gap0)} to ${d1(gap)}.`;
-   },
-   why:"All four are in years, so they can honestly share one axis — and the space between each pair of lines is the story: the years lived in poor health.",
-   care:"Period life expectancy assumes this year’s death rates hold for a whole lifetime: it summarises mortality now rather than forecasting it. Healthy life expectancy rests on people rating their own health in a survey."},
-
-  {key:"power", group:"many", q:"Where does our electricity come from now?",
-   ids:["renewshare","lowcarbon","fossilshare"], chart:"line", trans:"none", from:1998, to:2025, era:"off",
-   short:{renewshare:"Renewables",lowcarbon:"Low-carbon, incl. nuclear",fossilshare:"Fossil fuels"},
-   say(){
-     const f=firstY("fossilshare",1998,2025), l=lastY("renewshare",1998,2025);
-     const cross=(a,b)=>yrs(a,1998,2025).find(y=>val(a,y)>val(b,y));
-     const c1=cross("lowcarbon","fossilshare"), c2=cross("renewshare","fossilshare");
-     return `In ${f} fossil fuels made ${d1(val("fossilshare",f))}% of the UK’s electricity and renewables ${d1(val("renewshare",f))}%. `+
-       (c1?`Low-carbon sources — renewables plus nuclear — overtook fossil fuels in ${c1}`:"")+
-       (c2?`, and renewables alone did so in ${c2}. `:". ")+
-       `By ${l} renewables made ${d1(val("renewshare",l))}% against fossil fuels’ ${d1(val("fossilshare",l))}%.`;
-   },
-   why:"Shares of the same total over a quarter of a century. A line shows exactly when one source overtook another, which a stacked chart would bury in its middle bands.",
-   care:"Low-carbon includes renewables, so those two lines overlap by design — they are not slices that add up to 100%. The space between them is nuclear."},
-
-  {key:"ageing", group:"many", q:"Is the population getting older?",
-   ids:["pop015","pop1664","pop65"], chart:"stack", trans:"none", from:1991, to:2024, era:"off",
-   short:{pop015:"Under 16",pop1664:"16 to 64",pop65:"65 and over"},
-   say(){
-     const f=firstY("pop65",1991,2024), l=lastY("pop65",1991,2024);
-     const c=yrs("pop65",1991,2024).find(y=>val("pop65",y)>val("pop015",y)), pk=argmax("pop1664",1991,2024);
-     return `In ${f} under-16s were ${d1(val("pop015",f))}% of the UK population and over-65s ${d1(val("pop65",f))}%. `+
-       (c?`The over-65s overtook the under-16s in ${c}, and by ${l} were ${d1(val("pop65",l))}% against ${d1(val("pop015",l))}%. `:"")+
-       `The working-age share peaked at ${d1(val("pop1664",pk))}% in ${pk} and is ${d1(val("pop1664",l))}% now.`;
-   },
-   why:"The three age groups add up to the whole population, and a stacked area shows that: each band is a share of 100%. Its weakness is that only the bottom band sits on a flat baseline — the moment the over-65s overtake the under-16s is easier to see as a line, one click away in the explorer.",
-   care:"These are shares, not numbers. The population grew throughout, so a smaller share of under-16s does not have to mean fewer children."},
-
-  {key:"travel", group:"many", q:"Have trains, buses and cars recovered from lockdown?",
-   ids:["railjourneys","busjourneys","traffic"], chart:"line", trans:"index", from:2010, to:2025, era:"off",
-   short:{railjourneys:"Rail journeys",busjourneys:"Bus journeys",traffic:"Road traffic"},
-   say(Q,sets){
-     const at=(id,y)=>{ const p=sets.find(s=>s.id===id).pts.find(q=>q[0]===y); return p&&p[1]; };
-     const lo=id=>argmin(id,2019,2025), l=lastY("railjourneys",2010,2025);
-     const n=v=>Math.round(v);
-     return `Set each to ${Q.from} = 100. Before the pandemic, in ${yl("railjourneys",2018)}, rail journeys stood at ${n(at("railjourneys",2018))} and road traffic at ${n(at("traffic",2018))}, while bus journeys had fallen to ${n(at("busjourneys",2018))}. `+
-       `Lockdown took rail down to ${n(at("railjourneys",lo("railjourneys")))} and buses to ${n(at("busjourneys",lo("busjourneys")))}. `+
-       `By ${yl("railjourneys",l)} rail was back to ${n(at("railjourneys",l))} and traffic ${n(at("traffic",lastY("traffic",2010,2025)))}, but buses only ${n(at("busjourneys",lastY("busjourneys",2010,2025)))}.`;
-   },
-   why:"Journeys, journeys and vehicle miles: three units at three very different sizes. Rebasing each to 100 in the same year puts them on one axis as growth, so ‘back to normal’ means the same thing for all three.",
-   care:"Rail and bus figures are April-to-March years and road traffic is calendar years, so the pandemic dip lands a few months apart. Rail has several changes of method, marked in the explorer."},
-
-  {key:"rise", group:"many", q:"Since 2015, what has risen fastest: pay, prices, rents or house prices?",
-   ids:["pay","cpih","rents","houseprice"], chart:"slope", trans:"index", from:2015, to:2025, era:"off",
-   short:{pay:"Pay",cpih:"Prices (CPIH)",rents:"Private rents",houseprice:"House prices"},
-   say(Q,sets){
-     const lc=n=>n[0].toLowerCase()+n.slice(1);
-     const end=sets.map(s=>({s,v:[...s.pts].reverse().find(q=>q[1]!=null)})).sort((a,b)=>b.v[1]-a.v[1]);
-     const list=end.map(e=>`${lc(e.s.name)} ${pc(100,e.v[1])}`);
-     return `Rebased to ${Q.from} = 100, by ${Q.to}: ${list.slice(0,-1).join(", ")} and ${list[list.length-1]}. `+
-       `${end[0].s.name} rose most and ${lc(end[end.length-1].s.name)} least.`;
-   },
-   why:"When the question is ‘where did each one end up?’, the years in between are noise. A slope chart keeps just the start and the end, so the ranking and the size of each rise read at a glance.",
-   care:"A slope chart hides the route: two series can take very different paths and finish level. Switch to a line in the explorer to see each year. The rents index starts in 2015, which is why this does too."},
-
-  {key:"migration", group:"many", q:"Is net migration driven by students or workers?",
-   ids:["netmig","visastudy","visawork","visahcw"], chart:"line", trans:"none", from:2012, to:2025, era:"off",
-   short:{netmig:"Net migration",visastudy:"Study visas",visawork:"Work visas",visahcw:"Health and care visas"},
-   say(){
-     const n=argmax("netmig",2012,2025), nl=lastY("netmig",2012,2025);
-     const w=argmax("visawork",2012,2025), s=argmax("visastudy",2012,2025), h=argmax("visahcw",2012,2025);
-     return `Net migration was ${thou(val("netmig",2019))} in 2019, peaked at ${thou(val("netmig",n))} in ${n} and was ${thou(val("netmig",nl))} in ${nl}. `+
-       `Study visas peaked first, at ${thou(val("visastudy",s))} in ${s}; work visas at ${thou(val("visawork",w))} in ${w}, when ${thou(val("visahcw",h))} health and care visas were granted. `+
-       `Both routes have fallen since, in step with the headline number.`;
-   },
-   why:"All four count people, so one axis is fair — and putting the routes beside the headline number shows which of them moved with it, and when.",
-   care:"A visa granted is not a person settling: visas include short stays, study visas here exclude dependants, and net migration subtracts everyone who left. ONS changed how it estimates net migration in 2020."},
-
-  {key:"obesity", group:"many", q:"Are children getting heavier?",
-   ids:["obeserec","obesey6"], chart:"dots", trans:"none", from:2006, to:2024, era:"off", zero:true,
-   short:{obeserec:"Reception, age 4–5",obesey6:"Year 6, age 10–11"},
-   say(){
-     const f=firstY("obesey6",2006,2024), l=lastY("obesey6",2006,2024);
-     return `Obesity among reception children was ${d1(val("obeserec",f))}% in ${yl("obeserec",f)} and ${d1(val("obeserec",l))}% in ${yl("obeserec",l)} — little changed. `+
-       `Among Year 6 children it went from ${d1(val("obesey6",f))}% to ${d1(val("obesey6",l))}%. `+
-       `Children now leave primary school about ${d1(val("obesey6",l)/val("obeserec",l))} times as likely to be obese as when they start it.`;
-   },
-   why:"Each dot is one school year’s measurement. Dots rather than a line make plain that this is a yearly check, and stop one odd year from dragging a line up and down with it.",
-   care:"England only. The 2020/21 figures come from a much smaller sample of schools measured during the pandemic, so that year’s jump should be read with care."},
-
-  {key:"homes", group:"long", q:"Are we building as many homes as we used to?",
-   ids:["homecompletions"], chart:"bar", trans:"none", from:1946, to:2025, era:"off", note:true,
-   say(){
-     const pk=argmax("homecompletions",1946,2025), l=lastY("homecompletions",1946,2025), p30=argmax("homecompletions",l-29,l);
-     return `England completed ${thou(val("homecompletions",pk))} new homes in ${pk}, the most in any year since the war. `+
-       `In the last thirty years the most in a single year was ${thou(val("homecompletions",p30))}, in ${p30}, and in ${l} it was ${thou(val("homecompletions",l))} — ${Math.round(val("homecompletions",l)/val("homecompletions",pk)*100)}% of the ${pk} peak.`;
-   },
-   why:"Homes completed is a count for each year, so each column is one year’s output and its height the total. Columns make the size of the post-war peak against today plain in a way a thin line does not.",
-   care:"These are completions counted by councils and building control in England. They miss conversions and changes of use, which the ‘net additions’ measure includes, so they understate how many homes the stock gains."},
-
-  {key:"borrow", group:"long", q:"When did the government last balance the books?",
-   ids:["psnb"], chart:"bar", trans:"pctgdp", from:1946, to:2025, era:"bands", signs:["Borrowing","Surplus"], note:true,
-   say(Q,sets){
-     const p=sets[0].pts.filter(q=>q[1]!=null), surp=p.filter(q=>q[1]<0), pk=p.reduce((m,q)=>q[1]>m[1]?q:m), l=p[p.length-1];
-     return `The government borrowed in ${p.length-surp.length} of the ${p.length} years from ${p[0][0]} to ${l[0]}. `+
-       (surp.length?`The last surplus was in ${surp[surp.length-1][0]}. `:"")+
-       `Borrowing peaked at ${d1(pk[1])}% of GDP in ${pk[0]}; in ${l[0]} it was ${d1(l[1])}%.`;
-   },
-   why:"Borrowing is one total per year and can go below zero when there is a surplus. Columns above and below the line show each year’s sign at a glance — and as a share of GDP, 1950 and 2020 compare fairly.",
-   care:"In cash terms every recent year would dwarf the past, which is why this is a share of the economy. A surplus here is the whole public sector’s, before any one-off transfers are taken out."},
-
-  {key:"births", group:"long", q:"Are deaths about to overtake births?",
-   ids:["births","deaths"], chart:"gap", trans:"none", from:1938, to:2025, era:"off",
-   short:{births:"Births",deaths:"Deaths"},
-   say(){
-     const ys=yrs("births",1938,2025).filter(y=>val("deaths",y)!=null), gap=y=>val("births",y)-val("deaths",y);
-     const pk=ys.reduce((m,y)=>gap(y)>gap(m)?y:m), l=ys[ys.length-1], neg=ys.filter(y=>gap(y)<0);
-     return `In ${pk} births outnumbered deaths in England and Wales by ${thou(gap(pk))}. In ${l} the gap was ${thou(gap(l))}: ${thou(val("births",l))} births against ${thou(val("deaths",l))} deaths. `+
-       (neg.length?`Deaths last outnumbered births in ${neg[neg.length-1]}${neg.length>1?`, one of only ${nw(neg.length)} years since ${ys[0]} when they did`:""}.`:`Deaths have not outnumbered births in any year since ${ys[0]}.`);
-   },
-   why:"The question is about the difference between two lines. A gap chart shades it, so you read births minus deaths — the natural change in the population — directly, and see how close the lines have come.",
-   care:"England and Wales only. With the gap this narrow, population growth now comes almost entirely from migration."},
-
-  {key:"prod", group:"long", q:"Did productivity stop growing after 2008?",
-   ids:["productivity"], chart:"line", trans:"none", from:1971, to:2025, era:"bands",
-   short:{productivity:"Output per hour"},
-   say(){
-     const f=firstY("productivity",1971,2025), l=lastY("productivity",1971,2025);
-     const r=(a,b)=>(Math.pow(val("productivity",b)/val("productivity",a),1/(b-a))-1)*100;
-     const proj=val("productivity",2007)*Math.pow(1+r(f,2007)/100,l-2007);
-     return `Output per hour grew by ${d1(r(f,2007))}% a year on average from ${f} to 2007, and ${d1(r(2007,l))}% a year from 2007 to ${l}. `+
-       `Had the old rate carried on, the index would be about ${Math.round(proj)} today rather than ${Math.round(val("productivity",l))} — roughly ${Math.round((proj/val("productivity",l)-1)*100)}% higher.`;
-   },
-   why:"One series over half a century. A line shows the change of slope — the bend at 2008 — and the bend is the whole story.",
-   care:"Productivity is output per hour worked across the whole economy. It is hard to measure and is revised often, so the last year or two may move."},
-
-  {key:"crime", group:"myth", q:"Has crime gone up?",
-   ids:["csew","prc"], chart:"line", trans:"index", from:2002, to:2025, era:"bands",
-   short:{csew:"Crime Survey",prc:"Police recorded"},
-   say(){
-     const lo=argmin("prc",2002,2025), l=lastY("prc",2002,2025), cl=lastY("csew",2002,2025), cp=argmax("csew",1981,2025);
-     return `Police-recorded crime has risen ${pc(val("prc",lo),val("prc",l)).replace("+","")} since its low in ${yl("prc",lo)} — the rise most headlines report. `+
-       `The Crime Survey, which asks people what happened to them and does not depend on what the police record, shows crime ${pcw(val("csew",2002),val("csew",cl))} since ${yl("csew",2002)}, and ${pcw(val("csew",cp),val("csew",cl)).replace("down ","")} lower than its peak in ${yl("csew",cp)}.`;
-   },
-   why:"Two measures of the same thing at very different sizes. Rebasing both to 100 shows the direction of each, and the year they part ways.",
-   care:"Police figures rose from 2014 largely because recording was tightened after inspectors found crimes going unrecorded. The survey misses crimes against businesses, only counts fraud from 2016, and paused in 2020."},
-
-  {key:"happy", group:"myth", q:"Is Britain getting unhappier?",
-   ids:["wbhappy","wbsatisfied","wbworthwhile","wbanxiety"], chart:"dots", trans:"none", from:2011, to:2022, era:"off", domain:[0,10],
-   short:{wbhappy:"Happiness",wbsatisfied:"Life satisfaction",wbworthwhile:"Feeling worthwhile",wbanxiety:"Anxiety"},
-   say(){
-     const h=yrs("wbhappy",2011,2022).map(y=>val("wbhappy",y)), l=lastY("wbanxiety",2011,2022);
-     return `On a scale of 0 to 10, average happiness moved between ${d2(Math.min(...h))} and ${d2(Math.max(...h))} over ${h.length} years — ${d2(Math.max(...h)-Math.min(...h))} of a point. `+
-       `The biggest move came in the pandemic: anxiety rose from ${d2(val("wbanxiety",2018))} in ${yl("wbanxiety",2018)} to ${d2(val("wbanxiety",2020))} in ${yl("wbanxiety",2020)}, and was ${d2(val("wbanxiety",l))} in ${yl("wbanxiety",l)}. `+
-       `Drawn from zero, as here, the lines are close to flat. Cut the axis to fit the data and the same numbers look like a collapse.`;
-   },
-   why:"The scale runs from 0 to 10, so the axis does too. Zoom in to fit the data — as most charts, and the explorer by default, do — and a quarter-point wobble fills the frame.",
-   care:"These are averages of a very large survey, so a tenth of a point is a real change across the population, even if no one person would notice it. Lower is better for anxiety."},
-
-  {key:"deaths", group:"myth", q:"Are more people dying than ever?",
-   ids:["deaths"], chart:"line", trans:"none", from:1900, to:2025, era:"off", zero:true,
-   short:{deaths:"Deaths registered"},
-   say(){
-     const lo=argmin("deaths",1900,2025), hi=argmax("deaths",1900,2025), l=lastY("deaths",1900,2025);
-     const p0=refAt("population",1971), pr=DB.refs.population, pl=pr.start+pr.values.length-1, p1=refAt("population",Math.min(l,pl));
-     return `Deaths in England and Wales have stayed between ${thou(val("deaths",lo))} (${lo}) and ${thou(val("deaths",hi))} (${hi}) every year since 1900. In ${l} there were ${thou(val("deaths",l))}. `+
-       (p0&&p1?`Since 1971 the UK population has grown by ${Math.round((p1/p0-1)*100)}%, yet deaths in ${l} were within ${Math.max(1,Math.ceil(Math.abs(val("deaths",l)/val("deaths",1971)-1)*100))}% of the ${thou(val("deaths",1971))} in 1971.`:"");
-   },
-   why:"The axis starts at zero, which shows a flat line for what it is. Why it is flat is the surprise: far more people, each living far longer.",
-   care:"These are deaths registered in the year, which can lag the death itself — most of all when a coroner is involved."},
-
-  {key:"saving", group:"myth", q:"Has Britain stopped saving?",
-   ids:["saving"], chart:"line", trans:"none", from:1963, to:2025, era:"bands", mean:true, zero:true,
-   short:{saving:"Saving ratio"},
-   say(){
-     const ys=yrs("saving",1963,2025), v=ys.map(y=>val("saving",y)), m=v.reduce((a,b)=>a+b,0)/v.length;
-     const lo=argmin("saving",1963,2025), hi=argmax("saving",1963,2025), l=ys[ys.length-1];
-     return `Households have saved between ${d1(val("saving",lo))}% (${lo}) and ${d1(val("saving",hi))}% (${hi}) of their disposable income since ${ys[0]}, ${d1(m)}% on average. `+
-       `In ${l} it was ${d1(val("saving",l))}%, ${Math.abs(val("saving",l)-m)<1?"close to":val("saving",l)>m?"above":"below"} that average. `+
-       `The highs line up with recessions and the 2020 lockdown, when spending fell — there is no long slide.`;
-   },
-   why:"A dashed line at the long-run average turns ‘is it low?’ into something you can see: the ratio crosses it again and again, which is what no trend looks like.",
-   care:"The saving ratio is what is left of disposable income after spending, so it falls when spending rises as well as when income falls. It is revised heavily, often years later."},
-
-  {key:"trade", group:"myth", q:"Did Brexit tip Britain into a trade deficit?",
-   ids:["tradebal"], chart:"bar", trans:"pctgdp", from:1948, to:2025, era:"bands", signs:["Surplus","Deficit"], note:true,
-   say(Q,sets){
-     const p=sets[0].pts.filter(q=>q[1]!=null), pre=p.filter(q=>q[0]>=1998&&q[0]<=2015), post=p.filter(q=>q[0]>=2016);
-     const def=a=>a.filter(q=>q[1]<0).length, avg=a=>a.reduce((s,q)=>s+q[1],0)/a.length;
-     const of=(n,a)=>n===a.length?`every one of the ${a.length} years`:`${nw(n)} of the ${a.length} years`;
-     return `The UK ran a trade deficit in ${of(def(pre),pre)} from 1998 to 2015, before the referendum, and in ${of(def(post),post)} since. `+
-       `It averaged ${d1(Math.abs(avg(pre)))}% of GDP a year before the vote and ${d1(Math.abs(avg(post)))}% after. The deficit is decades old.`;
-   },
-   why:"A balance can sit either side of zero. Columns above and below the line show each year’s surplus or deficit, and as a share of GDP 1950 and 2020 compare fairly.",
-   care:"This is goods and services together: a long-standing deficit in goods is partly offset by a surplus in services. Trade figures are revised often, and trade in precious metals can swing a single year."},
-
-  {key:"police", group:"myth", q:"Do more police officers mean more crimes charged?",
-   ids:["policeofficers","chargerate"], chart:"scatter", trans:"none", from:2014, to:2025, era:"off",
-   short:{policeofficers:"Police officers (FTE)",chargerate:"Charge rate, % of offences"},
-   say(Q,sets){
-     const [X,Y]=sets, pr=X.pts.map((q,i)=>[q[0],q[1],Y.pts[i][1]]).filter(q=>q[1]!=null&&q[2]!=null);
-     const mx=pr.reduce((s,q)=>s+q[1],0)/pr.length, my=pr.reduce((s,q)=>s+q[2],0)/pr.length;
-     const r=pr.reduce((s,q)=>s+(q[1]-mx)*(q[2]-my),0)/Math.sqrt(pr.reduce((s,q)=>s+(q[1]-mx)**2,0)*pr.reduce((s,q)=>s+(q[2]-my)**2,0));
-     const lo=pr.reduce((m,q)=>q[1]<m[1]?q:m), hi=pr.reduce((m,q)=>q[1]>m[1]?q:m), cl=pr.reduce((m,q)=>q[2]<m[2]?q:m), l=pr[pr.length-1];
-     return `Across these ${pr.length} years, if anything the years with more officers had lower charge rates (a correlation of ${r<0?"−":""}${Math.abs(r).toFixed(2)}). `+
-       `Officer numbers fell to ${thou(lo[1])} in ${lo[0]} and rose to ${thou(hi[1])} by ${hi[0]}; the charge rate fell from ${d1(pr[0][2])}% to ${d1(cl[2])}% in ${yl("chargerate",cl[0])}, and is back to ${d1(l[2])}%. `+
-       `Both moved with time, for their own reasons — the dots trace a loop, not a line.`;
-   },
-   why:"Each dot is a year, placed by officer numbers across and charge rate up. If more officers meant more charges the dots would climb to the right. Joining them in time order shows what is really going on.",
-   care:"A scatter of yearly totals cannot show cause either way. Charge rates also depend on how crimes are recorded and what kinds are reported, and both changed over these years. Officers are counted at March, charge rates by financial year."}
-];
-
-/* ── the numbers for one question: the explorer's transforms ── */
-function qSets(Q){
-  let base=null;
-  if(Q.trans==="index"){ for(let y=Q.from;y<=Q.to&&base==null;y++) if(Q.ids.every(id=>val(id,y)!=null)) base=y; }
-  return Q.ids.map((id,k)=>{
-    const s=S(id), pts=[];
-    for(let y=Q.from;y<=Q.to;y++){
-      let v=val(id,y);
-      if(v!=null&&Q.trans==="index") v=v/val(id,base)*100;
-      if(v!=null&&Q.trans==="pctgdp"){ const g=refAt("gdp",y); v=g?v/g*100:null; }
-      pts.push([y,v]);
-    }
-    return {id,s,name:(Q.short||{})[id]||s.name,colour:COL(k),pts};
-  });
-}
-const qUnit=(Q,sets)=>Q.trans==="index"?`index, ${Q.from} = 100`:Q.trans==="pctgdp"?"% of GDP":
-  [...new Set(sets.map(x=>shortUnit(x.s.unit)))].join(" · ");
+/* the plotted numbers from the build, with each series' own details from the bundle */
+const qSets=Q=>Q.sets.filter(x=>S(x.id)).map((x,k)=>({id:x.id,s:S(x.id),name:x.name,colour:COL(k),pts:x.pts}));
+const qUnit=Q=>Q.unit;
 /* trim a series to the years it has, so lines don't start in empty space */
 const qSpan=sets=>{ const ys=sets.flatMap(s=>s.pts.filter(q=>q[1]!=null).map(q=>q[0])); return [Math.min(...ys),Math.max(...ys)]; };
-const qHash=Q=>"explore.html#p="+encodeURIComponent([Q.ids.join(","),Q.chart,Q.trans,Q.from,Q.to,Q.era].join("~"));
+const qHash=Q=>"explore.html#p="+encodeURIComponent(Q.explore);
 
 /* ── drawing ── each takes the measured width so labels stay full size */
 function qDraw(el,Q){
@@ -1516,7 +1283,7 @@ function qLine(g,Q,sets,W,H){
   const ax=qAxis(Q,sets.flatMap(s=>s.pts.map(q=>q[1])),H-P.t-P.b,Q.trans==="index"?100:null);
   const Y=v=>P.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(H-P.t-P.b);
   if(bands) CK.bands({g,x0,x1,sx,top:P.t,bot:H-P.b,eras:DB.eras,pms:DB.pms});
-  CK.frame({g,ax,Y,x0,x1,sx,l:P.l,r:W-P.r,H,label:qUnit(Q,sets),base:Q.trans==="index"?100:(ax.mn<0&&ax.mx>0?0:null)});
+  CK.frame({g,ax,Y,x0,x1,sx,l:P.l,r:W-P.r,H,label:qUnit(Q),base:Q.trans==="index"?100:(ax.mn<0&&ax.mx>0?0:null)});
   if(Q.chart==="gap"&&sets.length===2){
     /* the space between the lines, in the colour of whichever is higher */
     const [A,B]=sets;
@@ -1582,7 +1349,7 @@ function qStack(g,Q,sets,W,H){
   /* shares of a whole stop at 100, not the next round number past it */
   const ax=tops.every(t=>Math.abs(t-100)<1.5)?{mn:0,mx:100,ticks:[0,25,50,75,100],st:25}:CK.yAxis([0,...tops],H-P.t-P.b,0);
   const Y=v=>P.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(H-P.t-P.b);
-  CK.frame({g,ax,Y,x0,x1,sx,l:P.l,r:W-P.r,H,label:qUnit(Q,sets),base:0});
+  CK.frame({g,ax,Y,x0,x1,sx,l:P.l,r:W-P.r,H,label:qUnit(Q),base:0});
   let lower=years.map(()=>0); const labels=[];
   sets.forEach(s=>{
     const upper=years.map((y,i)=>lower[i]+at(s,y));
@@ -1601,7 +1368,7 @@ function qSlope(g,Q,sets,W,H,narrow){
   const ends=sets.map(s=>({s,v0:(s.pts.find(q=>q[0]===a)||[])[1],v1:(s.pts.find(q=>q[0]===b)||[])[1]})).filter(e=>e.v0!=null&&e.v1!=null);
   const ax=CK.yAxis(ends.flatMap(e=>[e.v0,e.v1]),H-P.t-P.b,Q.trans==="index"?100:null);
   const Y=v=>P.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(H-P.t-P.b), XA=P.l, XB=W-P.r;
-  g.push(`<text class="axunit" x="0" y="11">${esc(qUnit(Q,sets))}</text>`);
+  g.push(`<text class="axunit" x="0" y="11">${esc(qUnit(Q))}</text>`);
   [[XA,a],[XB,b]].forEach(([x,y])=>{ g.push(`<line class="gridline" x1="${x}" x2="${x}" y1="${P.t-8}" y2="${H-P.b}"/>`);
     g.push(`<text class="axlabel" x="${x}" y="${P.t-14}" text-anchor="middle" style="font-weight:600;fill:var(--ink)">${y}</text>`); });
   /* the start values, nudged apart where they would overlap */
@@ -1626,7 +1393,7 @@ function qBar(g,Q,sets,W,H){
   const ax=CK.yAxis(s.pts.map(q=>q[1]),H-P.t-P.b,0);
   const Y=v=>P.t+(1-(v-ax.mn)/(ax.mx-ax.mn))*(H-P.t-P.b);
   if(bands) CK.bands({g,x0:x0-.5,x1:x1+.5,sx,top:P.t,bot:H-P.b,eras:DB.eras,pms:DB.pms});
-  CK.frame({g,ax,Y,x0,x1,sx,l:P.l,r:W-P.r,H,label:`${s.s.name}, ${qUnit(Q,sets)}`,base:0});
+  CK.frame({g,ax,Y,x0,x1,sx,l:P.l,r:W-P.r,H,label:`${s.s.name}, ${qUnit(Q)}`,base:0});
   const neg=COL(Q.signs?1:0), bw=Math.max(1.2,slot*.78);
   s.pts.forEach(([y,v])=>{ if(v==null) return;
     const a=Y(Math.max(0,v)), b=Y(Math.min(0,v));
@@ -1685,8 +1452,10 @@ function qFeatured(){
 /* ── the drawer ── */
 let qGroup="all", qType=null, qOpen=null;
 function qBoot(){
-  const live=QS.filter(Q=>Q.ids.every(id=>S(id)));
-  if(!live.length) return;
+  fetch("data/questions-more.json",{cache:"no-cache"}).then(r=>r.ok?r.json():Promise.reject())
+    .then(j=>{ QS=(j.questions||[]).filter(Q=>Q.ids.every(id=>S(id))); if(QS.length) qDrawer(QS); }).catch(()=>{});
+}
+function qDrawer(live){
   const btn=document.getElementById("qmoreBtn"), dr=document.getElementById("qdrawer");
   btn.hidden=false;
   document.getElementById("qmoreN").textContent=live.length;
@@ -1742,21 +1511,19 @@ function qToggle(key,scroll){
 }
 function qFill(key){
   const Q=QS.find(q=>q.key===key), body=document.getElementById("qb-"+key);
-  const [x0,x1]=(()=>{ const s=qSets(Q); return qSpan(s); })();
-  const geos=[...new Set(Q.ids.map(id=>S(id).geography).filter(Boolean))].join(", ");
+  const x0=Q.x0, x1=Q.x1, geos=Q.geos.join(", ");
   body.innerHTML=`
-    <div class="qchart"><p class="qsub">${esc(QTYPE_NAME[Q.chart])} · ${esc(qUnit(Q,qSets(Q)))} · ${geos} · ${x0}–${x1}${Q.signs?
+    <div class="qchart"><p class="qsub">${esc(QTYPE_NAME[Q.chart])} · ${esc(qUnit(Q))} · ${geos} · ${x0}–${x1}${Q.signs?
       ` · <span class="qkey"><i style="background:${COL(0)}"></i>${esc(Q.signs[0])}</span><span class="qkey"><i style="background:${COL(1)}"></i>${esc(Q.signs[1])}</span>`:""}</p><div class="qsvg"></div></div>
     <div class="qside">
-      <div class="qans"><h4>${Q.group==="myth"?"What the numbers say":"The answer"}</h4><p class="qsay"></p></div>
+      <div class="qans"><h4>${Q.group==="myth"?"What the numbers say":"The answer"}</h4><p class="qsay">${esc(Q.sentence)}</p></div>
       <div class="qwhy"><h4>${QICON[Q.chart]}Why ${/^[aeiou]/i.test(QTYPE_NAME[Q.chart])?"an":"a"} ${esc(QTYPE_NAME[Q.chart].toLowerCase())}${Q.chart==="small"?"":" chart"}</h4><p>${esc(Q.why)}</p></div>
       <div class="qcare"><h4>Read it carefully</h4><p>${esc(Q.care)}</p></div>
-      <a class="pill solid qlink" href="${qHash(Q)}">Open this in the explorer →</a>
-      <div class="qsrc"><b>Source:</b> ${esc([...new Set(Q.ids.map(id=>S(id).source))].join("; "))}. Open Government Licence v3.0.</div>
+      <div class="qacts"><a class="pill solid qlink" href="${qHash(Q)}">Open this in the explorer →</a>
+        <a class="qpage" href="q/${esc(Q.slug)}/">Its own page, to share →</a></div>
+      <div class="qsrc"><b>Source:</b> ${esc(Q.sources.join("; "))}. Open Government Licence v3.0.</div>
     </div>`;
-  const sets=qDraw(body.querySelector(".qsvg"),Q);
-  try{ body.querySelector(".qsay").textContent=Q.say(Q,sets); }
-  catch(e){ body.querySelector(".qsay").textContent="The chart shows the latest published figures; open it in the explorer for the numbers behind each year."; }
+  qDraw(body.querySelector(".qsvg"),Q);
 }
 function qRedraw(){
   if(qOpen){ const el=document.querySelector(`#qb-${qOpen} .qsvg`); if(el) qDraw(el,QS.find(q=>q.key===qOpen)); }
