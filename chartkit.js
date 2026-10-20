@@ -164,6 +164,82 @@ function ribbon(o){
   return wrap("Government in power",R2+5,"Governing party and prime ministers by year");
 }
 
+/* Key events, for context: wars, crashes, the pandemic and the political
+   shocks that moved the numbers. Years are fractional so a mark lands in the
+   right part of the year; an event with no `to` is a single date.
+   kind: crisis | war | pandemic | politics */
+const EVENTS=[
+  {from:1982.25,to:1982.45,short:"Falklands",name:"Falklands War",when:"Apr–Jun 1982",kind:"war"},
+  {from:1984.18,to:1985.18,short:"Miners' strike",name:"Miners' strike",when:"Mar 1984 – Mar 1985",kind:"politics"},
+  {from:1987.8,short:"Black Monday",name:"Black Monday stock market crash",when:"Oct 1987",kind:"crisis"},
+  {from:1990.5,to:1991.75,short:"Recession",name:"Early-1990s recession",when:"1990–1991",kind:"crisis"},
+  {from:1992.71,short:"Black Wednesday",name:"Black Wednesday: the pound leaves the ERM",when:"Sep 1992",kind:"crisis"},
+  {from:2000.2,short:"Dot-com crash",name:"Dot-com crash",when:"Mar 2000",kind:"crisis"},
+  {from:2003.22,short:"Iraq War",name:"Iraq War begins",when:"Mar 2003",kind:"war"},
+  {from:2007.7,to:2009.5,short:"Financial crisis",name:"Global financial crisis and recession",when:"Sep 2007 – mid 2009",kind:"crisis"},
+  {from:2016.48,short:"Brexit vote",name:"EU referendum",when:"Jun 2016",kind:"politics"},
+  {from:2020.22,to:2021.55,short:"Covid-19",name:"Covid-19 pandemic: first lockdown to restrictions lifted",when:"Mar 2020 – Jul 2021",kind:"pandemic"},
+  {from:2022.15,short:"Ukraine war",name:"Russia invades Ukraine; energy price shock",when:"Feb 2022",kind:"war"},
+  {from:2022.73,short:"Mini-budget",name:"Mini-budget and gilt market turmoil",when:"Sep 2022",kind:"crisis"}
+];
+const EVENTS_ROW=13;
+/* Where each event in view sits, and which of two label rows its name goes
+   on; a name with room on neither row is left off and names itself on hover.
+   o: {x0, x1, sx, l, r} */
+function eventLayout(o){
+  const ends=[-1e9,-1e9];
+  return EVENTS.filter(e=>(e.to??e.from)>=o.x0&&e.from<=o.x1).map(e=>{
+    const a=o.sx(Math.max(e.from,o.x0)), b=e.to!=null?o.sx(Math.min(e.to,o.x1)):a;
+    const w=e.short.length*5.6+6;
+    const cx=Math.min(o.r-w/2,Math.max(o.l+w/2,(a+b)/2));
+    return {e,a,b,cx,lo:cx-w/2,hi:cx+w/2,row:-1};
+  }).sort((p,q)=>p.cx-q.cx).map(it=>{
+    for(let r=0;r<2;r++) if(it.lo>ends[r]+6){ it.row=r; ends[r]=it.hi; break; }
+    return it;
+  });
+}
+const eventRows=items=>items.reduce((m,it)=>Math.max(m,it.row+1),0);
+const evTip=e=>`<title>${esc(e.name)}, ${esc(e.when)}</title>`;
+
+/* Key events behind the data: a faint span for something that lasted, a
+   dashed line for a single date, names in rows above the plot.
+   o: {g, items (from eventLayout), top, bot, lblBot} — lblBot is the
+   baseline of the lowest label row */
+function events(o){
+  const {g,top,bot}=o;
+  o.items.forEach(it=>{
+    const {e,a,b}=it, ly=o.lblBot-it.row*EVENTS_ROW;
+    const mark = e.to!=null
+      ? `<rect class="evspan" x="${a.toFixed(1)}" y="${top}" width="${Math.max(1.5,b-a).toFixed(1)}" height="${bot-top}"/>`
+      : `<line class="evline" x1="${a.toFixed(1)}" y1="${top}" x2="${a.toFixed(1)}" y2="${bot}"/>`+
+        `<rect class="evhit" x="${(a-4).toFixed(1)}" y="${top}" width="8" height="${bot-top}"/>`;
+    const lbl = it.row<0 ? "" :
+      `<line class="evtick" x1="${it.cx.toFixed(1)}" y1="${ly+3}" x2="${it.cx.toFixed(1)}" y2="${top}"/>`+
+      `<text class="evlbl" x="${it.cx.toFixed(1)}" y="${ly}" text-anchor="middle">${esc(e.short)}</text>`;
+    g.push(`<g class="ev">${evTip(e)}${mark}${lbl}</g>`);
+  });
+}
+
+/* Key events as a ribbon under the chart: spans as slim bars, single dates
+   as dots, names beneath on up to two rows.
+   o: {x0, x1, sx, l, r, W} */
+function eventRibbon(o){
+  const items=eventLayout(o), g=[], BY=7, R1=26;
+  g.push(`<line class="gridline" x1="${o.l}" y1="${BY}" x2="${o.r}" y2="${BY}"/>`);
+  items.forEach(it=>{
+    const {e,a,b}=it, ty=R1+Math.max(0,it.row)*EVENTS_ROW;
+    const mark = e.to!=null
+      ? `<rect class="evbar" x="${a.toFixed(1)}" y="${BY-3.5}" width="${Math.max(7,b-a).toFixed(1)}" height="7" rx="3.5"/>`
+      : `<circle class="evdot" cx="${a.toFixed(1)}" cy="${BY}" r="3.4"/>`;
+    const lbl = it.row<0 ? "" :
+      `<line class="pmtick" x1="${it.cx.toFixed(1)}" y1="${BY+4}" x2="${it.cx.toFixed(1)}" y2="${ty-9}"/>`+
+      `<text class="evlbl" x="${it.cx.toFixed(1)}" y="${ty}" text-anchor="middle">${esc(e.short)}</text>`;
+    g.push(`<g class="ev">${evTip(e)}${mark}${lbl}</g>`);
+  });
+  const h=R1+Math.max(0,eventRows(items)-1)*EVENTS_ROW+5;
+  return `<div class="ribbon-t">Key events</div><svg class="ribbon" viewBox="0 0 ${o.W} ${h}" style="width:100%;height:auto" role="img" aria-label="Key economic and political events">${g.join("")}</svg>`;
+}
+
 /* Breaks sit on the line they belong to. A series that stops at a break gets
    a hollow end point (drawn by endPoint) and the reason beside its label; a
    break part way along gets a marker at that year, with the full note on
@@ -257,5 +333,5 @@ const geoIcon=(geo,cls="gicon")=>{
     Object.entries(NATIONS.p).map(([n,d])=>`<path d="${d}" fill="currentColor" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round" opacity="${on.includes(n)?1:.22}"/>`).join("")}</svg>`;
 };
 
-window.CK={PAL,pal,esc,wrapText,nameLines,gutterFor,niceStep,yAxis,tickFmt,frame,BANDS_TOP,bands,ribbon,ELECTIONS,breaks,endPoint,endLabels,linePath,topicIcon,geoIcon};
+window.CK={PAL,pal,esc,wrapText,nameLines,gutterFor,niceStep,yAxis,tickFmt,frame,BANDS_TOP,bands,ribbon,ELECTIONS,EVENTS,EVENTS_ROW,eventLayout,eventRows,events,eventRibbon,breaks,endPoint,endLabels,linePath,topicIcon,geoIcon};
 })();
