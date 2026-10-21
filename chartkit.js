@@ -97,8 +97,10 @@ function frame(o){
 const BANDS_TOP=16;
 
 /* Government as faint party-coloured bands behind the data, each prime
-   minister named along the top. A band too narrow for its name stays
-   unlabelled and names itself on hover instead.
+   minister named along the top. Names are placed longest term first, and a
+   name may spill past its own band where the neighbours leave room, so a
+   short premiership still gets named unless it would collide. One that
+   cannot fit names itself on hover instead.
    o: {g, x0, x1, sx, top, bot, eras, pms} */
 function bands(o){
   const {g,sx,top,bot}=o;
@@ -107,7 +109,7 @@ function bands(o){
     if(t<=f) return;
     g.push(`<rect class="band" x="${sx(f).toFixed(1)}" y="${top}" width="${(sx(t)-sx(f)).toFixed(1)}" height="${bot-top}" fill="${e.colour}"><title>${esc(e.party)} ${e.from}–${e.to}</title></rect>`);
   });
-  const pms=o.pms||[];
+  const pms=o.pms||[], L=sx(o.x0), R=sx(o.x1), want=[];
   pms.forEach(([y,n],i)=>{
     const end=i+1<pms.length?pms[i+1][0]:Infinity;
     const f=Math.max(y,o.x0), t=Math.min(end,o.x1);
@@ -115,7 +117,22 @@ function bands(o){
     const a=sx(f), b=sx(t);
     if(y>o.x0) g.push(`<line class="banddiv" x1="${a.toFixed(1)}" y1="${top-14}" x2="${a.toFixed(1)}" y2="${bot}"/>`);
     g.push(`<rect x="${a.toFixed(1)}" y="${top-14}" width="${(b-a).toFixed(1)}" height="14" fill="transparent"><title>${esc(n)}, ${y}–${end===Infinity?"":end}</title></rect>`);
-    if(b-a>n.length*5.6+10) g.push(`<text class="bandlbl" x="${((a+b)/2).toFixed(1)}" y="${top-4}" text-anchor="middle">${esc(n)}</text>`);
+    want.push({n,a,b});
+  });
+  /* the current prime minister first, then the longest terms (the later one
+     on a tie); each name sits over its band where it can, or slides to the
+     nearest free spot that still touches its band */
+  const put=[], last=want[want.length-1];
+  want.sort((p,q)=>(q===last)-(p===last)||(q.b-q.a)-(p.b-p.a)||q.a-p.a).forEach(p=>{
+    const w=p.n.length*5.6, mid=(p.a+p.b)/2;
+    const spots=[mid,...put.flatMap(q=>[q.r+5+w/2,q.l-5-w/2])]
+      .map(c=>Math.min(Math.max(c,L+w/2),R-w/2))
+      .filter(c=>c-w/2<p.b&&c+w/2>p.a&&Math.abs(c-mid)<=w&&!put.some(q=>c-w/2-5<q.r&&c+w/2+5>q.l))
+      .sort((x,y)=>Math.abs(x-mid)-Math.abs(y-mid));
+    if(!spots.length) return;
+    const cx=spots[0];
+    put.push({l:cx-w/2-5,r:cx+w/2+5});
+    g.push(`<text class="bandlbl" x="${cx.toFixed(1)}" y="${top-4}" text-anchor="middle">${esc(p.n)}</text>`);
   });
 }
 

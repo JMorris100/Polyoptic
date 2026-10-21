@@ -420,7 +420,8 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
 @media(max-width:980px){.qside{border-top:0;padding-top:0}}
 .qside h4{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--purple);margin:0 0 4px;line-height:1.3}
 .qside p{margin:0;font-size:14px;line-height:1.5}
-.qans p{font-size:15px}
+.qans p{font-size:14.5px}
+.qans p.qlead{font-size:16px;font-weight:700;letter-spacing:-.01em;line-height:1.4;margin-bottom:8px}
 .qwhy{background:var(--soft);border:1px solid var(--prule);border-radius:10px;padding:11px 13px}
 .qwhy h4{display:flex;align-items:center;gap:7px}
 .qwhy svg{width:22px;height:15px}
@@ -455,7 +456,7 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
 
 <div class="topbar">
   <div class="wrap">
-    <a class="brand" href="index.html">
+    <a class="brand" href="./">
       <svg viewBox="6.5 16.5 87 63" role="img" aria-label="Polyoptic">
         <defs><clipPath id="lgw"><path d="M10 50 Q50 -10 90 50 Q50 102 10 50 Z"/></clipPath></defs>
         <path d="M10 50 Q50 -10 90 50 Q50 102 10 50 Z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/>
@@ -495,7 +496,7 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
     <h1>Every UK statistic, <em>made comparable</em>.</h1>
     <p>The government publishes thousands of figures across dozens of departments, in different units, on different calendars, for different parts of the country. Polyoptic brings them together and lets you rebase, adjust for inflation, compare and map them.</p>
     <div class="cta">
-      <a class="pill solid" href="explore.html">To the Explorer</a>
+      <a class="pill solid" href="explore.html">Open the explorer</a>
       <a class="pill ghost" href="#topics">Browse the topics</a>
     </div>
   </div>
@@ -534,7 +535,7 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
         </div>
         <div class="dwarn" id="dwarn" role="status"><b>⚠</b><span id="dwarnText"></span></div>
         <div class="demo-body" id="demoBody">
-          <div class="demo-plot"><div id="chartA"></div><div class="demo-empty" id="demoEmpty">Pick an indicator on the left to start a chart</div></div>
+          <div class="demo-plot"><div id="chartA"></div><div class="demo-empty gone" id="demoEmpty"></div></div>
           <div class="demo-work" id="demoWork"><div class="demo-workin" id="demoWorkIn"></div></div>
         </div>
         <div class="card-ft" id="ftA"></div>
@@ -608,7 +609,7 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
     </button>
     <div class="qdrawer" id="qdrawer"><div><div class="qdin">
       <div class="qfilt" id="qgroups" role="group" aria-label="Kinds of question"></div>
-      <p class="qguide-t">Or pick a kind of chart — each is good at a different job</p>
+      <p class="qguide-t" id="qguideT" hidden>Or pick a kind of chart — each is good at a different job</p>
       <div class="qguide" id="qguide" role="group" aria-label="Kinds of chart"></div>
       <div class="qlist" id="qlist"><!-- more-questions -->
         <a class="qstatic" href="q/is-the-nhs-under-more-strain-than-before-the-pandemic/">Is the NHS under more strain than before the pandemic?</a>
@@ -923,7 +924,11 @@ const demoHash=()=>D.sel.length
 
 function demoPlot(sets,{fresh,fadeBands,axT}={}){
   const has=sets.length>0;
-  document.getElementById("demoEmpty").classList.toggle("gone",has);
+  /* the prompt is written in only once the demo runs empty, so the served
+     page never shows it over a chart that is about to draw */
+  const empty=document.getElementById("demoEmpty");
+  if(!has) empty.textContent="Pick an indicator on the left to start a chart";
+  empty.classList.toggle("gone",has);
   const el=document.getElementById("chartA");
   DW=Math.max(280,el.clientWidth||W0); DH=DW<560?240:300;
   if(!has){ el.innerHTML=`<svg viewBox="0 0 ${DW} ${DH}" style="width:100%;height:auto"></svg>`; return; }
@@ -1262,7 +1267,8 @@ const QTYPES=[
   ["scatter","Scatter","Whether two things move together — or don’t."]
 ];
 const QTYPE_NAME=Object.fromEntries(QTYPES.map(([k,n])=>[k,n]));
-const QGROUPS=[["all","All"],["many","Several trends at once"],["myth","Looks like a trend — isn’t"],["long","The long view"]];
+const QGROUPS=[["all","All"],["many","Several trends at once"],["myth","A common belief, tested"],["long","The long view"]];
+const QGROUP_NAME=Object.fromEntries(QGROUPS);
 
 /* ── the questions ──
    Written once, in ingest/questions.py. The build works out each answer and
@@ -1440,8 +1446,9 @@ function qScatter(g,Q,sets,W,H){
   g.push(`<path d="${pr.map((q,i)=>`${i?"L":"M"}${PX(q[1]).toFixed(1)} ${PY(q[2]).toFixed(1)}`).join(" ")}" fill="none" stroke="var(--muted)" stroke-width="1.2" stroke-dasharray="3 3" opacity=".6"/>`);
   pr.forEach((q,i)=>{
     const t=pr.length>1?i/(pr.length-1):1, x=PX(q[1]), y=PY(q[2]);
-    g.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5" fill="${COL(0)}" opacity="${(.3+.7*t).toFixed(2)}" class="qdot"><title>${q[0]}: ${fmt(q[1])} officers, ${fmt(q[2])}%</title></circle>`);
-    g.push(`<text class="qyr" x="${(x+8).toFixed(1)}" y="${(y-6).toFixed(1)}">${q[0]}</text>`);
+    const lab=Q.years==="financial"?`${q[0]}-${String((q[0]+1)%100).padStart(2,"0")}`:q[0];
+    g.push(`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.5" fill="${COL(0)}" opacity="${(.3+.7*t).toFixed(2)}" class="qdot"><title>${lab}: ${fmt(q[1])} officers, ${fmt(q[2])}%</title></circle>`);
+    g.push(`<text class="qyr" x="${(x+8).toFixed(1)}" y="${(y-6).toFixed(1)}">${lab}</text>`);
   });
 }
 
@@ -1485,12 +1492,13 @@ function qDrawer(live){
     `<button class="qchip" type="button" data-g="${k}" aria-pressed="${k==="all"}">${n}<span>${k==="all"?live.length:count("group",k)}</span></button>`).join("");
   document.getElementById("qguide").innerHTML=QTYPES.filter(([k])=>count("chart",k)).map(([k,n,b])=>
     `<button class="qtype" type="button" data-t="${k}" aria-pressed="false"><span class="qti">${QICON[k]}${n}<span>${count("chart",k)}</span></span><span class="qtb">${b}</span></button>`).join("");
+  document.getElementById("qguideT").hidden=false;
   document.getElementById("qlist").innerHTML=live.map(Q=>`
     <div class="qitem${Q.group==="myth"?" myth":""}" id="q-${Q.key}" data-key="${Q.key}">
       <button class="qhead" type="button" aria-expanded="false" aria-controls="qb-${Q.key}">
         <span class="qicon">${QICON[Q.chart]}</span>
         <span><span class="qt" style="display:block">${esc(Q.q)}</span>
-          <span class="qm"><b>${Q.group==="myth"?"Looks like a trend — isn’t":Q.group==="long"?"The long view":`${Q.ids.length} indicators`}</b> · ${QTYPE_NAME[Q.chart]}${Q.trans==="index"?", rebased":Q.trans==="pctgdp"?", % of GDP":""}</span></span>
+          <span class="qm"><b>${Q.group==="many"?`${Q.ids.length} indicators`:QGROUP_NAME[Q.group]}</b> · ${QTYPE_NAME[Q.chart]}${Q.trans==="index"?", rebased":Q.trans==="pctgdp"?", % of GDP":""}</span></span>
         <svg class="qchev" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6l4.5 4.5L12.5 6"/></svg>
       </button>
       <div class="qbody" id="qb-${Q.key}"></div>
@@ -1535,7 +1543,7 @@ function qFill(key){
     <div class="qchart"><p class="qsub">${esc(QTYPE_NAME[Q.chart])} · ${esc(qUnit(Q))} · ${geos} · ${x0}–${x1}${Q.signs?
       ` · <span class="qkey"><i style="background:${COL(0)}"></i>${esc(Q.signs[0])}</span><span class="qkey"><i style="background:${COL(1)}"></i>${esc(Q.signs[1])}</span>`:""}</p><div class="qsvg"></div></div>
     <div class="qside">
-      <div class="qans"><h4>${Q.group==="myth"?"What the numbers say":"The answer"}</h4><p class="qsay">${esc(Q.sentence)}</p></div>
+      <div class="qans"><h4>The answer</h4><p class="qlead">${esc(Q.lead||"")}</p><p class="qsay">${esc(Q.sentence)}</p></div>
       <div class="qwhy"><h4>${QICON[Q.chart]}Why ${/^[aeiou]/i.test(QTYPE_NAME[Q.chart])?"an":"a"} ${esc(QTYPE_NAME[Q.chart].toLowerCase())}${Q.chart==="small"?"":" chart"}</h4><p>${esc(Q.why)}</p></div>
       <div class="qcare"><h4>Read it carefully</h4><p>${esc(Q.care)}</p></div>
       <div class="qacts"><a class="pill solid qlink" href="${qHash(Q)}">Open this in the explorer →</a>
