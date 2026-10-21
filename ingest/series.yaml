@@ -452,7 +452,7 @@ series:
 
   - id: visahcw
     name: Health and Care Worker visas granted
-    topics: [migration, health]
+    topics: [migration]
     unit: visas granted
     kind: count
     geography: UK
@@ -1024,7 +1024,7 @@ series:
 
   - id: foodoutlets
     name: Food outlets
-    topics: [health, economy]
+    topics: [economy]
     unit: "per 1,000 population"
     kind: rate
     geography: UK
@@ -1608,7 +1608,7 @@ series:
 
   - id: inactivity
     name: Economic inactivity rate, 16 to 64 (LFS)
-    topics: [work, health]
+    topics: [work]
     unit: "% of people aged 16 to 64"
     kind: rate
     geography: UK

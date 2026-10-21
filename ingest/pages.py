@@ -56,12 +56,16 @@ esc = lambda s: html.escape(str(s), quote=True)
 
 # ── numbers ──────────────────────────────────────────────────────────
 
-def fmt(v: float | None) -> str:
+def fmt(v: float | None, dp: int | None = None) -> str:
     """A figure to the precision a reader can use, with no trailing zeros:
-    4.9 not 4.92, 8 not 8.00, 69.3 million not 69,281,437."""
+    4.9 not 4.92, 8 not 8.00, 69.3 million not 69,281,437. Given `dp`, a
+    figure under 100 keeps that many places, so one series reads 83.0 beside
+    79.2 rather than 83 beside 79.2."""
     if v is None:
         return "–"
     a = abs(v)
+    if dp is not None and a < 100:
+        return f"{v:,.{dp}f}".replace("-", "−", 1)
     if a >= 10_000_000:
         return (f"{v / 1e6:,.1f}".rstrip("0").rstrip(".") + " million").replace("-", "−", 1)
     if a >= 100:
@@ -74,21 +78,39 @@ def fmt(v: float | None) -> str:
     return out.replace("-", "−", 1) if out.startswith("-") else out
 
 
-def with_unit(v: float, unit: str) -> str:
+def with_unit(v: float, unit: str, dp: int | None = None) -> str:
     u = unit or ""
+    f = lambda x: fmt(x, dp)
     if u.startswith("£") and v < 0:                  # −£151,296m, not £-151,296m
-        return "−" + with_unit(-v, u)
+        return "−" + with_unit(-v, u, dp)
     if u.startswith("£ per "):                       # £752 per week
-        return f"£{fmt(v)} {u[2:]}"
+        return f"£{f(v)} {u[2:]}"
     if u.startswith("%"):
-        return f"{fmt(v)}%" + (u[1:] if u != "%" else "")
+        return f"{f(v)}%" + (u[1:] if u != "%" else "")
     # £m and £bn wrap the number: £867,021m, £2.3bn, then anything after the comma
     for scale in ("m", "bn"):
         if u == f"£{scale}" or u.startswith(f"£{scale},"):
-            return f"£{fmt(v)}{scale}" + u[len(scale) + 1:]
+            return f"£{f(v)}{scale}" + u[len(scale) + 1:]
     if u.startswith("£") and not u.startswith("£ per") and " " not in u.strip():
-        return f"£{fmt(v)}"
-    return f"{fmt(v)} {u}".strip()
+        return f"£{f(v)}"
+    return f"{f(v)} {u}".strip()
+
+
+def series_dp(s: dict) -> int | None:
+    """The decimal places a series' figures under 100 are shown to, the same
+    for every year so 83.0 sits beside 79.2: none for a series of whole
+    numbers, two where it dips under 1, one otherwise."""
+    return values_dp(v for _, v in points(s))
+
+
+def values_dp(vals) -> int | None:
+    small = [v for v in vals if v is not None and abs(v) < 100]
+    if not small:
+        return None
+    places = max(len(f"{v:.6f}".rstrip("0").split(".")[1]) for v in small)
+    if places == 0:
+        return 0                                     # whole numbers stay whole
+    return min(2, places) if any(abs(v) < 1 for v in small) else 1
 
 
 def nice_step(span: float, n: int = 5) -> float:
@@ -126,15 +148,25 @@ def year_figure(s: dict, y: int) -> str:
     a = s.get("annual") or {}
     how, per = a.get("how"), a.get("per")
     basis = s.get("year_basis", "calendar")
+    yl = year_label(y, basis)                        # 2025-26 for a financial year
     if how == "mean":
-        return f"{y} average"
+        return f"{yl} average"
     if how == "sum":
-        return f"{y} total"
+        return f"{yl} total"
     if how == "last" and per == 12:
         return {"financial": f"Mar {y + 1}", "academic": f"Aug {y + 1}"}.get(basis, f"Dec {y}")
     if how == "last" and per == 4:
-        return f"Q4 {y}"
-    return str(y)
+        return f"Q4 {yl}"
+    return yl
+
+
+def last_break(s: dict) -> int | None:
+    """The last year the series changed basis, if it did inside its run: the
+    first year measured the new way. Figures from it on compare like with like."""
+    pts = full_points(s)
+    ys = [int(d["year"]) for d in s.get("discontinuities") or [] if d.get("year")]
+    ys = [y for y in ys if pts and pts[0][0] < y <= pts[-1][0]]
+    return max(ys) if ys else None
 
 
 def part_label(s: dict) -> str:
@@ -296,7 +328,7 @@ LOGO = """<svg viewBox="6.5 16.5 87 63" role="img" aria-label="Polyoptic"><defs>
 
 
 def page(*, path: str, depth: int, title: str, desc: str, og_image: str, og_alt: str,
-         ld: list[dict], body: str, explore: str = "explore.html", css: str = "") -> str:
+         ld: list[dict], body: str, explore: str = "explore.html", css: str = "", og_type: str = "article") -> str:
     up = "../" * depth
     url = f"{SITE}/{path}"
     topics = " · ".join(f'<a href="{up}topic/{k}/">{esc(n)}</a>' for k, n, _ in TOPICS)
@@ -316,7 +348,7 @@ def page(*, path: str, depth: int, title: str, desc: str, og_image: str, og_alt:
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="{esc(og_alt)}">
 <meta property="og:url" content="{url}">
-<meta property="og:type" content="article">
+<meta property="og:type" content="{og_type}">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{json.dumps(ld if len(ld) > 1 else ld[0], ensure_ascii=False, separators=(",", ":"))}</script>
 <script>(function(){{try{{if(localStorage.getItem("polyoptic-theme")==="dark")document.documentElement.dataset.theme="dark";}}catch(e){{}}}})();</script>
@@ -328,15 +360,15 @@ def page(*, path: str, depth: int, title: str, desc: str, og_image: str, og_alt:
 </head>
 <body>
 <div class="topbar"><div class="wrap">
-  <a class="brand" href="{up}index.html">{LOGO}<span class="wordmark">poly<span class="b">optic</span></span></a>
-  <nav class="topnav"><a href="{up}index.html#questions">Questions</a><a href="{up}index.html#topics">Topics</a><a href="{up}indicator/">Indicators</a><a href="{up}about.html">About</a><a href="{up}data.html">Verify</a>
-    <a class="btn" href="{up}{explore}">Open in the explorer</a></nav>
+  <a class="brand" href="{up or './'}">{LOGO}<span class="wordmark">poly<span class="b">optic</span></span></a>
+  <nav class="topnav"><a href="{up}#questions">Questions</a><a href="{up}#topics">Topics</a><a href="{up}indicator/">Indicators</a><a href="{up}about.html">About</a><a href="{up}data.html">Verify</a>
+    <a class="btn" href="{up}{explore}">Open the explorer</a></nav>
 </div></div>
 <main class="wrap">
 {body}
 </main>
 <footer><div class="wrap">
-  <p>Contains public sector information licensed under the Open Government Licence v3.0. Polyoptic publishes no data of its own: every figure links back to the release it came from.</p>
+  <p>Contains public sector information licensed under the Open Government Licence v3.0. Polyoptic publishes no data of its own: every figure links back to the release it came from. Built in the UK by <a href="{up}about.html">Josh Morris</a>.</p>
   <nav>{topics} · <a href="{up}indicator/">All indicators A–Z</a></nav>
 </div></footer>
 </body>
@@ -346,7 +378,7 @@ def page(*, path: str, depth: int, title: str, desc: str, og_image: str, og_alt:
 
 def crumbs(depth: int, trail: list[tuple[str, str | None]]) -> str:
     up = "../" * depth
-    parts = [f'<a href="{up}index.html">Home</a>'] + [
+    parts = [f'<a href="{up or "./"}">Home</a>'] + [
         f'<a href="{up}{href}">{esc(n)}</a>' if href else esc(n) for n, href in trail]
     return f'<nav class="crumbs" aria-label="Breadcrumb">{" › ".join(parts)}</nav>'
 
@@ -360,30 +392,41 @@ def breadcrumb_ld(trail: list[tuple[str, str]]) -> dict:
 # ── one indicator ───────────────────────────────────────────────────
 
 def change_line(s: dict) -> tuple[str, str] | None:
-    """The change over the last ten years (or the whole run, if shorter)."""
+    """The change over the last ten years (or the whole run, if shorter) —
+    never across a break: if the series changed basis inside that window, the
+    change is measured from the break, and says so."""
     pts = full_points(s)
     if len(pts) < 2:
         return None
     ly, lv = pts[-1]
-    base = next(((y, v) for y, v in pts if y >= ly - 10), pts[0])
+    brk = last_break(s)
+    yl = lambda y: year_label(y, s.get("year_basis", "calendar"))
+    inside = brk is not None and brk > ly - 10
+    # a break with three or more years after it: measure from it; one too
+    # recent to measure from: keep the ten years, and say they cross it
+    since = brk if inside and ly - brk >= 3 else ly - 10
+    base = next(((y, v) for y, v in pts if y >= since), pts[0])
     by, bv = base
     if by == ly:
         return None
+    note = (", when the series changed" if inside and by == brk else
+            f", across the {brk} break" if inside else "")
+    label = f"change since {yl(by)}{note}"
     unit = s["unit"] or ""
+    dp = series_dp(s)
     if unit.startswith("%") or s["kind"] == "rate":
         d = lv - bv
-        return (f'{"+" if d >= 0 else "−"}{fmt(abs(d))} pts' if unit.startswith("%") else
-                f'{"+" if d >= 0 else "−"}{fmt(abs(d))}', f"change since {by}")
+        return (f'{"+" if d >= 0 else "−"}{fmt(abs(d), dp)} pts' if unit.startswith("%") else
+                f'{"+" if d >= 0 else "−"}{fmt(abs(d), dp)}', label)
     if bv:
         pc = (lv / bv - 1) * 100
-        # +13,770% says nothing a reader can use; past 100% a rounded figure
-        # (or the multiple, past 1,000%) reads better than a decimal place
         # from a small base a percentage or a multiple is the misleading
-        # headline (299 to 41,472 is "139×"); give the change in the unit itself
+        # headline (299 to 41,472 is "+13,770%"); give the change in the unit
+        # itself, and past 100% drop the decimal place
         if abs(pc) >= 300:
             d = lv - bv
-            return (f'{"+" if d >= 0 else "−"}{fmt(abs(d))}', f"since {by} (from {fmt(bv)})")
-        return (f'{"+" if pc >= 0 else "−"}{abs(pc):,.{0 if abs(pc) >= 100 else 1}f}%', f"change since {by}")
+            return (f'{"+" if d >= 0 else "−"}{fmt(abs(d), dp)}', f"since {yl(by)} (from {fmt(bv, dp)}){note}")
+        return (f'{"+" if pc >= 0 else "−"}{abs(pc):,.{0 if abs(pc) >= 100 else 1}f}%', label)
     return None
 
 
@@ -399,7 +442,9 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
     snap = s.get("snapshot")
     years = f"{ly}" if snap or fy == ly else f"{fy}–{ly}"
     pub_full = s.get("publisher_full") or s.get("publisher") or s.get("source")
-    latest = with_unit(lv, unit)
+    dp = series_dp(s)
+    yl = lambda y: year_label(y, s.get("year_basis", "calendar"))
+    latest = with_unit(lv, unit, dp)
     title = f'{s["name"]}: {geo} {"figures" if snap else "data"}, {years} | Polyoptic'
     desc = (f'{s["name"]}, {geo}: {latest}, {year_figure(s, ly)}. '
             + ("" if snap else f"Every published year from {fy}, ")
@@ -409,23 +454,37 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
     url = f"indicator/{slug}/"
 
     # a long unit ('house price to earnings ratio') goes under the number, not in it
-    short = latest if len(latest) <= 14 else fmt(lv)
-    facts = [f'<div class="fact"><b>{esc(short)}</b><span>Latest, {esc(year_figure(s, ly))}{"" if short == latest else " · " + esc(unit)}</span></div>']
+    short = latest if len(latest) <= 14 else fmt(lv, dp)
+    whole = (f'<div class="fact"><b>{esc(short)}</b><span>{"Latest" if not part else "Latest whole year"}, '
+             f'{esc(year_figure(s, ly))}{"" if short == latest else " · " + esc(unit)}</span></div>')
+    facts = [whole]
+    if part and part.get("value") is not None:
+        what = {"sum": "So far in", "mean": "Average so far,", "last": "Latest,"}.get(part.get("how"), "So far,")
+        # a stock's part-year figure is its latest month, not a span of months —
+        # and the most recent figure there is, so it leads
+        when = (f'{(part.get("label") or "").split("–")[-1]} {part["year"]}'.strip()
+                if part.get("how") == "last" else part_label(s))
+        pv = with_unit(part["value"], unit, dp)
+        fact = (f'<div class="fact part"><b>{esc(pv if len(pv) <= 14 else fmt(part["value"], dp))}</b>'
+                f'<span>{esc(what)} {esc(when)}{"" if part.get("how") == "last" else " · part-year"}</span></div>')
+        if part.get("how") == "last":
+            facts.insert(0, fact)
+        else:
+            facts.append(fact)
     ch = change_line(s)
     if ch and not snap:
         facts.append(f'<div class="fact"><b>{esc(ch[0])}</b><span>{esc(ch[1])}</span></div>')
-    if part and part.get("value") is not None:
-        what = {"sum": "So far in", "mean": "Average so far,", "last": "Latest,"}.get(part.get("how"), "So far,")
-        # a stock's part-year figure is its latest month, not a span of months
-        when = (f'{(part.get("label") or "").split("–")[-1]} {part["year"]}'.strip()
-                if part.get("how") == "last" else part_label(s))
-        facts.append(f'<div class="fact part"><b>{esc(with_unit(part["value"], unit) if len(with_unit(part["value"], unit)) <= 14 else fmt(part["value"]))}</b>'
-                     f'<span>{esc(what)} {esc(when)}{"" if part.get("how") == "last" else " · part-year"}</span></div>')
     if len(pts) >= 3 and not snap:
-        hy, hv = max(pts, key=lambda p: p[1])
-        my, mv = min(pts, key=lambda p: p[1])
-        facts.append(f'<div class="fact"><b>{esc(fmt(hv))}</b><span>Highest, {hy}</span></div>')
-        facts.append(f'<div class="fact"><b>{esc(fmt(mv))}</b><span>Lowest, {my}</span></div>')
+        # highs and lows never straddle a break: measured from the last one,
+        # when enough years follow it, and said so
+        brk = last_break(s)
+        after = [p for p in pts if brk is not None and p[0] >= brk]
+        span = after if len(after) >= 3 else pts
+        note = f" (since the {brk} break)" if span is after else (" (across a break)" if brk is not None else "")
+        hy, hv = max(span, key=lambda p: p[1])
+        my, mv = min(span, key=lambda p: p[1])
+        facts.append(f'<div class="fact"><b>{esc(fmt(hv, dp))}</b><span>Highest, {esc(yl(hy))}{esc(note)}</span></div>')
+        facts.append(f'<div class="fact"><b>{esc(fmt(mv, dp))}</b><span>Lowest, {esc(yl(my))}{esc(note)}</span></div>')
 
     breaks = s.get("discontinuities") or []
     chart = ""
@@ -434,26 +493,34 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
         if part:
             pnote = (f"{part['year']} covers {part_label(s).rsplit(' ', 1)[0]} only · " if part.get("plotted")
                      else f"{part['year']} is left off until the year is complete · ")
-        chart = (f'<div class="card">{chart_svg(s)}<p class="cap">{esc(unit)} · {esc(geo)} · '
+        basis = {"financial": "financial years (April to March), plotted at the year they start · ",
+                 "academic": "school years, plotted at the year they start · "}.get(s.get("year_basis"), "")
+        chart = (f'<div class="card">{chart_svg(s)}<p class="cap">{esc(unit)} · {esc(geo)} · {esc(basis)}'
                  f'{"dashed lines mark breaks in the series · " if breaks else ""}{esc(pnote)}source: {esc(s.get("source",""))}</p></div>')
 
     notes = "".join(f"<li>{esc(n)}</li>" for n in s.get("notes", []))
+    # an old latest year reads as a stalled refresh unless the page says why
+    checked = (s.get("fetched") or "")[:10]
+    if checked and ly < int(checked[:4]) - 2:
+        notes += (f"<li>{esc(yl(ly))} is the latest year the source has published here. Polyoptic checks it "
+                  f"every Monday (last on {esc(checked)}) and adds a new year when one appears.</li>")
     brk = "".join(f'<li><b>{esc(d.get("year",""))}: {esc(d.get("label",""))}.</b> {esc(d.get("note",""))}</li>' for d in breaks)
 
     ex = area_extremes(s, ix) if s.get("areas") else None
     local = ""
     if ex:
-        row = lambda r: f'<tr><td>{esc(r[0])}</td><td class="n">{esc(fmt(r[1]))}</td></tr>'
+        adp = values_dp(v for _, v in ex["top"] + ex["bottom"])
+        row = lambda r: f'<tr><td>{esc(r[0])}</td><td class="n">{esc(fmt(r[1], adp))}</td></tr>'
         local = f"""<h2>Highest and lowest areas, {ex['year']}</h2>
 <p>Figures are published for {ex['n']} {esc(ex['level'].lower())}. The ten highest and lowest:</p>
 <div class="two"><table><thead><tr><th>Highest</th><th class="n">{esc(unit)}</th></tr></thead><tbody>{"".join(row(r) for r in ex['top'])}</tbody></table>
 <table><thead><tr><th>Lowest</th><th class="n">{esc(unit)}</th></tr></thead><tbody>{"".join(row(r) for r in ex['bottom'])}</tbody></table></div>
 <p style="margin-top:12px"><a href="../../explore.html#p={s['id']}~map~none~{fy}~{ly}~bands">See every area on a map →</a></p>"""
 
-    table = "".join(f'<tr><td>{y}</td><td class="n">{esc(fmt(v))}</td></tr>' for y, v in reversed(pts))
+    table = "".join(f'<tr><td>{esc(yl(y))}</td><td class="n">{esc(fmt(v, dp))}</td></tr>' for y, v in reversed(pts))
     if part and part.get("value") is not None:
         table = (f'<tr><td>{esc(part_label(s))} <small>(part-year)</small></td>'
-                 f'<td class="n">{esc(fmt(part["value"]))}</td></tr>') + table
+                 f'<td class="n">{esc(fmt(part["value"], dp))}</td></tr>') + table
     data_tbl = f"""<h2>Every published year</h2>
 <details{' open' if len(pts) <= 12 else ''}><summary>{len(pts)} value{'s' if len(pts) != 1 else ''}, {esc(unit)}</summary>
 <table style="margin-top:10px"><thead><tr><th>Year</th><th class="n">{esc(unit)}</th></tr></thead><tbody>{table}</tbody></table></details>
@@ -524,7 +591,7 @@ def card(s: dict, href: str) -> str:
     pts = full_points(s)
     ly, lv = pts[-1]
     return (f'<li><a href="{href}"><b>{esc(s["name"])}</b>'
-            f'<span>{esc(with_unit(lv, s.get("unit","")))}, {esc(year_figure(s, ly))} · {esc(s.get("geography",""))}</span></a></li>')
+            f'<span>{esc(with_unit(lv, s.get("unit",""), series_dp(s)))}, {esc(year_figure(s, ly))} · {esc(s.get("geography",""))}</span></a></li>')
 
 
 def topic_page(k: str, name: str, blurb: str, series: list[dict], slugs: dict) -> str:
@@ -566,28 +633,29 @@ def index_page(series: list[dict], slugs: dict) -> str:
                 og_image="og/home.png", og_alt="Polyoptic", ld=ld, body=body)
 
 
-# ── question pages: the number and the chart, from the data ─────────
-# The question pages are written by hand except for the chart's numbers and
-# the paragraph under "The number", which are computed here, together, from
-# the bundle on every build — so the sentence and the chart cannot disagree,
-# and neither can drift from the data as it refreshes.
-#
-# Each question names HOW it is answered, because one sentence shape does not
-# fit every question:
+# ── the four featured questions ─────────────────────────────────────
+# Answered here, each its own way, because one sentence shape does not fit
+# every question:
 #   ratio         two series that are both money or price indexes, rebased to
-#                 the first year they share; "A ended N% ahead of B" is
-#                 meaningful because both are growth in the same kind of thing
+#                 the same year; "A ended N% ahead of B" is meaningful because
+#                 both are growth in the same kind of thing. `also` gives the
+#                 answer from a second start year, because the start year can
+#                 decide the verdict and a page should not pick the kind one
 #   same_unit     convert one series into the other's unit first (debt interest
 #                 in £m into % of GDP, beside debt in % of GDP) and derive what
 #                 the pair means (interest ÷ debt, the effective rate)
 #   before_after  a question about an event: the last year before it against
 #                 the first year after it and the latest, naming any break in
 #                 the series that falls between them
-# The generator refuses to write a ratio between series in units that cannot
-# be compared, rather than writing a sentence that sounds right.
+# Each returns a lead — one sentence that answers the question, both halves
+# where it has two — and the fuller numbers under it. The generator refuses to
+# write a ratio between series in units that cannot be compared, rather than
+# writing a sentence that sounds right.
 
 QUESTIONS = {
-    "has-pay-kept-up-with-prices": {"kind": "ratio", "ids": ["pay", "cpih"], "from": 2000},
+    # 2008 first: "pay hasn't kept up" means since the financial crisis, and
+    # from 2000 the answer is a different one; the page gives both
+    "has-pay-kept-up-with-prices": {"kind": "ratio", "ids": ["pay", "cpih"], "from": 2008, "also": 2000},
     "have-rents-outrun-pay": {"kind": "ratio", "ids": ["rents", "pay"], "from": 2015},
     "what-does-the-debt-cost-to-carry": {"kind": "same_unit", "ids": ["psnd", "debtint"], "from": 1993},
     "did-lost-schooling-widen-the-gap": {
@@ -599,10 +667,15 @@ QUESTIONS = {
 }
 
 QUESTION_NAMES = {
-    "pay": "average pay", "cpih": "prices (CPIH)", "rents": "private rents",
+    "pay": "average pay", "cpih": "prices", "rents": "private rents",
     "psnd": "public sector net debt", "debtint": "debt interest",
     "absence": "persistent absence", "gap": "the disadvantage gap index",
 }
+# names that take "are": "private rents are", "prices are"
+PLURAL = {"rents", "cpih"}
+# the names on the chart, short enough to sit at the line ends
+CHART_NAMES = {"pay": "Average pay", "cpih": "Prices (CPIH)", "rents": "Private rents",
+               "gap": "Disadvantage gap index", "absence": "Persistent absence"}
 
 # units that can be rebased against each other: both growth in money or prices
 RATIO_KINDS = {"money_cash", "index"}
@@ -628,41 +701,59 @@ def cap(t: str) -> str:
     return t[0].upper() + t[1:]
 
 
+def verdict(r: float) -> str:
+    """How far ahead A ended against B, as a one-word answer to 'did A keep up
+    with / outrun B?' — within 10% either way is too close for a plain yes or no."""
+    return "Yes" if r >= 10 else "Only just" if r >= 0 else "Not quite" if r > -10 else "No"
+
+
 def q_ratio(cfg: dict, by_id: dict) -> dict:
     a, b = (by_id[i] for i in cfg["ids"])
     for s in (a, b):
         if s["kind"] not in RATIO_KINDS:
             raise ValueError(f'{s["id"]} is {s["kind"]} ({s["unit"]}): a ratio question needs money or price '
                              f"indexes on both sides — give this question another kind")
-    runs = [dict((y, v) for y, v in full_points(s) if y >= cfg["from"]) for s in (a, b)]
-    start, end = max(min(r) for r in runs), min(max(r) for r in runs)
-    reb = [{y: r[y] / r[start] * 100 for y in sorted(r) if start <= y <= end} for r in runs]
-    A, B = reb
+    full = [dict(full_points(s)) for s in (a, b)]
+
+    def rebase(frm):
+        runs = [{y: v for y, v in r.items() if y >= frm} for r in full]
+        start, end = max(min(r) for r in runs), min(max(r) for r in runs)
+        A, B = ({y: r[y] / r[start] * 100 for y in sorted(r) if start <= y <= end} for r in runs)
+        both = sorted(set(A) & set(B))
+        return start, end, A, B, both, {y: (A[y] / B[y] - 1) * 100 for y in both}
+
+    start, end, A, B, both, rel = rebase(cfg["from"])
     na, nb = qname(a), qname(b)
     ga, gb = A[end] - 100, B[end] - 100
-    if ga >= 0 and gb >= 0:
-        verdict = (f"{cap(na)} rose faster" if ga > gb + 1 else
-                   f"{cap(nb)} rose faster" if gb > ga + 1 else "The two rose by about the same")
-    elif ga < 0 and gb < 0:
-        verdict = f"Both fell, {na if ga > gb else nb} by less"
-    else:
-        verdict = f"{cap(na if ga > gb else nb)} rose while {nb if ga > gb else na} fell"
-    both = sorted(set(A) & set(B))
-    rel = {y: (A[y] / B[y] - 1) * 100 for y in both}
     r = rel[end]
-    if abs(r) < 1:
-        tail = f"By {end} the two were level, relative to {start}."
+    if ga >= 0 and gb >= 0:
+        faster = (f"{cap(na)} rose faster" if ga > gb + 1 else
+                  f"{cap(nb)} rose faster" if gb > ga + 1 else "The two rose by about the same")
+    elif ga < 0 and gb < 0:
+        faster = f"Both fell, {na if ga > gb else nb} by less"
     else:
-        tail = f"Relative to {start}, {na} ended {abs(r):.0f}% {'ahead of' if r > 0 else 'behind'} {nb}"
-        far = max(both, key=lambda y: abs(rel[y]))
-        if far != end and abs(rel[far]) > abs(r) + 2:
-            tail += f", having been {abs(rel[far]):.0f}% {'ahead' if rel[far] > 0 else 'behind'} at the widest, in {far}"
-        tail += "."
+        faster = f"{cap(na if ga > gb else nb)} rose while {nb if ga > gb else na} fell"
+    # the stretch spent on the other side before ending where it did
+    other = [y for y in both[1:-1] if (rel[y] < 0) != (r < 0)]
+    run = (f", after {'trailing' if r >= 0 else 'leading'} {nb} every year from {other[0]} to {other[-1]}"
+           if other and other[-1] - other[0] + 1 == len(other) and len(other) >= 3 else "")
+    far = max(both, key=lambda y: abs(rel[y]))
+    widest = (f", having been {abs(rel[far]):.0f}% {'ahead' if rel[far] > 0 else 'behind'} at the widest, in {far}"
+              if not run and far != end and abs(rel[far]) > abs(r) + 2 else "")
+    where = (f"level with {nb}" if abs(r) < 1 else f"{abs(r):.0f}% {'ahead of' if r > 0 else 'behind'} {nb}")
+    is_ = "are" if a["id"] in PLURAL else "is"
+    lead = f"{verdict(r)}, measured from {start}: {na} {is_} {where}{run or widest}."
     line = (f"Rebased to {start} = 100, {na} reached {A[end]:.0f} by {end} and {nb} {B[end]:.0f}: "
-            f"{na} {pct(ga)}, {nb} {pct(gb)}. {verdict}. {tail}")
-    return {"kind": "ratio", "sentence": line, "start": start, "end": end, "baseline": 100,
+            f"{na} {pct(ga)}, {nb} {pct(gb)}. {faster}.")
+    if cfg.get("also"):
+        s2, e2, A2, B2, _, rel2 = rebase(cfg["also"])
+        r2 = rel2[e2]
+        lead += f" From {s2}, {'they are' if a['id'] in PLURAL else 'it is'} {abs(r2):.0f}% {'ahead' if r2 > 0 else 'behind'}."
+        line += (f" Measured from {s2} instead, {na} {pct(A2[e2] - 100)} and {nb} {pct(B2[e2] - 100)}, "
+                 f"so {na} ended {abs(r2):.0f}% {'ahead of' if r2 > 0 else 'behind'} {nb}: the start year changes the answer.")
+    return {"kind": "ratio", "lead": lead, "sentence": line, "start": start, "end": end, "baseline": 100,
             "unit": f"index, {start} = 100", "explore": f"{a['id']},{b['id']}~line~index~{start}~{end}~pm",
-            "sets": [{"id": s["id"], "name": s["name"], "pts": [[y, round(R[y], 3)] for y in sorted(R)]}
+            "sets": [{"id": s["id"], "name": CHART_NAMES.get(s["id"], s["name"]), "pts": [[y, round(R[y], 3)] for y in sorted(R)]}
                      for s, R in ((a, A), (b, B))]}
 
 
@@ -683,20 +774,25 @@ def q_same_unit(cfg: dict, by_id: dict, refs: dict) -> dict:
     low = min(years, key=lambda y: eff[y])
     peak_i = max(years, key=lambda y: ish[y])
     f1 = lambda v: f"{v:.1f}"
+    xi, xd = ish[end] / ish[start], D[end] / D[start]
+    rise = ("a much smaller rise than the debt’s" if xi < xd * 0.7 else
+            "a bigger rise than the debt’s" if xi > xd * 1.3 else "about the same rise as the debt’s")
+    lead = (f"{f1(ish[end])}% of GDP in {end}: the interest bill is up from {f1(ish[start])}% in {start}, {rise}, "
+            f"which went from {f1(D[start])}% to {f1(D[end])}% of GDP.")
     line = (f"In {start} net debt was {f1(D[start])}% of GDP and the interest on it cost {f1(ish[start])}% of GDP. "
-            f"By {end} the debt was {f1(D[end])}% of GDP, {D[end] / D[start]:.1f} times its {start} share of the economy, "
-            f"but interest cost {f1(ish[end])}% — {ish[end] / ish[start]:.1f} times"
+            f"By {end} the debt was {f1(D[end])}% of GDP, {xd:.1f} times its {start} share of the economy, "
+            f"but interest cost {f1(ish[end])}% — {xi:.1f} times"
             + (f", and it peaked at {f1(ish[peak_i])}% in {peak_i}" if peak_i not in (start, end) else "")
             + f". The difference is the rate: interest ÷ debt, the effective rate the state pays, "
             f"went from {f1(eff[start])}% in {start} to a low of {f1(eff[low])}% in {low}"
             + (f", and is back to {f1(eff[end])}% in {end}." if low != end else ".")
             + " Interest and debt are both set against the size of the economy here, so rising prices and growth"
             " do not flatter or inflate either one.")
-    return {"kind": "same_unit", "sentence": line, "start": start, "end": end, "baseline": None, "zero": True,
+    return {"kind": "same_unit", "lead": lead, "sentence": line, "start": start, "end": end, "baseline": None, "zero": True,
             "unit": "% of GDP, and % of the debt", "explore": f"{debt['id']},{intr['id']}~line~pctgdp~{start}~{end}~pm",
             "sets": [{"id": "debtint_gdp", "name": "Debt interest, % of GDP",
                       "pts": [[y, round(ish[y], 3)] for y in years]},
-                     {"id": "effrate", "name": "Effective interest rate (interest ÷ debt)",
+                     {"id": "effrate", "name": "Interest ÷ debt, the effective rate",
                       "pts": [[y, round(eff[y], 3)] for y in years]}]}
 
 
@@ -720,6 +816,11 @@ def q_before_after(cfg: dict, by_id: dict) -> dict:
     e = min(P)
     up, down = cfg.get("words", {}).get(main["id"], ("rose", "fell"))
     nm = qname(main)
+    worse = P[a] > P[b]
+    lead = (f"The gap {'did widen' if worse else 'did not widen'} after {ev}, "
+            f"{'from' if worse else 'staying at'} {num(main, P[b])} in {yl(main, b)}"
+            + (f" to {num(main, P[a])} in {yl(main, a)}" if worse else f" against {num(main, P[a])} in {yl(main, a)}")
+            + ", but these figures cannot show whether lost schooling was the cause.")
     parts = [f"{cap(nm)} {down if P[b] < P[e] else up} from {num(main, P[e])} in {yl(main, e)} "
              f"to {num(main, P[b])} in {yl(main, b)}, the last year before {ev}."]
     ch = (P[a] / P[b] - 1) * 100
@@ -752,11 +853,11 @@ def q_before_after(cfg: dict, by_id: dict) -> dict:
     end = max(l, ol)
     sets = []
     for s, pts, base in ((main, P, b), (other, O, ob)):
-        sets.append({"id": s["id"], "name": s["name"],
+        sets.append({"id": s["id"], "name": CHART_NAMES.get(s["id"], s["name"]),
                      "pts": [[y, round(pts[y] / pts[base] * 100, 3) if y in pts else None] for y in range(start, end + 1)]})
     breaks = [{"year": int(d["year"]), "label": d.get("label", "")} for s in (main, other)
               for d in (s.get("discontinuities") or [])]
-    return {"kind": "before_after", "sentence": " ".join(parts), "start": start, "end": end, "baseline": 100,
+    return {"kind": "before_after", "lead": lead, "sentence": " ".join(parts), "start": start, "end": end, "baseline": 100,
             "unit": f"index, {yl(main, b)} = 100", "band": [b + 1, a, ev], "breaks": breaks,
             "explore": f"{main['id']},{other['id']}~line~index~{start}~{end}~pm", "sets": sets}
 
@@ -772,32 +873,101 @@ def build_question(slug: str, by_id: dict, refs: dict) -> dict | None:
 
 
 def write_questions(by_id: dict, refs: dict) -> dict:
+    """Work out the featured questions; data/questions.json carries the numbers
+    for the homepage's thumbnails and the share-image builder."""
     out = {}
-    for p in sorted((ROOT / "q").glob("*/index.html")):
-        slug = p.parent.name
-        if GENERATED in p.read_text(encoding="utf-8"):
-            continue                       # a drawer question's page, written below
+    for slug in QUESTIONS:
         q = build_question(slug, by_id, refs)
         if not q:
-            print(f"  question {slug}: not configured or series missing, left as it was")
+            print(f"  question {slug}: a series is missing, left out")
             continue
         out[slug] = q
-        text = p.read_text(encoding="utf-8")
-        new = re.sub(r"(<!-- number:[^>]*-->\n\s*)<p>.*?</p>(\n\s*<!-- /number -->)",
-                     lambda m: f"{m.group(1)}<p>{esc(q['sentence'])}</p>{m.group(2)}", text, count=1, flags=re.S)
-        data = json.dumps({k: v for k, v in q.items() if k != "sentence"}, separators=(",", ":"))
-        new = re.sub(r'<script type="application/json" id="qdata">.*?</script>',
-                     lambda m: f'<script type="application/json" id="qdata">{data}</script>', new, count=1, flags=re.S)
-        new = re.sub(r"explore\.html#p=[^\"]*", f"explore.html#p={q['explore']}", new)
-        # the year range in the title, description and subtitle follows the data;
-        # en-dash ranges only, so nothing in a script or link is touched
-        new = re.sub(r"\b(1[89]\d\d|20\d\d)–(1[89]\d\d|20\d\d)\b", f"{q['start']}–{q['end']}", new)
-        new = re.sub(r"\b(1[89]\d\d|20\d\d) to (1[89]\d\d|20\d\d)\b(?=\">)", f"{q['start']} to {q['end']}", new)
-        new = re.sub(r"\b(1[89]\d\d|20\d\d)\\u2013(1[89]\d\d|20\d\d)\b", f"{q['start']}\\\\u2013{q['end']}", new)   # inside JSON-LD
-        if new != text:
-            p.write_text(new, encoding="utf-8")
-    # the share-image builder draws the same numbers
     (ROOT / "data" / "questions.json").write_text(json.dumps(out, separators=(",", ":")), encoding="utf-8")
+    return out
+
+
+# The hand-written half of each featured page: what people claim, what the
+# numbers can and cannot show, and the caveat. The answer and the chart come
+# from the data, above.
+FEATURED = {
+    "has-pay-kept-up-with-prices": dict(
+        q="Has pay kept up with prices?", title="Has pay kept up with prices in the UK?",
+        claim="Pay has not kept up with the cost of living.",
+        shows=["This is the whole-economy average, so it answers the question for the economy and not for any "
+               "particular person. A mean is pulled up by high earners; it moves when the mix of who is employed "
+               "changes, not only when anyone gets a rise.",
+               "And it is cumulative from the start year. From 2008, the year most people mean, pay spent twelve "
+               "years behind prices; from 2000 it was ahead the whole time. Both are true, which is why both are here."],
+        why="Two growth rates from one start: rebasing both to 100 in the same year shows which pulled ahead, and "
+            "when. The start year decides the answer, so the page gives the answer from a second one too.",
+        care="CPIH includes owner-occupiers’ housing costs, which CPI does not, and runs below CPI in most periods — "
+             "the choice of price index changes the answer. Earnings here are total pay including bonuses, "
+             "seasonally adjusted."),
+    "have-rents-outrun-pay": dict(
+        q="Have rents outrun pay?", title="Have rents outrun pay in the UK?",
+        claim="Rents are rising faster than wages.",
+        shows=["An index of rents on new and existing tenancies is not the same as what a mover pays. Advertised "
+               "rents for new lets have risen faster than this index over the same years, because existing "
+               "tenancies reprice slowly. So this understates the change facing someone moving today, and "
+               "overstates it for someone who has not moved."],
+        why="Rents and pay are in different units; rebasing both to 2015 = 100, the first year the rents index "
+            "covers, makes their growth comparable on one axis.",
+        care="<b>The index you pick changes the answer.</b> This page used ONS’s old Index of Private Housing Rental "
+             "Prices until it stopped in March 2025. Over 2015 to 2024, the years both cover, that index had rents up "
+             "23%; its replacement, the Price Index of Private Rents used here, has them up 37%. PIPR is published as "
+             "official statistics in development, so ONS may still revise it, and it is UK-wide, which hides a wide "
+             "spread between London and everywhere else.", care_html=True),
+    "what-does-the-debt-cost-to-carry": dict(
+        q="What does the debt cost to carry?", title="What does UK government debt cost to carry?",
+        claim="Government debt is at a record high, so debt interest must be too.",
+        shows=["Two different kinds of number, made comparable. Debt is a stock measured at a point in time; interest "
+               "is a flow paid across a year, so in cash the two cannot be set side by side. Against GDP, the interest "
+               "bill is what weighs on a budget; against the debt, it is the price of borrowing.",
+               "A bigger debt costs more to carry only if that price holds, and when rates move the bill follows with "
+               "a lag, as old borrowing is refinanced."],
+        why="Both lines are percentages: interest as a share of the economy, and as a share of the debt. On one axis "
+            "from zero, the space between them is the price of borrowing.",
+        care="Both series exclude public sector banks. Debt interest is interest and dividends paid to the private "
+             "sector and the rest of the world, and a large share of it in recent years reflects RPI uplift on "
+             "index-linked gilts rather than coupon payments. The effective rate is approximate: it divides interest "
+             "paid across a year by the debt at the end of it."),
+    "did-lost-schooling-widen-the-gap": dict(
+        q="Did lost schooling widen the attainment gap?", title="Did lost schooling widen the attainment gap in England?",
+        claim="Absence since the pandemic has widened the gap between disadvantaged pupils and everyone else.",
+        shows=["Two lines moving at the same time. It does not show that one caused the other, and nothing on this "
+               "chart could: absence and attainment share most of their plausible causes, and pupils missing school "
+               "are disproportionately the same pupils the gap index measures. Read it as a question worth asking "
+               "of the underlying data, not as an answer."],
+        why="Each series is set to 100 in 2018/19, the last year before the pandemic, so the change after it reads "
+            "the same way for both. The shaded years are the ones the pandemic interrupted.",
+        care="England only, and academic years, which plot at their starting calendar year — a point labelled 2020 is "
+             "the 2020/21 school year. Both series changed collection or definition during the pandemic, so the break "
+             "either side of 2020 is partly a change in measurement."),
+}
+
+
+def featured_items(featured: dict, by_id: dict) -> list[dict]:
+    """The featured questions in the shape every question page is written from."""
+    out = []
+    for slug, fq in featured.items():
+        text = FEATURED.get(slug)
+        if not text:
+            continue
+        cfg = QUESTIONS[slug]
+        series = [by_id[i] for i in cfg["ids"]]
+        sets = fq["sets"]
+        ys = [y for s in sets for y, v in s["pts"] if v is not None]
+        out.append({
+            **text, "key": slug, "slug": slug, "group": "featured", "chart": "line", "era": "off",
+            "trans": "none" if fq.get("zero") else "index", "zero": bool(fq.get("zero")),
+            "ids": cfg["ids"], "sets": sets, "band": fq.get("band"),
+            "from": fq["start"], "to": fq["end"], "x0": min(ys), "x1": max(ys), "unit": fq["unit"],
+            "lead": fq["lead"], "sentence": fq["sentence"], "description": more_questions.description(fq["lead"]),
+            "geos": list(dict.fromkeys(s.get("geography", "") for s in series if s.get("geography"))),
+            "sources": list(dict.fromkeys(s.get("source", "") for s in series)),
+            "topics": list(dict.fromkeys(t for s in series for t in (s.get("topics") or []))),
+            "explore": fq["explore"],
+        })
     return out
 
 
@@ -813,17 +983,16 @@ def write_questions(by_id: dict, refs: dict) -> dict:
 # filled by write_more_questions before the indicator and topic pages
 ALL_QUESTIONS: list[dict] = []
 ASKED: dict[str, list[dict]] = {}
-GENERATED = "<!-- written by ingest/pages.py from ingest/questions.py: edit there, not here -->"
+GENERATED = "<!-- written by ingest/pages.py (questions: FEATURED there, the rest in ingest/questions.py): edit there, not here -->"
 
 Q_CSS = """
 :root{--s1:#6D4AE0;--s2:#0E9384;--s3:#D97706;--s4:#DB2777}
 html[data-theme="dark"]{--s1:#8367E8;--s2:#17A394;--s3:#C58207;--s4:#DE5A96}
 .kick{display:flex;flex-wrap:wrap;align-items:center;gap:8px;font-size:13px;color:var(--muted);margin:0 0 10px}
 .tag{font-weight:600;color:var(--purple);background:var(--soft);border:1px solid var(--prule);border-radius:100px;padding:2px 10px}
-.tag.myth{color:#C2410C;background:#FFF4EC;border-color:#F6D3BB}
-html[data-theme="dark"] .tag.myth{color:#FB923C;background:#2A1C12;border-color:#5A3A22}
 h1{max-width:24ch}
-.lead{font-size:18.5px;line-height:1.55;max-width:66ch;margin:6px 0 24px}
+.lead{font-size:19px;line-height:1.5;font-weight:600;max-width:62ch;margin:8px 0 24px}
+.claim{font-size:17px;font-style:italic;color:var(--muted)}
 .card .cap.top{margin:0 0 8px}
 .key{display:inline-flex;align-items:center;gap:5px;margin-right:12px;font-weight:600;color:var(--ink)}
 .key i{width:9px;height:9px;border-radius:2px;display:inline-block}
@@ -876,29 +1045,39 @@ def question_page(q: dict, db: dict, by_id: dict, slugs: dict) -> str:
         name = esc(x.get("source", ""))
         return f'<dd><a href="{esc(x["source_url"])}">{name}</a></dd>' if x.get("source_url") else f"<dd>{name}</dd>"
     src = "".join(src_dd(x) for x in {x.get("source"): x for x in series}.values())
+    fetched = max((s.get("fetched") or "")[:10] for s in series)
     others = [x for x in ALL_QUESTIONS if x["slug"] != q["slug"]]
     others.sort(key=lambda x: (x["group"] != q["group"], not set(x["topics"]) & set(q["topics"]), x["title"]))
     an = "an" if tname[0].lower() in "aeiou" else "a"
+    care = q["care"] if q.get("care_html") else esc(q["care"])
+    claim = f'<h2>The claim</h2><p class="claim">{esc(q["claim"])}</p>' if q.get("claim") else ""
+    shows = (f'<h2>What it actually shows</h2>' + "".join(f"<p>{esc(t)}</p>" for t in q["shows"])) if q.get("shows") else ""
+    back = "../../#questions" if q["group"] == "featured" else f"../../#q-{q['key']}"
     body = f"""{GENERATED}
 {crumbs(2, [("Questions", "q/"), (q["title"], None)])}
-<p class="kick"><span class="tag{' myth' if q['group'] == 'myth' else ''}">{esc(more_questions.GROUP_NAME[q['group']])}</span>{esc(tname)} chart · {esc(geos)} · {q['x0']}–{q['x1']}</p>
+<p class="kick"><span class="tag">{esc(more_questions.GROUP_NAME[q['group']])}</span>{esc(tname)} chart · {esc(geos)} · {q['x0']}–{q['x1']}</p>
 <h1>{esc(q['title'])}</h1>
-<p class="lead">{esc(q['sentence'])}</p>
+<p class="lead">{esc(q['lead'])}</p>
 <div class="card">{f'<p class="cap top">{keys}</p>' if keys else ''}
 <div class="qwide">{more_questions.svg(q, db)}</div><div class="qnarrow">{more_questions.svg(q, db, 420)}</div>
 <p class="cap">Source: {esc("; ".join(q['sources']))} · Open Government Licence v3.0{' · a year still in progress is left out' if any(s.get('partial') for s in series) else ''}</p></div>
 <a class="cta" href="../../explore.html#p={q['explore']}">Open this in the explorer →</a>
-<a class="cta ghost" href="../../index.html#q-{q['key']}">See it with the other questions</a>
+<a class="cta ghost" href="{back}">See it with the other questions</a>
 <div class="cols"><div>
-<div class="why"><h2>Why {an} {esc(tname.lower())}{'' if q['chart'] == 'small' else ' chart'}</h2><p>{esc(q['why'])}</p></div>
+{claim}
+<h2>The numbers</h2>
+<p>{esc(q['sentence'])}</p>
+{shows}
+<div class="why" style="margin-top:24px"><h2>Why {an} {esc(tname.lower())}{'' if q['chart'] == 'small' else ' chart'}</h2><p>{esc(q['why'])}</p></div>
 <h2 style="margin-top:28px">The indicators</h2>
 <ul class="list">{inds}</ul>
 </div>
-<aside class="side care"><h2>Read it carefully</h2><p>{esc(q['care'])}</p><dl>
+<aside class="side care"><h2>Read it carefully</h2><p>{care}</p><dl>
 <dt>Covers</dt><dd>{esc(geos)}</dd>
 <dt>Years</dt><dd>{q['x0']}–{q['x1']}</dd>
 <dt>Shown as</dt><dd>{esc(q['unit'])}</dd>
 <dt>Sources</dt>{src}
+<dt>Last fetched</dt><dd>{esc(fetched)}</dd>
 <dt>Licence</dt><dd><a href="{OGL}">Open Government Licence v3.0</a></dd>
 </dl></aside></div>
 {asked_list(others[:9], 2, "More questions")}
@@ -912,63 +1091,53 @@ def question_page(q: dict, db: dict, by_id: dict, slugs: dict) -> str:
            "isPartOf": {"@type": "WebSite", "name": "Polyoptic", "url": f"{SITE}/"}},
           {"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{
               "@type": "Question", "name": q["title"],
-              "acceptedAnswer": {"@type": "Answer", "text": q["sentence"]}}]},
+              "acceptedAnswer": {"@type": "Answer", "text": f'{q["lead"]} {q["sentence"]}'}}]},
           breadcrumb_ld([("Questions", "q/"), (q["title"], url)])]
     return page(path=url, depth=2, title=f'{q["title"]} | Polyoptic', desc=q["description"], og_image=og,
                 og_alt=q["title"], ld=ld, body=body, explore=f'explore.html#p={q["explore"]}', css=Q_CSS)
 
 
 def hub_page() -> str:
-    groups = [("featured", "Answered in depth", [q for q in ALL_QUESTIONS if q["group"] == "featured"])] + [
-        (k, n, [q for q in ALL_QUESTIONS if q["group"] == k]) for k, n in more_questions.GROUP_NAME.items()]
+    groups = [(n, [q for q in ALL_QUESTIONS if q["group"] == k]) for k, n in more_questions.GROUP_NAME.items()]
     body = f"""{GENERATED}
 {crumbs(1, [("Questions", None)])}
 <h1>Questions worth asking</h1>
 <p class="sub">{len(ALL_QUESTIONS)} questions people actually ask about the UK, answered with the official numbers: each with its chart, the caveats and a link to the working.</p>
 """ + "".join(f'<div class="grp">{esc(n)} · {len(qs)}</div><ul class="list">'
               + "".join(f'<li><a href="{q["slug"]}/"><b>{esc(q["title"])}</b><span>{esc(q["description"])}</span></a></li>' for q in qs)
-              + "</ul>" for k, n, qs in groups if qs)
+              + "</ul>" for n, qs in groups if qs)
     ld = [{"@context": "https://schema.org", "@type": "CollectionPage", "name": "Questions worth asking", "url": f"{SITE}/q/",
            "description": "Questions about the UK answered with official statistics.",
            "isPartOf": {"@type": "WebSite", "name": "Polyoptic", "url": f"{SITE}/"}},
           breadcrumb_ld([("Questions", "q/")])]
     return page(path="q/", depth=1, title="Questions worth asking about the UK, answered with official statistics | Polyoptic",
                 desc=f"{len(ALL_QUESTIONS)} questions about the UK — crime, the NHS, migration, housing, pay and more — answered with official statistics, each with its chart and caveats.",
-                og_image="og/home.png", og_alt="Polyoptic", ld=ld, body=body)
+                og_image="og/home.png", og_alt="Polyoptic", ld=ld, body=body, og_type="website")
 
 
 def write_more_questions(db: dict, by_id: dict, slugs: dict, featured: dict) -> None:
-    """The drawer's questions: data for the homepage, a page each, a hub page,
-    and the lists of questions on the homepage and the featured pages."""
+    """Every question page — the four featured and the drawer's — the hub that
+    lists them, the drawer's data for the homepage, and its plain links."""
     qs = more_questions.build(db)
     (ROOT / "data" / "questions-more.json").write_text(
         json.dumps({"questions": qs}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
 
     # every question, so indicator, topic and question pages can link to them
     ALL_QUESTIONS.clear()
-    for p in sorted((ROOT / "q").glob("*/index.html")):
-        text = p.read_text(encoding="utf-8")
-        if GENERATED in text:
-            continue
-        t = re.search(r"<h1>(.*?)</h1>", text, re.S)
-        f = featured.get(p.parent.name) or {}
-        ids = [s["id"] for s in f.get("sets", []) if s["id"] in by_id] or \
-              (QUESTIONS.get(p.parent.name) or {}).get("ids", [])
-        ALL_QUESTIONS.append({"slug": p.parent.name, "title": html.unescape(t.group(1)) if t else p.parent.name,
-                              "group": "featured", "ids": ids, "description": more_questions.description(f.get("sentence", "")),
-                              "topics": list(dict.fromkeys(tp for i in ids for tp in (by_id[i].get("topics") or []) if i in by_id))})
+    ALL_QUESTIONS.extend(featured_items(featured, by_id))
     ALL_QUESTIONS.extend(qs)
     ASKED.clear()
     for q in ALL_QUESTIONS:
         for i in q["ids"]:
             ASKED.setdefault(i, []).append(q)
 
-    # a question taken out of ingest/questions.py takes its page with it
-    live = {q["slug"] for q in qs}
+    # a question taken out takes its page with it; a page this did not write
+    # is never touched
+    live = {q["slug"] for q in ALL_QUESTIONS}
     for p in sorted((ROOT / "q").glob("*/index.html")):
-        if p.parent.name not in live and GENERATED in p.read_text(encoding="utf-8"):
+        if p.parent.name not in live and "<!-- written by ingest/pages.py" in p.read_text(encoding="utf-8"):
             shutil.rmtree(p.parent)
-    for q in qs:
+    for q in ALL_QUESTIONS:
         out = ROOT / "q" / q["slug"]
         out.mkdir(parents=True, exist_ok=True)
         (out / "index.html").write_text(question_page(q, db, by_id, slugs), encoding="utf-8")
@@ -984,21 +1153,7 @@ def write_more_questions(db: dict, by_id: dict, slugs: dict, featured: dict) -> 
                  lambda m: m.group(1) + links + m.group(2), text, count=1, flags=re.S)
     if new != text:
         home.write_text(new, encoding="utf-8")
-
-    # the featured pages list a few of the others under their own questions
-    for p in sorted((ROOT / "q").glob("*/index.html")):
-        text = p.read_text(encoding="utf-8")
-        if GENERATED in text or "<!-- more-questions -->" not in text:
-            continue
-        me = next((x for x in ALL_QUESTIONS if x["slug"] == p.parent.name), {"topics": []})
-        pick = sorted((x for x in qs), key=lambda x: (not set(x["topics"]) & set(me["topics"]), x["title"]))[:6]
-        items = "".join(f'<li><a href="../{x["slug"]}/">{esc(x["title"])}</a></li>' for x in pick)
-        new = re.sub(r"(<!-- more-questions -->).*?(<!-- /more-questions -->)",
-                     lambda m: f'{m.group(1)}{items}<li><a href="../">Every question →</a></li>{m.group(2)}',
-                     text, count=1, flags=re.S)
-        if new != text:
-            p.write_text(new, encoding="utf-8")
-    print(f"  questions: {len(qs)} answered in the drawer, {len(ALL_QUESTIONS)} in all")
+    print(f"  questions: {len(ALL_QUESTIONS)} pages, {len(qs)} of them in the homepage drawer")
 
 
 # Indicator pages whose address changed when the series was renamed or
@@ -1036,6 +1191,52 @@ def sitemap(entries: list[tuple[str, str, str, str]]) -> str:
             "<!-- Written by ingest/pages.py. board.html is deliberately absent: it is a\n"
             "     working page, not a published one, and carries noindex to match. -->\n"
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + rows + "</urlset>\n")
+
+
+MEASURE = {"count": "Count", "rate": "Rate", "index": "Index", "ratio": "Ratio",
+           "money_cash": "Money (cash)", "money_real": "Money (real)"}
+MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
+
+
+def write_verify(db: dict, slugs: dict) -> None:
+    """Explorer Verify draws its table from bundle.json in the browser. Write
+    the same rows, the count and the build stamp into data.html as well, so
+    the page reads without JavaScript and search engines see the catalogue.
+    The script replaces all three as soon as it runs."""
+    f = ROOT / "data.html"
+    h = f.read_text()
+    rows = []
+    for s in sorted(db["series"], key=lambda x: x["name"].lower()):
+        n = len(s.get("values") or [])
+        end = s["start"] + n - 1 if n else s["start"]
+        cover = str(end) if end == s["start"] else f'{s["start"]}–{end}'
+        sl = slugs.get(s["id"])
+        name = (f'<a class="pglink" href="indicator/{sl}/">{esc(s["name"])}</a>' if sl else esc(s["name"]))
+        k = s.get("kind") or ""
+        rows.append(f'<tr><td class="cx"></td><td class="cname">{name}</td>'
+                    f'<td>{esc(s.get("publisher") or s.get("source") or "Unknown")}</td>'
+                    f'<td>{esc(s.get("geography") or "—")}</td>'
+                    f'<td class="cunit">{esc(s.get("unit") or "—")}</td>'
+                    f'<td><span class="tag">{esc(MEASURE.get(k, k.capitalize() or "—"))}</span></td>'
+                    f'<td class="cmono">{cover}</td>'
+                    f'<td class="cid">{esc(s["id"])}</td></tr>')
+    table = ('<div class="tblwrap"><table class="idx"><thead><tr><th></th><th>Indicator</th><th>Source</th>'
+             '<th>Geography</th><th>Unit</th><th>Measure</th><th>Coverage</th><th>Series ID</th></tr></thead>'
+             f'<tbody>{"".join(rows)}</tbody></table></div>')
+    m = db.get("meta") or {}
+    g = re.match(r"(\d{4})-(\d{2})-(\d{2})", m.get("generated") or "")
+    built = f"{int(g[3])} {MONTHS[int(g[2]) - 1]} {g[1]}" if g else "—"
+    prov = (m.get("provenance") or "unknown")
+    meta = (f'<span><i class="dot{"" if prov == "live" else " warn"}"></i><b>{esc(prov.capitalize())}</b></span>'
+            f'<span>Built <b>{built}</b></span><span><a href="data/bundle.json">bundle.json ↗</a></span>')
+    subs = [(r'(<span id="nInd">)[^<]*(</span>)', rf"\g<1>{len(db['series'])}\g<2>"),
+            (r'(<div class="vstat" id="meta" aria-live="polite">).*?(</div>)', lambda mm: mm[1] + meta + mm[2]),
+            (r'(<div id="tbl">).*?(</div>\s*<p class="browse">)', lambda mm: mm[1] + table + mm[2])]
+    for pat, rep in subs:
+        h, k = re.subn(pat, rep, h, count=1, flags=re.S)
+        if not k:
+            print(f"  verify: no match for {pat[:30]}…, left as it was")
+    f.write_text(h)
 
 
 def main() -> None:
@@ -1087,6 +1288,7 @@ def main() -> None:
         entries.append((f"indicator/{slugs[s['id']]}/", (s.get("fetched") or today)[:10], "weekly", "0.6"))
 
     write_moved(slugs)
+    write_verify(db, slugs)
 
     (ROOT / "indicator" / "index.html").write_text(index_page(series, slugs))
     (ROOT / "data" / "pages.json").write_text(json.dumps(slugs, separators=(",", ":")))

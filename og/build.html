@@ -128,7 +128,7 @@ function drawQ(ctx,c,db,qs){
      against the last year before an event, as that question needs */
   const q=(qs||{})[c.file]||{};
   const sets=(q.sets||[]).map((s,i)=>({name:s.name,colour:i?S2:S1,pts:s.pts}));
-  const top=190+lines.length*58, bot=H-104, L=74, R=W-74;
+  const top=190+lines.length*58, bot=H-120, L=74, R=W-74;
   if(sets.length<2){
     ctx.font="400 24px 'IBM Plex Sans', system-ui, sans-serif"; ctx.fillStyle=MUTED;
     ctx.fillText("Run ingest/pages.py to draw this card.",L,top+40);
@@ -184,7 +184,7 @@ function drawQ(ctx,c,db,qs){
 /* ── the drawer's questions (data/questions-more.json, written by pages.py) ──
    One card per question page, drawn as that question's own kind of chart
    from the numbers its page shows. */
-const GROUP={many:"Several trends at once",myth:"Looks like a trend — isn’t",long:"The long view"};
+const GROUP={many:"Several trends at once",myth:"A common belief, tested",long:"The long view"};
 function niceStep(r){const e=Math.pow(10,Math.floor(Math.log10(r))),f=r/e;return (f<=1?1:f<=2?2:f<=2.5?2.5:f<=5?5:10)*e;}
 function scaleOf(vals,incl){
   const v=vals.filter(x=>x!=null); if(incl!=null) v.push(incl);
@@ -248,7 +248,9 @@ function drawMore(ctx,q){
     ctx.strokeStyle=MUTED; ctx.lineWidth=2; ctx.setLineDash([6,6]); ctx.beginPath(); pr.forEach((p,i)=>i?ctx.lineTo(px(p[1]),py(p[2])):ctx.moveTo(px(p[1]),py(p[2]))); ctx.stroke(); ctx.setLineDash([]);
     pr.forEach((p,i)=>{ ctx.globalAlpha=.35+.65*i/Math.max(1,pr.length-1); ctx.fillStyle=PAL[0];
       ctx.beginPath(); ctx.arc(px(p[1]),py(p[2]),9,0,7); ctx.fill(); ctx.globalAlpha=1;
-      if(i===0||i===pr.length-1){ ctx.font="600 18px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=INK; ctx.fillText(p[0],px(p[1])+14,py(p[2])-10); } });
+      if(i===0||i===pr.length-1){ ctx.font="600 18px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=INK;
+        /* a financial year is 2025-26, not 2025 */
+        ctx.fillText(q.years==="financial"?`${p[0]}-${String(p[0]+1).slice(2)}`:p[0],px(p[1])+14,py(p[2])-10); } });
     ctx.font="500 18px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=MUTED;
     ctx.fillText(`${Yv.name} ↑`,74,top-14); ctx.textAlign="right"; ctx.fillText(`${X.name} →`,R,bot+30); ctx.textAlign="left";
   } else if(q.chart==="bar"){
@@ -294,7 +296,8 @@ function drawMore(ctx,q){
     q.signs.forEach((n,i)=>{ ctx.fillStyle=PAL[i]; ctx.fillRect(lx,H-72,13,13); ctx.fillStyle=INK; ctx.fillText(n,lx+21,H-60); lx+=ctx.measureText(n).width+58; }); }
   else if(q.chart==="bar"){ ctx.font="500 20px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=INK; ctx.fillText(`${sets[0].name||""}, ${q.unit}`,74,H-60); }
   ctx.font="400 19px 'IBM Plex Sans', sans-serif"; ctx.fillStyle=MUTED; ctx.textAlign="right";
-  ctx.fillText(`${q.unit} · ${x0}–${x1} · ${q.geos.join(", ")} · polyoptic.co`,W-74,H-24); ctx.textAlign="left";
+  const fy=y=>`${y}-${String(y+1).slice(2)}`, span=q.years==="financial"?`${fy(x0)} to ${fy(x1)}`:`${x0}–${x1}`;
+  ctx.fillText(`${q.unit} · ${span} · ${q.geos.join(", ")} · polyoptic.co`,W-74,H-24); ctx.textAlign="left";
 }
 
 const made=[];

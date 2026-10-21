@@ -45,7 +45,8 @@ jobs:
           # the explorer's local detail frozen at whenever it was last built
           # by hand.
           # q/ and index.html too: pages.py rewrites every question's answer
-          # and the homepage's list of question links from the new figures
-          git add data indicator topic q index.html sitemap.xml
+          # and the homepage's list of question links from the new figures;
+          # data.html carries a copy of the Verify table for readers without JS
+          git add data indicator topic q index.html data.html sitemap.xml
           git diff --staged --quiet || git commit -m "data: scheduled refresh"
           git push

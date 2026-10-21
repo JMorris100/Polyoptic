@@ -14,7 +14,7 @@ polyoptic/
 ├── chartkit.js, chart.css      the chart drawing rules every page shares
 ├── data.html                   provenance — every raw value, source and API endpoint
 ├── about.html                  who builds it, and what it deliberately doesn't do
-├── q/<slug>/index.html         one page per question: four written by hand, the rest by pages.py
+├── q/<slug>/index.html         one page per question, written by ingest/pages.py
 ├── og/
 │   └── build.html              draws the 1200×630 share images (see below)
 ├── sitemap.xml                 board.html is deliberately absent
@@ -364,7 +364,12 @@ engine can read without running anything: `indicator/<slug>/` for every series
 (latest figure, a chart drawn as SVG, every published year, the source, notes
 and breaks, the highest and lowest local areas where there are any, and a
 `data.csv`), `topic/<topic>/` for each of the nine topics, an A–Z at
-`indicator/`, and `sitemap.xml` with all of them. Indicator pages carry
+`indicator/`, and `sitemap.xml` with all of them. Where a series has a break,
+the change, highest and lowest figures are measured from it, or say they span
+it; financial and school years read 2025-26 and 2025/26; and each series keeps
+the same number of decimal places throughout. It also writes the Verify table,
+count and build date into `data.html`, so that page reads without JavaScript;
+the script replaces them as soon as it runs. Indicator pages carry
 schema.org `Dataset` markup, so they can appear in Google Dataset Search. The
 weekly refresh runs it after `ingest.py`; run it by hand after a manual
 rebuild. Slugs come from the series name and are written to `data/pages.json`.
