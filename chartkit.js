@@ -332,6 +332,7 @@ const TOPIC_ICONS={
   transport:'<rect x="3.5" y="2.5" width="9" height="9" rx="2"/><path d="M3.5 7.5h9M6 14l.8-2.5M10 14l-.8-2.5"/><circle cx="6" cy="9.5" r=".4"/><circle cx="10" cy="9.5" r=".4"/>',
   environment:'<path d="M3 13c0-6 4-10 10.5-10.5C13 9 9 13 3 13z"/><path d="M3 13l6.5-6.5"/>',
   migration:'<circle cx="6" cy="5" r="2"/><path d="M2 13.5c0-2.3 1.8-4 4-4s4 1.7 4 4"/><path d="M10.5 3.3a1.8 1.8 0 0 1 0 3.4M11.8 9.7c1.4.5 2.4 1.9 2.4 3.8"/>',
+  culture:'<path d="M2 6L8 2.5 14 6z"/><path d="M3.5 7.5v5M6.5 7.5v5M9.5 7.5v5M12.5 7.5v5M2 13.5h12"/>',
   local:'<path d="M8 14s4.5-4.1 4.5-7.5a4.5 4.5 0 0 0-9 0C3.5 9.9 8 14 8 14z"/><circle cx="8" cy="6.5" r="1.6"/>',
   all:'<rect x="2.5" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="9" y="2.5" width="4.5" height="4.5" rx="1"/><rect x="2.5" y="9" width="4.5" height="4.5" rx="1"/><rect x="9" y="9" width="4.5" height="4.5" rx="1"/>'
 };

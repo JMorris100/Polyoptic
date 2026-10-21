@@ -875,7 +875,7 @@ const RIBBONS = new Set(["party","pm","elections"]);
 /* key events (wars, crashes, the pandemic): marked behind the data, a ribbon under it, or off */
 const EVENT_MODES = [["marks","Marked on chart"],["ribbon","Ribbon under chart"],["off","Off"]];
 const TOPICS = [["work","Work, pay & living standards"],["economy","Economy & public finances"],["housing","Housing"],["education","Education"],["health","Health"],
-  ["crime","Crime & justice"],["transport","Transport"],["environment","Environment & energy"],["migration","Population & migration"]];
+  ["crime","Crime & justice"],["transport","Transport"],["environment","Environment & energy"],["migration","Population & migration"],["culture","Culture & leisure"]];
 const topicName=t=>t==="all"?"All":((TOPICS.find(x=>x[0]===t)||[])[1]||t.charAt(0).toUpperCase()+t.slice(1));
 const GRANS = [["years","Years"],["quarters","Quarters"],["months","Months"],["days","Days"]];
 const GRAN_PER = {years:1, quarters:4, months:12, days:365};
@@ -2270,7 +2270,7 @@ function tableFor(p,sets){
 }
 
 /* ══════════════════════════════════════════════
-   CHECK THE NUMBERS — Explorer Verify, inside a chart
+   CHECK THE NUMBERS — the fetch log, inside a chart
    Every year on the chart, from the figure as published to the number
    plotted, with the arithmetic in between written out — the whole-chart
    version of the working a single click shows. Values are worked from the
@@ -2353,13 +2353,13 @@ function verifyHtml(p){
   const srcs=ser.map((s,i)=>`<div class="vsrc"><span class="d" style="background:${PAL(i)}"></span><b>${esc(s.name)}</b>
       ${s.source_url?`<a href="${esc(s.source_url)}" target="_blank" rel="noopener">Source release ↗</a>`:""}
       ${s.source_api?`<a href="${esc(s.source_api)}" target="_blank" rel="noopener">API endpoint ↗</a>`:""}
-      <a href="data.html#${esc(s.id)}" target="_blank" rel="noopener">Every value in Explorer Verify ↗</a>
+      <a href="data.html#${esc(s.id)}" target="_blank" rel="noopener">Every value in the fetch log ↗</a>
       <span class="vfetch">checked ${esc(ukDate(s.fetched)||"—")}</span></div>`).join("");
 
   const notes=[
     DB.meta.provenance==="placeholder"?`<b>Placeholder data.</b> These are not real statistics.`:"",
     p.gran!=="years"?`Checked against the published annual figures. The ${esc(p.gran)} detail on the chart is interpolated between them.`:"",
-    ref?`${REF_NAME[ref]} comes from the ONS reference series listed on Explorer Verify.`:""
+    ref?`${REF_NAME[ref]} comes from the ONS reference series listed in the fetch log.`:""
   ].filter(Boolean);
 
   return `<div class="verify">
@@ -2675,10 +2675,10 @@ document.addEventListener("pointerdown",e=>{
   state.drawer=false; document.getElementById("drawer").hidden=true;
 });
 
-/* Provenance detail, inline. The verify page has all of this, but the moment
+/* Provenance detail, inline. The fetch log has all of this, but the moment
    someone doubts a number is while they are looking at the chart — sending
    them to another page to check is where the checking stops happening. Same
-   content as a Verify row, scoped to what is on screen. */
+   content as a fetch log row, scoped to what is on screen. */
 const srcOpen=new Set();
 const FLAG_LABEL={discontinued:"Discontinued",definition:"Definition changed",
   partial:"Partial period",provisional:"Provisional",development:"In development",geography:"Sub-UK coverage"};
@@ -2700,7 +2700,7 @@ function srcDetail(m){
     <div class="sdmeta"><span>${m.start}–${end}</span><span>${obs} of ${m.values.length} years published</span></div>
     <div class="sdvals">${vals}</div>
     <div class="sdlinks">
-      <a href="data.html#${esc(m.id)}">Full record on Explorer Verify ↗</a>
+      <a href="data.html#${esc(m.id)}">Full record in the fetch log ↗</a>
       ${m.source_api?`<a href="${esc(m.source_api)}" target="_blank" rel="noopener">API endpoint ↗</a>`:""}
     </div>
   </div>`;

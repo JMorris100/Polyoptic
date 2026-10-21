@@ -12,7 +12,7 @@ polyoptic/
 ├── indicator/, topic/          plain pages for search, written by ingest/pages.py
 ├── explore.html                the explorer — compare, transform, export
 ├── chartkit.js, chart.css      the chart drawing rules every page shares
-├── data.html                   provenance — every raw value, source and API endpoint
+├── data.html                   the fetch log — each series' endpoint, fetch time, status and raw values
 ├── about.html                  who builds it, and what it deliberately doesn't do
 ├── q/<slug>/index.html         one page per question, written by ingest/pages.py
 ├── og/
@@ -247,7 +247,7 @@ against the live catalogues on 2026-08-05, and the spreadsheet sources on
 and justice, transport, environment, local statistics, headline ONS economic
 and labour-market series (GDP, inflation, employment, productivity, public
 finances, trade), and the three reference series — 198 indicators in one
-catalogue, filed under the homepage's nine topics. Of those, 116 come from
+catalogue, filed under the homepage's ten topics. Of those, 116 come from
 ONS Explore Local Statistics with figures for every local area, and 27 of
 those are `snapshot` series, published for one or two years only, which the
 explorer opens as a map rather than a trend. National series added in
@@ -363,20 +363,21 @@ nearly empty until the script runs, so `ingest/pages.py` writes pages a search
 engine can read without running anything: `indicator/<slug>/` for every series
 (latest figure, a chart drawn as SVG, every published year, the source, notes
 and breaks, the highest and lowest local areas where there are any, and a
-`data.csv`), `topic/<topic>/` for each of the nine topics, an A–Z at
+`data.csv`), `topic/<topic>/` for each of the ten topics, an A–Z at
 `indicator/`, and `sitemap.xml` with all of them. Where a series has a break,
 the change, highest and lowest figures are measured from it, or say they span
 it; financial and school years read 2025-26 and 2025/26; and each series keeps
-the same number of decimal places throughout. It also writes the Verify table,
-count and build date into `data.html`, so that page reads without JavaScript;
-the script replaces them as soon as it runs. Indicator pages carry
+the same number of decimal places throughout. It also writes the fetch log's
+run summary, alerts and rows into `data.html` between `<!-- log:… -->`
+markers, so that page reads without JavaScript; the script redraws them from
+the bundle as soon as it runs. Indicator pages carry
 schema.org `Dataset` markup, so they can appear in Google Dataset Search. The
 weekly refresh runs it after `ingest.py`; run it by hand after a manual
 rebuild. Slugs come from the series name and are written to `data/pages.json`.
 
 **The share images are generated in a browser**, not by the build: open
 `og/build.html` from the dev server, click *Download all*, and drop the PNGs
-into `og/` (four for the main pages, nine for the topics, and one for each
+into `og/` (four for the main pages, ten for the topics, and one for each
 question, featured and not). A question page with no image yet falls back to
 the homepage card. Filenames match the `og:image` tags — don't rename them. They
 are drawn on a canvas from `bundle.json`, so the comparison cards show the real
