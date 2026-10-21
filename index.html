@@ -324,7 +324,9 @@ section h2{font-size:clamp(26px,3.4vw,34px);font-weight:700}
   transition:transform 1.3s cubic-bezier(.2,.75,.25,1),opacity .6s}
 .mind.lit .mbeam svg{transform:none;opacity:1}
 .mgrid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:30px}
-@media(max-width:980px){.mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* ten topics: three rows of three and the last one centred beneath */
+.mgrid>.node:last-child:nth-child(3n+1){grid-column:2}
+@media(max-width:980px){.mgrid{grid-template-columns:repeat(2,minmax(0,1fr))}.mgrid>.node:last-child:nth-child(3n+1){grid-column:auto}}
 @media(max-width:560px){.mgrid{grid-template-columns:1fr}}
 .node{display:block;text-decoration:none;color:var(--ink);background:var(--surface);border:1px solid var(--prule);border-radius:14px;padding:15px 17px;
   opacity:0;transform:translateY(18px) scale(.985);
@@ -472,7 +474,7 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
       <a href="#topics">Topics</a>
       <a href="indicator/">Indicators</a>
       <a href="about.html">About</a>
-      <a class="btn-ghost" href="data.html">Verify</a>
+      <a class="btn-ghost" href="data.html">Fetch log</a>
       <a class="btn-invert" href="explore.html">Open the explorer</a>
       <button class="themebtn" id="themeBtn" type="button"></button>
     </nav>
@@ -665,6 +667,7 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
         <a class="node" data-topic="transport" href="topic/transport/"><div class="trow"><span class="tico" data-icon="transport"></span><span class="tn">Transport</span></div><div class="tc"></div><div class="td">Rail, buses, road traffic and casualties, travel times and electric cars.</div></a>
         <a class="node" data-topic="environment" href="topic/environment/"><div class="trow"><span class="tico" data-icon="environment"></span><span class="tn">Environment &amp; Energy</span></div><div class="tc"></div><div class="td">Emissions, the electricity mix, energy use, recycling and sewage spills.</div></a>
         <a class="node" data-topic="migration" href="topic/migration/"><div class="trow"><span class="tico" data-icon="migration"></span><span class="tn">Population &amp; Migration</span></div><div class="tc"></div><div class="td">Population, births, deaths and fertility, migration, visas and asylum.</div></a>
+        <a class="node" data-topic="culture" href="topic/culture/"><div class="trow"><span class="tico" data-icon="culture"></span><span class="tn">Culture &amp; Leisure</span></div><div class="tc"></div><div class="td">Arts, heritage sites, museums and galleries, libraries and sports facilities.</div></a>
       </div>
     </div>
   </div>
@@ -681,7 +684,7 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
 <script>
 /* ══════════════════════════════════════════════════════════════
    Everything on this page is drawn from data/bundle.json — the same
-   file the explorer and Explorer Verify read. Nothing is hardcoded,
+   file the explorer and the fetch log read. Nothing is hardcoded,
    so nothing here can drift out of step with the catalogue.
    ══════════════════════════════════════════════════════════════ */
 /* Charts are drawn through chartkit.js — the same rules as the explorer, so a
@@ -1198,9 +1201,10 @@ function mindMap(){
   /* the order the gaze reaches them: row by row, the middle of each row first */
   function order(){
     const tops=[...new Set(nodes.map(el=>el.offsetTop))].sort((a,b)=>a-b);
-    const cols=Math.max(...tops.map(t=>nodes.filter(el=>el.offsetTop===t).length));
+    const lefts=[...new Set(nodes.map(el=>el.offsetLeft))].sort((a,b)=>a-b), cols=lefts.length;
     nodes.forEach(el=>{
-      const r=tops.indexOf(el.offsetTop), row=nodes.filter(n=>n.offsetTop===el.offsetTop), c=row.indexOf(el);
+      /* by column position, so a card centred alone on the last row is reached first */
+      const r=tops.indexOf(el.offsetTop), c=lefts.indexOf(el.offsetLeft);
       const off=Math.abs(c-(cols-1)/2);
       el.style.setProperty("--d",(still?0:.25+r*.17+off*.11).toFixed(2)+"s");
     });

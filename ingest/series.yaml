@@ -3761,7 +3761,7 @@ series:
   - id: sportsfac
     name: Sports facilities
     topics:
-    - transport
+    - culture
     unit: per 10,000 population
     kind: rate
     geography: England
@@ -3781,7 +3781,7 @@ series:
   - id: museums
     name: Museums
     topics:
-    - transport
+    - culture
     unit: per 100,000 population
     kind: rate
     geography: UK
@@ -3801,6 +3801,7 @@ series:
   - id: walklibrary
     name: Residents within a 30 minute walk of their nearest library
     topics:
+    - culture
     - transport
     unit: '%'
     kind: rate
@@ -3839,7 +3840,7 @@ series:
   - id: arts
     name: Engaged with the arts
     topics:
-    - health
+    - culture
     unit: '%'
     kind: rate
     geography: England
@@ -3859,7 +3860,7 @@ series:
   - id: heritage
     name: Visited a heritage site
     topics:
-    - health
+    - culture
     unit: '%'
     kind: rate
     geography: England
@@ -3879,7 +3880,7 @@ series:
   - id: museumvisit
     name: Visited a museum or gallery
     topics:
-    - health
+    - culture
     unit: '%'
     kind: rate
     geography: England
@@ -3899,7 +3900,7 @@ series:
   - id: libraryvisit
     name: Visited a public library
     topics:
-    - health
+    - culture
     unit: '%'
     kind: rate
     geography: England

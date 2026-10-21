@@ -47,6 +47,7 @@ TOPICS = [
     ("transport", "Transport", "Rail, buses, road traffic and casualties, travel times and electric cars."),
     ("environment", "Environment & energy", "Emissions, the electricity mix, energy use, recycling and sewage spills."),
     ("migration", "Population & migration", "Population, births, deaths and fertility, migration, visas and asylum."),
+    ("culture", "Culture & leisure", "Arts, heritage sites, museums and galleries, libraries and sports facilities."),
 ]
 TOPIC_NAME = {k: n for k, n, _ in TOPICS}
 GEO_RANK = ["UK", "Great Britain", "England and Wales", "England", "Wales", "Scotland", "Northern Ireland"]
@@ -361,7 +362,7 @@ def page(*, path: str, depth: int, title: str, desc: str, og_image: str, og_alt:
 <body>
 <div class="topbar"><div class="wrap">
   <a class="brand" href="{up or './'}">{LOGO}<span class="wordmark">poly<span class="b">optic</span></span></a>
-  <nav class="topnav"><a href="{up}#questions">Questions</a><a href="{up}#topics">Topics</a><a href="{up}indicator/">Indicators</a><a href="{up}about.html">About</a><a href="{up}data.html">Verify</a>
+  <nav class="topnav"><a href="{up}#questions">Questions</a><a href="{up}#topics">Topics</a><a href="{up}indicator/">Indicators</a><a href="{up}about.html">About</a><a href="{up}data.html">Fetch log</a>
     <a class="btn" href="{up}{explore}">Open the explorer</a></nav>
 </div></div>
 <main class="wrap">
@@ -524,7 +525,7 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
     data_tbl = f"""<h2>Every published year</h2>
 <details{' open' if len(pts) <= 12 else ''}><summary>{len(pts)} value{'s' if len(pts) != 1 else ''}, {esc(unit)}</summary>
 <table style="margin-top:10px"><thead><tr><th>Year</th><th class="n">{esc(unit)}</th></tr></thead><tbody>{table}</tbody></table></details>
-<p style="margin-top:10px"><a href="data.csv">Download as CSV</a> · <a href="../../data.html#{esc(s['id'])}">Check it on Explorer Verify</a></p>"""
+<p style="margin-top:10px"><a href="data.csv">Download as CSV</a> · <a href="../../data.html#{esc(s['id'])}">See it in the fetch log</a></p>"""
 
     related = [x for x in by_id.values() if x["id"] != s["id"] and topic in (x.get("topics") or [])]
     related.sort(key=lambda x: (x.get("geography") != geo, x["name"]))
@@ -568,7 +569,7 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
         "spatialCoverage": {"@type": "Place", "name": "United Kingdom" if geo == "UK" else geo},
         "variableMeasured": {"@type": "PropertyValue", "name": s["name"], "unitText": unit},
         "distribution": [{"@type": "DataDownload", "encodingFormat": "text/csv", "contentUrl": f"{SITE}/{url}data.csv"}],
-        "includedInDataCatalog": {"@type": "DataCatalog", "name": "Polyoptic", "url": f"{SITE}/data"},
+        "includedInDataCatalog": {"@type": "DataCatalog", "name": "Polyoptic", "url": f"{SITE}/indicator/"},
         **({"isBasedOn": s["source_url"]} if s.get("source_url") else {}),
         **({"dateModified": s["fetched"][:10]} if s.get("fetched") else {}),
     }, breadcrumb_ld([(tname, f"topic/{topic}/"), (s["name"], url)])]
@@ -622,14 +623,16 @@ def index_page(series: list[dict], slugs: dict) -> str:
     body = f"""{crumbs(1, [("All indicators", None)])}
 <h1>Every indicator, A–Z</h1>
 <p class="sub">{len(series)} official UK statistics from {len({s.get('publisher') for s in series})} publishers. Each page has every published year, a chart, the source and the caveats.</p>
-<p>Want the raw values, the exact address each one was fetched from, and the caveats side by side? Every indicator is also on <a href="../data.html#catalogue">Explorer Verify</a>.</p>
+<p>Want the exact address each one was fetched from, when, and every value as it arrived? See the <a href="../data.html">fetch log</a>.</p>
 <p>{" · ".join(f'<a href="#l-{c}">{c}</a>' for c in letters)}</p>
 """ + "".join(f'<div class="grp" id="l-{c}">{c}</div><ul class="list">'
               + "".join(card(s, f'{slugs[s["id"]]}/') for s in letters[c]) + "</ul>" for c in letters)
-    ld = [{"@context": "https://schema.org", "@type": "CollectionPage", "name": "Every indicator, A–Z",
-           "url": f"{SITE}/indicator/", "isPartOf": {"@type": "WebSite", "name": "Polyoptic", "url": f"{SITE}/"}}]
+    # the catalogue every indicator page's Dataset markup says it belongs to
+    ld = [{"@context": "https://schema.org", "@type": ["CollectionPage", "DataCatalog"], "name": "Every indicator, A–Z",
+           "url": f"{SITE}/indicator/", "inLanguage": "en-GB", "license": OGL,
+           "isPartOf": {"@type": "WebSite", "name": "Polyoptic", "url": f"{SITE}/"}}]
     return page(path="indicator/", depth=1, title="Every UK statistic on Polyoptic, A–Z | Polyoptic",
-                desc=f"All {len(series)} official UK indicators on Polyoptic, A–Z: work and pay, the economy, housing, education, health, crime, transport, environment and population.",
+                desc=f"All {len(series)} official UK indicators on Polyoptic, A–Z: work and pay, the economy, housing, education, health, crime, transport, environment, population and culture.",
                 og_image="og/home.png", og_alt="Polyoptic", ld=ld, body=body)
 
 
@@ -1193,49 +1196,127 @@ def sitemap(entries: list[tuple[str, str, str, str]]) -> str:
             '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + rows + "</urlset>\n")
 
 
-MEASURE = {"count": "Count", "rate": "Rate", "index": "Index", "ratio": "Ratio",
-           "money_cash": "Money (cash)", "money_real": "Money (real)"}
 MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split()
+REF_NAMES = {"population": "UK population (mid-year estimate)",
+             "deflator": "GDP deflator (ONS implied, L8GG)", "gdp": "Nominal GDP (YBHA)"}
 
 
-def write_verify(db: dict, slugs: dict) -> None:
-    """Explorer Verify draws its table from bundle.json in the browser. Write
-    the same rows, the count and the build stamp into data.html as well, so
-    the page reads without JavaScript and search engines see the catalogue.
-    The script replaces all three as soon as it runs."""
+def endpoint_short(u: str) -> tuple[str, str]:
+    """The address, short enough for a column: the host, then the part that
+    names the series. Mirrors endpointShort() in data.html."""
+    from urllib.parse import urlsplit, parse_qs
+    try:
+        x = urlsplit(u or "")
+    except ValueError:
+        return "", u or ""
+    host = re.sub(r"^www\.", "", x.hostname or "")
+    q = parse_qs(x.query)
+    if q.get("indicator"):
+        tail = q["indicator"][0]
+    elif q.get("uri"):
+        tail = ([p for p in q["uri"][0].split("/") if p] or [""])[-1]
+    else:
+        seg = [p for p in x.path.split("/") if p]
+        tail = "/".join(seg[-3:] if len(seg) >= 3 and len(seg[-1]) < 6 else seg[-1:])
+    if len(tail) > 40:
+        tail = tail[:20] + "…" + tail[-17:]
+    return host, tail
+
+
+def write_fetchlog(db: dict, slugs: dict) -> None:
+    """The fetch log (data.html) draws itself from bundle.json in the browser.
+    Write the same run summary, alerts and rows into the page as well, so it
+    reads without JavaScript and search engines see it; the script redraws
+    them as soon as it runs. Keep in step with rowHtml() in data.html."""
     f = ROOT / "data.html"
     h = f.read_text()
-    rows = []
-    for s in sorted(db["series"], key=lambda x: x["name"].lower()):
-        n = len(s.get("values") or [])
-        end = s["start"] + n - 1 if n else s["start"]
-        cover = str(end) if end == s["start"] else f'{s["start"]}–{end}'
-        sl = slugs.get(s["id"])
-        name = (f'<a class="pglink" href="indicator/{sl}/">{esc(s["name"])}</a>' if sl else esc(s["name"]))
-        k = s.get("kind") or ""
-        rows.append(f'<tr><td class="cx"></td><td class="cname">{name}</td>'
-                    f'<td>{esc(s.get("publisher") or s.get("source") or "Unknown")}</td>'
-                    f'<td>{esc(s.get("geography") or "—")}</td>'
-                    f'<td class="cunit">{esc(s.get("unit") or "—")}</td>'
-                    f'<td><span class="tag">{esc(MEASURE.get(k, k.capitalize() or "—"))}</span></td>'
-                    f'<td class="cmono">{cover}</td>'
-                    f'<td class="cid">{esc(s["id"])}</td></tr>')
-    table = ('<div class="tblwrap"><table class="idx"><thead><tr><th></th><th>Indicator</th><th>Source</th>'
-             '<th>Geography</th><th>Unit</th><th>Measure</th><th>Coverage</th><th>Series ID</th></tr></thead>'
-             f'<tbody>{"".join(rows)}</tbody></table></div>')
     m = db.get("meta") or {}
-    g = re.match(r"(\d{4})-(\d{2})-(\d{2})", m.get("generated") or "")
-    built = f"{int(g[3])} {MONTHS[int(g[2]) - 1]} {g[1]}" if g else "—"
-    prov = (m.get("provenance") or "unknown")
-    meta = (f'<span><i class="dot{"" if prov == "live" else " warn"}"></i><b>{esc(prov.capitalize())}</b></span>'
-            f'<span>Built <b>{built}</b></span><span><a href="data/bundle.json">bundle.json ↗</a></span>')
-    subs = [(r'(<span id="nInd">)[^<]*(</span>)', rf"\g<1>{len(db['series'])}\g<2>"),
-            (r'(<div class="vstat" id="meta" aria-live="polite">).*?(</div>)', lambda mm: mm[1] + meta + mm[2]),
-            (r'(<div id="tbl">).*?(</div>\s*<p class="browse">)', lambda mm: mm[1] + table + mm[2])]
-    for pat, rep in subs:
-        h, k = re.subn(pat, rep, h, count=1, flags=re.S)
+    gen = m.get("generated") or ""
+    build_year = int(gen[:4]) if gen[:4].isdigit() else datetime.now(timezone.utc).year
+
+    def when(iso: str, time: bool = True) -> str:
+        g = re.match(r"(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2}))?", iso or "")
+        if not g:
+            return "—"
+        yr = "" if int(g[1]) == build_year else f" {g[1]}"
+        return f"{int(g[3])} {MONTHS[int(g[2]) - 1]}{yr}" + (f", {g[4]}:{g[5]}" if g[4] and time else "")
+
+    def latest(s: dict) -> tuple[str, bool]:
+        p = s.get("partial") or {}
+        if p.get("value") is not None and p.get("year"):
+            span = (p.get("label") or "").split("–")[-1] if p.get("how") == "last" else (p.get("label") or "")
+            return f"{span} {p['year']}".strip(), p["year"] < build_year - 2
+        vals = s.get("values") or []
+        i = len(vals) - 1
+        while i >= 0 and vals[i] is None:
+            i -= 1
+        if i < 0:
+            return "—", False
+        y = s["start"] + i
+        return year_label(y, s.get("year_basis", "calendar")), y < build_year - 2
+
+    failed = set(m.get("failed") or [])
+    status = lambda s: "fail" if s["id"] in failed else "stale" if s.get("stale") else "ok"
+    LABEL = {"ok": "Fetched", "stale": "Last good copy", "fail": "Failed"}
+
+    def row(s: dict, ref: bool = False) -> str:
+        st, (lt, old) = status(s), latest(s)
+        host, tail = endpoint_short(s.get("source_api") or "")
+        sl = None if ref else slugs.get(s["id"])
+        name = f'<a class="pglink" href="indicator/{sl}/">{esc(s["name"])}</a>' if sl else esc(s["name"])
+        ep = (f'<a class="ep" href="{esc(s["source_api"])}" title="{esc(s["source_api"])}"><span>{esc(host)}</span>'
+              f'{" › " + esc(tail) if tail else ""}</a>' if s.get("source_api") else "—")
+        return (f'<tr><td class="cx"></td><td><span class="st st-{st}">{LABEL[st]}</span></td>'
+                f'<td class="cname">{name}</td><td class="c-pub">{esc(s.get("publisher") or s.get("source") or "Unknown")}</td>'
+                f'<td class="c-ep">{ep}</td><td class="cmono c-fe{"" if st == "ok" else " warm"}">{esc(when(s.get("fetched")))}</td>'
+                f'<td class="cmono{" old" if old else ""}">{esc(lt)}</td></tr>')
+
+    head = ('<thead><tr><th></th><th>Status</th><th>Series</th><th class="c-pub">Publisher</th>'
+            '<th class="c-ep">Endpoint</th><th class="c-fe">Fetched</th><th>Latest data</th></tr></thead>')
+    # problems first, then the newest fetch: the order a log reads in
+    rank = {"fail": 0, "stale": 1, "ok": 2}
+    ordered = sorted(db["series"], key=lambda s: s.get("fetched") or "", reverse=True)
+    ordered.sort(key=lambda s: rank[status(s)])
+    table = (f'<div class="tblwrap"><table class="idx log">{head}<tbody>'
+             f'{"".join(row(s) for s in ordered)}</tbody></table></div>')
+    refs = [{"id": k, "name": REF_NAMES.get(k, k), "values": r.get("values") or [], "start": r.get("start"),
+             "publisher": "ONS", "source_api": r.get("source_api"), "fetched": gen, "year_basis": "calendar"}
+            for k, r in (db.get("refs") or {}).items()]
+    reftbl = (f'<div class="tblwrap"><table class="idx log">{head}<tbody>'
+              f'{"".join(row(s, True) for s in refs)}</tbody></table></div>')
+
+    stale = [s for s in db["series"] if s.get("stale")]
+    dropped = m.get("dropped") or []
+    prov = m.get("provenance") or "unknown"
+    gd = datetime.fromisoformat(gen) if gen else datetime.now(timezone.utc)
+    nxt = gd.replace(hour=6, minute=0, second=0, microsecond=0)
+    add = (7 - nxt.weekday()) % 7                    # Monday is 0
+    if add == 0 and nxt <= gd:
+        add = 7
+    from datetime import timedelta
+    nxt += timedelta(days=add)
+    hot = lambda n: " hot" if n else ""
+    run = (f'<div class="rs"><i>Data</i><b><span class="dot{"" if prov == "live" else " warn"}"></span>'
+           f'{"Live" if prov == "live" else esc(prov.capitalize())}</b></div>'
+           f'<div class="rs"><i>Last refresh</i><b>{esc(when(gen))} UTC</b></div>'
+           f'<div class="rs"><i>Series fetched</i><b>{len(db["series"]) - len(stale)}</b></div>'
+           f'<div class="rs{hot(stale)}"><i>Last good copy</i><b>{len(stale)}</b></div>'
+           f'<div class="rs{hot(dropped)}"><i>Not available</i><b>{len(dropped)}</b></div>'
+           f'<div class="rs"><i>Next refresh</i><b>Mon {nxt.day} {MONTHS[nxt.month - 1]}, 06:00 UTC</b></div>'
+           f'<a class="rsl" href="data/bundle.json">bundle.json ↗</a>')
+    warn = []
+    if stale:
+        warn.append("<b>Couldn’t refresh, showing the last good copy:</b> " + ", ".join(
+            esc(s["name"] + (f' (fetched {when(s.get("fetched"), False)})' if s.get("fetched") else "")) for s in stale))
+    if dropped:
+        warn.append(f"<b>Not available yet:</b> {esc(', '.join(dropped))}")
+    alerts = "".join(f'<div class="valert">{w}</div>' for w in warn)
+
+    for key, html_ in (("run", run), ("alerts", alerts), ("table", table), ("refs", reftbl)):
+        h, k = re.subn(rf"<!-- log:{key} -->.*?<!-- /log:{key} -->",
+                       lambda _m: f"<!-- log:{key} -->{html_}<!-- /log:{key} -->", h, count=1, flags=re.S)
         if not k:
-            print(f"  verify: no match for {pat[:30]}…, left as it was")
+            print(f"  fetch log: no <!-- log:{key} --> marker in data.html, left as it was")
     f.write_text(h)
 
 
@@ -1288,7 +1369,7 @@ def main() -> None:
         entries.append((f"indicator/{slugs[s['id']]}/", (s.get("fetched") or today)[:10], "weekly", "0.6"))
 
     write_moved(slugs)
-    write_verify(db, slugs)
+    write_fetchlog(db, slugs)
 
     (ROOT / "indicator" / "index.html").write_text(index_page(series, slugs))
     (ROOT / "data" / "pages.json").write_text(json.dumps(slugs, separators=(",", ":")))
