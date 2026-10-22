@@ -54,6 +54,14 @@ GEO_RANK = ["UK", "Great Britain", "England and Wales", "England", "Wales", "Sco
 
 esc = lambda s: html.escape(str(s), quote=True)
 
+# Publishers' notes sometimes carry markdown links, "[text](https://...)".
+# Escape first, then turn those into real links (http and https only).
+MD_LINK = re.compile(r"\[([^\[\]]+)\]\((https?://[^\s()<>\"]+)\)")
+
+
+def esc_note(s) -> str:
+    return MD_LINK.sub(r'<a href="\2">\1</a>', esc(s))
+
 
 # ── numbers ──────────────────────────────────────────────────────────
 
@@ -506,13 +514,13 @@ def indicator_page(s: dict, slug: str, by_id: dict, slugs: dict, ix: dict, pubs:
         chart = (f'<div class="card">{chart_svg(s)}<p class="cap">{esc(unit)} · {esc(geo)} · {esc(basis)}'
                  f'{"dashed lines mark breaks in the series · " if breaks else ""}{esc(pnote)}source: {esc(s.get("source",""))}</p></div>')
 
-    notes = "".join(f"<li>{esc(n)}</li>" for n in s.get("notes", []))
+    notes = "".join(f"<li>{esc_note(n)}</li>" for n in s.get("notes", []))
     # an old latest year reads as a stalled refresh unless the page says why
     checked = (s.get("fetched") or "")[:10]
     if checked and ly < int(checked[:4]) - 2:
         notes += (f"<li>{esc(yl(ly))} is the latest year the source has published here. Polyoptic checks it "
                   f"every Monday (last on {esc(checked)}) and adds a new year when one appears.</li>")
-    brk = "".join(f'<li><b>{esc(d.get("year",""))}: {esc(d.get("label",""))}.</b> {esc(d.get("note",""))}</li>' for d in breaks)
+    brk = "".join(f'<li><b>{esc(d.get("year",""))}: {esc(d.get("label",""))}.</b> {esc_note(d.get("note",""))}</li>' for d in breaks)
 
     ex = area_extremes(s, ix) if s.get("areas") else None
     local = ""

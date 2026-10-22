@@ -383,6 +383,9 @@ section.after h2{font-size:21px;font-weight:700;margin:0 0 8px}
 
 <script>
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+/* Publishers' notes sometimes carry markdown links, "[text](https://...)":
+   escape first, then turn those into real links (http and https only). */
+const escNote=s=>esc(s).replace(/\[([^\[\]]+)\]\((https?:\/\/[^\s()<>"]+)\)/g,'<a href="$2" target="_blank" rel="noopener">$1</a>');
 const fmt=n=>{
   if(n==null) return "–";
   const a=Math.abs(n);
@@ -504,8 +507,8 @@ function rawCols(s){
 function detailHtml(s,isRef){
   const end=s.start+s.values.length-1;
   const obs=s.values.filter(v=>v!=null).length;
-  const notes=[...(s.notes||[]).map(n=>esc(n)),
-    ...(s.discontinuities||[]).map(d=>`<b>Break at ${d.year}.</b> ${esc(d.note)}`)];
+  const notes=[...(s.notes||[]).map(n=>escNote(n)),
+    ...(s.discontinuities||[]).map(d=>`<b>Break at ${d.year}.</b> ${escNote(d.note)}`)];
   const rows=isRef
     ? [["Source",esc(s.source||"ONS")],["Coverage",`${s.start}–${end}`]]
     : [["Publisher",esc(s.publisher_full||s.source||"—")],
