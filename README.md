@@ -12,6 +12,7 @@ polyoptic/
 ├── indicator/, topic/          plain pages for search, written by ingest/pages.py
 ├── explore.html                the explorer — compare, transform, export
 ├── chartkit.js, chart.css      the chart drawing rules every page shares
+├── feedback.js                 the feedback bubble, bottom right of every page
 ├── data.html                   the fetch log — each series' endpoint, fetch time, status and raw values
 ├── about.html                  who builds it, and what it deliberately doesn't do
 ├── q/<slug>/index.html         one page per question, written by ingest/pages.py

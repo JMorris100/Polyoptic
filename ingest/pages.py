@@ -353,6 +353,7 @@ def page(*, path: str, depth: int, title: str, desc: str, og_image: str, og_alt:
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{json.dumps(ld if len(ld) > 1 else ld[0], ensure_ascii=False, separators=(",", ":"))}</script>
 <script>(function(){{try{{if(localStorage.getItem("polyoptic-theme")==="dark")document.documentElement.dataset.theme="dark";}}catch(e){{}}}})();</script>
+<script src="{up}feedback.js" defer></script>
 <link rel="icon" href="{up}favicon.svg" type="image/svg+xml">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
