@@ -283,6 +283,12 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex San
 .topnav a{color:#fff;text-decoration:none;font-size:14px;opacity:.9}
 .topnav .btn{background:#fff;color:#4633A8;padding:7px 14px;border-radius:100px;font-size:13.5px;font-weight:600;opacity:1}
 @media(max-width:820px){.topnav a:not(.btn){display:none}}
+.brand{flex-shrink:0}.topnav .btn{white-space:nowrap}
+@media(max-width:560px){.topbar .wrap{gap:12px}}
+/* On the narrowest phones the explorer button says just "Explore", so the
+   brand and the button both fit on one line. */
+.topnav .short{display:none}
+@media(max-width:400px){.topnav .long{display:none}.topnav .short{display:inline}}
 main.wrap{padding-top:40px;padding-bottom:10px}
 .crumbs{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.06em;color:var(--muted);margin:0 0 14px}
 .crumbs a{color:var(--muted)}
@@ -364,7 +370,7 @@ def page(*, path: str, depth: int, title: str, desc: str, og_image: str, og_alt:
 <div class="topbar"><div class="wrap">
   <a class="brand" href="{up or './'}">{LOGO}<span class="wordmark">poly<span class="b">optic</span></span></a>
   <nav class="topnav"><a href="{up}#questions">Questions</a><a href="{up}#topics">Topics</a><a href="{up}indicator/">Indicators</a><a href="{up}about.html">About</a><a href="{up}data.html">Fetch log</a>
-    <a class="btn" href="{up}{explore}">Open the explorer</a></nav>
+    <a class="btn" href="{up}{explore}"><span class="long">Open the explorer</span><span class="short">Explore</span></a></nav>
 </div></div>
 <main class="wrap">
 {body}

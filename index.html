@@ -87,6 +87,11 @@ svg{display:block}
   .topnav a.btn-invert{font-size:13px;padding:9px 16px}
   .topnav a.btn-ghost{display:none}
 }
+/* On the narrowest phones the explorer button says just "Explore", so the
+   brand and the button both fit on one line. */
+.topnav .short{display:none}
+@media(max-width:400px){.topnav .long{display:none}.topnav .short{display:inline}
+  .topbar .wrap{padding:0 16px}.wordmark{font-size:21px}}
 
 /* hero */
 /* The eye sits large behind the introduction and runs down behind How it
@@ -476,7 +481,7 @@ footer{padding:44px 0 70px;font-size:13px;color:var(--muted);border-top:1px soli
       <a href="indicator/">Indicators</a>
       <a href="about.html">About</a>
       <a class="btn-ghost" href="data.html">Fetch log</a>
-      <a class="btn-invert" href="explore.html">Open the explorer</a>
+      <a class="btn-invert" href="explore.html"><span class="long">Open the explorer</span><span class="short">Explore</span></a>
       <button class="themebtn" id="themeBtn" type="button"></button>
     </nav>
   </div>

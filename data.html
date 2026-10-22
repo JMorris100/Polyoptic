@@ -66,6 +66,10 @@ svg{display:block}
   .topnav a.btn-invert{font-size:13px;padding:9px 16px}
   .topnav a.btn-ghost{display:none}
 }
+/* On the narrowest phones the explorer button says just "Explore", so the
+   brand and the button both fit on one line. */
+.topnav .short{display:none}
+@media(max-width:400px){.topnav .long{display:none}.topnav .short{display:inline}}
 
 /* ── the header ──────────────────────────────────────────────────
    A line of title, a line of what it is, then the run itself. */
@@ -304,7 +308,7 @@ section.after h2{font-size:21px;font-weight:700;margin:0 0 8px}
       <a href="indicator/">Indicators</a>
       <a href="about.html">About</a>
       <a class="btn-ghost" href="#log" aria-current="page">Fetch log</a>
-      <a class="btn-invert" href="explore.html">Open the explorer</a>
+      <a class="btn-invert" href="explore.html"><span class="long">Open the explorer</span><span class="short">Explore</span></a>
     </nav>
   </div>
 </div>

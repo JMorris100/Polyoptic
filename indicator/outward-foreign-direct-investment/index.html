@@ -38,6 +38,12 @@ body{margin:0;background:var(--paper);color:var(--ink);font-family:"IBM Plex San
 .topnav a{color:#fff;text-decoration:none;font-size:14px;opacity:.9}
 .topnav .btn{background:#fff;color:#4633A8;padding:7px 14px;border-radius:100px;font-size:13.5px;font-weight:600;opacity:1}
 @media(max-width:820px){.topnav a:not(.btn){display:none}}
+.brand{flex-shrink:0}.topnav .btn{white-space:nowrap}
+@media(max-width:560px){.topbar .wrap{gap:12px}}
+/* On the narrowest phones the explorer button says just "Explore", so the
+   brand and the button both fit on one line. */
+.topnav .short{display:none}
+@media(max-width:400px){.topnav .long{display:none}.topnav .short{display:inline}}
 main.wrap{padding-top:40px;padding-bottom:10px}
 .crumbs{font-family:"IBM Plex Mono";font-size:11px;letter-spacing:.06em;color:var(--muted);margin:0 0 14px}
 .crumbs a{color:var(--muted)}
@@ -84,7 +90,7 @@ footer nav{display:flex;flex-wrap:wrap;gap:6px 16px}footer nav a{color:var(--mut
 <div class="topbar"><div class="wrap">
   <a class="brand" href="../../"><svg viewBox="6.5 16.5 87 63" role="img" aria-label="Polyoptic"><defs><clipPath id="lgw"><path d="M10 50 Q50 -10 90 50 Q50 102 10 50 Z"/></clipPath></defs><path d="M10 50 Q50 -10 90 50 Q50 102 10 50 Z" fill="none" stroke="#fff" stroke-width="5" stroke-linejoin="round"/><g clip-path="url(#lgw)" fill="#fff"><rect x="29.75" y="46.56" width="6" height="18.72"/><rect x="41.25" y="36.48" width="6" height="28.80"/><rect x="52.75" y="42.60" width="6" height="22.68"/><rect x="64.25" y="30.72" width="6" height="34.56"/></g></svg><span class="wordmark">poly<span class="b">optic</span></span></a>
   <nav class="topnav"><a href="../../#questions">Questions</a><a href="../../#topics">Topics</a><a href="../../indicator/">Indicators</a><a href="../../about.html">About</a><a href="../../data.html">Fetch log</a>
-    <a class="btn" href="../../explore.html#p=fdiout~line~none~2015~2024~bands">Open the explorer</a></nav>
+    <a class="btn" href="../../explore.html#p=fdiout~line~none~2015~2024~bands"><span class="long">Open the explorer</span><span class="short">Explore</span></a></nav>
 </div></div>
 <main class="wrap">
 <nav class="crumbs" aria-label="Breadcrumb"><a href="../../">Home</a> › <a href="../../topic/economy/">Economy &amp; public finances</a> › Outward foreign direct investment</nav>
