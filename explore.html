@@ -57,7 +57,7 @@ body.resizing{user-select:none;cursor:ns-resize}
 /* ── header ── */
 header{position:sticky;top:0;z-index:40;background:#4633A8;color:#fff}
 .hrow{padding:0 24px 0 20px;height:70px;display:flex;align-items:center;gap:14px}
-.brand{display:flex;align-items:center;gap:9px;text-decoration:none}
+.brand{display:flex;align-items:center;gap:9px;text-decoration:none;flex-shrink:0}
 .brand svg{width:36px;height:26px}
 .wm{font-family:"IBM Plex Sans";font-weight:800;font-size:21px;letter-spacing:-0.03em;color:#fff}
 .wm .b{font-weight:500;color:rgba(255,255,255,.66)}
@@ -69,7 +69,10 @@ header{position:sticky;top:0;z-index:40;background:#4633A8;color:#fff}
 .hact{margin-left:auto;display:flex;gap:8px}
 /* on a phone the header has room for the brand and the three buttons only */
 @media(max-width:520px){.hrow{padding:0 16px;gap:10px}.crumb{display:none}.hb{padding:8px 11px}}
-.hb{font-family:"IBM Plex Sans";font-size:12.5px;padding:8px 16px;border:1px solid rgba(255,255,255,.34);border-radius:2px;background:transparent;color:#fff;cursor:pointer;transition:.15s}
+/* on the narrowest phones "Copy link" becomes "Copy" so the row still fits */
+@media(max-width:400px){.hrow{padding:0 12px;gap:8px}.hact{gap:6px}.hb{padding:8px 9px}.hb.eye{padding:7px 9px}.hlong{display:none}
+  .brand{gap:7px}.brand svg{width:30px;height:22px}.wm{font-size:18px}}
+.hb{font-family:"IBM Plex Sans";font-size:12.5px;white-space:nowrap;padding:8px 16px;border:1px solid rgba(255,255,255,.34);border-radius:2px;background:transparent;color:#fff;cursor:pointer;transition:.15s}
 .hb:hover{background:#fff;color:var(--purple);border-color:#fff}
 .hb.solid{background:#fff;color:var(--purple);border-color:#fff;font-weight:500}
 .hb.solid:hover{background:#F1EEFA}
@@ -267,6 +270,10 @@ body.dragging,body.dragging *{cursor:grabbing!important}
   border:1px dashed var(--purple);background:var(--surface-2);color:var(--ink);padding:3px 9px;border-radius:2px;outline:none}
 .ptitle{font-size:16px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pacts{display:flex;gap:5px;flex-shrink:0}
+/* On the narrowest phones the buttons keep the first line and the title takes
+   a full line of its own below them, rather than being squeezed to nothing. */
+@media(max-width:400px){.pbar{flex-wrap:wrap;gap:8px 5px;padding:10px}.pacts{margin-left:auto}
+  .ptitle,.ptitle-in{order:10;flex:1 1 100%;min-width:0}}
 .pa{font-family:"IBM Plex Sans";font-size:12px;padding:5px 9px;border:1px solid var(--rule);background:transparent;color:var(--muted);cursor:pointer;border-radius:2px}
 .pa:hover{border-color:var(--purple);color:var(--purple)}
 .pa.danger:hover{border-color:#B91C1C;color:#B91C1C}
@@ -689,7 +696,7 @@ html[data-theme="dark"] #gspot{box-shadow:0 0 0 2px var(--purple), 0 0 0 6px col
     <div class="hact">
       <button class="hb eye" id="themeBtn"></button>
       <button class="hb" id="helpBtn" title="How to use the explorer" aria-label="How to use the explorer">?</button>
-      <button class="hb" id="copyLink">⧉ Copy link</button>
+      <button class="hb" id="copyLink" aria-label="Copy link">⧉ Copy<span class="hlong"> link</span></button>
     </div>
   </div>
 </header>
@@ -3652,8 +3659,8 @@ document.addEventListener("keydown",e=>{
 
 document.getElementById("copyLink").onclick=()=>{
   navigator.clipboard?.writeText(location.href);
-  const b=document.getElementById("copyLink"), o=b.textContent;
-  b.textContent="✓ Copied"; setTimeout(()=>b.textContent=o,1400);
+  const b=document.getElementById("copyLink"), o=b.innerHTML;
+  b.textContent="✓ Copied"; setTimeout(()=>b.innerHTML=o,1400);
 };
 document.getElementById("q").oninput=e=>{state.q=e.target.value;renderSidebar();};
 
