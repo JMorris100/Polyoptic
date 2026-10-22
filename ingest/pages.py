@@ -307,12 +307,12 @@ h1{font-size:clamp(28px,4vw,40px);font-weight:800;letter-spacing:-0.02em;line-he
 .cta{display:inline-block;margin:20px 10px 0 0;background:var(--purple);color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:11px 20px;border-radius:100px}
 .cta.ghost{background:transparent;color:var(--purple);border:1.5px solid var(--prule)}
 .cols{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:40px;margin-top:38px;align-items:start}
-@media(max-width:880px){.cols{grid-template-columns:1fr;gap:26px}}
+@media(max-width:880px){.cols{grid-template-columns:minmax(0,1fr);gap:26px}}
 h2{font-size:19px;font-weight:700;letter-spacing:-0.015em;margin:28px 0 8px}
 h2:first-child{margin-top:0}
 p{margin:0 0 12px;max-width:68ch}
 a{color:var(--purple)}
-ul.notes{padding-left:18px;margin:0 0 12px}ul.notes li{margin-bottom:6px;max-width:66ch}
+ul.notes{padding-left:18px;margin:0 0 12px}ul.notes li{margin-bottom:6px;max-width:66ch;overflow-wrap:anywhere}
 .side{background:var(--soft);border:1px solid var(--prule);border-radius:12px;padding:16px 18px;font-size:14px}
 .side h2{font-size:15px;margin:0 0 8px}.side dl{margin:0}.side dt{font-family:"IBM Plex Mono";font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:10px}
 .side dd{margin:2px 0 0;overflow-wrap:anywhere}
