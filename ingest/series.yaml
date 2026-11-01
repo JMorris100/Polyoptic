@@ -1350,6 +1350,108 @@ series:
     source_type: els
     fetch: {indicator: wellbeing-worthwhile}
 
+  # ── ANTIDEPRESSANT PRESCRIBING ──────────────────────────────
+  # NHSBSA's Medicines Used in Mental Health workbook for BNF section 4.3.
+  # Each annual release gets its own page and a file named for its last year
+  # (mumh_bnf0403_2025_26.xlsx), so the fetch starts from the collection page,
+  # which links only the latest release, and follows it to the file.
+
+  - id: antidep
+    name: People prescribed antidepressants
+    topics: [health]
+    unit: people
+    kind: count
+    geography: England
+    year_basis: financial
+    source: NHSBSA Medicines Used in Mental Health
+    source_url: https://www.nhsbsa.nhs.uk/statistical-collections/medicines-used-mental-health-england
+    publisher: NHSBSA
+    licence: OGL v3.0
+    source_type: spreadsheet
+    fetch:
+      page: https://www.nhsbsa.nhs.uk/statistical-collections/medicines-used-mental-health-england
+      release_pattern: medicines-used-mental-health-england-\d{6}-\d{6}$
+      link_pattern: mumh_bnf0403_\d{4}_\d{2}\.xlsx
+      sheet: National_Total
+      year_column: Financial Year
+      value_column: Total Identified Patients
+      filter: {Identified Patient Flag: "Y"}
+    notes:
+      - "People with at least one antidepressant (BNF section 4.3) dispensed in the community in England during the year. Hospital and private prescriptions are not included"
+      - "A prescription is not a diagnosis. Amitriptyline, the second most prescribed, is mostly given at low doses for nerve pain and migraine, not depression"
+      - "People are counted through a verified NHS number. The share of prescriptions that could be matched to one rose from 96.7% in 2016/17 to 99.4% in 2025/26, so a small part of the rise is better matching rather than more people"
+
+  - id: antideprate
+    name: People prescribed antidepressants per 1,000 population
+    topics: [health]
+    unit: "per 1,000 population"
+    kind: rate
+    geography: England
+    year_basis: financial
+    source: NHSBSA Medicines Used in Mental Health
+    source_url: https://www.nhsbsa.nhs.uk/statistical-collections/medicines-used-mental-health-england
+    publisher: NHSBSA
+    licence: OGL v3.0
+    source_type: spreadsheet
+    fetch:
+      page: https://www.nhsbsa.nhs.uk/statistical-collections/medicines-used-mental-health-england
+      release_pattern: medicines-used-mental-health-england-\d{6}-\d{6}$
+      link_pattern: mumh_bnf0403_\d{4}_\d{2}\.xlsx
+      sheet: National_Population
+      year_column: Financial Year
+      value_column: Patients per 1,000 Population
+    notes:
+      - "NHSBSA's own rate: people prescribed an antidepressant per 1,000 of England's population, using the ONS mid-year estimate for the year each financial year starts. Use this rather than the explorer's per-person transform, which divides by the UK population"
+      - "The latest year has no rate until ONS publishes the population estimate it needs"
+      - "People are counted through a verified NHS number. The share of prescriptions that could be matched to one rose from 96.7% in 2016/17 to 99.4% in 2025/26, so a small part of the rise is better matching rather than more people"
+
+  - id: sertraline
+    name: People prescribed sertraline
+    topics: [health]
+    unit: people
+    kind: count
+    geography: England
+    year_basis: financial
+    source: NHSBSA Medicines Used in Mental Health
+    source_url: https://www.nhsbsa.nhs.uk/statistical-collections/medicines-used-mental-health-england
+    publisher: NHSBSA
+    licence: OGL v3.0
+    source_type: spreadsheet
+    fetch:
+      page: https://www.nhsbsa.nhs.uk/statistical-collections/medicines-used-mental-health-england
+      release_pattern: medicines-used-mental-health-england-\d{6}-\d{6}$
+      link_pattern: mumh_bnf0403_\d{4}_\d{2}\.xlsx
+      sheet: Chemical_Substance
+      year_column: Financial Year
+      value_column: Total Identified Patients
+      filter: {BNF Chemical Substance Name: Sertraline hydrochloride, Identified Patient Flag: "Y"}
+    notes:
+      - "People with at least one sertraline prescription dispensed in the community in England during the year. Sertraline is an SSRI, and the most prescribed antidepressant in England since 2018/19, when it overtook amitriptyline"
+      - "Do not add this to other drugs' figures: someone prescribed two antidepressants in a year counts once in each drug's figure, so the sum overstates the number of people"
+
+  - id: antidepitems
+    name: Antidepressant prescription items
+    topics: [health]
+    unit: items
+    kind: count
+    geography: England
+    year_basis: financial
+    source: NHSBSA Medicines Used in Mental Health
+    source_url: https://www.nhsbsa.nhs.uk/statistical-collections/medicines-used-mental-health-england
+    publisher: NHSBSA
+    licence: OGL v3.0
+    source_type: spreadsheet
+    fetch:
+      page: https://www.nhsbsa.nhs.uk/statistical-collections/medicines-used-mental-health-england
+      release_pattern: medicines-used-mental-health-england-\d{6}-\d{6}$
+      link_pattern: mumh_bnf0403_\d{4}_\d{2}\.xlsx
+      sheet: National_Total
+      year_column: Financial Year
+      value_column: Total Items
+    notes:
+      - "An item is one medicine on one prescription. A 28-day and a 56-day supply each count as one item, so items measure prescribing activity, not how much is taken"
+      - "All antidepressant items dispensed in the community in England, including the few not linked to a patient. Items have grown faster than the number of people, so each person is getting more prescriptions a year"
+
   # ── HOUSING ─────────────────────────────────────────────────
 
   - id: houseprice

@@ -209,6 +209,9 @@ def chart_svg(s: dict) -> str:
             ticks.append(t)
         t += step
     lo2, hi2 = min(lo2, ticks[0]), max(hi2, ticks[-1])
+    # Room for the widest tick label: the axis font is 10px monospace, about
+    # 6px a character, so "3,000,000" needs more than the default margin.
+    L = max(L, 14 + math.ceil(6.1 * max(len(fmt(t)) for t in ticks)))
     X = lambda x: L + (x - x0) / max(1, x1 - x0) * (W - L - R)
     Y = lambda v: T + (1 - (v - lo2) / ((hi2 - lo2) or 1)) * (H - T - B)
     g = []

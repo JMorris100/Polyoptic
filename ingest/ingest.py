@@ -86,6 +86,7 @@ PUBLISHERS: dict[str, str] = {
     "Environment Agency": "Environment Agency",
     "Bank of England": "Bank of England",
     "ORR": "Office of Rail and Road",
+    "NHSBSA": "NHS Business Services Authority",
 }
 
 
@@ -117,6 +118,7 @@ PUBLISHER_SITES: dict[str, str] = {
     "Environment Agency": "https://www.gov.uk/government/organisations/environment-agency",
     "Bank of England": "https://www.bankofengland.co.uk/boeapps/database/",
     "ORR": "https://dataportal.orr.gov.uk/",
+    "NHSBSA": "https://www.nhsbsa.nhs.uk/nhsbsa-statistics-and-data-science",
 }
 
 
@@ -815,12 +817,22 @@ def fetch_spreadsheet(cfg: dict) -> dict[int, float]:
     # fixed URL goes stale with the next release. Read the dataset page and
     # take the first link matching `link_pattern` — ONS lists the latest first.
     if cfg.get("page") and not (cfg.get("url") or cfg.get("urls")):
-        html_text = get(cfg["page"]).text
+        page = cfg["page"]
+        # `release_pattern`: some publishers (NHSBSA) link the file only from a
+        # page per release, and only the collection page knows which release
+        # is the latest. Follow the first link matching it, then look there.
+        if cfg.get("release_pattern"):
+            found = [h for h in re.findall(r'href="([^"]+)"', get(page).text)
+                     if re.search(cfg["release_pattern"], h)]
+            if not found:
+                raise ValueError(f"no release link matching {cfg['release_pattern']!r} on {page}")
+            page = urljoin(page, found[0].replace("&amp;", "&"))
+        html_text = get(page).text
         pat = cfg.get("link_pattern", r"\.xlsx")
         hrefs = [h for h in re.findall(r'href="([^"]+)"', html_text) if re.search(pat, h)]
         if not hrefs:
-            raise ValueError(f"no link matching {pat!r} on {cfg['page']}")
-        cfg["url"] = urljoin(cfg["page"], hrefs[0].replace("&amp;", "&"))
+            raise ValueError(f"no link matching {pat!r} on {page}")
+        cfg["url"] = urljoin(page, hrefs[0].replace("&amp;", "&"))
 
     # Some publishers put one file per year (crime outcomes), so a series can
     # span several workbooks. Same shape in each; merge the years.
